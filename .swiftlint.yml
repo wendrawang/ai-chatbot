@@ -1,0 +1,35 @@
+included:
+  - TanyaAISandboxApp
+  - TanyaAISandboxUITests
+  - Packages/TanyaAI/Sources
+  - Packages/TanyaAI/Tests
+
+excluded:
+  - .build
+  - DerivedData
+  - Packages/TanyaAI/.build
+  - Packages/TanyaAI/.swiftpm
+
+file_length:
+  warning: 250
+  error: 250
+  ignore_comment_only_lines: true
+
+function_body_length:
+  warning: 40
+  error: 60
+
+identifier_name:
+  min_length:
+    warning: 3
+    error: 3
+  max_length:
+    warning: 40
+    error: 40
+  excluded:
+    - id
+
+type_name:
+  max_length:
+    warning: 40
+    error: 40
