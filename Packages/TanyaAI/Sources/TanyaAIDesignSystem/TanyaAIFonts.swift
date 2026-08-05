@@ -1,24 +1,24 @@
-import UIKit
+import SwiftUI
 
 public struct TanyaAIFonts {
-    public let title: UIFont
-    public let headline: UIFont
-    public let body: UIFont
-    public let subheadline: UIFont
-    public let footnote: UIFont
-    public let caption: UIFont
-    public let amount: UIFont
-    public let button: UIFont
+    public let title: Font
+    public let headline: Font
+    public let body: Font
+    public let subheadline: Font
+    public let footnote: Font
+    public let caption: Font
+    public let amount: Font
+    public let button: Font
 
     public init(
-        title: UIFont,
-        headline: UIFont,
-        body: UIFont,
-        subheadline: UIFont,
-        footnote: UIFont,
-        caption: UIFont,
-        amount: UIFont,
-        button: UIFont
+        title: Font,
+        headline: Font,
+        body: Font,
+        subheadline: Font,
+        footnote: Font,
+        caption: Font,
+        amount: Font,
+        button: Font
     ) {
         self.title = title
         self.headline = headline

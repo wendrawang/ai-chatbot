@@ -15,6 +15,7 @@ public final class TanyaAIChatViewModel: ObservableObject {
     private let useCase: TanyaAIChatUseCaseProtocol
     private var activeRequest: TanyaAICancellable?
     private var conversationIdentifier: String?
+    private var messageStore: TanyaAIMessageStore
     private lazy var textDeltaBuffer = TanyaAITextDeltaBuffer {
         [weak self] messageIdentifier, text in
 
@@ -26,7 +27,9 @@ public final class TanyaAIChatViewModel: ObservableObject {
 
     public init(useCase: TanyaAIChatUseCaseProtocol) {
         self.useCase = useCase
-        messages = [Self.makeWelcomeMessage()]
+        let welcomeMessage = TanyaAIWelcomeMessageFactory.makeMessage()
+        messages = [welcomeMessage]
+        messageStore = TanyaAIMessageStore(welcomeMessage: welcomeMessage)
         suggestions = TanyaAISuggestion.sandboxDefaults
     }
 
@@ -115,12 +118,14 @@ public final class TanyaAIChatViewModel: ObservableObject {
             conversationIdentifier: conversationIdentifier,
             text: text,
             onEvent: { [weak self] event in
-                self?.performOnMain {
+                TanyaAIMainQueue.perform {
+                    [weak self] in
                     self?.handle(event)
                 }
             },
             completion: { [weak self] result in
-                self?.performOnMain {
+                TanyaAIMainQueue.perform {
+                    [weak self] in
                     self?.handleCompletion(result)
                 }
             }
@@ -164,7 +169,7 @@ public final class TanyaAIChatViewModel: ObservableObject {
             role: .user,
             content: .text(text)
         )
-        messages.append(TanyaAIMessageItemViewModel(message: message))
+        appendMessage(TanyaAIMessageItemViewModel(message: message))
     }
 
     private func makeSuggestion(
@@ -204,6 +209,7 @@ public final class TanyaAIChatViewModel: ObservableObject {
     ) {
         if let existingMessage = message(identifier: identifier) {
             existingMessage.update(content: content)
+            indexApproval(content, message: existingMessage)
             return
         }
         let message = TanyaAIMessage(
@@ -211,40 +217,31 @@ public final class TanyaAIChatViewModel: ObservableObject {
             role: .assistant,
             content: content
         )
-        messages.append(TanyaAIMessageItemViewModel(message: message))
+        let itemViewModel = TanyaAIMessageItemViewModel(message: message)
+        appendMessage(itemViewModel)
+        indexApproval(content, message: itemViewModel)
     }
 
     private func message(identifier: String) -> TanyaAIMessageItemViewModel? {
-        messages.first { $0.id == identifier }
+        messageStore.message(identifier: identifier)
     }
 
     private func approvalMessage(
         identifier: String
     ) -> TanyaAIMessageItemViewModel? {
-        messages.first { message in
-            guard case .approval(let payload) = message.content else {
-                return false
-            }
-            return payload.approvalIdentifier == identifier
-        }
-    }
-    private func performOnMain(_ action: @escaping () -> Void) {
-        if Thread.isMainThread {
-            action()
-        } else {
-            DispatchQueue.main.async(execute: action)
-        }
+        messageStore.approval(identifier: identifier)
     }
 
-    private static func makeWelcomeMessage() -> TanyaAIMessageItemViewModel {
-        let message = TanyaAIMessage(
-            identifier: "sandbox-welcome",
-            role: .assistant,
-            content: .text(
-                "Welcome to the sanitized Tanya AI sandbox. "
-                    + "Ask for a sample portfolio to start the demo."
-            )
-        )
-        return TanyaAIMessageItemViewModel(message: message)
+    private func appendMessage(_ message: TanyaAIMessageItemViewModel) {
+        messageStore.append(message)
+        messages.append(message)
     }
+
+    private func indexApproval(
+        _ content: TanyaAIMessageContent,
+        message: TanyaAIMessageItemViewModel
+    ) {
+        messageStore.indexApproval(content, message: message)
+    }
+
 }

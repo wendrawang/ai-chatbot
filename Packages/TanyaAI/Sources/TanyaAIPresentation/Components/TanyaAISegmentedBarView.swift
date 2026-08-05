@@ -33,7 +33,7 @@ struct TanyaAISegmentedBarView: View {
 
     private func segmentColor(_ index: Int) -> Color {
         let colors = theme.colors.chartColors
-        return Color(colors[index % colors.count])
+        return colors[index % colors.count]
     }
 }
 
@@ -49,10 +49,10 @@ struct TanyaAIChartLegendView: View {
                         .fill(segmentColor(index))
                         .frame(width: 12, height: 12)
                     Text(series[index].label)
-                        .font(Font(theme.fonts.subheadline))
+                        .font(theme.fonts.subheadline)
                     Spacer(minLength: 8)
                     Text(series[index].formattedValue)
-                        .font(Font(theme.fonts.headline))
+                        .font(theme.fonts.headline)
                 }
                 .accessibilityElement(children: .ignore)
                 .accessibility(
@@ -67,6 +67,6 @@ struct TanyaAIChartLegendView: View {
 
     private func segmentColor(_ index: Int) -> Color {
         let colors = theme.colors.chartColors
-        return Color(colors[index % colors.count])
+        return colors[index % colors.count]
     }
 }

@@ -37,11 +37,11 @@ struct TanyaAIPINKeypadView: View {
     private func digitButton(_ digit: Int) -> some View {
         Button(action: { onDigit(digit) }) {
             Text(String(digit))
-                .font(Font(theme.fonts.title))
-                .foregroundColor(Color(theme.colors.primaryText))
+                .font(theme.fonts.title)
+                .foregroundColor(theme.colors.primaryText)
                 .frame(maxWidth: .infinity)
                 .frame(height: 54)
-                .background(Color(theme.colors.surface))
+                .background(theme.colors.surface)
                 .cornerRadius(14)
         }
         .buttonStyle(PlainButtonStyle())
@@ -52,8 +52,8 @@ struct TanyaAIPINKeypadView: View {
     private var deleteButton: some View {
         Button(action: onDelete) {
             Image(systemName: "delete.left")
-                .font(Font(theme.fonts.headline))
-                .foregroundColor(Color(theme.colors.secondaryText))
+                .font(theme.fonts.headline)
+                .foregroundColor(theme.colors.secondaryText)
                 .frame(maxWidth: .infinity)
                 .frame(height: 54)
         }

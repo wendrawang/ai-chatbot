@@ -22,14 +22,14 @@ target = project.new_target(
   :application,
   'TanyaAISandbox',
   :ios,
-  '13.0'
+  '16.0'
 )
 target.product_reference.path = 'Tanya AI Sandbox.app'
 ui_test_target = project.new_target(
   :ui_test_bundle,
   'TanyaAISandboxUITests',
   :ios,
-  '13.0'
+  '16.0'
 )
 
 source_paths = Dir.glob(File.join(APP_PATH, '*.swift')).sort
@@ -46,7 +46,7 @@ target.build_configurations.each do |configuration|
   settings['PRODUCT_BUNDLE_IDENTIFIER'] = 'com.example.tanyaai.sandbox'
   settings['PRODUCT_NAME'] = 'Tanya AI Sandbox'
   settings['INFOPLIST_FILE'] = 'TanyaAISandboxApp/Info.plist'
-  settings['IPHONEOS_DEPLOYMENT_TARGET'] = '13.0'
+  settings['IPHONEOS_DEPLOYMENT_TARGET'] = '16.0'
   settings['SWIFT_VERSION'] = '5.0'
   settings['TARGETED_DEVICE_FAMILY'] = '1'
   settings['CODE_SIGN_STYLE'] = 'Automatic'
@@ -68,7 +68,7 @@ ui_test_target.add_dependency(target)
 ui_test_target.build_configurations.each do |configuration|
   settings = configuration.build_settings
   settings['PRODUCT_BUNDLE_IDENTIFIER'] = 'com.example.tanyaai.sandbox.uitests'
-  settings['IPHONEOS_DEPLOYMENT_TARGET'] = '13.0'
+  settings['IPHONEOS_DEPLOYMENT_TARGET'] = '16.0'
   settings['SWIFT_VERSION'] = '5.0'
   settings['TARGETED_DEVICE_FAMILY'] = '1'
   settings['CODE_SIGN_STYLE'] = 'Automatic'

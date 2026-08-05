@@ -9,14 +9,9 @@ public struct TanyaAIPINBottomSheetView: View {
     }
 
     public var body: some View {
-        ZStack(alignment: .bottom) {
-            Color(theme.colors.overlay)
-                .edgesIgnoringSafeArea(.all)
-
-            sheetContent
-                .background(Color(theme.colors.background))
-                .cornerRadius(20, corners: [.topLeft, .topRight])
-        }
+        sheetContent
+            .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
+            .background(theme.colors.background)
         .tanyaAIAccessibilityIdentifier("pin.sheet")
     }
 
@@ -35,8 +30,8 @@ public struct TanyaAIPINBottomSheetView: View {
             )
 
             Text("Sandbox demo PIN: 123456")
-                .font(Font(theme.fonts.caption))
-                .foregroundColor(Color(theme.colors.secondaryText))
+                .font(theme.fonts.caption)
+                .foregroundColor(theme.colors.secondaryText)
         }
         .padding(20)
     }
@@ -45,16 +40,16 @@ public struct TanyaAIPINBottomSheetView: View {
         HStack {
             VStack(alignment: .leading, spacing: 4) {
                 Text("Authorize action")
-                    .font(Font(theme.fonts.title))
+                    .font(theme.fonts.title)
                 Text("Enter your 6-digit PIN to continue securely.")
-                    .font(Font(theme.fonts.footnote))
-                    .foregroundColor(Color(theme.colors.secondaryText))
+                    .font(theme.fonts.footnote)
+                    .foregroundColor(theme.colors.secondaryText)
             }
             Spacer()
             Button(action: viewModel.cancel) {
                 Image(systemName: "xmark.circle.fill")
-                    .font(Font(theme.fonts.title))
-                    .foregroundColor(Color(theme.colors.secondaryText))
+                    .font(theme.fonts.title)
+                    .foregroundColor(theme.colors.secondaryText)
                     .frame(width: 44, height: 44)
             }
             .disabled(viewModel.isSubmitting)
@@ -66,8 +61,8 @@ public struct TanyaAIPINBottomSheetView: View {
     private var validationMessage: some View {
         if let errorMessage = viewModel.errorMessage {
             Text(errorMessage)
-                .font(Font(theme.fonts.footnote))
-                .foregroundColor(Color(theme.colors.error))
+                .font(theme.fonts.footnote)
+                .foregroundColor(theme.colors.error)
         }
     }
 
@@ -75,51 +70,14 @@ public struct TanyaAIPINBottomSheetView: View {
     private var authorizationStatus: some View {
         if viewModel.isSubmitting {
             HStack(spacing: 8) {
-                TanyaAIPINActivityIndicator(color: theme.colors.accent)
+                ProgressView()
+                    .tint(theme.colors.accent)
                     .frame(width: 20, height: 20)
                 Text("Authorizing securely…")
-                    .font(Font(theme.fonts.footnote))
-                    .foregroundColor(Color(theme.colors.secondaryText))
+                    .font(theme.fonts.footnote)
+                    .foregroundColor(theme.colors.secondaryText)
             }
             .frame(maxWidth: .infinity)
         }
-    }
-}
-
-private struct TanyaAIPINActivityIndicator: UIViewRepresentable {
-    let color: UIColor
-
-    func makeUIView(context: Context) -> UIActivityIndicatorView {
-        let indicator = UIActivityIndicatorView(style: .medium)
-        indicator.color = color
-        indicator.startAnimating()
-        return indicator
-    }
-
-    func updateUIView(
-        _ indicator: UIActivityIndicatorView,
-        context: Context
-    ) {
-        indicator.color = color
-    }
-}
-
-private struct TanyaAIRoundedCorner: Shape {
-    var radius: CGFloat = .infinity
-    var corners: UIRectCorner = .allCorners
-
-    func path(in rectangle: CGRect) -> Path {
-        let path = UIBezierPath(
-            roundedRect: rectangle,
-            byRoundingCorners: corners,
-            cornerRadii: CGSize(width: radius, height: radius)
-        )
-        return Path(path.cgPath)
-    }
-}
-
-private extension View {
-    func cornerRadius(_ radius: CGFloat, corners: UIRectCorner) -> some View {
-        clipShape(TanyaAIRoundedCorner(radius: radius, corners: corners))
     }
 }

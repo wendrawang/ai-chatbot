@@ -2,93 +2,130 @@
 
 ## Entry point
 
-The host creates the feature using `TanyaAIModule.makeViewController`. Present
-the returned controller full screen so the feature owns an isolated UIKit
-navigation stack.
+The package requires iOS 16 or newer and exposes one SwiftUI entry point:
 
-Create the controller from an imperative presentation gateway, not from a
-SwiftUI `body` and not from a legacy `NavigationLink`. The gateway keeps weak
-references to the root presenter and active feature controller. Create one
-gateway per scene and inject it into the existing coordinator or ViewModel
-action boundary. The sandbox default screen demonstrates this handoff and
-verifies that the legacy stack and screen state survive dismissal.
+```swift
+TanyaAIModule.makeView(
+    configuration: configuration,
+    dependencies: dependencies,
+    onClose: closeHandler
+)
+```
+
+`TanyaAIModule` is a factory, not a singleton. Create one feature graph per
+presentation. The returned `TanyaAIRootView` owns a `StateObject` router, an
+independent `NavigationStack`, and a SwiftUI PIN sheet.
+
+## Entry from a legacy navigation hierarchy
+
+Keep Tanya AI out of the existing `NavigationView` and `NavigationLink`
+destination graph. Put a `fullScreenCover` at a stable host boundary:
+
+```swift
+struct LegacyHostView: View {
+    @State private var showsTanyaAI = false
+    let dependencies: TanyaAIDependencies
+
+    var body: some View {
+        NavigationView {
+            Button("Open Tanya AI") {
+                showsTanyaAI = true
+            }
+        }
+        .fullScreenCover(isPresented: $showsTanyaAI) {
+            TanyaAIModule.makeView(
+                dependencies: dependencies,
+                onClose: {
+                    showsTanyaAI = false
+                }
+            )
+        }
+    }
+}
+```
+
+An existing coordinator may toggle the same binding through an observable
+presentation gateway. It must not keep a global singleton or build the feature
+inside a destination dictionary. The sandbox UI test verifies that legacy
+navigation position and local state survive open and close.
 
 ## Streaming adapter
 
-Implement `TanyaAIStreamingTransport` in the host application. The adapter
-translates `TanyaAIStreamRequest` into the host's request type and executes it
-with the existing authenticated session. It should inherit the host's mTLS,
-server trust, certificate pinning, headers, token refresh, timeout, tracing, and
-logging policy.
+Implement `TanyaAIStreamingTransport` in the host. Translate the relative
+request into the host request type and execute it with the existing secure
+session. The adapter must inherit mTLS, server trust, certificate pinning,
+headers, authentication, token refresh, timeout, tracing, and logging policy.
 
-The package parses the streamed bytes and owns the backend event schema. It
-does not receive certificates, tokens, hosts, or network-session objects.
+The package owns the SSE framing and response schema. Never inject certificates,
+tokens, absolute internal hosts, or a network-session implementation.
 
 ## Authorization adapter
 
-Implement `TanyaAIAuthorizationService` in the host application. The package
-owns the PIN bottom-sheet UI and short-lived input state. The adapter owns
-secure authorization, transaction execution, retry policy, and error mapping.
+Implement `TanyaAIAuthorizationService` in the host. The package owns the
+numeric PIN sheet and short-lived input state. The host owns secure
+authorization, transaction execution, retry and lockout policy, and error
+mapping.
 
-Prefer a secure host-defined PIN container if one exists. Never persist or log
-the PIN. Clear input immediately after submission and dismissal.
+Prefer a host-defined secure PIN container when available. Never persist or log
+the PIN. It must not enter chat messages, prompts, analytics, traces, crash
+reports, the clipboard, or local storage.
 
 ## Theme adapter
 
-The host must inject `TanyaAITheme`. There are no production color or font
-defaults inside the feature. Map existing host design tokens once at the
-composition boundary:
+Inject `TanyaAITheme` once at the composition boundary. The public theme uses
+SwiftUI `Color` and `Font`, so the package stays UIKit-free:
 
 ```swift
 let theme = TanyaAITheme(
     colors: TanyaAIColors(
-        background: CorePalette.background,
-        surface: CorePalette.surface,
-        primaryText: CorePalette.primaryText,
-        secondaryText: CorePalette.secondaryText,
-        accent: CorePalette.accent,
-        userBubble: CorePalette.chatOutgoing,
-        userBubbleText: CorePalette.onAccent,
-        assistantBubble: CorePalette.chatIncoming,
-        assistantBubbleText: CorePalette.primaryText,
-        divider: CorePalette.divider,
-        chartTrack: CorePalette.chartTrack,
-        chartColors: CorePalette.chartSeries,
-        success: CorePalette.success,
-        warning: CorePalette.warning,
-        error: CorePalette.error,
-        overlay: CorePalette.overlay
+        background: CoreColors.background,
+        surface: CoreColors.surface,
+        primaryText: CoreColors.primaryText,
+        secondaryText: CoreColors.secondaryText,
+        accent: CoreColors.accent,
+        userBubble: CoreColors.outgoingBubble,
+        userBubbleText: CoreColors.onAccent,
+        assistantBubble: CoreColors.incomingBubble,
+        assistantBubbleText: CoreColors.primaryText,
+        divider: CoreColors.divider,
+        chartTrack: CoreColors.chartTrack,
+        chartColors: CoreColors.chartSeries,
+        success: CoreColors.success,
+        warning: CoreColors.warning,
+        error: CoreColors.error,
+        overlay: CoreColors.overlay
     ),
     fonts: TanyaAIFonts(
-        title: CoreTypography.title,
-        headline: CoreTypography.headline,
-        body: CoreTypography.body,
-        subheadline: CoreTypography.subheadline,
-        footnote: CoreTypography.footnote,
-        caption: CoreTypography.caption,
-        amount: CoreTypography.amount,
-        button: CoreTypography.button
+        title: CoreFonts.title,
+        headline: CoreFonts.headline,
+        body: CoreFonts.body,
+        subheadline: CoreFonts.subheadline,
+        footnote: CoreFonts.footnote,
+        caption: CoreFonts.caption,
+        amount: CoreFonts.amount,
+        button: CoreFonts.button
     )
 )
 ```
 
-The names above are placeholders. The sandbox never imports or mirrors a host
-design-system implementation.
+If the existing design system exposes `UIColor` or `UIFont`, convert them to
+`Color` and `Font` inside the host adapter. Do not import the host design system
+from the package.
 
-## Rendering and performance
+## Rendering and lifecycle
 
-The chat uses a separator-free `UITableView` with reusable hosting cells.
-Destinations are created lazily by the UIKit coordinator. Streamed text is
-batched and each message owns stable observable state, so one text delta does
-not rebuild the full conversation.
+The chat uses `ScrollViewReader` plus `LazyVStack`, stable message IDs, and one
+observable object per row. A dictionary index avoids linear scans as the
+conversation grows. Text deltas are batched every 40 ms.
 
-Automated checks cover request cancellation on deallocation, PIN ViewModel
-deallocation, one-thousand-event parser throughput, and a 120-message scroll
-frame-rate sample. Real-device Instruments runs remain mandatory before a
-production release because simulator results are directional only.
+All stored output closures use weak captures. Active stream and authorization
+tasks are cancelled during deallocation. Run the lifecycle and 5,000-message
+stress tests before integrating a new long-lived callback.
 
-## Isolation
+## Isolation rules
 
-The feature does not import the host router, coordinator base classes, or
-networking implementation. External host navigation can be added later through
-another narrow protocol without changing internal navigation.
+- Do not import the host router or coordinator base class into the package.
+- Do not put `NavigationView`, `NavigationLink`, or UIKit in package sources.
+- Do not create a singleton router, transport, or authorization service.
+- Do not duplicate mTLS, pinning, or token logic inside the feature.
+- Do not render arbitrary backend-defined SwiftUI layouts or actions.

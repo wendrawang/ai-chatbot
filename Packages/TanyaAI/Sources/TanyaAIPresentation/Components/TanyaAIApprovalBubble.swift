@@ -17,7 +17,7 @@ struct TanyaAIApprovalBubble: View {
             status
             actions
         }
-        .background(Color(theme.colors.surface))
+        .background(theme.colors.surface)
         .cornerRadius(18)
         .frame(maxWidth: 340, alignment: .leading)
         .accessibilityElement(children: .contain)
@@ -29,12 +29,12 @@ struct TanyaAIApprovalBubble: View {
     private var header: some View {
         HStack(spacing: 10) {
             Image(systemName: symbolName)
-                .font(Font(theme.fonts.headline))
-                .foregroundColor(Color(theme.colors.accent))
+                .font(theme.fonts.headline)
+                .foregroundColor(theme.colors.accent)
                 .frame(width: 24)
             Text(payload.title)
-                .font(Font(theme.fonts.headline))
-                .foregroundColor(Color(theme.colors.primaryText))
+                .font(theme.fonts.headline)
+                .foregroundColor(theme.colors.primaryText)
         }
         .padding(16)
     }
@@ -44,13 +44,13 @@ struct TanyaAIApprovalBubble: View {
             ForEach(payload.summary.indices, id: \.self) { index in
                 HStack(alignment: .firstTextBaseline, spacing: 12) {
                     Text(payload.summary[index].label)
-                        .foregroundColor(Color(theme.colors.secondaryText))
+                        .foregroundColor(theme.colors.secondaryText)
                     Spacer(minLength: 8)
                     Text(payload.summary[index].value)
-                        .font(Font(theme.fonts.headline))
+                        .font(theme.fonts.headline)
                         .multilineTextAlignment(.trailing)
                 }
-                .font(Font(theme.fonts.subheadline))
+                .font(theme.fonts.subheadline)
             }
         }
         .padding(16)
@@ -60,8 +60,8 @@ struct TanyaAIApprovalBubble: View {
     private var notice: some View {
         if let notice = payload.notice {
             Text(notice)
-                .font(Font(theme.fonts.footnote))
-                .foregroundColor(Color(theme.colors.secondaryText))
+                .font(theme.fonts.footnote)
+                .foregroundColor(theme.colors.secondaryText)
                 .padding(.horizontal, 16)
                 .padding(.bottom, 12)
         }
@@ -71,7 +71,7 @@ struct TanyaAIApprovalBubble: View {
     private var status: some View {
         if payload.state != .awaitingApproval {
             Text(statusText)
-                .font(Font(theme.fonts.footnote))
+                .font(theme.fonts.footnote)
                 .foregroundColor(statusColor)
                 .padding(.horizontal, 16)
                 .padding(.bottom, 12)
@@ -86,11 +86,11 @@ struct TanyaAIApprovalBubble: View {
                 actionButton("Cancel", action: onCancel)
                 Button(action: onApprove) {
                     Text("Confirm")
-                        .font(Font(theme.fonts.button))
+                        .font(theme.fonts.button)
                         .frame(maxWidth: .infinity, minHeight: 44)
                 }
-                .foregroundColor(Color(theme.colors.userBubbleText))
-                .background(Color(theme.colors.accent))
+                .foregroundColor(theme.colors.userBubbleText)
+                .background(theme.colors.accent)
                 .cornerRadius(12)
                 .tanyaAIAccessibilityIdentifier(
                     "approval.open.\(payload.kind.rawValue)"
@@ -106,17 +106,17 @@ struct TanyaAIApprovalBubble: View {
     ) -> some View {
         Button(action: action) {
             Text(title)
-                .font(Font(theme.fonts.button))
+                .font(theme.fonts.button)
                 .frame(maxWidth: .infinity, minHeight: 44)
         }
-        .foregroundColor(Color(theme.colors.primaryText))
-        .background(Color(theme.colors.background))
+        .foregroundColor(theme.colors.primaryText)
+        .background(theme.colors.background)
         .cornerRadius(12)
     }
 
     private var cardDivider: some View {
         Rectangle()
-            .fill(Color(theme.colors.divider))
+            .fill(theme.colors.divider)
             .frame(height: 0.5)
     }
 
@@ -144,9 +144,9 @@ struct TanyaAIApprovalBubble: View {
 
     private var statusColor: Color {
         switch payload.state {
-        case .completed: return Color(theme.colors.success)
-        case .failed, .expired: return Color(theme.colors.error)
-        default: return Color(theme.colors.secondaryText)
+        case .completed: return theme.colors.success
+        case .failed, .expired: return theme.colors.error
+        default: return theme.colors.secondaryText
         }
     }
 }

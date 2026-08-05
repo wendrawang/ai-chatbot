@@ -1,9 +1,12 @@
+import Combine
+import Foundation
 import TanyaAI
-import UIKit
 
-final class TanyaAIPresentationGateway: TanyaAIPresenting {
-    private weak var rootController: UIViewController?
-    private weak var activeController: UIViewController?
+final class TanyaAIPresentationGateway:
+    ObservableObject,
+    TanyaAIPresenting {
+
+    @Published var isPresented = false
 
     private let dependencies: TanyaAIDependencies
     private let configuration: TanyaAIConfiguration
@@ -16,42 +19,33 @@ final class TanyaAIPresentationGateway: TanyaAIPresenting {
         self.configuration = configuration
     }
 
-    func attach(rootController: UIViewController) {
-        self.rootController = rootController
-    }
-
     func presentTanyaAI() {
-        guard Thread.isMainThread else {
-            DispatchQueue.main.async { [weak self] in
-                self?.presentTanyaAI()
-            }
-            return
+        performOnMain { [weak self] in
+            self?.isPresented = true
         }
-        guard activeController == nil else {
-            return
-        }
-        guard let rootController = rootController else {
-            return
-        }
-        guard rootController.presentedViewController == nil else {
-            return
-        }
-
-        let viewController = TanyaAIModule.makeViewController(
-            configuration: configuration,
-            dependencies: dependencies
-        )
-        activeController = viewController
-        rootController.present(viewController, animated: true)
     }
 
     func dismissTanyaAI() {
-        guard Thread.isMainThread else {
-            DispatchQueue.main.async { [weak self] in
+        performOnMain { [weak self] in
+            self?.isPresented = false
+        }
+    }
+
+    func makeView() -> TanyaAIRootView {
+        TanyaAIModule.makeView(
+            configuration: configuration,
+            dependencies: dependencies,
+            onClose: { [weak self] in
                 self?.dismissTanyaAI()
             }
-            return
+        )
+    }
+
+    private func performOnMain(_ action: @escaping () -> Void) {
+        if Thread.isMainThread {
+            action()
+        } else {
+            DispatchQueue.main.async(execute: action)
         }
-        activeController?.dismiss(animated: true)
     }
 }

@@ -1,16 +1,16 @@
 # Tanya AI Sandbox
 
-A sanitized iOS 13 reference implementation for a modular conversational
+A sanitized iOS 16 reference implementation for a modular conversational
 feature. The repository contains only deterministic demo data. It must never
 contain production endpoints, certificates, secrets, proprietary source code,
 internal identifiers, or customer data.
 
 ## Goals
 
-- Run on iOS 13 while keeping navigation deterministic.
+- Run on iOS 16 or newer with typed `NavigationStack` state.
 - Stay isolated from a host application's `NavigationView` and
   `NavigationLink` hierarchy.
-- Use UIKit for navigation and SwiftUI for screens.
+- Keep every production package view and navigation primitive pure SwiftUI.
 - Keep business rules independent from UI and networking.
 - Reuse the host application's secure networking and authorization stack.
 - Render long conversations without separators between rows.
@@ -22,7 +22,7 @@ internal identifiers, or customer data.
 Open `TanyaAISandbox.xcodeproj`, select an iPhone simulator, and run the
 `TanyaAISandbox` scheme. The initial screen simulates a legacy SwiftUI
 navigation hierarchy. Its detail screen opens Tanya AI as an independent,
-full-screen UIKit feature.
+full-screen SwiftUI feature.
 
 The demo PIN is `123456`. It exists only in the mock authorization service.
 
@@ -44,22 +44,22 @@ Host application
 └── design tokens
           │ dependency injection
           ▼
-TanyaAIModule.makeViewController
+TanyaAIModule.makeView
           │
           ▼
-TanyaAIContainerViewController
-└── UINavigationController
-    ├── UIHostingController<TanyaAIChatView>
-    ├── UIHostingController<TanyaAIHistoryView>
-    └── TanyaAIPINSheetViewController
+TanyaAIRootView
+├── NavigationStack
+│   ├── TanyaAIChatView
+│   └── TanyaAIHistoryView
+└── SwiftUI sheet<TanyaAIPINBottomSheetView>
           │
           ▼
 View → ViewModel → UseCase → Repository → injected transport
 ```
 
-Internal destinations are created only when the UIKit coordinator receives a
-route. The package does not build a graph of hidden `NavigationLink` values and
-does not construct every destination during rendering.
+`TanyaAIRouter` owns a small typed path and one optional authorization sheet.
+Only a requested destination is rendered. There is no hidden `NavigationLink`
+graph and no UIKit navigation object inside the production package.
 
 ### Package targets
 
@@ -70,7 +70,7 @@ does not construct every destination during rendering.
 | `TanyaAIDesignSystem` | Host-injected colors and fonts |
 | `TanyaAIData` | SSE parser, DTO decoding, and repository implementation |
 | `TanyaAIPresentation` | SwiftUI views and ViewModels |
-| `TanyaAI` | Public composition root and UIKit navigation |
+| `TanyaAI` | Public composition root and typed SwiftUI navigation |
 | `TanyaAITestSupport` | Sanitized mocks and deterministic fixtures |
 
 Dependencies point inward toward contracts and domain rules. Domain code does
@@ -289,8 +289,8 @@ data: {
 }
 ```
 
-The JSON never contains a PIN. Selecting Confirm sends a typed navigation
-output to the internal coordinator, which lazily presents the PIN sheet.
+The JSON never contains a PIN. Selecting Confirm sends a typed output to the
+internal router, which lazily creates and presents the SwiftUI PIN sheet.
 
 ### Receipt JSON
 
@@ -356,7 +356,7 @@ stream with an error instead of rendering partially trusted data.
 ```text
 Approval bubble
     → user taps Confirm
-    → coordinator presents numeric PIN sheet
+    → router sets typed SwiftUI sheet state
     → PIN ViewModel creates authorization request
     → injected host authorization service
     → result updates the original approval bubble
@@ -386,7 +386,7 @@ submission, cancellation, and deallocation.
 
 | API | Use |
 | --- | --- |
-| `TanyaAIModule.makeViewController` | Creates one isolated feature graph and entry controller |
+| `TanyaAIModule.makeView` | Creates one isolated SwiftUI feature graph |
 | `TanyaAIConfiguration.init` | Supplies relative message path and optional initial prompt |
 | `TanyaAIDependencies.init` | Injects transport, authorization, and theme |
 | `TanyaAIStreamingTransport.stream` | Delivers raw response chunks and terminal result |
@@ -395,7 +395,7 @@ submission, cancellation, and deallocation.
 | `TanyaAITheme.init` | Maps host colors and fonts into the feature |
 
 Only the factory and contracts are integration surface. Repositories,
-ViewModels, decoders, and the internal coordinator are implementation details.
+ViewModels, decoders, and the internal router are implementation details.
 
 ### 1. Add the local package
 
@@ -525,12 +525,24 @@ let configuration = TanyaAIConfiguration(
     initialPrompt: nil
 )
 
-let featureController = TanyaAIModule.makeViewController(
-    configuration: configuration,
-    dependencies: dependencies
-)
-featureController.modalPresentationStyle = .fullScreen
-presenter.present(featureController, animated: true)
+struct HostScreen: View {
+    @State private var showsTanyaAI = false
+
+    var body: some View {
+        Button("Open Tanya AI") {
+            showsTanyaAI = true
+        }
+        .fullScreenCover(isPresented: $showsTanyaAI) {
+            TanyaAIModule.makeView(
+                configuration: configuration,
+                dependencies: dependencies,
+                onClose: {
+                    showsTanyaAI = false
+                }
+            )
+        }
+    }
+}
 ```
 
 `TanyaAIModule` is a factory, not a singleton. Build a fresh feature graph for
@@ -539,15 +551,16 @@ presentation can be rejected without introducing global mutable state.
 
 ### Entry from legacy SwiftUI navigation
 
-Do not place `TanyaAIModule.makeViewController` in a SwiftUI `body` and do not
-add Tanya AI as another `NavigationLink` destination. Inject an imperative
-presenter into the existing coordinator or ViewModel action boundary:
+Do not add Tanya AI as another destination in the legacy `NavigationLink`
+graph. Put one `fullScreenCover` at a stable host/root boundary and let the
+existing coordinator or ViewModel action toggle its binding:
 
 ```text
 Legacy NavigationView screen
     → button action
-    → scene-owned presentation gateway
-    → present TanyaAIContainerViewController full screen
+    → scene-owned observable presentation gateway
+    → fullScreenCover
+    → independent TanyaAIRootView and NavigationStack
 ```
 
 The sandbox UI test verifies that the legacy navigation position and local
@@ -648,18 +661,20 @@ Measured on 5 August 2026 with an iPhone 17 Pro simulator running iOS 26.5:
 
 | Evidence | Result |
 | --- | --- |
-| Package tests | 45 passed, 0 failed |
-| UI and integration tests | 3 passed, 0 failed |
-| Data source coverage | 90.07% |
-| Domain source coverage | 85.83% |
-| Navigation source coverage | 82.53% |
-| Sandbox app coverage during UI run | 91.35% |
-| Feature composition coverage during UI run | 92.76% |
-| Lifecycle release checks | 3 passed, 0 retained test graph |
-| 120-row scroll sample | 60.40 FPS baseline; current gate passed |
+| Package tests | 49 passed, 0 failed |
+| UI and integration tests | 5 passed, 0 failed |
+| Data source unit coverage | 96.14% |
+| Domain source unit coverage | 100.00% |
+| Presentation source unit coverage | 42.44% plus UI showcase |
+| Feature composition coverage during UI run | 89.32% |
+| Sandbox app coverage during UI run | 98.66% |
+| Lifecycle release checks | 5 passed, including router/PIN and 5,000-row graphs |
+| 5,000-message ingestion | 0.11–0.21 seconds; 38.38–38.41 MB process peak |
+| 2,000-row calibrated scroll | 53.88 FPS against 53.28 FPS host baseline |
+| 5,000-row UI stress | Latest row reached; 16 rapid swipes passed |
 | SSE parser sample | 1,000 events; current gate passed |
 
-Presentation unit-test line coverage is 48.83% because SwiftUI body builders and
+Presentation unit-test line coverage is lower because SwiftUI body builders and
 simple view declarations are executable lines. Rendering coverage is therefore
 validated separately by the UI showcase, which scrolls each current semantic
 layout into the viewport and stores a screenshot. Coverage values exclude test
@@ -712,8 +727,8 @@ Automated lifecycle tests use weak references to verify release of:
 
 - chat ViewModel with an active stream;
 - PIN ViewModel with an active authorization request;
-- the complete feature container, coordinator, navigation controller, and
-  hosted SwiftUI graph.
+- the complete SwiftUI root, router, dependency graph, and hosted test graph;
+- the router, ViewModel, first row, and last row after 5,000 messages.
 
 They also verify that active cancellables receive `cancel()` during teardown.
 
@@ -738,8 +753,8 @@ xcodebuild test \
 5. Trigger a stream cancellation and an authorization failure.
 6. Use **Mark Generation** after each group of five cycles.
 7. Confirm no leaked objects and no continuously growing retained generation.
-8. Inspect retain paths for coordinator, hosting controller, ViewModel,
-   repository, stream context, and callback closures.
+8. Inspect retain paths for router, root view state, ViewModel, repository,
+   stream context, and callback closures.
 
 A weak-reference test passing means no retained graph was found in that tested
 lifecycle. It is evidence, not a universal proof that every future integration
@@ -749,18 +764,19 @@ has no leak.
 
 The chat uses:
 
-- reusable `UITableView` cells;
-- separator-free rows;
+- `ScrollViewReader` and a separator-free `LazyVStack`;
 - stable message identifiers;
 - one observable object per message row;
+- constant-time message lookup through an identifier index;
 - a 40 ms text-delta batching window;
 - lazy destination creation;
 - cancellation of pending requests and buffer work.
 
 The current simulator baseline is documented in
-[`docs/PERFORMANCE.md`](docs/PERFORMANCE.md). The 120-row automated scroll
-sample measured approximately 60 FPS. The test has a 55 FPS lower assertion to
-avoid simulator scheduling noise while retaining a 60 Hz product target.
+[`docs/PERFORMANCE.md`](docs/PERFORMANCE.md). The automated scroll benchmark
+uses 2,000 rows and compares active scrolling with an idle `CADisplayLink`
+baseline from the same process. A separate fixture loads, scrolls, and releases
+5,000 messages.
 
 ### Measure FPS locally
 
@@ -774,14 +790,17 @@ xcodebuild test \
   -only-testing:TanyaAIPerformanceTests/TanyaAIFrameRateTests
 ```
 
-Read `TANYA_AI_MEASURED_FPS` from the test output.
+Read `TANYA_AI_BASELINE_FPS` and `TANYA_AI_SCROLL_FPS` from the test output.
+The automated gate requires scroll cadence to retain at least 97% of the host
+baseline. Absolute 60 FPS must be measured on a 60 Hz-capable physical device.
 
 ### Required device gate
 
 Use a Release build and Instruments **Core Animation** or the Xcode Organizer
 hitch metrics on the oldest supported physical device. Test:
 
-- a 120-message conversation;
+- a 2,000-message conversation;
+- the 5,000-message stress fixture;
 - the product maximum history length;
 - fast scrolling while streaming;
 - charts and all financial cards;
@@ -797,6 +816,8 @@ a release requirement.
 The following are not allowed in this package:
 
 - `NavigationView` or `NavigationLink` for internal Tanya AI navigation;
+- UIKit, `UIViewRepresentable`, view controllers, or hosting controllers in
+  production package sources;
 - destination lists embedded in every screen;
 - constructing or configuring ViewModels, use cases, or services in `body`;
 - a singleton router, singleton feature graph, or hidden global presenter;
@@ -848,6 +869,8 @@ Examples:
 - [`paid-bills-list.png`](Artifacts/Screenshots/paid-bills-list.png)
 - [`incoming-funds-list.png`](Artifacts/Screenshots/incoming-funds-list.png)
 - [`pin-bottom-sheet.png`](Artifacts/Screenshots/pin-bottom-sheet.png)
+- [`stress-5000-messages.png`](Artifacts/Screenshots/stress-5000-messages.png)
+- [`stress-after-rapid-scroll.png`](Artifacts/Screenshots/stress-after-rapid-scroll.png)
 
 ## Additional documentation
 

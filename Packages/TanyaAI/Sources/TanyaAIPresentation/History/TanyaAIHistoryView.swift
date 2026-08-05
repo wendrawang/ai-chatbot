@@ -12,15 +12,16 @@ public struct TanyaAIHistoryView: View {
         List(viewModel.items) { item in
             VStack(alignment: .leading, spacing: 4) {
                 Text(item.title)
-                    .font(Font(theme.fonts.headline))
+                    .font(theme.fonts.headline)
                 Text(item.detail)
-                    .font(Font(theme.fonts.subheadline))
-                    .foregroundColor(Color(theme.colors.secondaryText))
+                    .font(theme.fonts.subheadline)
+                    .foregroundColor(theme.colors.secondaryText)
             }
             .padding(.vertical, 4)
         }
-        .listStyle(PlainListStyle())
-        .background(Color(theme.colors.background))
-        .navigationBarTitle("History", displayMode: .inline)
+        .listStyle(.plain)
+        .background(theme.colors.background)
+        .navigationTitle("History")
+        .navigationBarTitleDisplayMode(.inline)
     }
 }

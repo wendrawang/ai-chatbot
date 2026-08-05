@@ -2,12 +2,10 @@ import QuartzCore
 
 final class TanyaAIFrameRateMonitor: NSObject {
     private var displayLink: CADisplayLink?
-    private var startTimestamp: CFTimeInterval = 0
-    private var frameCount = 0
+    private var timestamps: [CFTimeInterval] = []
 
     func start() {
-        frameCount = 0
-        startTimestamp = CACurrentMediaTime()
+        timestamps.removeAll(keepingCapacity: true)
         let displayLink = CADisplayLink(
             target: self,
             selector: #selector(frameDidRender)
@@ -20,14 +18,19 @@ final class TanyaAIFrameRateMonitor: NSObject {
     func stop() -> Double {
         displayLink?.invalidate()
         displayLink = nil
-        let duration = CACurrentMediaTime() - startTimestamp
+        guard let firstTimestamp = timestamps.first,
+              let lastTimestamp = timestamps.last,
+              timestamps.count > 1 else {
+            return 0
+        }
+        let duration = lastTimestamp - firstTimestamp
         guard duration > 0 else {
             return 0
         }
-        return Double(frameCount) / duration
+        return Double(timestamps.count - 1) / duration
     }
 
-    @objc private func frameDidRender() {
-        frameCount += 1
+    @objc private func frameDidRender(_ displayLink: CADisplayLink) {
+        timestamps.append(displayLink.timestamp)
     }
 }

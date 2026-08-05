@@ -1,7 +1,3 @@
-import TanyaAIDomain
-
-enum TanyaAIRoute {
-    case chat
+enum TanyaAIRoute: Hashable {
     case history
-    case approval(TanyaAIApprovalPayload)
 }

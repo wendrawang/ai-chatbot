@@ -13,7 +13,7 @@ struct TanyaAIFinancialListBubble: View {
             total
             footnote
         }
-        .background(Color(theme.colors.surface))
+        .background(theme.colors.surface)
         .cornerRadius(18)
         .frame(maxWidth: 340, alignment: .leading)
         .accessibilityElement(children: .contain)
@@ -25,12 +25,12 @@ struct TanyaAIFinancialListBubble: View {
     private var header: some View {
         HStack(spacing: 10) {
             Image(systemName: symbolName)
-                .font(Font(theme.fonts.headline))
+                .font(theme.fonts.headline)
                 .foregroundColor(iconColor)
                 .frame(width: 24)
             Text(payload.title)
-                .font(Font(theme.fonts.headline))
-                .foregroundColor(Color(theme.colors.primaryText))
+                .font(theme.fonts.headline)
+                .foregroundColor(theme.colors.primaryText)
         }
         .padding(16)
     }
@@ -48,13 +48,13 @@ struct TanyaAIFinancialListBubble: View {
         HStack(alignment: .firstTextBaseline, spacing: 12) {
             VStack(alignment: .leading, spacing: 3) {
                 Text(item.title)
-                    .font(Font(theme.fonts.subheadline))
+                    .font(theme.fonts.subheadline)
                 optionalText(item.subtitle)
             }
             Spacer(minLength: 8)
             VStack(alignment: .trailing, spacing: 3) {
                 Text(item.value)
-                    .font(Font(theme.fonts.headline))
+                    .font(theme.fonts.headline)
                     .foregroundColor(valueColor(item))
                 optionalText(item.detail)
             }
@@ -65,8 +65,8 @@ struct TanyaAIFinancialListBubble: View {
     private func optionalText(_ text: String?) -> some View {
         if let text = text {
             Text(text)
-                .font(Font(theme.fonts.caption))
-                .foregroundColor(Color(theme.colors.secondaryText))
+                .font(theme.fonts.caption)
+                .foregroundColor(theme.colors.secondaryText)
         }
     }
 
@@ -79,11 +79,11 @@ struct TanyaAIFinancialListBubble: View {
                     Text(label)
                     Spacer()
                     VStack(alignment: .trailing, spacing: 2) {
-                        Text(value).font(Font(theme.fonts.headline))
+                        Text(value).font(theme.fonts.headline)
                         optionalText(payload.totalCaption)
                     }
                 }
-                .font(Font(theme.fonts.subheadline))
+                .font(theme.fonts.subheadline)
                 .padding(.horizontal, 16)
             }
         }
@@ -93,15 +93,15 @@ struct TanyaAIFinancialListBubble: View {
     private var footnote: some View {
         if let footnote = payload.footnote {
             Text(footnote)
-                .font(Font(theme.fonts.footnote))
-                .foregroundColor(Color(theme.colors.secondaryText))
+                .font(theme.fonts.footnote)
+                .foregroundColor(theme.colors.secondaryText)
                 .padding(16)
         }
     }
 
     private var cardDivider: some View {
         Rectangle()
-            .fill(Color(theme.colors.divider))
+            .fill(theme.colors.divider)
             .frame(height: 0.5)
     }
 
@@ -115,13 +115,13 @@ struct TanyaAIFinancialListBubble: View {
 
     private var iconColor: Color {
         payload.style == .incoming
-            ? Color(theme.colors.success)
-            : Color(theme.colors.accent)
+            ? theme.colors.success
+            : theme.colors.accent
     }
 
     private func valueColor(_ row: TanyaAIFinancialListRow) -> Color {
         row.tone == .positive
-            ? Color(theme.colors.success)
-            : Color(theme.colors.primaryText)
+            ? theme.colors.success
+            : theme.colors.primaryText
     }
 }

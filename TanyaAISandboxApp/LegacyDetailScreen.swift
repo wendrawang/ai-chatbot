@@ -14,7 +14,7 @@ struct LegacyDetailScreen: View {
             }
             .padding(20)
         }
-        .background(Color(UIColor.systemGroupedBackground))
+        .background(Color.gray.opacity(0.08))
         .navigationBarTitle("Legacy Detail", displayMode: .inline)
         .legacyAccessibilityIdentifier("legacy.detail")
     }
@@ -70,7 +70,7 @@ struct LegacyDetailScreen: View {
         }
         .buttonStyle(PlainButtonStyle())
         .accessibility(
-            hint: Text("Presents an independent full-screen UIKit feature")
+            hint: Text("Presents an independent full-screen SwiftUI feature")
         )
         .legacyAccessibilityIdentifier("legacy.openTanyaAI")
     }
@@ -89,7 +89,7 @@ private extension View {
     func legacyCardStyle() -> some View {
         padding(16)
             .frame(maxWidth: .infinity, alignment: .leading)
-            .background(Color(UIColor.secondarySystemGroupedBackground))
+            .background(Color.white)
             .cornerRadius(14)
     }
 }

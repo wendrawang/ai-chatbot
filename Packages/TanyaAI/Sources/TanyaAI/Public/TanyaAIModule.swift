@@ -1,16 +1,16 @@
-import UIKit
-
 public enum TanyaAIModule {
-    public static func makeViewController(
+    public static func makeView(
         configuration: TanyaAIConfiguration = TanyaAIConfiguration(),
-        dependencies: TanyaAIDependencies
-    ) -> UIViewController {
+        dependencies: TanyaAIDependencies,
+        onClose: @escaping () -> Void = {}
+    ) -> TanyaAIRootView {
         let dependencyContainer = TanyaAIDependencyContainer(
             configuration: configuration,
             dependencies: dependencies
         )
-        return TanyaAIContainerViewController(
-            dependencyContainer: dependencyContainer
+        return TanyaAIRootView(
+            dependencyContainer: dependencyContainer,
+            closeHandler: onClose
         )
     }
 }

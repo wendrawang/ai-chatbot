@@ -22,10 +22,8 @@ struct TanyaAIPINDigitIndicator: View {
     }
 
     private func indicatorColor(at index: Int) -> Color {
-        Color(
-            index < enteredDigitCount
-                ? theme.colors.accent
-                : theme.colors.chartTrack
-        )
+        index < enteredDigitCount
+            ? theme.colors.accent
+            : theme.colors.chartTrack
     }
 }

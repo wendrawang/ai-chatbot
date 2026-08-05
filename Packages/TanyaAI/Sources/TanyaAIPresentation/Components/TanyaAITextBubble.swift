@@ -7,7 +7,7 @@ struct TanyaAITextBubble: View {
 
     var body: some View {
         Text(text.isEmpty ? "…" : text)
-            .font(Font(theme.fonts.body))
+            .font(theme.fonts.body)
             .foregroundColor(textColor)
             .padding(.horizontal, 14)
             .padding(.vertical, 10)
@@ -20,12 +20,10 @@ struct TanyaAITextBubble: View {
     }
 
     private var backgroundColor: Color {
-        Color(isUser ? theme.colors.userBubble : theme.colors.assistantBubble)
+        isUser ? theme.colors.userBubble : theme.colors.assistantBubble
     }
 
     private var textColor: Color {
-        Color(
-            isUser ? theme.colors.userBubbleText : theme.colors.assistantBubbleText
-        )
+        isUser ? theme.colors.userBubbleText : theme.colors.assistantBubbleText
     }
 }

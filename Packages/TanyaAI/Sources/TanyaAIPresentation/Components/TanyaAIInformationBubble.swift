@@ -9,7 +9,7 @@ struct TanyaAIInformationBubble: View {
         VStack(alignment: .leading, spacing: 12) {
             if let title = payload.title {
                 Text(title)
-                    .font(Font(theme.fonts.headline))
+                    .font(theme.fonts.headline)
             }
 
             ForEach(payload.blocks.indices, id: \.self) { index in
@@ -17,7 +17,7 @@ struct TanyaAIInformationBubble: View {
             }
         }
         .padding(16)
-        .background(Color(theme.colors.surface))
+        .background(theme.colors.surface)
         .cornerRadius(16)
         .frame(maxWidth: 340, alignment: .leading)
         .tanyaAIAccessibilityIdentifier("information.card")
@@ -27,18 +27,18 @@ struct TanyaAIInformationBubble: View {
     private func blockView(_ block: TanyaAIInformationBlock) -> some View {
         switch block {
         case .text(let text):
-            Text(text).font(Font(theme.fonts.body))
+            Text(text).font(theme.fonts.body)
         case .keyValue(let items):
             keyValueList(items)
         case .bulletList(let items):
             bulletList(items)
         case .notice(let text):
             Text(text)
-                .font(Font(theme.fonts.footnote))
-                .foregroundColor(Color(theme.colors.secondaryText))
+                .font(theme.fonts.footnote)
+                .foregroundColor(theme.colors.secondaryText)
         case .divider:
             Rectangle()
-                .fill(Color(theme.colors.divider))
+                .fill(theme.colors.divider)
                 .frame(height: 0.5)
         }
     }
@@ -48,12 +48,12 @@ struct TanyaAIInformationBubble: View {
             ForEach(items.indices, id: \.self) { index in
                 HStack(alignment: .firstTextBaseline) {
                     Text(items[index].label)
-                        .foregroundColor(Color(theme.colors.secondaryText))
+                        .foregroundColor(theme.colors.secondaryText)
                     Spacer(minLength: 16)
                     Text(items[index].value)
                         .fontWeight(.semibold)
                 }
-                .font(Font(theme.fonts.subheadline))
+                .font(theme.fonts.subheadline)
             }
         }
     }
@@ -62,7 +62,7 @@ struct TanyaAIInformationBubble: View {
         VStack(alignment: .leading, spacing: 6) {
             ForEach(items.indices, id: \.self) { index in
                 Text("• \(items[index])")
-                    .font(Font(theme.fonts.subheadline))
+                    .font(theme.fonts.subheadline)
             }
         }
     }

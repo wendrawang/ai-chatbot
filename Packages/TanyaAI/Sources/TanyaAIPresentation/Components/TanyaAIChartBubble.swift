@@ -14,7 +14,7 @@ struct TanyaAIChartBubble: View {
             footnote
         }
         .padding(16)
-        .background(Color(theme.colors.surface))
+        .background(theme.colors.surface)
         .cornerRadius(18)
         .frame(maxWidth: 340, alignment: .leading)
         .accessibilityElement(children: .contain)
@@ -26,11 +26,11 @@ struct TanyaAIChartBubble: View {
     private var header: some View {
         HStack(spacing: 10) {
             Image(systemName: "chart.pie")
-                .font(Font(theme.fonts.headline))
-                .foregroundColor(Color(theme.colors.accent))
+                .font(theme.fonts.headline)
+                .foregroundColor(theme.colors.accent)
                 .frame(width: 24)
             Text(payload.title)
-                .font(Font(theme.fonts.headline))
+                .font(theme.fonts.headline)
         }
     }
 
@@ -39,7 +39,7 @@ struct TanyaAIChartBubble: View {
         if let totalValue = payload.totalValue {
             VStack(alignment: .leading, spacing: 4) {
                 Text(totalValue)
-                    .font(Font(theme.fonts.amount))
+                    .font(theme.fonts.amount)
                 subtitle
             }
         } else {
@@ -51,8 +51,8 @@ struct TanyaAIChartBubble: View {
     private var subtitle: some View {
         if let subtitle = payload.subtitle {
             Text(subtitle)
-                .font(Font(theme.fonts.subheadline))
-                .foregroundColor(Color(theme.colors.secondaryText))
+                .font(theme.fonts.subheadline)
+                .foregroundColor(theme.colors.secondaryText)
         }
     }
 
@@ -60,8 +60,8 @@ struct TanyaAIChartBubble: View {
     private var footnote: some View {
         if let footnote = payload.footnote {
             Text(footnote)
-                .font(Font(theme.fonts.footnote))
-                .foregroundColor(Color(theme.colors.secondaryText))
+                .font(theme.fonts.footnote)
+                .foregroundColor(theme.colors.secondaryText)
         }
     }
 }

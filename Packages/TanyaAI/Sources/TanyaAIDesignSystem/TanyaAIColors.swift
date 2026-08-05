@@ -1,40 +1,40 @@
-import UIKit
+import SwiftUI
 
 public struct TanyaAIColors {
-    public let background: UIColor
-    public let surface: UIColor
-    public let primaryText: UIColor
-    public let secondaryText: UIColor
-    public let accent: UIColor
-    public let userBubble: UIColor
-    public let userBubbleText: UIColor
-    public let assistantBubble: UIColor
-    public let assistantBubbleText: UIColor
-    public let divider: UIColor
-    public let chartTrack: UIColor
-    public let chartColors: [UIColor]
-    public let success: UIColor
-    public let warning: UIColor
-    public let error: UIColor
-    public let overlay: UIColor
+    public let background: Color
+    public let surface: Color
+    public let primaryText: Color
+    public let secondaryText: Color
+    public let accent: Color
+    public let userBubble: Color
+    public let userBubbleText: Color
+    public let assistantBubble: Color
+    public let assistantBubbleText: Color
+    public let divider: Color
+    public let chartTrack: Color
+    public let chartColors: [Color]
+    public let success: Color
+    public let warning: Color
+    public let error: Color
+    public let overlay: Color
 
     public init(
-        background: UIColor,
-        surface: UIColor,
-        primaryText: UIColor,
-        secondaryText: UIColor,
-        accent: UIColor,
-        userBubble: UIColor,
-        userBubbleText: UIColor,
-        assistantBubble: UIColor,
-        assistantBubbleText: UIColor,
-        divider: UIColor,
-        chartTrack: UIColor,
-        chartColors: [UIColor] = [],
-        success: UIColor,
-        warning: UIColor,
-        error: UIColor,
-        overlay: UIColor
+        background: Color,
+        surface: Color,
+        primaryText: Color,
+        secondaryText: Color,
+        accent: Color,
+        userBubble: Color,
+        userBubbleText: Color,
+        assistantBubble: Color,
+        assistantBubbleText: Color,
+        divider: Color,
+        chartTrack: Color,
+        chartColors: [Color] = [],
+        success: Color,
+        warning: Color,
+        error: Color,
+        overlay: Color
     ) {
         self.background = background
         self.surface = surface

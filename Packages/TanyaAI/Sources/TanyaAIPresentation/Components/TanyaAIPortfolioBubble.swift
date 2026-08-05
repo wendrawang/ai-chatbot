@@ -9,16 +9,16 @@ struct TanyaAIPortfolioBubble: View {
         VStack(alignment: .leading, spacing: 13) {
             header
             Text(payload.totalValue)
-                .font(Font(theme.fonts.amount))
+                .font(theme.fonts.amount)
             Text(payload.performanceText)
-                .font(Font(theme.fonts.headline))
-                .foregroundColor(Color(theme.colors.success))
+                .font(theme.fonts.headline)
+                .foregroundColor(theme.colors.success)
             TanyaAISegmentedBarView(series: payload.allocations)
             TanyaAIChartLegendView(series: payload.allocations)
             footnote
         }
         .padding(16)
-        .background(Color(theme.colors.surface))
+        .background(theme.colors.surface)
         .cornerRadius(18)
         .frame(maxWidth: 340, alignment: .leading)
         .accessibilityElement(children: .contain)
@@ -28,11 +28,11 @@ struct TanyaAIPortfolioBubble: View {
     private var header: some View {
         HStack(spacing: 10) {
             Image(systemName: "chart.bar")
-                .font(Font(theme.fonts.headline))
-                .foregroundColor(Color(theme.colors.accent))
+                .font(theme.fonts.headline)
+                .foregroundColor(theme.colors.accent)
                 .frame(width: 24)
             Text(payload.title)
-                .font(Font(theme.fonts.headline))
+                .font(theme.fonts.headline)
         }
     }
 
@@ -40,8 +40,8 @@ struct TanyaAIPortfolioBubble: View {
     private var footnote: some View {
         if let footnote = payload.footnote {
             Text(footnote)
-                .font(Font(theme.fonts.footnote))
-                .foregroundColor(Color(theme.colors.secondaryText))
+                .font(theme.fonts.footnote)
+                .foregroundColor(theme.colors.secondaryText)
         }
     }
 }

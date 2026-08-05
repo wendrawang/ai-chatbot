@@ -20,9 +20,9 @@ final class TanyaAILegacyIntegrationTests: XCTestCase {
             "Open Tanya AI outside legacy navigation"
         ].tap()
 
-        let messageTable = application.tables["chat.messageTable"]
-        XCTAssertTrue(messageTable.waitForExistence(timeout: 5))
-        XCTAssertFalse(application.staticTexts["Legacy state: 1"].exists)
+        let messageList = application.scrollViews["chat.messageList"]
+        XCTAssertTrue(messageList.waitForExistence(timeout: 5))
+        XCTAssertFalse(application.staticTexts["Legacy state: 1"].isHittable)
         capture(name: "legacy-tanya-ai-full-screen")
 
         application.buttons["Close Tanya AI"].tap()

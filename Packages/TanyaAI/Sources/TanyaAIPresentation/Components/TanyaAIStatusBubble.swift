@@ -12,14 +12,14 @@ struct TanyaAIStatusBubble: View {
 
             VStack(alignment: .leading, spacing: 4) {
                 Text(payload.title)
-                    .font(Font(theme.fonts.headline))
+                    .font(theme.fonts.headline)
                 Text(payload.detail)
-                    .font(Font(theme.fonts.subheadline))
-                    .foregroundColor(Color(theme.colors.secondaryText))
+                    .font(theme.fonts.subheadline)
+                    .foregroundColor(theme.colors.secondaryText)
             }
         }
         .padding(16)
-        .background(Color(theme.colors.surface))
+        .background(theme.colors.surface)
         .cornerRadius(16)
         .frame(maxWidth: 340, alignment: .leading)
     }
@@ -35,10 +35,10 @@ struct TanyaAIStatusBubble: View {
 
     private var accentColor: Color {
         switch payload.level {
-        case .neutral: return Color(theme.colors.accent)
-        case .success: return Color(theme.colors.success)
-        case .warning: return Color(theme.colors.warning)
-        case .error: return Color(theme.colors.error)
+        case .neutral: return theme.colors.accent
+        case .success: return theme.colors.success
+        case .warning: return theme.colors.warning
+        case .error: return theme.colors.error
         }
     }
 }

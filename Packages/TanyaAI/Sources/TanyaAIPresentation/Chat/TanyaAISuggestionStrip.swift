@@ -11,12 +11,12 @@ struct TanyaAISuggestionStrip: View {
                 ForEach(suggestions) { suggestion in
                     Button(action: { onSelect(suggestion) }) {
                         Text(suggestion.title)
-                            .font(Font(theme.fonts.button))
+                            .font(theme.fonts.button)
                             .padding(.horizontal, 14)
                             .frame(minHeight: 44)
                     }
-                    .foregroundColor(Color(theme.colors.accent))
-                    .background(Color(theme.colors.surface))
+                    .foregroundColor(theme.colors.accent)
+                    .background(theme.colors.surface)
                     .cornerRadius(22)
                     .accessibility(
                         label: Text("Suggested question: \(suggestion.title)")

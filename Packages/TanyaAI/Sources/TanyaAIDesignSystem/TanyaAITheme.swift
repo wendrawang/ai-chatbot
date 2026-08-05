@@ -1,4 +1,4 @@
-import UIKit
+import SwiftUI
 
 public struct TanyaAITheme {
     public let colors: TanyaAIColors
@@ -19,56 +19,43 @@ public extension TanyaAITheme {
     }
 
     private static var sandboxColors: TanyaAIColors {
-        TanyaAIColors(
-            background: .systemBackground,
-            surface: .secondarySystemBackground,
-            primaryText: .label,
-            secondaryText: .secondaryLabel,
-            accent: UIColor(red: 0.58, green: 0.04, blue: 0.12, alpha: 1),
-            userBubble: UIColor(red: 0.51, green: 0.04, blue: 0.12, alpha: 1),
+        let accent = Color(red: 0.58, green: 0.04, blue: 0.12)
+        return TanyaAIColors(
+            background: Color(red: 0.98, green: 0.98, blue: 0.99),
+            surface: .white,
+            primaryText: Color(red: 0.08, green: 0.08, blue: 0.10),
+            secondaryText: Color(red: 0.40, green: 0.40, blue: 0.44),
+            accent: accent,
+            userBubble: Color(red: 0.51, green: 0.04, blue: 0.12),
             userBubbleText: .white,
-            assistantBubble: .secondarySystemBackground,
-            assistantBubbleText: .label,
-            divider: .separator,
-            chartTrack: .tertiarySystemFill,
+            assistantBubble: .white,
+            assistantBubbleText: Color(red: 0.08, green: 0.08, blue: 0.10),
+            divider: Color.black.opacity(0.12),
+            chartTrack: Color.black.opacity(0.08),
             chartColors: [
-                UIColor(red: 0.83, green: 0.04, blue: 0.16, alpha: 1),
-                UIColor(red: 0.91, green: 0.55, blue: 0.03, alpha: 1),
-                UIColor(red: 0.04, green: 0.47, blue: 0.77, alpha: 1),
-                UIColor(red: 0.05, green: 0.58, blue: 0.30, alpha: 1),
-                .systemGray
+                Color(red: 0.83, green: 0.04, blue: 0.16),
+                Color(red: 0.91, green: 0.55, blue: 0.03),
+                Color(red: 0.04, green: 0.47, blue: 0.77),
+                Color(red: 0.05, green: 0.58, blue: 0.30),
+                .gray
             ],
-            success: .systemGreen,
-            warning: .systemOrange,
-            error: .systemRed,
-            overlay: UIColor.black.withAlphaComponent(0.45)
+            success: .green,
+            warning: .orange,
+            error: .red,
+            overlay: Color.black.opacity(0.45)
         )
     }
 
     private static var sandboxFonts: TanyaAIFonts {
         TanyaAIFonts(
-            title: scaledFont(style: .title1, weight: .bold),
-            headline: scaledFont(style: .headline, weight: .semibold),
-            body: scaledFont(style: .body, weight: .regular),
-            subheadline: scaledFont(style: .subheadline, weight: .regular),
-            footnote: scaledFont(style: .footnote, weight: .regular),
-            caption: scaledFont(style: .caption1, weight: .regular),
-            amount: scaledFont(style: .title2, weight: .bold),
-            button: scaledFont(style: .headline, weight: .semibold)
+            title: .title.bold(),
+            headline: .headline.weight(.semibold),
+            body: .body,
+            subheadline: .subheadline,
+            footnote: .footnote,
+            caption: .caption,
+            amount: .title2.bold(),
+            button: .headline.weight(.semibold)
         )
-    }
-
-    private static func scaledFont(
-        style: UIFont.TextStyle,
-        weight: UIFont.Weight
-    ) -> UIFont {
-        let descriptor = UIFontDescriptor.preferredFontDescriptor(
-            withTextStyle: style
-        )
-        let baseFont = UIFont.systemFont(
-            ofSize: descriptor.pointSize,
-            weight: weight
-        )
-        return UIFontMetrics(forTextStyle: style).scaledFont(for: baseFont)
     }
 }

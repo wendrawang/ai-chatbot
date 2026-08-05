@@ -1,7 +1,7 @@
 import SwiftUI
 
 struct LegacyRootScreen: View {
-    let tanyaAIPresenter: TanyaAIPresenting
+    @ObservedObject var tanyaAIPresenter: TanyaAIPresentationGateway
 
     var body: some View {
         NavigationView {
@@ -14,6 +14,11 @@ struct LegacyRootScreen: View {
             .legacyAccessibilityIdentifier("legacy.home")
         }
         .navigationViewStyle(StackNavigationViewStyle())
+        .fullScreenCover(
+            isPresented: $tanyaAIPresenter.isPresented
+        ) {
+            tanyaAIPresenter.makeView()
+        }
     }
 
     private var introductionSection: some View {

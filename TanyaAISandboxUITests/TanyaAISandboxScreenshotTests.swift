@@ -12,16 +12,16 @@ final class TanyaAISandboxScreenshotTests: XCTestCase {
     }
 
     func testEveryFinancialBubbleScenarioAndPINSheet() {
-        let messageTable = application.tables["chat.messageTable"]
-        XCTAssertTrue(messageTable.waitForExistence(timeout: 10))
+        let messageList = application.scrollViews["chat.messageList"]
+        XCTAssertTrue(messageList.waitForExistence(timeout: 10))
         waitForShowcaseToFinish()
-        moveToTop(messageTable)
+        moveToTop(messageList)
 
         scenarios.forEach { scenario in
-            reveal(scenario.anchorText, in: messageTable)
+            reveal(scenario.anchorText, in: messageList)
             capture(name: scenario.screenshotName)
             if scenario.anchorText == "Confirm your transfer" {
-                capturePINSheet(in: messageTable)
+                capturePINSheet(in: messageList)
             }
         }
 
@@ -34,11 +34,11 @@ final class TanyaAISandboxScreenshotTests: XCTestCase {
     }
 
     func testValidPINCompletesConfirmation() {
-        let messageTable = application.tables["chat.messageTable"]
-        XCTAssertTrue(messageTable.waitForExistence(timeout: 10))
+        let messageList = application.scrollViews["chat.messageList"]
+        XCTAssertTrue(messageList.waitForExistence(timeout: 10))
         waitForShowcaseToFinish()
-        moveToTop(messageTable)
-        reveal("Confirm your transfer", in: messageTable)
+        moveToTop(messageList)
+        reveal("Confirm your transfer", in: messageList)
         let confirmButton = application.buttons["approval.open.transfer"]
         XCTAssertTrue(confirmButton.isHittable)
         confirmButton.tap()
@@ -59,8 +59,8 @@ final class TanyaAISandboxScreenshotTests: XCTestCase {
     }
 
     func testSuggestionsDoNotCoverLatestBubble() {
-        let messageTable = application.tables["chat.messageTable"]
-        XCTAssertTrue(messageTable.waitForExistence(timeout: 10))
+        let messageList = application.scrollViews["chat.messageList"]
+        XCTAssertTrue(messageList.waitForExistence(timeout: 10))
         waitForShowcaseToFinish()
 
         let latestBubble = application.staticTexts[
@@ -74,14 +74,14 @@ final class TanyaAISandboxScreenshotTests: XCTestCase {
         capture(name: "suggestion-safe-layout")
         XCTAssertTrue(
             waitUntilHittable(latestBubble),
-            "Bubble: \(latestBubble.frame), table: \(messageTable.frame)"
+            "Bubble: \(latestBubble.frame), table: \(messageList.frame)"
         )
         XCTAssertLessThanOrEqual(
             latestBubble.frame.maxY,
-            messageTable.frame.maxY + 1
+            messageList.frame.maxY + 1
         )
         XCTAssertLessThanOrEqual(
-            messageTable.frame.maxY,
+            messageList.frame.maxY,
             suggestion.frame.minY + 1
         )
     }
@@ -95,10 +95,10 @@ final class TanyaAISandboxScreenshotTests: XCTestCase {
         return XCTWaiter.wait(for: [expectation], timeout: 5) == .completed
     }
 
-    private func capturePINSheet(in messageTable: XCUIElement) {
+    private func capturePINSheet(in messageList: XCUIElement) {
         let confirmButton = application.buttons["approval.open.transfer"]
         for _ in 0..<4 where confirmButton.isHittable == false {
-            scrollForward(messageTable)
+            scrollForward(messageList)
         }
         XCTAssertTrue(confirmButton.isHittable)
         confirmButton.tap()
