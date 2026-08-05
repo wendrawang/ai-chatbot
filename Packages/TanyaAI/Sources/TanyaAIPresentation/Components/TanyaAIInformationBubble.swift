@@ -20,6 +20,7 @@ struct TanyaAIInformationBubble: View {
         .background(Color(theme.colors.surface))
         .cornerRadius(16)
         .frame(maxWidth: 340, alignment: .leading)
+        .tanyaAIAccessibilityIdentifier("information.card")
     }
 
     @ViewBuilder

@@ -11,45 +11,143 @@ final class TanyaAISandboxScreenshotTests: XCTestCase {
         application.launch()
     }
 
-    func testBubblePermutationsAndPINSheet() {
+    func testEveryFinancialBubbleScenarioAndPINSheet() {
         let messageTable = application.tables["chat.messageTable"]
         XCTAssertTrue(messageTable.waitForExistence(timeout: 10))
         waitForShowcaseToFinish()
+        moveToTop(messageTable)
 
-        swipe(messageTable, direction: .up, count: 6)
-        capture(name: "bubble-showcase-bottom")
-        swipe(messageTable, direction: .down, count: 3)
-        capture(name: "bubble-showcase-middle")
-        swipe(messageTable, direction: .down, count: 6)
-        capture(name: "bubble-showcase-top")
+        scenarios.forEach { scenario in
+            reveal(scenario.anchorText, in: messageTable)
+            capture(name: scenario.screenshotName)
+            if scenario.anchorText == "Confirm your transfer" {
+                capturePINSheet(in: messageTable)
+            }
+        }
 
-        openApproval(in: messageTable)
-        let firstDigit = application.buttons["Digit 1"]
-        XCTAssertTrue(firstDigit.waitForExistence(timeout: 5))
+        XCTAssertTrue(
+            application.buttons["Suggested question: Currency"].exists
+        )
+        XCTAssertTrue(
+            application.buttons["Suggested question: Time deposit"].exists
+        )
+    }
+
+    func testValidPINCompletesConfirmation() {
+        let messageTable = application.tables["chat.messageTable"]
+        XCTAssertTrue(messageTable.waitForExistence(timeout: 10))
+        waitForShowcaseToFinish()
+        moveToTop(messageTable)
+        reveal("Confirm your transfer", in: messageTable)
+        let confirmButton = application.buttons["approval.open.transfer"]
+        XCTAssertTrue(confirmButton.isHittable)
+        confirmButton.tap()
+        XCTAssertTrue(
+            application.otherElements["pin.sheet"]
+                .waitForExistence(timeout: 5)
+        )
+
+        [1, 2, 3, 4, 5, 6].forEach { digit in
+            application.buttons["Digit \(digit)"].tap()
+        }
+
+        XCTAssertFalse(
+            application.otherElements["pin.sheet"]
+                .waitForExistence(timeout: 3)
+        )
+        XCTAssertFalse(confirmButton.exists)
+    }
+
+    private func capturePINSheet(in messageTable: XCUIElement) {
+        let confirmButton = application.buttons["approval.open.transfer"]
+        for _ in 0..<4 where confirmButton.isHittable == false {
+            scrollForward(messageTable)
+        }
+        XCTAssertTrue(confirmButton.isHittable)
+        confirmButton.tap()
+        XCTAssertTrue(
+            application.otherElements["pin.sheet"]
+                .waitForExistence(timeout: 5)
+        )
         capture(name: "pin-bottom-sheet")
+        let closeButton = application.buttons["Cancel authorization"]
+        XCTAssertTrue(closeButton.waitForExistence(timeout: 3))
+        closeButton.tap()
+    }
+
+    private var scenarios: [ScreenshotScenario] {
+        [
+            ScreenshotScenario("Confirm currency conversion", "confirmation-currency"),
+            ScreenshotScenario("Conversion complete", "receipt-success"),
+            ScreenshotScenario("Confirm time deposit", "confirmation-deposit"),
+            ScreenshotScenario("Confirm your transfer", "confirmation-transfer"),
+            ScreenshotScenario("Confirm savings plan", "confirmation-savings"),
+            ScreenshotScenario("Sample transfer limit", "information-card"),
+            ScreenshotScenario("Portfolio summary", "portfolio-summary"),
+            ScreenshotScenario("Your mutual funds", "mutual-fund-list"),
+            ScreenshotScenario("Spending · month to date", "spending-chart"),
+            ScreenshotScenario("Bills paid · July", "paid-bills-list"),
+            ScreenshotScenario("Incoming · last 30 days", "incoming-funds-list"),
+            ScreenshotScenario("A neutral system update.", "status-neutral"),
+            ScreenshotScenario("The sample request completed.", "status-success"),
+            ScreenshotScenario("Review this demo warning.", "status-warning"),
+            ScreenshotScenario("A recoverable demo error occurred.", "status-error"),
+            ScreenshotScenario(
+                "Update the app to view this sample card.",
+                "unsupported-fallback"
+            )
+        ]
+    }
+
+    private func reveal(
+        _ anchorText: String,
+        in table: XCUIElement
+    ) {
+        let element = application.staticTexts[anchorText]
+        for _ in 0..<36 where element.isHittable == false {
+            scrollForward(table)
+        }
+        XCTAssertTrue(
+            element.isHittable,
+            "Could not reveal screenshot scenario: \(anchorText)"
+        )
+        alignNearTop(element, in: table)
+        RunLoop.current.run(until: Date().addingTimeInterval(0.2))
+    }
+
+    private func alignNearTop(
+        _ element: XCUIElement,
+        in table: XCUIElement
+    ) {
+        let targetPosition = application.frame.height * 0.50
+        for _ in 0..<8 where element.frame.midY > targetPosition {
+            scrollForward(table)
+        }
+    }
+
+    private func moveToTop(_ table: XCUIElement) {
+        for _ in 0..<18 {
+            table.swipeDown()
+        }
+    }
+
+    private func scrollForward(_ table: XCUIElement) {
+        let start = table.coordinate(
+            withNormalizedOffset: CGVector(dx: 0.5, dy: 0.68)
+        )
+        let end = table.coordinate(
+            withNormalizedOffset: CGVector(dx: 0.5, dy: 0.42)
+        )
+        start.press(forDuration: 0.05, thenDragTo: end)
     }
 
     private func waitForShowcaseToFinish() {
         let stopButton = application.buttons["Stop response"]
-        let deadline = Date().addingTimeInterval(10)
+        let deadline = Date().addingTimeInterval(12)
         while stopButton.exists, Date() < deadline {
             RunLoop.current.run(until: Date().addingTimeInterval(0.1))
         }
         XCTAssertFalse(stopButton.exists)
-    }
-
-    private func openApproval(in table: XCUIElement) {
-        let approvalButton = application.buttons["approval.open"]
-        for _ in 0..<6 where approvalButton.exists == false {
-            table.swipeUp()
-        }
-        if approvalButton.exists == false {
-            for _ in 0..<6 where approvalButton.exists == false {
-                table.swipeDown()
-            }
-        }
-        XCTAssertTrue(approvalButton.exists)
-        approvalButton.tap()
     }
 
     private func capture(name: String) {
@@ -58,22 +156,14 @@ final class TanyaAISandboxScreenshotTests: XCTestCase {
         attachment.lifetime = .keepAlways
         add(attachment)
     }
-
-    private func swipe(
-        _ element: XCUIElement,
-        direction: SwipeDirection,
-        count: Int
-    ) {
-        for _ in 0..<count {
-            switch direction {
-            case .up: element.swipeUp()
-            case .down: element.swipeDown()
-            }
-        }
-    }
 }
 
-private enum SwipeDirection {
-    case up
-    case down
+private struct ScreenshotScenario {
+    let anchorText: String
+    let screenshotName: String
+
+    init(_ anchorText: String, _ screenshotName: String) {
+        self.anchorText = anchorText
+        self.screenshotName = screenshotName
+    }
 }

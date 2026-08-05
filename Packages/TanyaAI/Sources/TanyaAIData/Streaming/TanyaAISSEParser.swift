@@ -1,14 +1,15 @@
 import Foundation
 
 final class TanyaAISSEParser {
-    private let eventSeparator = Data([0x0A, 0x0A])
+    private let lineFeedSeparator = Data([0x0A, 0x0A])
+    private let carriageReturnSeparator = Data([0x0D, 0x0A, 0x0D, 0x0A])
     private var buffer = Data()
 
     func append(_ incomingData: Data) -> [TanyaAISSEEvent] {
         buffer.append(incomingData)
 
         var parsedEvents: [TanyaAISSEEvent] = []
-        while let separatorRange = buffer.range(of: eventSeparator) {
+        while let separatorRange = nextSeparatorRange() {
             let eventData = buffer.subdata(
                 in: buffer.startIndex..<separatorRange.lowerBound
             )
@@ -56,6 +57,22 @@ final class TanyaAISSEParser {
             name: eventName,
             data: Data(payload.utf8)
         )
+    }
+
+    private func nextSeparatorRange() -> Range<Data.Index>? {
+        let lineFeedRange = buffer.range(of: lineFeedSeparator)
+        let carriageReturnRange = buffer.range(of: carriageReturnSeparator)
+
+        switch (lineFeedRange, carriageReturnRange) {
+        case (.none, .none):
+            return nil
+        case (.some(let range), .none), (.none, .some(let range)):
+            return range
+        case (.some(let firstRange), .some(let secondRange)):
+            return firstRange.lowerBound < secondRange.lowerBound
+                ? firstRange
+                : secondRange
+        }
     }
 
     private func fieldValue(from line: String) -> String {

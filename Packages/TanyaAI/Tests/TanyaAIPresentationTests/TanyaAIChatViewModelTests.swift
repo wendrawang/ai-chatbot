@@ -50,6 +50,43 @@ final class TanyaAIChatViewModelTests: XCTestCase {
         XCTAssertFalse(viewModel.showsSuggestions)
     }
 
+    func testBackendSuggestionsReplaceInitialSuggestions() {
+        let useCase = TanyaAIChatUseCaseStub()
+        let viewModel = TanyaAIChatViewModel(useCase: useCase)
+        viewModel.sendMessage("Show spending")
+
+        useCase.send(
+            .suggestions([
+                TanyaAISuggestionPayload(
+                    identifier: "next-question",
+                    title: "Next question",
+                    prompt: "Show the next answer"
+                )
+            ])
+        )
+        useCase.send(.responseCompleted(messageIdentifier: "assistant-1"))
+
+        XCTAssertTrue(viewModel.showsSuggestions)
+        XCTAssertEqual(viewModel.suggestions.map(\.title), ["Next question"])
+    }
+
+    func testEveryConfirmationKindProducesApprovalOutput() {
+        let useCase = TanyaAIChatUseCaseStub()
+        let viewModel = TanyaAIChatViewModel(useCase: useCase)
+        var receivedKinds: [TanyaAIApprovalPayload.Kind] = []
+        viewModel.onOutput = { output in
+            if case .requestApproval(let payload) = output {
+                receivedKinds.append(payload.kind)
+            }
+        }
+
+        TanyaAIApprovalPayload.Kind.allCasesForTests.forEach { kind in
+            viewModel.approve(makeApproval(kind: kind))
+        }
+
+        XCTAssertEqual(receivedKinds, TanyaAIApprovalPayload.Kind.allCasesForTests)
+    }
+
     func testApprovalStateUpdatesExistingMessage() {
         let useCase = TanyaAIChatUseCaseStub()
         let viewModel = TanyaAIChatViewModel(useCase: useCase)
@@ -75,17 +112,29 @@ final class TanyaAIChatViewModelTests: XCTestCase {
         XCTAssertEqual(updatedApproval.state, .completed)
     }
 
-    private func makeApproval() -> TanyaAIApprovalPayload {
+    private func makeApproval(
+        kind: TanyaAIApprovalPayload.Kind = .generic
+    ) -> TanyaAIApprovalPayload {
         TanyaAIApprovalPayload(
             approvalIdentifier: "approval-demo",
             transactionIdentifier: "transaction-demo",
             challengeIdentifier: "challenge-demo",
+            kind: kind,
             title: "Approve demo",
             summary: [],
             expiresAt: Date().addingTimeInterval(300),
             state: .awaitingApproval
         )
     }
+}
+
+private extension TanyaAIApprovalPayload.Kind {
+    static let allCasesForTests: [Self] = [
+        .currencyConversion,
+        .timeDeposit,
+        .transfer,
+        .savingsPlan
+    ]
 }
 
 private final class TanyaAIChatUseCaseStub: TanyaAIChatUseCaseProtocol {

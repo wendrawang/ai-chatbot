@@ -1,6 +1,14 @@
 import Foundation
 
 public struct TanyaAIApprovalPayload: Equatable {
+    public enum Kind: String, Equatable {
+        case currencyConversion
+        case timeDeposit
+        case transfer
+        case savingsPlan
+        case generic
+    }
+
     public enum State: String, Equatable {
         case awaitingApproval
         case authorizing
@@ -8,13 +16,16 @@ public struct TanyaAIApprovalPayload: Equatable {
         case completed
         case failed
         case expired
+        case cancelled
     }
 
     public let approvalIdentifier: String
     public let transactionIdentifier: String
     public let challengeIdentifier: String
+    public let kind: Kind
     public let title: String
     public let summary: [TanyaAIKeyValue]
+    public let notice: String?
     public let expiresAt: Date
     public var state: State
 
@@ -22,16 +33,20 @@ public struct TanyaAIApprovalPayload: Equatable {
         approvalIdentifier: String,
         transactionIdentifier: String,
         challengeIdentifier: String,
+        kind: Kind = .generic,
         title: String,
         summary: [TanyaAIKeyValue],
+        notice: String? = nil,
         expiresAt: Date,
         state: State
     ) {
         self.approvalIdentifier = approvalIdentifier
         self.transactionIdentifier = transactionIdentifier
         self.challengeIdentifier = challengeIdentifier
+        self.kind = kind
         self.title = title
         self.summary = summary
+        self.notice = notice
         self.expiresAt = expiresAt
         self.state = state
     }

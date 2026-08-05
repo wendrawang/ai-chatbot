@@ -35,4 +35,36 @@ final class TanyaAISSEParserTests: XCTestCase {
 
         XCTAssertEqual(events.first?.name, "heartbeat")
     }
+
+    func testCarriageReturnPayloadIsNormalized() {
+        let parser = TanyaAISSEParser()
+        let source = "event: text.delta\r\n"
+            + "data: {\"text\":\"Hello\"}\r\n\r\n"
+
+        let events = parser.append(Data(source.utf8))
+
+        XCTAssertEqual(events.first?.name, "text.delta")
+        XCTAssertEqual(
+            String(data: events[0].data, encoding: .utf8),
+            #"{"text":"Hello"}"#
+        )
+    }
+
+    func testResetDiscardsBufferedFragment() {
+        let parser = TanyaAISSEParser()
+        _ = parser.append(Data("event: stale\ndata: old".utf8))
+
+        parser.reset()
+        let events = parser.append(Data(": keep-alive\n\n".utf8))
+
+        XCTAssertEqual(events.map(\.name), ["heartbeat"])
+    }
+
+    func testEventWithoutDataIsIgnored() {
+        let parser = TanyaAISSEParser()
+
+        let events = parser.append(Data("event: empty\n\n".utf8))
+
+        XCTAssertTrue(events.isEmpty)
+    }
 }

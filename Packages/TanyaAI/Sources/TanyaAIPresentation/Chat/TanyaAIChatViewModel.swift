@@ -7,9 +7,8 @@ public final class TanyaAIChatViewModel: ObservableObject {
     @Published public private(set) var messages: [TanyaAIMessageItemViewModel]
     @Published public private(set) var isGenerating = false
     @Published public private(set) var errorMessage: String?
+    @Published public private(set) var suggestions: [TanyaAISuggestion]
     @Published public var inputText = ""
-
-    public let suggestions = TanyaAISuggestion.sandboxDefaults
 
     public var onOutput: ((TanyaAIChatOutput) -> Void)?
 
@@ -28,6 +27,7 @@ public final class TanyaAIChatViewModel: ObservableObject {
     public init(useCase: TanyaAIChatUseCaseProtocol) {
         self.useCase = useCase
         messages = [Self.makeWelcomeMessage()]
+        suggestions = TanyaAISuggestion.sandboxDefaults
     }
 
     public func sendCurrentMessage() {
@@ -40,12 +40,14 @@ public final class TanyaAIChatViewModel: ObservableObject {
 
         inputText = ""
         errorMessage = nil
+        suggestions = []
         isGenerating = true
         appendUserMessage(message)
         startRequest(message)
     }
 
     public func sendSuggestion(_ suggestion: TanyaAISuggestion) {
+        suggestions = []
         sendMessage(suggestion.prompt)
     }
 
@@ -55,7 +57,7 @@ public final class TanyaAIChatViewModel: ObservableObject {
     }
 
     public var showsSuggestions: Bool {
-        !messages.contains { $0.role == .user }
+        !isGenerating && !suggestions.isEmpty
     }
 
     public func cancelGeneration() {
@@ -78,6 +80,17 @@ public final class TanyaAIChatViewModel: ObservableObject {
             return
         }
         onOutput?(.requestApproval(payload))
+    }
+
+    public func editApproval(_ payload: TanyaAIApprovalPayload) {
+        inputText = "Change \(payload.title.lowercased()): "
+    }
+
+    public func cancelApproval(_ payload: TanyaAIApprovalPayload) {
+        updateApproval(
+            identifier: payload.approvalIdentifier,
+            state: .cancelled
+        )
     }
 
     public func updateApproval(
@@ -125,6 +138,8 @@ public final class TanyaAIChatViewModel: ObservableObject {
             )
         case .content(let messageIdentifier, let content):
             appendContent(identifier: messageIdentifier, content: content)
+        case .suggestions(let payloads):
+            suggestions = payloads.map(makeSuggestion)
         case .responseCompleted:
             textDeltaBuffer.flushAll()
             isGenerating = false
@@ -150,6 +165,16 @@ public final class TanyaAIChatViewModel: ObservableObject {
             content: .text(text)
         )
         messages.append(TanyaAIMessageItemViewModel(message: message))
+    }
+
+    private func makeSuggestion(
+        _ payload: TanyaAISuggestionPayload
+    ) -> TanyaAISuggestion {
+        TanyaAISuggestion(
+            identifier: payload.identifier,
+            title: payload.title,
+            prompt: payload.prompt
+        )
     }
 
     private func appendAssistantPlaceholder(identifier: String) {
@@ -203,7 +228,6 @@ public final class TanyaAIChatViewModel: ObservableObject {
             return payload.approvalIdentifier == identifier
         }
     }
-
     private func performOnMain(_ action: @escaping () -> Void) {
         if Thread.isMainThread {
             action()

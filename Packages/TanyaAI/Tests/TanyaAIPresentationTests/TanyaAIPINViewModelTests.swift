@@ -1,4 +1,5 @@
 import Foundation
+import TanyaAIContracts
 import TanyaAIDomain
 import TanyaAITestSupport
 import XCTest
@@ -57,6 +58,60 @@ final class TanyaAIPINViewModelTests: XCTestCase {
         XCTAssertEqual(viewModel.pin, "1")
     }
 
+    func testIncompletePINCannotSubmit() {
+        let viewModel = makeViewModel()
+        viewModel.appendDigit(1)
+
+        viewModel.submit()
+
+        XCTAssertEqual(viewModel.errorMessage, "Enter a 6-digit PIN.")
+        XCTAssertFalse(viewModel.isSubmitting)
+    }
+
+    func testCancelClearsPINAndProducesOutput() {
+        let viewModel = makeViewModel()
+        var didCancel = false
+        viewModel.onOutput = { output in
+            if case .cancel = output {
+                didCancel = true
+            }
+        }
+        viewModel.appendDigit(1)
+        viewModel.appendDigit(2)
+
+        viewModel.cancel()
+
+        XCTAssertTrue(viewModel.pin.isEmpty)
+        XCTAssertNil(viewModel.errorMessage)
+        XCTAssertTrue(didCancel)
+    }
+
+    func testInputIsLockedDuringSubmission() {
+        let service = HoldingAuthorizationService()
+        let viewModel = TanyaAIPINViewModel(
+            approval: makeApproval(),
+            authorizationService: service
+        )
+        enterPIN("123456", into: viewModel)
+
+        viewModel.appendDigit(7)
+        viewModel.deleteLastDigit()
+        viewModel.cancel()
+
+        XCTAssertTrue(viewModel.isSubmitting)
+        XCTAssertTrue(viewModel.pin.isEmpty)
+        XCTAssertFalse(service.cancellable.isCancelled)
+    }
+
+    func testInvalidDigitsAreIgnored() {
+        let viewModel = makeViewModel()
+
+        viewModel.appendDigit(-1)
+        viewModel.appendDigit(10)
+
+        XCTAssertTrue(viewModel.pin.isEmpty)
+    }
+
     private func enterPIN(
         _ pin: String,
         into viewModel: TanyaAIPINViewModel
@@ -81,5 +136,29 @@ final class TanyaAIPINViewModelTests: XCTestCase {
             expiresAt: Date().addingTimeInterval(300),
             state: .awaitingApproval
         )
+    }
+}
+
+private final class HoldingAuthorizationService:
+    TanyaAIAuthorizationService {
+
+    let cancellable = HoldingCancellable()
+
+    func authorize(
+        request: TanyaAIAuthorizationRequest,
+        pin: String,
+        completion: @escaping (
+            Result<TanyaAIAuthorizationResult, Error>
+        ) -> Void
+    ) -> TanyaAICancellable {
+        cancellable
+    }
+}
+
+private final class HoldingCancellable: TanyaAICancellable {
+    private(set) var isCancelled = false
+
+    func cancel() {
+        isCancelled = true
     }
 }

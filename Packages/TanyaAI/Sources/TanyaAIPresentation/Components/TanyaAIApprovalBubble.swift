@@ -3,55 +3,131 @@ import TanyaAIDomain
 
 struct TanyaAIApprovalBubble: View {
     let payload: TanyaAIApprovalPayload
+    let onEdit: () -> Void
+    let onCancel: () -> Void
     let onApprove: () -> Void
     @Environment(\.tanyaAITheme) private var theme
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 12) {
+        VStack(alignment: .leading, spacing: 0) {
+            header
+            cardDivider
+            summary
+            notice
+            status
+            actions
+        }
+        .background(Color(theme.colors.surface))
+        .cornerRadius(18)
+        .frame(maxWidth: 340, alignment: .leading)
+        .accessibilityElement(children: .contain)
+        .tanyaAIAccessibilityIdentifier(
+            "confirmation.\(payload.kind.rawValue)"
+        )
+    }
+
+    private var header: some View {
+        HStack(spacing: 10) {
+            Image(systemName: symbolName)
+                .font(Font(theme.fonts.headline))
+                .foregroundColor(Color(theme.colors.accent))
+                .frame(width: 24)
             Text(payload.title)
                 .font(Font(theme.fonts.headline))
-
-            summary
-            status
-
-            if payload.state == .awaitingApproval {
-                Button(action: onApprove) {
-                    Text("Review and approve")
-                        .font(Font(theme.fonts.button))
-                        .frame(maxWidth: .infinity)
-                        .frame(minHeight: 44)
-                }
-                .foregroundColor(Color(theme.colors.userBubbleText))
-                .background(Color(theme.colors.accent))
-                .cornerRadius(10)
-                .tanyaAIAccessibilityIdentifier("approval.open")
-            }
+                .foregroundColor(Color(theme.colors.primaryText))
         }
         .padding(16)
-        .background(Color(theme.colors.surface))
-        .cornerRadius(16)
-        .frame(maxWidth: 340, alignment: .leading)
     }
 
     private var summary: some View {
-        VStack(spacing: 8) {
+        VStack(spacing: 12) {
             ForEach(payload.summary.indices, id: \.self) { index in
-                HStack(alignment: .firstTextBaseline) {
+                HStack(alignment: .firstTextBaseline, spacing: 12) {
                     Text(payload.summary[index].label)
                         .foregroundColor(Color(theme.colors.secondaryText))
-                    Spacer(minLength: 12)
+                    Spacer(minLength: 8)
                     Text(payload.summary[index].value)
                         .font(Font(theme.fonts.headline))
+                        .multilineTextAlignment(.trailing)
                 }
                 .font(Font(theme.fonts.subheadline))
             }
         }
+        .padding(16)
     }
 
+    @ViewBuilder
+    private var notice: some View {
+        if let notice = payload.notice {
+            Text(notice)
+                .font(Font(theme.fonts.footnote))
+                .foregroundColor(Color(theme.colors.secondaryText))
+                .padding(.horizontal, 16)
+                .padding(.bottom, 12)
+        }
+    }
+
+    @ViewBuilder
     private var status: some View {
-        Text(statusText)
-            .font(Font(theme.fonts.footnote))
-            .foregroundColor(statusColor)
+        if payload.state != .awaitingApproval {
+            Text(statusText)
+                .font(Font(theme.fonts.footnote))
+                .foregroundColor(statusColor)
+                .padding(.horizontal, 16)
+                .padding(.bottom, 12)
+        }
+    }
+
+    @ViewBuilder
+    private var actions: some View {
+        if payload.state == .awaitingApproval {
+            HStack(spacing: 8) {
+                actionButton("Edit", action: onEdit)
+                actionButton("Cancel", action: onCancel)
+                Button(action: onApprove) {
+                    Text("Confirm")
+                        .font(Font(theme.fonts.button))
+                        .frame(maxWidth: .infinity, minHeight: 44)
+                }
+                .foregroundColor(Color(theme.colors.userBubbleText))
+                .background(Color(theme.colors.accent))
+                .cornerRadius(12)
+                .tanyaAIAccessibilityIdentifier(
+                    "approval.open.\(payload.kind.rawValue)"
+                )
+            }
+            .padding(12)
+        }
+    }
+
+    private func actionButton(
+        _ title: String,
+        action: @escaping () -> Void
+    ) -> some View {
+        Button(action: action) {
+            Text(title)
+                .font(Font(theme.fonts.button))
+                .frame(maxWidth: .infinity, minHeight: 44)
+        }
+        .foregroundColor(Color(theme.colors.primaryText))
+        .background(Color(theme.colors.background))
+        .cornerRadius(12)
+    }
+
+    private var cardDivider: some View {
+        Rectangle()
+            .fill(Color(theme.colors.divider))
+            .frame(height: 0.5)
+    }
+
+    private var symbolName: String {
+        switch payload.kind {
+        case .currencyConversion: return "arrow.left.arrow.right"
+        case .timeDeposit: return "lock"
+        case .transfer: return "arrow.up.arrow.down"
+        case .savingsPlan: return "target"
+        case .generic: return "checkmark.shield"
+        }
     }
 
     private var statusText: String {
@@ -62,6 +138,7 @@ struct TanyaAIApprovalBubble: View {
         case .completed: return "Completed"
         case .failed: return "Authorization failed"
         case .expired: return "Approval expired"
+        case .cancelled: return "Cancelled"
         }
     }
 

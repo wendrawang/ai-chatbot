@@ -41,6 +41,69 @@ final class TanyaAIRepositoryTests: XCTestCase {
         })
     }
 
+    func testRepositoryMapsDynamicSuggestions() {
+        let receivedEvents = events(for: "Show my spending insight")
+
+        XCTAssertTrue(receivedEvents.contains { event in
+            guard case .suggestions(let suggestions) = event else {
+                return false
+            }
+            return suggestions.isEmpty == false
+        })
+    }
+
+    func testShowcaseMapsAllFinancialBubbleFamilies() {
+        let receivedEvents = events(for: "showcase all bubbles")
+        let contents = receivedEvents.compactMap { event -> TanyaAIMessageContent? in
+            guard case .content(_, let content) = event else {
+                return nil
+            }
+            return content
+        }
+
+        XCTAssertEqual(approvalKinds(in: contents).count, 4)
+        XCTAssertEqual(financialListStyles(in: contents).count, 3)
+        XCTAssertEqual(statusLevels(in: contents).count, 4)
+        XCTAssertTrue(contents.contains { if case .information = $0 { return true }; return false })
+        XCTAssertTrue(contents.contains { if case .receipt = $0 { return true }; return false })
+        XCTAssertTrue(contents.contains { if case .chart = $0 { return true }; return false })
+        XCTAssertTrue(contents.contains { if case .portfolio = $0 { return true }; return false })
+        XCTAssertTrue(contents.contains { if case .unsupported = $0 { return true }; return false })
+    }
+
+    private func financialListStyles(
+        in contents: [TanyaAIMessageContent]
+    ) -> Set<TanyaAIFinancialListPayload.Style> {
+        Set(contents.compactMap { content in
+            guard case .financialList(let list) = content else {
+                return nil
+            }
+            return list.style
+        })
+    }
+
+    private func statusLevels(
+        in contents: [TanyaAIMessageContent]
+    ) -> Set<TanyaAIStatusPayload.Level> {
+        Set(contents.compactMap { content in
+            guard case .status(let status) = content else {
+                return nil
+            }
+            return status.level
+        })
+    }
+
+    private func approvalKinds(
+        in contents: [TanyaAIMessageContent]
+    ) -> Set<TanyaAIApprovalPayload.Kind> {
+        Set(contents.compactMap { content in
+            guard case .approval(let approval) = content else {
+                return nil
+            }
+            return approval.kind
+        })
+    }
+
     private func events(for message: String) -> [TanyaAIStreamEvent] {
         let completionExpectation = expectation(description: "stream completes")
         let transport = MockTanyaAIStreamingTransport(

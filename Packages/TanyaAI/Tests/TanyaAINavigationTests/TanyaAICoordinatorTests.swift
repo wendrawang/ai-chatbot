@@ -1,3 +1,5 @@
+import Foundation
+import TanyaAIDomain
 import TanyaAITestSupport
 import UIKit
 import XCTest
@@ -27,6 +29,27 @@ final class TanyaAICoordinatorTests: XCTestCase {
         XCTAssertEqual(navigationController.viewControllers.count, 2)
     }
 
+    func testEveryConfirmationRoutePresentsPINSheet() {
+        let navigationController = UINavigationController()
+        let window = UIWindow(frame: UIScreen.main.bounds)
+        window.rootViewController = navigationController
+        window.makeKeyAndVisible()
+        let coordinator = makeCoordinator(
+            navigationController: navigationController
+        )
+        coordinator.start()
+
+        confirmationKinds.forEach { kind in
+            coordinator.show(.approval(makeApproval(kind)))
+            XCTAssertTrue(
+                navigationController.presentedViewController
+                    is TanyaAIPINSheetViewController
+            )
+            navigationController.dismiss(animated: false)
+        }
+        window.isHidden = true
+    }
+
     private func makeCoordinator(
         navigationController: UINavigationController
     ) -> TanyaAICoordinator {
@@ -44,5 +67,24 @@ final class TanyaAICoordinatorTests: XCTestCase {
             dependencyContainer: dependencyContainer,
             containerController: UIViewController()
         )
+    }
+
+    private func makeApproval(
+        _ kind: TanyaAIApprovalPayload.Kind
+    ) -> TanyaAIApprovalPayload {
+        TanyaAIApprovalPayload(
+            approvalIdentifier: "\(kind.rawValue)-approval",
+            transactionIdentifier: "demo-transaction",
+            challengeIdentifier: "demo-challenge",
+            kind: kind,
+            title: "Confirm demo",
+            summary: [],
+            expiresAt: Date().addingTimeInterval(300),
+            state: .awaitingApproval
+        )
+    }
+
+    private var confirmationKinds: [TanyaAIApprovalPayload.Kind] {
+        [.currencyConversion, .timeDeposit, .transfer, .savingsPlan]
     }
 }

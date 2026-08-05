@@ -53,6 +53,7 @@ let theme = TanyaAITheme(
         assistantBubbleText: CorePalette.primaryText,
         divider: CorePalette.divider,
         chartTrack: CorePalette.chartTrack,
+        chartColors: CorePalette.chartSeries,
         success: CorePalette.success,
         warning: CorePalette.warning,
         error: CorePalette.error,

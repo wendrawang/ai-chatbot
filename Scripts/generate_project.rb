@@ -73,6 +73,7 @@ ui_test_target.build_configurations.each do |configuration|
   settings['TARGETED_DEVICE_FAMILY'] = '1'
   settings['CODE_SIGN_STYLE'] = 'Automatic'
   settings['TEST_TARGET_NAME'] = 'TanyaAISandbox'
+  settings['GENERATE_INFOPLIST_FILE'] = 'YES'
 end
 
 package_reference = project.new(

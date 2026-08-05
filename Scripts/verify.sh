@@ -22,5 +22,16 @@ xcodebuild \
   -scheme TanyaAI-Package \
   -destination 'platform=iOS Simulator,name=iPhone 17 Pro' \
   CODE_SIGNING_ALLOWED=NO \
+  -enableCodeCoverage YES \
+  test \
+  -quiet
+
+cd "$PROJECT_ROOT"
+xcodebuild \
+  -project "$PROJECT_ROOT/TanyaAISandbox.xcodeproj" \
+  -scheme TanyaAISandbox \
+  -destination 'platform=iOS Simulator,name=iPhone 17 Pro' \
+  CODE_SIGNING_ALLOWED=NO \
+  -enableCodeCoverage YES \
   test \
   -quiet

@@ -6,6 +6,9 @@ Release build on the oldest supported physical device.
 
 ## Latest automated result
 
+Verified again on 5 August 2026. All 45 package tests and all 3 UI tests
+passed after the typed-bubble and fallback audit.
+
 | Check | Fixture | Result |
 | --- | --- | --- |
 | Scroll frame rate | 120 stable message rows | 60.40 FPS |

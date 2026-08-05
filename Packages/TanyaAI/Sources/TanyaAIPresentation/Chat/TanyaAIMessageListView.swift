@@ -9,6 +9,8 @@ struct TanyaAIMessageListView: View {
             messages: viewModel.messages,
             isGenerating: viewModel.isGenerating,
             theme: theme,
+            onApprovalEdit: viewModel.editApproval,
+            onApprovalCancel: viewModel.cancelApproval,
             onApproval: viewModel.approve
         )
     }

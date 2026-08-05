@@ -8,19 +8,25 @@ public struct TanyaAIChartPayload: Equatable {
 
     public let title: String
     public let subtitle: String?
+    public let totalValue: String?
     public let chartType: ChartType
     public let series: [TanyaAIChartSeries]
+    public let footnote: String?
 
     public init(
         title: String,
         subtitle: String?,
+        totalValue: String? = nil,
         chartType: ChartType,
-        series: [TanyaAIChartSeries]
+        series: [TanyaAIChartSeries],
+        footnote: String? = nil
     ) {
         self.title = title
         self.subtitle = subtitle
+        self.totalValue = totalValue
         self.chartType = chartType
         self.series = series
+        self.footnote = footnote
     }
 }
 

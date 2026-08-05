@@ -8,19 +8,8 @@ enum MockTanyaAIShowcaseFixture {
     }
 
     private static func events(identifier: String) -> [String] {
-        var events = textEvents(identifier: identifier)
-        events.append(informationEvent(identifier: identifier))
-        events.append(chartEvent(identifier: identifier))
-        events.append(portfolioEvent(identifier: identifier))
-        events.append(approvalEvent(identifier: identifier))
-        events.append(contentsOf: statusEvents(identifier: identifier))
-        events.append(completedEvent(identifier: identifier))
-        return events
-    }
-
-    private static func textEvents(identifier: String) -> [String] {
         let messageIdentifier = "showcase-text-\(identifier)"
-        return [
+        var events = [
             event(
                 "response.started",
                 ["messageIdentifier": messageIdentifier]
@@ -29,72 +18,29 @@ enum MockTanyaAIShowcaseFixture {
                 "text.delta",
                 [
                     "messageIdentifier": messageIdentifier,
-                    "text": "Here are all sanitized bubble permutations."
+                    "text": "Here are the sanitized financial bubble scenarios."
                 ]
             )
         ]
-    }
-
-    private static func informationEvent(identifier: String) -> String {
-        event(
-            "content.information",
-            [
-                "messageIdentifier": "showcase-info-\(identifier)",
-                "title": "Information bubble",
-                "text": "Generic, allowlisted information content.",
-                "items": [
-                    ["label": "Daily limit", "value": "USD 5,000"],
-                    ["label": "Remaining", "value": "USD 3,750"]
-                ]
-            ]
+        events.append(
+            contentsOf: MockTanyaAIConfirmationFixture.showcaseEvents(identifier)
         )
-    }
-
-    private static func chartEvent(identifier: String) -> String {
-        event(
-            "content.chart",
-            [
-                "messageIdentifier": "showcase-chart-\(identifier)",
-                "title": "Spending chart",
-                "subtitle": "Sanitized sample values",
-                "chartType": "bar",
-                "series": chartSeries
-            ]
+        events.append(
+            contentsOf: MockTanyaAIInsightFixture.showcaseEvents(identifier)
         )
-    }
-
-    private static func portfolioEvent(identifier: String) -> String {
-        event(
-            "content.portfolio",
-            [
-                "messageIdentifier": "showcase-portfolio-\(identifier)",
-                "title": "Sample portfolio",
-                "totalValue": "USD 12,500",
-                "performanceText": "Up 3.2% in this demo",
-                "allocations": chartSeries
-            ]
+        events.append(contentsOf: statusEvents(identifier))
+        events.append(unsupportedEvent(identifier))
+        events.append(event("response.suggestions", suggestionsPayload))
+        events.append(
+            event(
+                "response.completed",
+                ["messageIdentifier": messageIdentifier]
+            )
         )
+        return events
     }
 
-    private static func approvalEvent(identifier: String) -> String {
-        event(
-            "content.approval",
-            [
-                "messageIdentifier": "showcase-approval-\(identifier)",
-                "approvalIdentifier": "showcase-approval-001",
-                "transactionIdentifier": "showcase-transaction-001",
-                "challengeIdentifier": "showcase-challenge-001",
-                "title": "Approve sample transfer",
-                "summary": [
-                    ["label": "Recipient", "value": "Demo Recipient"],
-                    ["label": "Amount", "value": "USD 25.00"]
-                ],
-                "expiresAt": "2030-01-01T00:00:00Z"
-            ]
-        )
-    }
-
-    private static func statusEvents(identifier: String) -> [String] {
+    private static func statusEvents(_ identifier: String) -> [String] {
         let states = [
             ("neutral", "Information", "A neutral system update."),
             ("success", "Completed", "The sample request completed."),
@@ -105,7 +51,7 @@ enum MockTanyaAIShowcaseFixture {
             event(
                 "content.status",
                 [
-                    "messageIdentifier": "showcase-status-\(index)-\(identifier)",
+                    "messageIdentifier": "status-\(index)-\(identifier)",
                     "title": state.1,
                     "detail": state.2,
                     "level": state.0
@@ -114,11 +60,30 @@ enum MockTanyaAIShowcaseFixture {
         }
     }
 
-    private static func completedEvent(identifier: String) -> String {
+    private static let suggestionsPayload: [String: Any] = [
+        "suggestions": [
+            suggestion("conversion", "Currency", "Create currency conversion"),
+            suggestion("deposit", "Time deposit", "Create time deposit"),
+            suggestion("incoming", "Incoming", "Show incoming funds")
+        ]
+    ]
+
+    private static func unsupportedEvent(_ identifier: String) -> String {
         event(
-            "response.completed",
-            ["messageIdentifier": "showcase-text-\(identifier)"]
+            "content.future-card",
+            [
+                "messageIdentifier": "unsupported-\(identifier)",
+                "fallbackText": "Update the app to view this sample card."
+            ]
         )
+    }
+
+    private static func suggestion(
+        _ identifier: String,
+        _ title: String,
+        _ prompt: String
+    ) -> [String: String] {
+        ["identifier": identifier, "title": title, "prompt": prompt]
     }
 
     private static func event(
@@ -127,10 +92,4 @@ enum MockTanyaAIShowcaseFixture {
     ) -> String {
         MockTanyaAIResponseFixture.event(name, payload)
     }
-
-    private static let chartSeries: [[String: Any]] = [
-        ["label": "Groceries", "value": 55, "formattedValue": "55%"],
-        ["label": "Transport", "value": 30, "formattedValue": "30%"],
-        ["label": "Other", "value": 15, "formattedValue": "15%"]
-    ]
 }

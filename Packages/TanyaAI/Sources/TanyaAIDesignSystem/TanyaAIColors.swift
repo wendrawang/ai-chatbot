@@ -12,6 +12,7 @@ public struct TanyaAIColors {
     public let assistantBubbleText: UIColor
     public let divider: UIColor
     public let chartTrack: UIColor
+    public let chartColors: [UIColor]
     public let success: UIColor
     public let warning: UIColor
     public let error: UIColor
@@ -29,6 +30,7 @@ public struct TanyaAIColors {
         assistantBubbleText: UIColor,
         divider: UIColor,
         chartTrack: UIColor,
+        chartColors: [UIColor] = [],
         success: UIColor,
         warning: UIColor,
         error: UIColor,
@@ -45,6 +47,7 @@ public struct TanyaAIColors {
         self.assistantBubbleText = assistantBubbleText
         self.divider = divider
         self.chartTrack = chartTrack
+        self.chartColors = chartColors.isEmpty ? [accent] : chartColors
         self.success = success
         self.warning = warning
         self.error = error

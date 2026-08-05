@@ -2,99 +2,50 @@ import Foundation
 import TanyaAIContracts
 
 enum MockTanyaAIResponseFixture {
+    typealias ContentEvent = (name: String, payload: [String: Any])
+
     static func chunks(for request: TanyaAIStreamRequest) -> [Data] {
         let prompt = message(from: request).lowercased()
-        let responseIdentifier = request.requestIdentifier.lowercased()
+        let identifier = request.requestIdentifier.lowercased()
 
         if prompt.contains("showcase") {
-            return MockTanyaAIShowcaseFixture.chunks(
-                identifier: responseIdentifier
-            )
+            return MockTanyaAIShowcaseFixture.chunks(identifier: identifier)
+        }
+        if prompt.contains("conversion") || prompt.contains("currency") {
+            return MockTanyaAIConfirmationFixture.conversionChunks(identifier)
+        }
+        if prompt.contains("deposit") {
+            return MockTanyaAIConfirmationFixture.depositChunks(identifier)
+        }
+        if prompt.contains("saving") {
+            return MockTanyaAIConfirmationFixture.savingsChunks(identifier)
+        }
+        if prompt.contains("incoming") {
+            return MockTanyaAIInsightFixture.incomingChunks(identifier)
+        }
+        if prompt.contains("bill") {
+            return MockTanyaAIInsightFixture.billsChunks(identifier)
         }
         if prompt.contains("spending") {
-            return spendingChunks(identifier: responseIdentifier)
+            return MockTanyaAIInsightFixture.spendingChunks(identifier)
         }
         if prompt.contains("limit") {
-            return informationChunks(identifier: responseIdentifier)
+            return MockTanyaAIInsightFixture.informationChunks(identifier)
         }
         if prompt.contains("transfer") {
-            return approvalChunks(identifier: responseIdentifier)
+            return MockTanyaAIConfirmationFixture.transferChunks(identifier)
         }
-        return portfolioChunks(identifier: responseIdentifier)
+        return MockTanyaAIInsightFixture.portfolioChunks(identifier)
     }
 
-    private static func portfolioChunks(identifier: String) -> [Data] {
-        responseChunks(
-            identifier: identifier,
-            text: "Here is your sanitized sample portfolio.",
-            contentEvent: "content.portfolio",
-            content: [
-                "title": "Sample portfolio",
-                "totalValue": "USD 12,500",
-                "performanceText": "Up 3.2% in this demo",
-                "allocations": chartSeries
-            ]
-        )
-    }
-
-    private static func spendingChunks(identifier: String) -> [Data] {
-        responseChunks(
-            identifier: identifier,
-            text: "Your largest demo spending category is groceries.",
-            contentEvent: "content.chart",
-            content: [
-                "title": "Sample monthly spending",
-                "subtitle": "Sanitized fixture data",
-                "chartType": "bar",
-                "series": spendingSeries
-            ]
-        )
-    }
-
-    private static func informationChunks(identifier: String) -> [Data] {
-        responseChunks(
-            identifier: identifier,
-            text: "Here is a sample limit overview.",
-            contentEvent: "content.information",
-            content: [
-                "title": "Sample transfer limit",
-                "text": "These values are local demo data only.",
-                "items": [
-                    ["label": "Daily limit", "value": "USD 5,000"],
-                    ["label": "Remaining", "value": "USD 3,750"]
-                ]
-            ]
-        )
-    }
-
-    private static func approvalChunks(identifier: String) -> [Data] {
-        responseChunks(
-            identifier: identifier,
-            text: "Review this sample transfer before approval.",
-            contentEvent: "content.approval",
-            content: [
-                "approvalIdentifier": "demo-approval-001",
-                "transactionIdentifier": "demo-transaction-001",
-                "challengeIdentifier": "demo-challenge-001",
-                "title": "Approve sample transfer",
-                "summary": approvalSummary,
-                "expiresAt": "2030-01-01T00:00:00Z"
-            ]
-        )
-    }
-
-    private static func responseChunks(
+    static func responseChunks(
         identifier: String,
         text: String,
-        contentEvent: String,
-        content: [String: Any]
+        contents: [ContentEvent],
+        suggestions: [[String: String]]
     ) -> [Data] {
         let textIdentifier = "text-\(identifier)"
-        let contentIdentifier = "content-\(identifier)"
-        var contentPayload = content
-        contentPayload["messageIdentifier"] = contentIdentifier
-
-        let events = [
+        var events = [
             event(
                 "response.started",
                 ["messageIdentifier": textIdentifier]
@@ -102,14 +53,30 @@ enum MockTanyaAIResponseFixture {
             event(
                 "text.delta",
                 ["messageIdentifier": textIdentifier, "text": text]
-            ),
-            event(contentEvent, contentPayload),
+            )
+        ]
+        events.append(contentsOf: contentEvents(contents, identifier: identifier))
+        events.append(
+            event("response.suggestions", ["suggestions": suggestions])
+        )
+        events.append(
             event(
                 "response.completed",
                 ["messageIdentifier": textIdentifier]
             )
-        ].joined()
-        return irregularChunks(from: events)
+        )
+        return irregularChunks(from: events.joined())
+    }
+
+    static func contentEvent(
+        _ name: String,
+        prefix: String,
+        identifier: String,
+        payload: [String: Any]
+    ) -> String {
+        var content = payload
+        content["messageIdentifier"] = "\(prefix)-\(identifier)"
+        return event(name, content)
     }
 
     static func event(
@@ -141,6 +108,20 @@ enum MockTanyaAIResponseFixture {
         return chunks
     }
 
+    private static func contentEvents(
+        _ contents: [ContentEvent],
+        identifier: String
+    ) -> [String] {
+        contents.enumerated().map { index, content in
+            contentEvent(
+                content.name,
+                prefix: "content-\(index)",
+                identifier: identifier,
+                payload: content.payload
+            )
+        }
+    }
+
     private static func message(from request: TanyaAIStreamRequest) -> String {
         guard let object = try? JSONSerialization.jsonObject(with: request.body),
               let dictionary = object as? [String: Any],
@@ -149,22 +130,4 @@ enum MockTanyaAIResponseFixture {
         }
         return message
     }
-
-    private static let chartSeries: [[String: Any]] = [
-        ["label": "Fund A", "value": 55, "formattedValue": "55%"],
-        ["label": "Fund B", "value": 30, "formattedValue": "30%"],
-        ["label": "Cash", "value": 15, "formattedValue": "15%"]
-    ]
-
-    private static let spendingSeries: [[String: Any]] = [
-        ["label": "Groceries", "value": 420, "formattedValue": "USD 420"],
-        ["label": "Transport", "value": 245, "formattedValue": "USD 245"],
-        ["label": "Dining", "value": 190, "formattedValue": "USD 190"]
-    ]
-
-    private static let approvalSummary: [[String: String]] = [
-        ["label": "Recipient", "value": "Demo Recipient"],
-        ["label": "Amount", "value": "USD 25.00"],
-        ["label": "Source", "value": "Demo account •••• 4821"]
-    ]
 }

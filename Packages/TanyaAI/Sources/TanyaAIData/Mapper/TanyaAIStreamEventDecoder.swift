@@ -2,7 +2,7 @@ import Foundation
 import TanyaAIDomain
 
 final class TanyaAIStreamEventDecoder {
-    private let decoder: JSONDecoder
+    let decoder: JSONDecoder
 
     init() {
         let decoder = JSONDecoder()
@@ -22,17 +22,41 @@ final class TanyaAIStreamEventDecoder {
             return try decodeChart(event.data)
         case "content.portfolio":
             return try decodePortfolio(event.data)
+        case "content.financial-list":
+            return try decodeFinancialList(event.data)
         case "content.approval":
             return try decodeApproval(event.data)
+        case "content.receipt":
+            return try decodeReceipt(event.data)
         case "content.status":
             return try decodeStatus(event.data)
+        case "response.suggestions":
+            return try decodeSuggestions(event.data)
         case "response.completed":
             return try decodeCompleted(event.data)
         case "heartbeat":
             return .heartbeat
         default:
+            return try decodeUnknown(event)
+        }
+    }
+
+    private func decodeUnknown(
+        _ event: TanyaAISSEEvent
+    ) throws -> TanyaAIStreamEvent? {
+        guard event.name.hasPrefix("content.") else {
             return nil
         }
+        let payload = try decoder.decode(
+            TanyaAIUnsupportedContentDTO.self,
+            from: event.data
+        )
+        let message = payload.fallbackText
+            ?? "This content requires a newer app version."
+        return .content(
+            messageIdentifier: payload.messageIdentifier,
+            content: .unsupported(message)
+        )
     }
 
     private func decodeStarted(_ data: Data) throws -> TanyaAIStreamEvent {
@@ -72,8 +96,10 @@ final class TanyaAIStreamEventDecoder {
         let chart = TanyaAIChartPayload(
             title: payload.title,
             subtitle: payload.subtitle,
+            totalValue: payload.totalValue,
             chartType: chartType,
-            series: payload.series.map(makeChartSeries)
+            series: payload.series.map(makeChartSeries),
+            footnote: payload.footnote
         )
         return .content(
             messageIdentifier: payload.messageIdentifier,
@@ -87,7 +113,8 @@ final class TanyaAIStreamEventDecoder {
             title: payload.title,
             totalValue: payload.totalValue,
             performanceText: payload.performanceText,
-            allocations: payload.allocations.map(makeChartSeries)
+            allocations: payload.allocations.map(makeChartSeries),
+            footnote: payload.footnote
         )
         return .content(
             messageIdentifier: payload.messageIdentifier,
@@ -101,8 +128,12 @@ final class TanyaAIStreamEventDecoder {
             approvalIdentifier: payload.approvalIdentifier,
             transactionIdentifier: payload.transactionIdentifier,
             challengeIdentifier: payload.challengeIdentifier,
+            kind: TanyaAIApprovalPayload.Kind(
+                rawValue: payload.kind ?? "generic"
+            ) ?? .generic,
             title: payload.title,
             summary: payload.summary.map(makeKeyValue),
+            notice: payload.notice,
             expiresAt: payload.expiresAt,
             state: .awaitingApproval
         )

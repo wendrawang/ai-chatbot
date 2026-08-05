@@ -31,6 +31,13 @@ public extension TanyaAITheme {
             assistantBubbleText: .label,
             divider: .separator,
             chartTrack: .tertiarySystemFill,
+            chartColors: [
+                UIColor(red: 0.83, green: 0.04, blue: 0.16, alpha: 1),
+                UIColor(red: 0.91, green: 0.55, blue: 0.03, alpha: 1),
+                UIColor(red: 0.04, green: 0.47, blue: 0.77, alpha: 1),
+                UIColor(red: 0.05, green: 0.58, blue: 0.30, alpha: 1),
+                .systemGray
+            ],
             success: .systemGreen,
             warning: .systemOrange,
             error: .systemRed,

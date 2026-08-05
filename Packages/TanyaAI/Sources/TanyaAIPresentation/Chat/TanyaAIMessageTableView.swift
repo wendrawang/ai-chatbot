@@ -8,6 +8,8 @@ struct TanyaAIMessageTableView: UIViewRepresentable {
     let messages: [TanyaAIMessageItemViewModel]
     let isGenerating: Bool
     let theme: TanyaAITheme
+    let onApprovalEdit: (TanyaAIApprovalPayload) -> Void
+    let onApprovalCancel: (TanyaAIApprovalPayload) -> Void
     let onApproval: (TanyaAIApprovalPayload) -> Void
 
     func makeCoordinator() -> Coordinator {
@@ -38,6 +40,8 @@ struct TanyaAIMessageTableView: UIViewRepresentable {
             messages: messages,
             isGenerating: isGenerating,
             theme: theme,
+            onApprovalEdit: onApprovalEdit,
+            onApprovalCancel: onApprovalCancel,
             onApproval: onApproval
         )
     }
@@ -49,6 +53,8 @@ extension TanyaAIMessageTableView {
         private var messages: [TanyaAIMessageItemViewModel] = []
         private var isGenerating = false
         private var theme = TanyaAITheme.sandbox
+        private var onApprovalEdit: (TanyaAIApprovalPayload) -> Void = { _ in }
+        private var onApprovalCancel: (TanyaAIApprovalPayload) -> Void = { _ in }
         private var onApproval: (TanyaAIApprovalPayload) -> Void = { _ in }
         private var subscriptions: [String: AnyCancellable] = [:]
 
@@ -60,6 +66,8 @@ extension TanyaAIMessageTableView {
             messages: [TanyaAIMessageItemViewModel],
             isGenerating: Bool,
             theme: TanyaAITheme,
+            onApprovalEdit: @escaping (TanyaAIApprovalPayload) -> Void,
+            onApprovalCancel: @escaping (TanyaAIApprovalPayload) -> Void,
             onApproval: @escaping (TanyaAIApprovalPayload) -> Void
         ) {
             let previousRows = rowCount
@@ -68,6 +76,8 @@ extension TanyaAIMessageTableView {
             self.messages = messages
             self.isGenerating = isGenerating
             self.theme = theme
+            self.onApprovalEdit = onApprovalEdit
+            self.onApprovalCancel = onApprovalCancel
             self.onApproval = onApproval
             bindMessages(messages)
 
@@ -110,6 +120,8 @@ extension TanyaAIMessageTableView {
             return TanyaAIMessageTableRow(
                 message: message,
                 theme: theme,
+                onApprovalEdit: onApprovalEdit,
+                onApprovalCancel: onApprovalCancel,
                 onApproval: onApproval
             )
         }
@@ -152,6 +164,8 @@ extension TanyaAIMessageTableView {
 struct TanyaAIMessageTableRow: View {
     let message: TanyaAIMessageItemViewModel?
     let theme: TanyaAITheme
+    let onApprovalEdit: (TanyaAIApprovalPayload) -> Void
+    let onApprovalCancel: (TanyaAIApprovalPayload) -> Void
     let onApproval: (TanyaAIApprovalPayload) -> Void
 
     var body: some View {
@@ -159,6 +173,8 @@ struct TanyaAIMessageTableRow: View {
             if let message = message {
                 TanyaAIMessageRowView(
                     viewModel: message,
+                    onApprovalEdit: onApprovalEdit,
+                    onApprovalCancel: onApprovalCancel,
                     onApproval: onApproval
                 )
             } else {
