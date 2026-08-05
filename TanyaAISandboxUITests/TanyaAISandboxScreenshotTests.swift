@@ -58,6 +58,43 @@ final class TanyaAISandboxScreenshotTests: XCTestCase {
         XCTAssertFalse(confirmButton.exists)
     }
 
+    func testSuggestionsDoNotCoverLatestBubble() {
+        let messageTable = application.tables["chat.messageTable"]
+        XCTAssertTrue(messageTable.waitForExistence(timeout: 10))
+        waitForShowcaseToFinish()
+
+        let latestBubble = application.staticTexts[
+            "Update the app to view this sample card."
+        ]
+        let suggestion = application.buttons[
+            "Suggested question: Currency"
+        ]
+        XCTAssertTrue(latestBubble.waitForExistence(timeout: 5))
+        XCTAssertTrue(suggestion.waitForExistence(timeout: 5))
+        capture(name: "suggestion-safe-layout")
+        XCTAssertTrue(
+            waitUntilHittable(latestBubble),
+            "Bubble: \(latestBubble.frame), table: \(messageTable.frame)"
+        )
+        XCTAssertLessThanOrEqual(
+            latestBubble.frame.maxY,
+            messageTable.frame.maxY + 1
+        )
+        XCTAssertLessThanOrEqual(
+            messageTable.frame.maxY,
+            suggestion.frame.minY + 1
+        )
+    }
+
+    private func waitUntilHittable(_ element: XCUIElement) -> Bool {
+        let predicate = NSPredicate(format: "hittable == true")
+        let expectation = XCTNSPredicateExpectation(
+            predicate: predicate,
+            object: element
+        )
+        return XCTWaiter.wait(for: [expectation], timeout: 5) == .completed
+    }
+
     private func capturePINSheet(in messageTable: XCUIElement) {
         let confirmButton = application.buttons["approval.open.transfer"]
         for _ in 0..<4 where confirmButton.isHittable == false {
