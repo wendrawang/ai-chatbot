@@ -7,6 +7,7 @@ import UIKit
 struct TanyaAIMessageTableView: UIViewRepresentable {
     let messages: [TanyaAIMessageItemViewModel]
     let isGenerating: Bool
+    let showsSuggestions: Bool
     let theme: TanyaAITheme
     let onApprovalEdit: (TanyaAIApprovalPayload) -> Void
     let onApprovalCancel: (TanyaAIApprovalPayload) -> Void
@@ -17,7 +18,7 @@ struct TanyaAIMessageTableView: UIViewRepresentable {
     }
 
     func makeUIView(context: Context) -> UITableView {
-        let tableView = UITableView(frame: .zero, style: .plain)
+        let tableView = TanyaAITrackingTableView(frame: .zero, style: .plain)
         tableView.dataSource = context.coordinator
         tableView.delegate = context.coordinator
         tableView.separatorStyle = .none
@@ -39,6 +40,7 @@ struct TanyaAIMessageTableView: UIViewRepresentable {
         context.coordinator.update(
             messages: messages,
             isGenerating: isGenerating,
+            showsSuggestions: showsSuggestions,
             theme: theme,
             onApprovalEdit: onApprovalEdit,
             onApprovalCancel: onApprovalCancel,
@@ -52,42 +54,52 @@ extension TanyaAIMessageTableView {
         private weak var tableView: UITableView?
         private var messages: [TanyaAIMessageItemViewModel] = []
         private var isGenerating = false
+        private var showsSuggestions = false
+        private var followsLatestMessage = true
+        private var scrollRequestIdentifier = 0
         private var theme = TanyaAITheme.sandbox
         private var onApprovalEdit: (TanyaAIApprovalPayload) -> Void = { _ in }
         private var onApprovalCancel: (TanyaAIApprovalPayload) -> Void = { _ in }
         private var onApproval: (TanyaAIApprovalPayload) -> Void = { _ in }
         private var subscriptions: [String: AnyCancellable] = [:]
 
-        func attach(_ tableView: UITableView) {
+        func attach(_ tableView: TanyaAITrackingTableView) {
             self.tableView = tableView
+            tableView.onLayoutChange = { [weak self] in
+                self?.tableLayoutDidChange()
+            }
         }
 
         func update(
             messages: [TanyaAIMessageItemViewModel],
             isGenerating: Bool,
+            showsSuggestions: Bool,
             theme: TanyaAITheme,
             onApprovalEdit: @escaping (TanyaAIApprovalPayload) -> Void,
             onApprovalCancel: @escaping (TanyaAIApprovalPayload) -> Void,
             onApproval: @escaping (TanyaAIApprovalPayload) -> Void
         ) {
-            let previousRows = rowCount
-            let previousIdentifiers = self.messages.map(\.id)
-            let identifiers = messages.map(\.id)
+            let updateState = makeUpdateState(
+                messages: messages,
+                isGenerating: isGenerating,
+                showsSuggestions: showsSuggestions
+            )
             self.messages = messages
             self.isGenerating = isGenerating
+            self.showsSuggestions = showsSuggestions
             self.theme = theme
             self.onApprovalEdit = onApprovalEdit
             self.onApprovalCancel = onApprovalCancel
             self.onApproval = onApproval
             bindMessages(messages)
 
-            guard previousIdentifiers != identifiers
-                    || previousRows != rowCount else {
-                tableView?.backgroundColor = theme.colors.background
-                return
+            tableView?.backgroundColor = theme.colors.background
+            if updateState.rowsChanged {
+                tableView?.reloadData()
             }
-            tableView?.reloadData()
-            scrollToBottom(animated: previousRows > 0)
+            if updateState.requiresBottomAlignment && followsLatestMessage {
+                scheduleScrollToBottom(animated: false)
+            }
         }
 
         func tableView(
@@ -109,6 +121,24 @@ extension TanyaAIMessageTableView {
             }
             cell.configure(rootView: rowView(at: indexPath.row))
             return cell
+        }
+
+        func scrollViewWillBeginDragging(_ scrollView: UIScrollView) {
+            followsLatestMessage = false
+        }
+
+        func scrollViewDidEndDragging(
+            _ scrollView: UIScrollView,
+            willDecelerate decelerate: Bool
+        ) {
+            guard !decelerate else {
+                return
+            }
+            followsLatestMessage = isNearBottom(scrollView)
+        }
+
+        func scrollViewDidEndDecelerating(_ scrollView: UIScrollView) {
+            followsLatestMessage = isNearBottom(scrollView)
         }
 
         private var rowCount: Int {
@@ -135,7 +165,6 @@ extension TanyaAIMessageTableView {
                 }
                 subscriptions[message.id] = message.objectWillChange.sink {
                     [weak self] in
-
                     DispatchQueue.main.async {
                         self?.refreshRowHeight()
                     }
@@ -146,43 +175,76 @@ extension TanyaAIMessageTableView {
         private func refreshRowHeight() {
             tableView?.beginUpdates()
             tableView?.endUpdates()
+            guard followsLatestMessage else {
+                return
+            }
+            scheduleScrollToBottom(animated: false)
+        }
+
+        private func tableLayoutDidChange() {
+            guard followsLatestMessage else {
+                return
+            }
+            scheduleScrollToBottom(animated: false)
+        }
+
+        private func scheduleScrollToBottom(animated: Bool) {
+            scrollRequestIdentifier += 1
+            let requestIdentifier = scrollRequestIdentifier
+            DispatchQueue.main.async { [weak self] in
+                guard self?.scrollRequestIdentifier == requestIdentifier else {
+                    return
+                }
+                self?.scrollToBottom(animated: animated)
+            }
         }
 
         private func scrollToBottom(animated: Bool) {
-            guard rowCount > 0 else {
+            guard rowCount > 0, let tableView = tableView else {
                 return
             }
-            tableView?.scrollToRow(
-                at: IndexPath(row: rowCount - 1, section: 0),
-                at: .bottom,
+            tableView.layoutIfNeeded()
+            let minimumOffset = -tableView.adjustedContentInset.top
+            let maximumOffset = max(
+                minimumOffset,
+                tableView.contentSize.height
+                    - tableView.bounds.height
+                    + tableView.adjustedContentInset.bottom
+            )
+            guard abs(tableView.contentOffset.y - maximumOffset) > 0.5 else {
+                return
+            }
+            tableView.setContentOffset(
+                CGPoint(x: 0, y: maximumOffset),
                 animated: animated
+            )
+        }
+
+        private func isNearBottom(_ scrollView: UIScrollView) -> Bool {
+            let visibleBottom = scrollView.contentOffset.y
+                + scrollView.bounds.height
+                - scrollView.adjustedContentInset.bottom
+            return scrollView.contentSize.height - visibleBottom < 80
+        }
+
+        private func makeUpdateState(
+            messages: [TanyaAIMessageItemViewModel],
+            isGenerating: Bool,
+            showsSuggestions: Bool
+        ) -> UpdateState {
+            let identifiersChanged = self.messages.map(\.id) != messages.map(\.id)
+            let nextRows = messages.count + (isGenerating ? 1 : 0)
+            let rowsChanged = identifiersChanged || rowCount != nextRows
+            return UpdateState(
+                rowsChanged: rowsChanged,
+                requiresBottomAlignment: rowsChanged
+                    || self.showsSuggestions != showsSuggestions
             )
         }
     }
 }
 
-struct TanyaAIMessageTableRow: View {
-    let message: TanyaAIMessageItemViewModel?
-    let theme: TanyaAITheme
-    let onApprovalEdit: (TanyaAIApprovalPayload) -> Void
-    let onApprovalCancel: (TanyaAIApprovalPayload) -> Void
-    let onApproval: (TanyaAIApprovalPayload) -> Void
-
-    var body: some View {
-        Group {
-            if let message = message {
-                TanyaAIMessageRowView(
-                    viewModel: message,
-                    onApprovalEdit: onApprovalEdit,
-                    onApprovalCancel: onApprovalCancel,
-                    onApproval: onApproval
-                )
-            } else {
-                TanyaAITypingIndicatorView()
-            }
-        }
-        .padding(.horizontal, 16)
-        .padding(.vertical, 6)
-        .tanyaAITheme(theme)
-    }
+private struct UpdateState {
+    let rowsChanged: Bool
+    let requiresBottomAlignment: Bool
 }
