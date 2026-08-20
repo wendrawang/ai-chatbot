@@ -2,7 +2,9 @@
 
 ## Entry point
 
-The package requires iOS 16 or newer and exposes one SwiftUI entry point:
+The package requires iOS 16 or newer and exposes one SwiftUI entry point.
+The host keeps its own lifecycle: SwiftUI `App` or the classic
+`AppDelegate` and `SceneDelegate` pair both work.
 
 ```swift
 TanyaAIModule.makeView(
@@ -48,6 +50,69 @@ An existing coordinator may toggle the same binding through an observable
 presentation gateway. It must not keep a global singleton or build the feature
 inside a destination dictionary. The sandbox UI test verifies that legacy
 navigation position and local state survive open and close.
+
+## Entry from a UIKit AppDelegate and SceneDelegate host
+
+The package needs SwiftUI, not the SwiftUI `App` lifecycle. An application that
+still boots through `AppDelegate` and `SceneDelegate` keeps that lifecycle and
+hosts the feature inside a `UIHostingController`:
+
+```swift
+final class SceneDelegate: UIResponder, UIWindowSceneDelegate {
+    var window: UIWindow?
+    private var presentationGateway: TanyaAIPresentationGateway?
+
+    func scene(
+        _ scene: UIScene,
+        willConnectTo session: UISceneSession,
+        options connectionOptions: UIScene.ConnectionOptions
+    ) {
+        guard let windowScene = scene as? UIWindowScene else {
+            return
+        }
+
+        let gateway = TanyaAIPresentationGateway(
+            dependencies: dependencies,
+            configuration: configuration
+        )
+        presentationGateway = gateway
+
+        let window = UIWindow(windowScene: windowScene)
+        window.rootViewController = UIHostingController(
+            rootView: LegacyRootScreen(tanyaAIPresenter: gateway)
+        )
+        window.makeKeyAndVisible()
+        self.window = window
+    }
+}
+```
+
+The scene owns the gateway, so the observable presentation state lives exactly
+as long as the window. A pure UIKit screen can present the feature instead:
+
+```swift
+let controller = UIHostingController(
+    rootView: TanyaAIModule.makeView(
+        configuration: configuration,
+        dependencies: dependencies,
+        onClose: { [weak self] in
+            self?.dismiss(animated: true)
+        }
+    )
+)
+controller.modalPresentationStyle = .fullScreen
+present(controller, animated: true)
+```
+
+Requirements for this path:
+
+- keep `UIApplicationSceneManifest` in `Info.plist` pointing at the scene
+  delegate class;
+- create one hosting controller per presentation, never a shared instance;
+- keep the hosting controller out of the legacy `UINavigationController` stack
+  so the feature's own `NavigationStack` stays independent;
+- keep UIKit in the host only. The package sources stay free of UIKit,
+  `UIViewRepresentable`, and hosting controllers.
 
 ## Streaming adapter
 

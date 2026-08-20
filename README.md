@@ -20,9 +20,10 @@ internal identifiers, or customer data.
 ## Quick start
 
 Open `TanyaAISandbox.xcodeproj`, select an iPhone simulator, and run the
-`TanyaAISandbox` scheme. The initial screen simulates a legacy SwiftUI
-navigation hierarchy. Its detail screen opens Tanya AI as an independent,
-full-screen SwiftUI feature.
+`TanyaAISandbox` scheme. The app boots through `AppDelegate` and
+`SceneDelegate`, exactly like an existing UIKit-lifecycle host. The initial
+screen simulates a legacy SwiftUI navigation hierarchy. Its detail screen opens
+Tanya AI as an independent, full-screen SwiftUI feature.
 
 The demo PIN is `123456`. It exists only in the mock authorization service.
 
@@ -36,7 +37,8 @@ DEVELOPER_DIR=/Applications/Xcode.app/Contents/Developer \
 ## Architecture
 
 ```text
-Host application
+Host application (UIKit AppDelegate and SceneDelegate)
+├── UIWindow and UIHostingController root
 ├── existing navigation
 ├── authenticated network session
 ├── mTLS, pinning, token and headers
@@ -60,6 +62,13 @@ View → ViewModel → UseCase → Repository → injected transport
 `TanyaAIRouter` owns a small typed path and one optional authorization sheet.
 Only a requested destination is rendered. There is no hidden `NavigationLink`
 graph and no UIKit navigation object inside the production package.
+
+The sandbox host keeps the classic UIKit lifecycle. `AppDelegate` supplies the
+scene configuration, `SceneDelegate` builds the `UIWindow`, owns the
+presentation gateway, and hosts the root SwiftUI screen in a
+`UIHostingController`. The lifecycle boundary stays in the host, so an existing
+`AppDelegate` and `SceneDelegate` application can adopt the feature without
+moving to the SwiftUI `App` lifecycle. The package itself remains pure SwiftUI.
 
 ### Package targets
 
