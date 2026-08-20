@@ -34,6 +34,26 @@ DEVELOPER_DIR=/Applications/Xcode.app/Contents/Developer \
   ./Scripts/verify.sh
 ```
 
+### Launch arguments
+
+`SceneDelegate` reads one optional launch argument through `SandboxLaunchMode`.
+Add it in **Edit Scheme → Run → Arguments** to reproduce a UI test locally.
+
+| Argument | Root screen | Initial prompt | Mock chunk delay | Used by |
+| --- | --- | --- | --- | --- |
+| none | `LegacyRootScreen` | none | 0.04 s | `TanyaAILegacyIntegrationTests` |
+| `--showcase` | Tanya AI directly | `showcase all bubbles` | 0.001 s | `TanyaAISandboxScreenshotTests` |
+| `--stress-chat` | Tanya AI directly | `stress conversation` | 0.001 s | `TanyaAIStressUITests` |
+
+`--showcase` streams `MockTanyaAIShowcaseFixture` in one response: every
+confirmation and receipt card, every insight card, the four status levels, the
+unsupported-content fallback, and the suggestion strip. It exists so the
+screenshot test can scroll each semantic bubble into the viewport and store the
+images in [`Artifacts/Screenshots`](Artifacts/Screenshots). `--stress-chat`
+streams the 5,000-message fixture used by the scroll stress test. Both skip the
+legacy host screen and shorten the mock chunk delay so a UI run does not wait
+on simulated streaming.
+
 ## Architecture
 
 ```text
