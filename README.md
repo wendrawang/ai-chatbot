@@ -906,3 +906,6 @@ Examples:
 - [`docs/BUBBLE_SCHEMA.md`](docs/BUBBLE_SCHEMA.md)
 - [`docs/INTEGRATION.md`](docs/INTEGRATION.md)
 - [`docs/PERFORMANCE.md`](docs/PERFORMANCE.md)
+- [`Examples/NavigationViewHost`](Examples/NavigationViewHost) — copy-ready
+  adapters and wiring for a `NavigationView` host that keeps `AppDelegate` and
+  `SceneDelegate`
