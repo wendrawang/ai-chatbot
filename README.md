@@ -112,6 +112,10 @@ at a web page or at another app. Schema
 in [`docs/BUBBLE_SCHEMA.md`](docs/BUBBLE_SCHEMA.md), sequencing in
 [`docs/INTEGRATION.md`](docs/INTEGRATION.md).
 
+`MockTanyaAIActionFixture` in `TanyaAITestSupport` builds a stream carrying
+deeplinks of your own, so a host can exercise the hand-off before the backend
+sends one.
+
 The sandbox demonstrates the full round trip: `--deeplink` streams an action
 card and a confirmation with `handoff`, `SandboxDeeplink` accepts
 `tanyaaisandbox://mobile?…`, and `SceneDelegate` receives the opened URL

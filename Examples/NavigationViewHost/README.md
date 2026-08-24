@@ -177,3 +177,92 @@ Round-trip lewat `UIApplication.open` di versi Production membuat hand-off
 memakai jalur yang sama dengan push notification atau app lain — daftarkan
 scheme-nya di `CFBundleURLTypes`. Kalau round-trip tidak memberi keuntungan,
 panggil handler-nya langsung seperti versi minimal.
+
+### Menguji hand-off tanpa backend
+
+Tiga lapis, dari yang paling murah:
+
+**1. Deeplink handler Anda sendiri, tanpa Tanya AI.** Pastikan dulu URL-nya
+memang membuka layar yang benar:
+
+```sh
+xcrun simctl openurl booted "ocbcid://mobile?type=transfer&amount=1250000"
+```
+
+Kalau ini saja tidak jalan, hand-off pasti tidak jalan. Penyebab paling
+sering: scheme belum terdaftar di `CFBundleURLTypes`, sehingga
+`UIApplication.open` gagal diam-diam tanpa error.
+
+**2. Handler-nya saja, sebagai unit test.** `handle(_:)` menerima
+`TanyaAIAction` biasa, jadi tidak perlu UI:
+
+```swift
+func testHandOffOpensTheAppsOwnDeeplink() {
+    var opened: [URL] = []
+    let bridge = HostDeeplinkBridge(
+        presenter: presenter,
+        dispatch: { _ in },
+        open: { opened.append($0) }
+    )
+
+    bridge.handle(
+        TanyaAIAction(
+            identifier: "open-transfer",
+            deeplink: "ocbcid://mobile?type=transfer"
+        )
+    )
+    bridge.handle(
+        TanyaAIAction(
+            identifier: "phishing",
+            deeplink: "https://example.com/promo"
+        )
+    )
+
+    XCTAssertEqual(opened.map(\.absoluteString), [
+        "ocbcid://mobile?type=transfer"
+    ])
+}
+```
+
+Dua assertion sekaligus: yang benar diteruskan, yang bukan milik app Anda
+tidak.
+
+**3. Alur penuh di simulator, dengan stream palsu.** Arahkan mock transport ke
+deeplink Anda sendiri:
+
+```swift
+let transport = MockTanyaAIStreamingTransport(
+    scenario: .custom(
+        MockTanyaAIActionFixture.actionCardChunks(
+            buttons: [
+                .init(
+                    title: "Open transfer",
+                    deeplink: "ocbcid://mobile?type=transfer",
+                    identifier: "open-transfer"
+                ),
+                .init(
+                    title: "Blocked link",
+                    style: "secondary",
+                    deeplink: "https://example.com/promo",
+                    identifier: "blocked"
+                )
+            ]
+        )
+    )
+)
+```
+
+Butuh `import TanyaAITestSupport` — target debug/test saja, jangan ikut ke
+Release. Untuk menguji jalur kedua (konfirmasi yang hand-off, bukan kartu
+aksi) pakai `MockTanyaAIActionFixture.approvalHandoffChunks(deeplink:)`; PIN
+sheet tidak boleh muncul sama sekali.
+
+Tombolnya bisa ditekan dari UI test lewat `action.<identifier>`, misalnya
+`app.buttons["action.open-transfer"]`.
+
+Yang layak dipastikan saat run pertama:
+
+1. Tanya AI benar-benar tertutup sebelum navigasi terjadi.
+2. Layar tujuan muncul, dan tombol back-nya menunjuk dashboard — bukan
+   menumpuk di atas layar sebelumnya.
+3. Tombol `https` tidak melakukan apa pun, dan fitur tetap terbuka.

@@ -214,6 +214,38 @@ Two ways to reach the destination, both valid:
   deeplink handler calls. Fewer moving parts and easier to test; use it when
   the round trip buys nothing.
 
+### Testing the hand-off
+
+`MockTanyaAIActionFixture` builds a stream carrying deeplinks you choose, so
+the whole path can run without a backend:
+
+```swift
+let transport = MockTanyaAIStreamingTransport(
+    scenario: .custom(
+        MockTanyaAIActionFixture.actionCardChunks(
+            buttons: [
+                .init(
+                    title: "Open transfer",
+                    deeplink: "ocbcid://mobile?type=transfer",
+                    identifier: "open-transfer"
+                )
+            ]
+        )
+    )
+)
+```
+
+`approvalHandoffChunks(deeplink:)` covers the second entry point, where the
+confirmation hands off and the PIN sheet must not appear. Buttons carry
+`action.<identifier>` as their accessibility identifier. `TanyaAITestSupport`
+belongs to debug and test targets only.
+
+Before that, check the deeplink alone —
+`xcrun simctl openurl booted "ocbcid://mobile?type=transfer"`. If the URL does
+not open the screen on its own, the hand-off cannot either; the usual cause is
+a scheme missing from `CFBundleURLTypes`, which makes `UIApplication.open`
+fail silently.
+
 ## Streaming adapter
 
 Implement `TanyaAIStreamingTransport` in the host. Translate the relative

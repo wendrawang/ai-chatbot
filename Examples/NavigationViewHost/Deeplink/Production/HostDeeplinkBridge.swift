@@ -21,6 +21,7 @@ final class HostDeeplinkBridge: ObservableObject {
     private var pendingDeeplink: URL?
     private weak var presenter: HostTanyaAIPresenter?
     private let dispatch: (URL) -> Void
+    private let open: (URL) -> Void
 
     /// - Parameters:
     ///   - presenter: the feature's presentation state, closed before a
@@ -28,12 +29,16 @@ final class HostDeeplinkBridge: ObservableObject {
     ///   - dispatch: the app's existing deeplink handler — the same function
     ///     `scene(_:openURLContexts:)` calls. It already returns to the
     ///     dashboard and opens the destination.
+    ///   - open: how to hand a URL to the system. Injected so a unit test can
+    ///     observe it instead of leaving the app.
     init(
         presenter: HostTanyaAIPresenter,
-        dispatch: @escaping (URL) -> Void
+        dispatch: @escaping (URL) -> Void,
+        open: @escaping (URL) -> Void = { UIApplication.shared.open($0) }
     ) {
         self.presenter = presenter
         self.dispatch = dispatch
+        self.open = open
     }
 
     /// Handler passed to `TanyaAIModule.makeView(onAction:)`.
@@ -48,7 +53,7 @@ final class HostDeeplinkBridge: ObservableObject {
         }
         // Round-trip through the system. Calling `receive(url)` directly works
         // too and is easier to test; the rest is identical.
-        UIApplication.shared.open(url)
+        open(url)
         return true
     }
 

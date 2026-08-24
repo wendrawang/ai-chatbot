@@ -1,10 +1,14 @@
 import Foundation
 
-/// Sanitized fixture for the host hand-off demo.
+/// Sanitized fixture for the sandbox hand-off demo.
 ///
-/// Streams one action card and one approval that hands off to the host instead
-/// of opening the in-feature PIN sheet. The third button carries an `https`
-/// link on purpose: the host must reject it.
+/// One response carrying both entry points: an action card and a confirmation
+/// that hands off instead of opening the in-feature PIN sheet. The third
+/// button carries an `https` link on purpose — the host must reject it.
+///
+/// Host applications should build their own with
+/// `MockTanyaAIActionFixture` rather than reuse this one: the deeplinks here
+/// are the sandbox's, not yours.
 enum MockTanyaAIDeeplinkFixture {
     static func chunks(identifier: String) -> [Data] {
         MockTanyaAIResponseFixture.irregularChunks(
@@ -26,7 +30,12 @@ enum MockTanyaAIDeeplinkFixture {
                     "text": "Your existing screens can take over from here."
                 ]
             ),
-            actionsEvent(identifier),
+            MockTanyaAIActionFixture.actionsEvent(
+                identifier: identifier,
+                title: "Continue in the app",
+                detail: "These open the existing screens.",
+                buttons: buttons
+            ),
             handoffApprovalEvent(identifier),
             event(
                 "response.completed",
@@ -35,45 +44,29 @@ enum MockTanyaAIDeeplinkFixture {
         ]
     }
 
-    private static func actionsEvent(_ identifier: String) -> String {
-        event(
-            "content.actions",
-            [
-                "messageIdentifier": "deeplink-actions-\(identifier)",
-                "title": "Continue in the app",
-                "detail": "These open the existing screens.",
-                "actions": [
-                    [
-                        "title": "Open transfer form",
-                        "style": "primary",
-                        "action": [
-                            "identifier": "open-transfer",
-                            "deeplink":
-                                "tanyaaisandbox://mobile?type=transfer" +
-                                "&accountNumber=0000111122"
-                        ]
-                    ],
-                    [
-                        "title": "Open sample statement",
-                        "style": "secondary",
-                        "action": [
-                            "identifier": "open-statement",
-                            "deeplink":
-                                "tanyaaisandbox://mobile?type=statement" +
-                                "&period=2026-07"
-                        ]
-                    ],
-                    [
-                        "title": "Open blocked link",
-                        "style": "secondary",
-                        "action": [
-                            "identifier": "open-blocked",
-                            "deeplink": "https://example.com/promo"
-                        ]
-                    ]
-                ]
-            ]
-        )
+    private static var buttons: [MockTanyaAIActionFixture.Button] {
+        [
+            MockTanyaAIActionFixture.Button(
+                title: "Open transfer form",
+                deeplink:
+                    "tanyaaisandbox://mobile?type=transfer" +
+                    "&accountNumber=0000111122",
+                identifier: "open-transfer"
+            ),
+            MockTanyaAIActionFixture.Button(
+                title: "Open sample statement",
+                style: "secondary",
+                deeplink:
+                    "tanyaaisandbox://mobile?type=statement&period=2026-07",
+                identifier: "open-statement"
+            ),
+            MockTanyaAIActionFixture.Button(
+                title: "Open blocked link",
+                style: "secondary",
+                deeplink: "https://example.com/promo",
+                identifier: "open-blocked"
+            )
+        ]
     }
 
     private static func handoffApprovalEvent(_ identifier: String) -> String {
