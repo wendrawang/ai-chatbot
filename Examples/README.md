@@ -10,7 +10,11 @@ compiled here.
 
 | Folder | Host shape |
 | --- | --- |
-| [`NavigationViewHost`](NavigationViewHost) | SwiftUI `NavigationView` screens hosted from `AppDelegate` and `SceneDelegate` |
+| [`NavigationViewHost/Minimal`](NavigationViewHost/Minimal) | Smallest wiring that makes the feature work: two thin adapters and one modifier |
+| [`NavigationViewHost/Production`](NavigationViewHost/Production) | Release-ready version: pinning, expiry checks, host theme, presentation gateway |
+
+Both target the same host shape — SwiftUI `NavigationView` screens hosted from
+`AppDelegate` and `SceneDelegate`.
 
 The sandbox target stays the executable proof: it exercises the same
 integration path end to end with mock adapters. These examples show the same

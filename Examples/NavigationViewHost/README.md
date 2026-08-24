@@ -4,8 +4,26 @@ Contoh siap-salin untuk host yang layar utamanya SwiftUI `NavigationView`
 dan lifecycle-nya `AppDelegate` + `SceneDelegate` — pola yang sama dengan
 `LegacyRootScreen` di sandbox ini.
 
-File di folder ini bukan bagian dari target sandbox. Salin ke project Anda,
-lalu ganti nama tipe `Host*` dan placeholder `App*` dengan milik Anda.
+Ada dua tingkat. Mulai dari `Minimal/`, naik ke `Production/` saat menyiapkan
+rilis. Keduanya memakai jalur integrasi yang sama; `Production/` hanya
+menambahkan hal-hal yang tidak boleh hilang di aplikasi sungguhan.
+
+| | [`Minimal/`](Minimal) | [`Production/`](Production) |
+| --- | --- | --- |
+| Tujuan | Membuat fitur jalan hari ini | Siap rilis |
+| Transport | Membungkus streaming client existing | `URLSessionDataDelegate` sendiri + forwarding pinning |
+| Otorisasi | Panggil API otorisasi existing | Sama, plus pengecekan kedaluwarsa dan status `.processing` |
+| Theme | `.sandbox` sementara | Pemetaan design token host |
+| Presentasi | `@State` + `fullScreenCover` | Presenter observable, layar legacy tidak kenal Tanya AI |
+| Composition | 5 baris di `SceneDelegate` | Composition root milik scene |
+
+Yang Anda tulis sendiri di versi minimal: dua adapter tipis, lima baris di
+`SceneDelegate`, dan satu modifier di layar yang sudah ada. Sisanya di folder
+ini adalah placeholder untuk tipe yang **sudah** Anda punya — di project asli
+tidak perlu dibuat, langsung panggil kelas networking dan otorisasi existing.
+
+File di sini bukan bagian dari target sandbox. Salin ke project Anda, lalu
+ganti nama tipe `Minimal*`/`Host*` dan placeholder `App*` dengan milik Anda.
 
 ## Prasyarat
 
@@ -13,98 +31,71 @@ lalu ganti nama tipe `Host*` dan placeholder `App*` dengan milik Anda.
    `presentationDetents`, dan `.toolbar(.hidden, for:)`. Ini blocker keras.
    `NavigationView` di app Anda tetap boleh dipakai — tidak perlu ikut
    dimigrasi ke `NavigationStack`.
-2. Tambahkan paket lokal `Packages/TanyaAI` ke project, lalu link **produk
-   `TanyaAI`** saja ke target app. `TanyaAITestSupport` hanya untuk target
+2. Tambahkan paket lokal `Packages/TanyaAI` ke project, lalu link produk
+   **`TanyaAI`** ke target app. Tambahkan **`TanyaAIDesignSystem`** juga kalau
+   memakai `.sandbox` versi minimal. `TanyaAITestSupport` hanya untuk target
    test — jangan pernah ikut ke Release.
 
-## Langkah
+## Minimal
 
-| # | Yang dikerjakan | File contoh |
-| --- | --- | --- |
-| 1 | Adapter streaming ke networking existing | `HostTanyaAIStreamingTransport.swift` |
-| 2 | Adapter otorisasi PIN ke secure API existing | `HostTanyaAIAuthorizationService.swift` |
-| 3 | Mapping design token ke `TanyaAITheme` | `HostTanyaAITheme.swift` |
-| 4 | Composition root, dibuat sekali per scene | `HostTanyaAIComposition.swift` |
-| 5 | Presenter observable untuk memicu presentasi | `HostTanyaAIPresenter.swift` |
-| 6 | Pasang `fullScreenCover` di luar `NavigationView` | `HostRootScreen.swift` |
-| 7 | Rakit semuanya di scene | `HostSceneDelegate.swift` |
+Tiga file, dan hanya dua yang benar-benar kode Anda:
 
-### 1. Streaming transport
+| File | Isi |
+| --- | --- |
+| `MinimalTanyaAITransport.swift` | Meneruskan request ke streaming client existing, meneruskan potongan mentah balik |
+| `MinimalTanyaAIAuthorization.swift` | Memanggil API otorisasi existing dengan PIN |
+| `MinimalHostIntegration.swift` | Lima baris di scene, satu `@State` dan satu modifier di layar |
 
-Paket mengirim `TanyaAIStreamRequest` berisi `path` relatif, `body` JSON
-(`{"message": "...", "conversationIdentifier": "..."}`), dan
-`requestIdentifier`. Tugas host: mengubahnya jadi `URLRequest` bersama base
-URL, header, token, dan tracing, lalu meneruskan **potongan mentah** respons
-ke `onData` apa adanya. Paket yang memotong SSE-nya sendiri, jadi jangan
-di-buffer atau di-decode di host.
+Syarat versi ini: **layer networking Anda sudah bisa streaming**. Kalau belum,
+lompat ke transport versi `Production/` — `dataTask(with:completionHandler:)`
+menahan seluruh respons sampai selesai, jadi semua bubble baru muncul
+sekaligus di akhir dan efek streaming-nya hilang.
 
-Header yang diharapkan backend: `Accept: text/event-stream`,
-`Content-Type: application/json`, method `POST`.
+`.sandbox` dipakai supaya fitur langsung tampil dengan warna yang masuk akal.
+Ganti sebelum rilis.
 
-Dua hal yang sering salah:
+## Production
 
-- **Jangan pakai `dataTask(with:completionHandler:)`** — itu menahan seluruh
-  respons sampai selesai, jadi tidak ada streaming. Harus delegate API
-  (`URLSessionDataDelegate`), seperti di contoh.
-- **Jangan bikin `URLSession` baru tanpa pinning Anda.** Contoh ini meneruskan
-  `URLAuthenticationChallenge` ke validator existing lewat
-  `HostTanyaAISecurityDelegate`. Kalau layer networking Anda sudah punya
-  streaming sendiri (mis. Alamofire `streamRequest` atau SSE client internal),
-  bungkus itu saja dan buang kelas contohnya.
+Tambahan di atas versi minimal:
 
-`URLSession` menahan delegate-nya sampai di-invalidate, jadi contoh ini
-memanggil `invalidateAndCancel()` di `deinit`. Kalau Anda memakai session
-existing milik host, hapus bagian itu — session-nya bukan milik adapter.
+| File | Kenapa perlu |
+| --- | --- |
+| `HostTanyaAIStreamingTransport.swift` | SSE di atas `URLSessionDataDelegate`, meneruskan `URLAuthenticationChallenge` ke pinning validator host, cancel yang aman sebelum task jalan, `invalidateAndCancel()` di `deinit` |
+| `HostTanyaAIAuthorizationService.swift` | Tolak challenge yang kedaluwarsa, bedakan `.completed` dan `.processing` |
+| `HostTanyaAITheme.swift` | Pemetaan warna dan font design system host |
+| `HostTanyaAIComposition.swift` | Composition root, dibuat sekali per scene |
+| `HostTanyaAIPresenter.swift` | Layar legacy cukup kenal protokol, bukan Tanya AI |
+| `HostRootScreen.swift` | Penempatan `fullScreenCover` dan layar detail yang memicu lewat presenter |
+| `HostSceneDelegate.swift` | Perakitan di scene |
 
-Callback boleh datang dari queue mana pun — ViewModel di paket sudah hop ke
-main queue sendiri.
+Detail kontrak yang perlu dipatuhi transport:
 
-Event SSE yang dipahami paket: `response.started`, `text.delta`,
-`content.*`, `response.suggestions`, `response.completed`. Skema lengkapnya
-ada di README utama bagian *Response lifecycle*.
+- Paket mengirim `path` relatif, `body` JSON
+  (`{"message": "...", "conversationIdentifier": "..."}`), dan
+  `requestIdentifier`. Host yang menambahkan base URL, header, token, tracing.
+- Header yang diharapkan backend: `POST`, `Accept: text/event-stream`,
+  `Content-Type: application/json`.
+- Teruskan potongan respons **mentah** ke `onData`. Paket yang memotong SSE-nya
+  sendiri — jangan di-buffer atau di-decode di host.
+- Callback boleh datang dari queue mana pun; ViewModel di paket sudah hop ke
+  main queue sendiri.
+- Event yang dipahami paket: `response.started`, `text.delta`, `content.*`,
+  `response.suggestions`, `response.completed`. Skema lengkapnya ada di README
+  utama bagian *Response lifecycle*.
 
-### 2. Otorisasi PIN
-
-Paket hanya mengumpulkan digit dan menampilkan hasil. Host yang memegang
-eksekusi transaksi, retry, lockout, dan mapping error. Kembalikan
-`.completed` kalau transaksi tuntas, `.processing` kalau masih diproses
-backend — bubble approval akan menampilkan status berbeda.
-
-PIN tidak boleh masuk log, analytics, crash report, clipboard, atau storage.
-Teruskan langsung ke API, jangan disimpan di property.
-
-### 3. Theme
-
-Kalau design system Anda `UIColor`/`UIFont`, konversi di sini dengan
-`Color(uiColor:)` dan `Font(uiFont)`. Jangan pernah meng-import design system
-host dari dalam paket.
-
-### 4–7. Perakitan
-
-`HostTanyaAIComposition` dibuat **sekali** di `SceneDelegate` lalu diturunkan.
-Jangan membuatnya di dalam `body` — itu bikin transport dan authorization
-service dibangun ulang tiap render.
-
-Titik paling penting ada di `HostRootScreen`:
-
-```swift
-NavigationView { ... }
-    .fullScreenCover(isPresented: $presenter.isPresented) {
-        TanyaAIModule.makeView(...)
-    }
-```
-
-`fullScreenCover` menempel di `NavigationView`, bukan di dalamnya, dan bukan
-di layar detail yang bisa ke-pop. Layar detail cukup memanggil
-`presenter.presentTanyaAI()` — dia tidak perlu tahu Tanya AI sama sekali,
-cukup kenal protokol `HostTanyaAIPresenting`.
+Untuk otorisasi: kembalikan `.completed` kalau transaksi tuntas, `.processing`
+kalau masih diproses backend — bubble approval menampilkan status berbeda. PIN
+tidak boleh masuk log, analytics, crash report, clipboard, atau storage.
 
 ## Yang tidak boleh
 
 - Menjadikan Tanya AI sebagai `NavigationLink` destination.
+- Menaruh `fullScreenCover` di layar detail yang bisa ke-pop; taruh di
+  boundary stabil di luar `NavigationView`.
 - Push `UIHostingController` fitur ke `UINavigationController` existing.
 - Menyimpan hasil `TanyaAIModule.makeView` sebagai singleton — panggil ulang
   tiap presentasi supaya tiap sesi dapat graph baru.
+- Membuat `TanyaAIDependencies` di dalam `body`.
 - Menaruh sertifikat, token, atau host internal di dalam paket.
 
 ## Verifikasi setelah integrasi
