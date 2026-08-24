@@ -27,6 +27,9 @@ public struct TanyaAIApprovalPayload: Equatable {
     public let summary: [TanyaAIKeyValue]
     public let notice: String?
     public let expiresAt: Date
+    /// When present, Confirm hands off to the host instead of opening the
+    /// in-feature PIN sheet.
+    public let handoff: TanyaAIAction?
     public var state: State
 
     public init(
@@ -38,6 +41,7 @@ public struct TanyaAIApprovalPayload: Equatable {
         summary: [TanyaAIKeyValue],
         notice: String? = nil,
         expiresAt: Date,
+        handoff: TanyaAIAction? = nil,
         state: State
     ) {
         self.approvalIdentifier = approvalIdentifier
@@ -48,6 +52,7 @@ public struct TanyaAIApprovalPayload: Equatable {
         self.summary = summary
         self.notice = notice
         self.expiresAt = expiresAt
+        self.handoff = handoff
         self.state = state
     }
 }

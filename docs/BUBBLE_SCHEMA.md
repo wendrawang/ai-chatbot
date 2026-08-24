@@ -17,6 +17,7 @@ Current semantic content types are:
 - chart;
 - financial list;
 - status;
+- host actions;
 - unsupported fallback.
 
 The schema is hybrid rather than one generic `summary` payload. Approvals and
@@ -34,8 +35,66 @@ Confirmation variants share one typed approval renderer:
 - generic fallback.
 
 Every pending confirmation exposes the same `Confirm` intent. The internal
-UIKit coordinator lazily presents the numeric PIN bottom sheet. PIN values are
+router lazily presents the numeric PIN bottom sheet. PIN values are
 short-lived presentation state and never become chat content or stream data.
+
+## Host actions
+
+An action asks the host to open one of its own screens. The response never
+carries a URL, a deeplink, or a navigation instruction — only a route key the
+host recognises and string parameters:
+
+```json
+event: content.actions
+data: {
+  "messageIdentifier": "actions-1",
+  "title": "Continue in the app",
+  "detail": "These open the existing screens.",
+  "actions": [
+    {
+      "title": "Open transfer form",
+      "style": "primary",
+      "action": {
+        "identifier": "open-transfer",
+        "route": "transfer.form",
+        "parameters": { "accountNumber": "0000111122" }
+      }
+    }
+  ]
+}
+```
+
+`style` accepts `primary` and `secondary`; anything else falls back to
+`primary`. An empty `actions` array renders the unsupported fallback instead
+of an empty card.
+
+A confirmation can hand off the same way. When `handoff` is present the
+`Confirm` button stops opening the in-feature PIN sheet and reports the action
+to the host, so an existing authorization flow can take over:
+
+```json
+event: content.approval
+data: {
+  "messageIdentifier": "approval-1",
+  "approvalIdentifier": "approval-1",
+  "transactionIdentifier": "transaction-1",
+  "challengeIdentifier": "challenge-1",
+  "kind": "transfer",
+  "title": "Confirm your transfer",
+  "summary": [{ "label": "To", "value": "Sample Beneficiary" }],
+  "expiresAt": "2099-01-01T00:00:00Z",
+  "handoff": {
+    "identifier": "handoff-transfer",
+    "route": "transfer.form",
+    "parameters": { "amount": "1250000" }
+  }
+}
+```
+
+The package forwards the action and does nothing else: it does not open URLs,
+dismiss itself, or navigate. The host decides whether the route is allowed,
+what it maps to, and when to close the feature. A route the host does not
+recognise must be dropped.
 
 ## Dynamic suggestions
 

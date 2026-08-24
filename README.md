@@ -44,6 +44,7 @@ Add it in **Edit Scheme → Run → Arguments** to reproduce a UI test locally.
 | none | `LegacyRootScreen` | none | 0.04 s | `TanyaAILegacyIntegrationTests` |
 | `--showcase` | Tanya AI directly | `showcase all bubbles` | 0.001 s | `TanyaAISandboxScreenshotTests` |
 | `--stress-chat` | Tanya AI directly | `stress conversation` | 0.001 s | `TanyaAIStressUITests` |
+| `--deeplink` | `LegacyRootScreen` | `deeplink hand-off` | 0.001 s | `TanyaAIDeeplinkUITests` |
 
 `--showcase` streams `MockTanyaAIShowcaseFixture` in one response: every
 confirmation and receipt card, every insight card, the four status levels, the
@@ -89,6 +90,31 @@ presentation gateway, and hosts the root SwiftUI screen in a
 `UIHostingController`. The lifecycle boundary stays in the host, so an existing
 `AppDelegate` and `SceneDelegate` application can adopt the feature without
 moving to the SwiftUI `App` lifecycle. The package itself remains pure SwiftUI.
+
+### Host actions and deeplinks
+
+A bubble can ask the host to open one of its own screens. The response carries
+a route key and parameters, never a URL:
+
+```text
+Action card or confirmation handoff
+    → TanyaAIChatOutput.performAction
+    → TanyaAIRouter
+    → onAction handler in the host
+    → host maps route to its own deeplink
+    → feature closes, stack returns to the dashboard, destination is pushed
+```
+
+The package never opens a URL, never dismisses itself for an action, and never
+navigates outside its own `NavigationStack`. The host owns the allowlist, so a
+response cannot steer the app into a screen the host never sanctioned. Schema
+in [`docs/BUBBLE_SCHEMA.md`](docs/BUBBLE_SCHEMA.md), sequencing in
+[`docs/INTEGRATION.md`](docs/INTEGRATION.md).
+
+The sandbox demonstrates the full round trip: `--deeplink` streams an action
+card and a confirmation with `handoff`, `SandboxDeeplinkRouter` maps the route
+onto `tanyaaisandbox://open?route=…`, and `SceneDelegate` receives it through
+`scene(_:openURLContexts:)` exactly as an external caller would.
 
 ### Package targets
 

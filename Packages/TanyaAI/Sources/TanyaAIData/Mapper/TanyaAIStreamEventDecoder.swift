@@ -28,6 +28,8 @@ final class TanyaAIStreamEventDecoder {
             return try decodeApproval(event.data)
         case "content.receipt":
             return try decodeReceipt(event.data)
+        case "content.actions":
+            return try decodeActions(event.data)
         case "content.status":
             return try decodeStatus(event.data)
         case "response.suggestions":
@@ -135,6 +137,7 @@ final class TanyaAIStreamEventDecoder {
             summary: payload.summary.map(makeKeyValue),
             notice: payload.notice,
             expiresAt: payload.expiresAt,
+            handoff: payload.handoff.map(makeAction),
             state: .awaitingApproval
         )
         return .content(

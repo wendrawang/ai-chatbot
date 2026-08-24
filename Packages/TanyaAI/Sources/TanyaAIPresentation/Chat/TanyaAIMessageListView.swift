@@ -54,7 +54,8 @@ struct TanyaAIMessageListView: View {
                     viewModel: message,
                     onApprovalEdit: viewModel.editApproval,
                     onApprovalCancel: viewModel.cancelApproval,
-                    onApproval: viewModel.approve
+                    onApproval: viewModel.approve,
+                    onAction: viewModel.perform
                 )
                 .padding(.horizontal, 16)
                 .padding(.vertical, 6)

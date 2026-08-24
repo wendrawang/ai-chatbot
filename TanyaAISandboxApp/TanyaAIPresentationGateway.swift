@@ -10,6 +10,7 @@ final class TanyaAIPresentationGateway:
 
     private let dependencies: TanyaAIDependencies
     private let configuration: TanyaAIConfiguration
+    private var actionHandler: ((TanyaAIAction) -> Void)?
 
     init(
         dependencies: TanyaAIDependencies,
@@ -17,6 +18,10 @@ final class TanyaAIPresentationGateway:
     ) {
         self.dependencies = dependencies
         self.configuration = configuration
+    }
+
+    func onAction(_ handler: @escaping (TanyaAIAction) -> Void) {
+        actionHandler = handler
     }
 
     func presentTanyaAI() {
@@ -37,6 +42,9 @@ final class TanyaAIPresentationGateway:
             dependencies: dependencies,
             onClose: { [weak self] in
                 self?.dismissTanyaAI()
+            },
+            onAction: { [weak self] action in
+                self?.actionHandler?(action)
             }
         )
     }

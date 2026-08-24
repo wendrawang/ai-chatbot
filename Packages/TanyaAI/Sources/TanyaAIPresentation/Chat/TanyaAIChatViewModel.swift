@@ -78,36 +78,6 @@ public final class TanyaAIChatViewModel: ObservableObject {
         onOutput?(.openHistory)
     }
 
-    public func approve(_ payload: TanyaAIApprovalPayload) {
-        guard payload.state == .awaitingApproval else {
-            return
-        }
-        onOutput?(.requestApproval(payload))
-    }
-
-    public func editApproval(_ payload: TanyaAIApprovalPayload) {
-        inputText = "Change \(payload.title.lowercased()): "
-    }
-
-    public func cancelApproval(_ payload: TanyaAIApprovalPayload) {
-        updateApproval(
-            identifier: payload.approvalIdentifier,
-            state: .cancelled
-        )
-    }
-
-    public func updateApproval(
-        identifier: String,
-        state: TanyaAIApprovalPayload.State
-    ) {
-        guard let message = approvalMessage(identifier: identifier),
-              case .approval(var payload) = message.content else {
-            return
-        }
-        payload.state = state
-        message.update(content: .approval(payload))
-    }
-
     deinit {
         activeRequest?.cancel()
         textDeltaBuffer.cancel()
@@ -226,7 +196,7 @@ public final class TanyaAIChatViewModel: ObservableObject {
         messageStore.message(identifier: identifier)
     }
 
-    private func approvalMessage(
+    func approvalMessage(
         identifier: String
     ) -> TanyaAIMessageItemViewModel? {
         messageStore.approval(identifier: identifier)

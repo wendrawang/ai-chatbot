@@ -1,5 +1,6 @@
 import SwiftUI
 import TanyaAIDesignSystem
+import TanyaAIDomain
 import TanyaAIPresentation
 
 public struct TanyaAIRootView: View {
@@ -8,13 +9,15 @@ public struct TanyaAIRootView: View {
 
     init(
         dependencyContainer: TanyaAIDependencyContainer,
-        closeHandler: @escaping () -> Void
+        closeHandler: @escaping () -> Void,
+        actionHandler: @escaping (TanyaAIAction) -> Void
     ) {
         theme = dependencyContainer.theme
         _router = StateObject(
             wrappedValue: TanyaAIRouter(
                 dependencyContainer: dependencyContainer,
-                closeHandler: closeHandler
+                closeHandler: closeHandler,
+                actionHandler: actionHandler
             )
         )
     }

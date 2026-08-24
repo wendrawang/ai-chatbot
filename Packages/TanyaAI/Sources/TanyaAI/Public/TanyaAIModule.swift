@@ -2,7 +2,8 @@ public enum TanyaAIModule {
     public static func makeView(
         configuration: TanyaAIConfiguration = TanyaAIConfiguration(),
         dependencies: TanyaAIDependencies,
-        onClose: @escaping () -> Void = {}
+        onClose: @escaping () -> Void = {},
+        onAction: @escaping (TanyaAIAction) -> Void = { _ in }
     ) -> TanyaAIRootView {
         let dependencyContainer = TanyaAIDependencyContainer(
             configuration: configuration,
@@ -10,7 +11,8 @@ public enum TanyaAIModule {
         )
         return TanyaAIRootView(
             dependencyContainer: dependencyContainer,
-            closeHandler: onClose
+            closeHandler: onClose,
+            actionHandler: onAction
         )
     }
 }

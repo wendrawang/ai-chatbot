@@ -106,3 +106,32 @@ tidak boleh masuk log, analytics, crash report, clipboard, atau storage.
    generation yang terus tumbuh.
 3. Putus koneksi di tengah stream — error banner muncul, tidak crash.
 4. Salah PIN lalu benar; pastikan tidak ada PIN yang muncul di log.
+
+## Deeplink hand-off
+
+[`Deeplink/`](Deeplink) menambahkan satu hal di atas dua tingkat di atas:
+tombol di bubble (atau `handoff` pada konfirmasi) menyerahkan navigasi ke
+aplikasi Anda.
+
+| File | Isi |
+| --- | --- |
+| `HostDeeplinkBridge.swift` | Allowlist route, penyusunan URL, entry point deeplink tunggal, dan penundaan destinasi |
+| `HostDeeplinkRootScreen.swift` | Urutan tutup → kembali ke dashboard → push destinasi |
+
+Empat hal yang menentukan berhasil-tidaknya:
+
+- **Backend tidak pernah mengirim URL.** `TanyaAIAction` berisi `route` dan
+  `parameters`; host yang memetakan ke destinasi dan menolak route yang tidak
+  dikenal. Ini yang mencegah respons mengarahkan app ke layar yang tidak Anda
+  izinkan.
+- **Fitur tidak menutup dirinya sendiri.** Host yang menutup, karena presentasi
+  full screen tidak bisa mem-push apa pun di bawahnya.
+- **Destinasi dikirim dari `onDismiss`,** bukan tepat setelah binding di-set
+  `false` — saat itu cover masih beranimasi.
+- **Pop dan push jangan di tick yang sama.** Set detail non-aktif dulu, push
+  destinasi di `DispatchQueue.main.async` berikutnya.
+
+Round-trip lewat `UIApplication.open` membuat hand-off memakai jalur deeplink
+yang sama dengan push notification atau app lain — daftarkan scheme-nya di
+`CFBundleURLTypes`. Kalau round-trip tidak memberi keuntungan, panggil
+`receive(url)` langsung; sisanya identik.

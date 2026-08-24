@@ -114,6 +114,71 @@ Requirements for this path:
 - keep UIKit in the host only. The package sources stay free of UIKit,
   `UIViewRepresentable`, and hosting controllers.
 
+## Host actions and deeplinks
+
+An action card, or a confirmation carrying `handoff`, reports a route to the
+host instead of navigating:
+
+```swift
+TanyaAIModule.makeView(
+    configuration: configuration,
+    dependencies: dependencies,
+    onClose: { showsTanyaAI = false },
+    onAction: { action in
+        deeplinkRouter.handle(action)
+    }
+)
+```
+
+`TanyaAIAction` carries `identifier`, `route`, and `parameters` — never a URL.
+The host owns the mapping from route to destination, and an unknown route must
+be dropped. That allowlist is what keeps a response from steering the app into
+a screen the host never sanctioned.
+
+The feature does not close itself when an action fires. Sequence it in the
+host, because a full-screen presentation cannot push anything underneath
+itself:
+
+1. keep the destination pending;
+2. dismiss the feature;
+3. once the dismissal finishes, return to the dashboard (or whatever root the
+   deeplink expects);
+4. then push the destination.
+
+In SwiftUI that means delivering the destination from `fullScreenCover`'s
+`onDismiss`, not straight after setting the binding to `false`. Popping and
+pushing in the same runloop tick also fights the navigation animation, so let
+the pop settle first:
+
+```swift
+.fullScreenCover(isPresented: $presenter.isPresented, onDismiss: {
+    guard router.hasPendingDestination else { return }
+    let isPopping = isDetailActive
+    isDetailActive = false
+    // NavigationView drops a push that starts while a pop is still animating.
+    DispatchQueue.main.asyncAfter(deadline: .now() + (isPopping ? 0.35 : 0)) {
+        router.deliverPendingDestination()
+    }
+}) {
+    presenter.makeView()
+}
+```
+
+A deeplink can also arrive with nothing presented — a cold start, or a push
+notification tapped from the dashboard. There is no dismissal to wait for
+then, so the host must deliver it directly instead of waiting on `onDismiss`.
+
+Two ways to reach the destination, both valid:
+
+- **Round-trip through the URL.** Build the deeplink URL from the route and
+  call `UIApplication.shared.open`. The app re-enters through
+  `scene(_:openURLContexts:)`, so the hand-off runs the same code path a push
+  notification or another app would. `Info.plist` must declare the scheme in
+  `CFBundleURLTypes`. This is what `TanyaAISandboxApp` does.
+- **Call the router directly.** Skip the URL and invoke the same function the
+  deeplink handler calls. Fewer moving parts and easier to test; use it when
+  the round trip buys nothing.
+
 ## Streaming adapter
 
 Implement `TanyaAIStreamingTransport` in the host. Translate the relative

@@ -85,7 +85,7 @@ struct TanyaAIApprovalBubble: View {
                 actionButton("Edit", action: onEdit)
                 actionButton("Cancel", action: onCancel)
                 Button(action: onApprove) {
-                    Text("Confirm")
+                    Text(payload.handoff == nil ? "Confirm" : "Continue")
                         .font(theme.fonts.button)
                         .frame(maxWidth: .infinity, minHeight: 44)
                 }
