@@ -116,8 +116,8 @@ Requirements for this path:
 
 ## Host actions and deeplinks
 
-An action card, or a confirmation carrying `handoff`, reports a route to the
-host instead of navigating:
+An action card, or a confirmation carrying `handoff`, reports a deeplink to
+the host instead of navigating:
 
 ```swift
 TanyaAIModule.makeView(
@@ -130,10 +130,41 @@ TanyaAIModule.makeView(
 )
 ```
 
-`TanyaAIAction` carries `identifier`, `route`, and `parameters` — never a URL.
-The host owns the mapping from route to destination, and an unknown route must
-be dropped. That allowlist is what keeps a response from steering the app into
-a screen the host never sanctioned.
+`TanyaAIAction` carries `identifier` and `deeplink` — the full string the
+backend sent, such as `ocbcid://mobile?type=transfer`. The package does not
+parse it, and `identifier` is for accessibility identifiers and analytics, not
+for routing.
+
+Validate before opening. The string arrives from the stream, so treat it like
+any other untrusted input:
+
+```swift
+guard let url = URL(string: action.deeplink),
+      url.scheme == "ocbcid",   // rejects https, tel, and other apps
+      url.host == "mobile",     // your existing deeplink entry point
+      let destination = existingDeeplinkParser.parse(url)
+else {
+    return          // not something this app opens: do nothing
+}
+```
+
+A complete version, including the query parsing, is in
+[`Examples/NavigationViewHost/Deeplink`](../Examples/NavigationViewHost/Deeplink).
+
+Reuse the validation your existing deeplink handler already performs rather
+than writing a second parser. Without it a response could point at another
+app, at a web page, or at a screen you never meant to reach from chat.
+
+### What lives where
+
+| Layer | Responsibility |
+| --- | --- |
+| Backend | Sends `content.actions`, or `handoff` on a confirmation, with the deeplink string |
+| Package (SDK) | Renders the buttons and reports the deeplink through `onAction`. Nothing else — no parsing, no opening, no dismissal |
+| Host app | Validates the deeplink, opens or routes it, closes the feature, returns to the dashboard, pushes the destination |
+
+Nothing in the package needs changing to adopt this. The work is the
+`onAction` handler and the sequencing below.
 
 The feature does not close itself when an action fires. Sequence it in the
 host, because a full-screen presentation cannot push anything underneath

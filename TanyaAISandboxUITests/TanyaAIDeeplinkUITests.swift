@@ -36,7 +36,9 @@ final class TanyaAIDeeplinkUITests: XCTestCase {
         assertDestination(title: "Transfer Form", parameter: "1250000")
     }
 
-    func testUnknownRouteIsIgnoredAndKeepsTheFeatureOpen() {
+    /// The fixture sends an `https` link. The host accepts only its own
+    /// scheme, so nothing should happen.
+    func testRejectedDeeplinkIsIgnoredAndKeepsTheFeatureOpen() {
         openTanyaAIFromLegacyDetail()
 
         reveal("action.open-blocked")

@@ -44,6 +44,11 @@ final class TanyaAIRouter: ObservableObject {
         dependencyContainer.startInitialPrompt(on: chatViewModel)
     }
 
+    /// Turns a chat intent into navigation.
+    ///
+    /// `history` stays inside the feature's own stack, `approval` opens the
+    /// PIN sheet, and `performAction` leaves the package entirely: it is
+    /// forwarded to the host and the feature does nothing else.
     func handle(_ output: TanyaAIChatOutput) {
         switch output {
         case .close:

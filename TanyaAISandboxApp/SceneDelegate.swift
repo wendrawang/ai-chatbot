@@ -29,6 +29,8 @@ final class SceneDelegate: UIResponder, UIWindowSceneDelegate {
         }
     }
 
+    /// Deeplinks that arrive while the app is running, including the one the
+    /// hand-off just opened.
     func scene(
         _ scene: UIScene,
         openURLContexts URLContexts: Set<UIOpenURLContext>
@@ -58,9 +60,9 @@ final class SceneDelegate: UIResponder, UIWindowSceneDelegate {
         )
     }
 
-    /// The action never opens anything itself. It asks the host for a route,
-    /// the host builds its own URL, and the app re-enters through the same
-    /// deeplink entry point an external caller would use.
+    /// Wires the hand-off. The feature reports a deeplink, this router
+    /// validates it against the app's allowlist and opens it, and the app
+    /// re-enters through the same entry point an external caller would use.
     private func makeDeeplinkRouter(
         gateway: TanyaAIPresentationGateway
     ) -> SandboxDeeplinkRouter {

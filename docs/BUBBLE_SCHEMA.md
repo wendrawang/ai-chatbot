@@ -40,9 +40,9 @@ short-lived presentation state and never become chat content or stream data.
 
 ## Host actions
 
-An action asks the host to open one of its own screens. The response never
-carries a URL, a deeplink, or a navigation instruction — only a route key the
-host recognises and string parameters:
+An action asks the host to open one of its own screens. The response carries
+the deeplink as one string, in whatever shape the host's existing deeplink
+handler already accepts:
 
 ```json
 event: content.actions
@@ -56,8 +56,7 @@ data: {
       "style": "primary",
       "action": {
         "identifier": "open-transfer",
-        "route": "transfer.form",
-        "parameters": { "accountNumber": "0000111122" }
+        "deeplink": "ocbcid://mobile?type=transfer&accountNumber=0000111122"
       }
     }
   ]
@@ -85,16 +84,20 @@ data: {
   "expiresAt": "2099-01-01T00:00:00Z",
   "handoff": {
     "identifier": "handoff-transfer",
-    "route": "transfer.form",
-    "parameters": { "amount": "1250000" }
+    "deeplink": "ocbcid://mobile?type=transfer&amount=1250000"
   }
 }
 ```
 
-The package forwards the action and does nothing else: it does not open URLs,
-dismiss itself, or navigate. The host decides whether the route is allowed,
-what it maps to, and when to close the feature. A route the host does not
-recognise must be dropped.
+`identifier` is for accessibility identifiers and analytics, never for
+routing. The package forwards the deeplink and does nothing else: it does not
+parse it, open it, dismiss itself, or navigate.
+
+Because the string arrives from the stream, the host must validate it before
+opening — at minimum the scheme, the entry host, and the destination itself.
+Anything the app does not recognise is dropped. Without that check a response
+could point at another app, at `https`, or at a screen the host never meant to
+expose from chat.
 
 ## Dynamic suggestions
 

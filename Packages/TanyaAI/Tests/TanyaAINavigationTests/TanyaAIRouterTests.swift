@@ -43,8 +43,7 @@ final class TanyaAIRouterTests: XCTestCase {
         let router = makeRouter(onAction: { received.append($0) })
         let action = TanyaAIAction(
             identifier: "open-transfer",
-            route: "transfer.form",
-            parameters: ["amount": "1250000"]
+            deeplink: "ocbcid://mobile?type=transfer&amount=1250000"
         )
 
         router.handle(.performAction(action))
@@ -59,7 +58,7 @@ final class TanyaAIRouterTests: XCTestCase {
         let router = makeRouter(onAction: { received.append($0) })
         let handoff = TanyaAIAction(
             identifier: "handoff-transfer",
-            route: "transfer.form"
+            deeplink: "ocbcid://mobile?type=transfer"
         )
         let approval = makeApproval(.transfer, handoff: handoff)
 

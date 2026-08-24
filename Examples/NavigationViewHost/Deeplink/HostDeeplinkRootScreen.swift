@@ -40,8 +40,24 @@ struct HostDeeplinkRootScreen: View {
                 }
             )
         }
+        // A deeplink that arrives with nothing presented has no dismissal to
+        // wait for. onAppear covers a cold start, onChange covers arrivals
+        // while the dashboard is already on screen.
+        .onAppear(perform: deliverIfNothingIsPresented)
+        .onChange(of: bridge.hasPendingDestination) { _ in
+            deliverIfNothingIsPresented()
+        }
     }
 
+    private func deliverIfNothingIsPresented() {
+        guard bridge.awaitsDismissal == false else {
+            return
+        }
+        deliverPendingDestination()
+    }
+
+    /// Runs when the full-screen presentation finished dismissing: return to
+    /// the dashboard, then push.
     private func deliverPendingDestination() {
         guard bridge.hasPendingDestination else {
             return
@@ -58,6 +74,8 @@ struct HostDeeplinkRootScreen: View {
         }
     }
 
+    /// A hidden, state-driven link. `NavigationView` has no programmatic push
+    /// of its own, so the deeplink destination needs one.
     private var destinationLink: some View {
         NavigationLink(
             destination: destinationScreen,
@@ -77,10 +95,10 @@ struct HostDeeplinkRootScreen: View {
     @ViewBuilder
     private var destinationScreen: some View {
         if let destination = bridge.activeDestination {
-            switch destination.route {
-            case .transferForm:
+            switch destination.type {
+            case .transfer:
                 ExistingTransferScreen(parameters: destination.parameters)
-            case .statementDetail:
+            case .statement:
                 ExistingStatementScreen(parameters: destination.parameters)
             }
         }

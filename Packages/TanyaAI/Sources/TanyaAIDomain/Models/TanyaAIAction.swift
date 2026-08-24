@@ -1,25 +1,31 @@
-/// A host-defined destination requested from inside the feature.
+/// A deeplink the response asks the host to open.
 ///
-/// The backend never sends a URL. It sends a route key and parameters, and the
-/// host decides what that route means, whether it is allowed, and how to reach
-/// it. The feature itself never opens anything.
+/// The feature never opens it. It hands the string to the host, and the host
+/// decides whether the deeplink is allowed and what to do with it. That
+/// decision cannot live in the package: only the host knows which schemes and
+/// destinations belong to the app.
 public struct TanyaAIAction: Equatable {
+    /// Stable identifier for the action, used for accessibility identifiers
+    /// and analytics. Not a destination.
     public let identifier: String
-    public let route: String
-    public let parameters: [String: String]
 
-    public init(
-        identifier: String,
-        route: String,
-        parameters: [String: String] = [:]
-    ) {
+    /// The deeplink exactly as the backend sent it, for example
+    /// `ocbcid://mobile?type=transfer`.
+    ///
+    /// Kept as a `String` rather than a `URL` on purpose: an unparseable value
+    /// must reach the host's validation and be rejected there, not disappear
+    /// silently while decoding.
+    public let deeplink: String
+
+    public init(identifier: String, deeplink: String) {
         self.identifier = identifier
-        self.route = route
-        self.parameters = parameters
+        self.deeplink = deeplink
     }
 }
 
+/// One button on an action card.
 public struct TanyaAIActionButton: Equatable, Identifiable {
+    /// Visual weight only. It carries no behaviour and no permission.
     public enum Style: String, Equatable {
         case primary
         case secondary
@@ -42,6 +48,7 @@ public struct TanyaAIActionButton: Equatable, Identifiable {
     }
 }
 
+/// A card whose only content is a set of hand-off buttons.
 public struct TanyaAIActionPayload: Equatable {
     public let title: String?
     public let detail: String?

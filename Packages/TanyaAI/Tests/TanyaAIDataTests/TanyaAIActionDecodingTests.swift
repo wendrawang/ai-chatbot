@@ -20,15 +20,15 @@ final class TanyaAIActionDecodingTests: XCTestCase {
                             "style": "primary",
                             "action": [
                                 "identifier": "open-transfer",
-                                "route": "transfer.form",
-                                "parameters": ["accountNumber": "0000111122"]
+                                "deeplink":
+                                    "ocbcid://mobile?type=transfer"
                             ]
                         ],
                         [
                             "title": "Open statement",
                             "action": [
                                 "identifier": "open-statement",
-                                "route": "statement.detail"
+                                "deeplink": "ocbcid://mobile?type=statement"
                             ]
                         ]
                     ]
@@ -44,11 +44,14 @@ final class TanyaAIActionDecodingTests: XCTestCase {
         XCTAssertEqual(payload.buttons.count, 2)
         XCTAssertEqual(payload.buttons[0].style, .primary)
         XCTAssertEqual(
-            payload.buttons[0].action.parameters["accountNumber"],
-            "0000111122"
+            payload.buttons[0].action.deeplink,
+            "ocbcid://mobile?type=transfer"
         )
         XCTAssertEqual(payload.buttons[1].style, .primary)
-        XCTAssertTrue(payload.buttons[1].action.parameters.isEmpty)
+        XCTAssertEqual(
+            payload.buttons[1].action.deeplink,
+            "ocbcid://mobile?type=statement"
+        )
     }
 
     func testUnknownButtonStyleFallsBackToPrimary() throws {
@@ -63,6 +66,25 @@ final class TanyaAIActionDecodingTests: XCTestCase {
             return XCTFail("Expected action content")
         }
         XCTAssertEqual(payload.buttons[0].style, .primary)
+    }
+
+    /// An unparseable value must survive decoding so the host can reject it,
+    /// rather than disappearing silently here.
+    func testMalformedDeeplinkIsCarriedThroughForTheHostToReject() throws {
+        var payload = approvalPayload()
+        payload["handoff"] = [
+            "identifier": "handoff-broken",
+            "deeplink": "not a url at all"
+        ]
+
+        let result = try decoder.decode(
+            makeEvent(name: "content.approval", payload: payload)
+        )
+
+        guard case .content(_, .approval(let approval)) = result else {
+            return XCTFail("Expected approval content")
+        }
+        XCTAssertEqual(approval.handoff?.deeplink, "not a url at all")
     }
 
     func testEmptyActionListDegradesToUnsupportedContent() throws {
@@ -96,12 +118,11 @@ final class TanyaAIActionDecodingTests: XCTestCase {
         XCTAssertNil(payload.handoff)
     }
 
-    func testApprovalHandoffDecodesRouteAndParameters() throws {
+    func testApprovalHandoffDecodesTheDeeplinkUntouched() throws {
         var payload = approvalPayload()
         payload["handoff"] = [
             "identifier": "handoff-transfer",
-            "route": "transfer.form",
-            "parameters": ["amount": "1250000"]
+            "deeplink": "ocbcid://mobile?type=transfer&amount=1250000"
         ]
 
         let result = try decoder.decode(
@@ -111,8 +132,10 @@ final class TanyaAIActionDecodingTests: XCTestCase {
         guard case .content(_, .approval(let approval)) = result else {
             return XCTFail("Expected approval content")
         }
-        XCTAssertEqual(approval.handoff?.route, "transfer.form")
-        XCTAssertEqual(approval.handoff?.parameters["amount"], "1250000")
+        XCTAssertEqual(
+            approval.handoff?.deeplink,
+            "ocbcid://mobile?type=transfer&amount=1250000"
+        )
     }
 
     private func actionsPayload(style: String) -> [String: Any] {
@@ -124,7 +147,7 @@ final class TanyaAIActionDecodingTests: XCTestCase {
                     "style": style,
                     "action": [
                         "identifier": "open-transfer",
-                        "route": "transfer.form"
+                        "deeplink": "ocbcid://mobile?type=transfer"
                     ]
                 ]
             ]

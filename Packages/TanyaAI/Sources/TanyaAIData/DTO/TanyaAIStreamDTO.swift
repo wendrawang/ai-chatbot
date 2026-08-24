@@ -48,8 +48,7 @@ struct TanyaAIPortfolioDTO: Decodable {
 
 struct TanyaAIActionDTO: Decodable {
     let identifier: String
-    let route: String
-    let parameters: [String: String]?
+    let deeplink: String
 }
 
 struct TanyaAIActionButtonDTO: Decodable {

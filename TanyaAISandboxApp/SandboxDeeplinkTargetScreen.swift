@@ -1,6 +1,8 @@
 import SwiftUI
 
 /// Stand-in for an existing screen the host already owns.
+///
+/// Shows the deeplink that reached it so the demo makes the hand-off visible.
 struct SandboxDeeplinkTargetScreen: View {
     let destination: SandboxDeeplinkDestination
 
@@ -15,6 +17,11 @@ struct SandboxDeeplinkTargetScreen: View {
                 )
                 .font(.subheadline)
                 .foregroundColor(.secondary)
+
+                Text(destination.deeplink)
+                    .font(.footnote)
+                    .foregroundColor(.secondary)
+                    .legacyAccessibilityIdentifier("deeplink.url")
 
                 ForEach(destination.sortedParameters) { parameter in
                     HStack {

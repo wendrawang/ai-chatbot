@@ -3,7 +3,8 @@ import Foundation
 /// Sanitized fixture for the host hand-off demo.
 ///
 /// Streams one action card and one approval that hands off to the host instead
-/// of opening the in-feature PIN sheet.
+/// of opening the in-feature PIN sheet. The third button carries an `https`
+/// link on purpose: the host must reject it.
 enum MockTanyaAIDeeplinkFixture {
     static func chunks(identifier: String) -> [Data] {
         MockTanyaAIResponseFixture.irregularChunks(
@@ -47,8 +48,9 @@ enum MockTanyaAIDeeplinkFixture {
                         "style": "primary",
                         "action": [
                             "identifier": "open-transfer",
-                            "route": "transfer.form",
-                            "parameters": ["accountNumber": "0000111122"]
+                            "deeplink":
+                                "tanyaaisandbox://mobile?type=transfer" +
+                                "&accountNumber=0000111122"
                         ]
                     ],
                     [
@@ -56,16 +58,17 @@ enum MockTanyaAIDeeplinkFixture {
                         "style": "secondary",
                         "action": [
                             "identifier": "open-statement",
-                            "route": "statement.detail",
-                            "parameters": ["period": "2026-07"]
+                            "deeplink":
+                                "tanyaaisandbox://mobile?type=statement" +
+                                "&period=2026-07"
                         ]
                     ],
                     [
-                        "title": "Open blocked route",
+                        "title": "Open blocked link",
                         "style": "secondary",
                         "action": [
                             "identifier": "open-blocked",
-                            "route": "settings.secret"
+                            "deeplink": "https://example.com/promo"
                         ]
                     ]
                 ]
@@ -91,8 +94,8 @@ enum MockTanyaAIDeeplinkFixture {
                 "expiresAt": "2099-01-01T00:00:00Z",
                 "handoff": [
                     "identifier": "handoff-transfer",
-                    "route": "transfer.form",
-                    "parameters": ["amount": "1250000"]
+                    "deeplink":
+                        "tanyaaisandbox://mobile?type=transfer&amount=1250000"
                 ]
             ]
         )

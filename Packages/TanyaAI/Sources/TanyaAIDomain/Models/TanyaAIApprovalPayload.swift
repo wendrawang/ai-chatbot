@@ -27,8 +27,9 @@ public struct TanyaAIApprovalPayload: Equatable {
     public let summary: [TanyaAIKeyValue]
     public let notice: String?
     public let expiresAt: Date
-    /// When present, Confirm hands off to the host instead of opening the
-    /// in-feature PIN sheet.
+    /// When present, Confirm hands the deeplink to the host instead of
+    /// opening the in-feature PIN sheet. Use it while an existing screen still
+    /// owns the transaction.
     public let handoff: TanyaAIAction?
     public var state: State
 

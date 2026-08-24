@@ -2,48 +2,53 @@ import Combine
 import Foundation
 import TanyaAI
 
-/// Turns a Tanya AI action into the host's own deeplink, then replays the
-/// arrival exactly like an external one.
+/// Owns the app's deeplink handling, including the hand-off from Tanya AI.
 ///
-/// The sequence matters. The feature is presented full screen over the legacy
-/// hierarchy, so the destination cannot be pushed while it is still on screen.
-/// The router keeps the destination pending, asks the presenter to close, and
-/// only delivers once the presentation is gone.
+/// The sequence is the whole job. The feature is presented full screen over
+/// the legacy hierarchy, so a destination cannot be pushed while it is still
+/// on screen, and the deeplink has to land on the dashboard first. The router
+/// keeps the destination pending until the host says the moment is right.
 final class SandboxDeeplinkRouter: ObservableObject {
-    /// The destination currently pushed on the legacy stack.
+    /// The destination currently pushed on the legacy stack. `nil` means the
+    /// stack is back on the dashboard.
     @Published var activeDestination: SandboxDeeplinkDestination?
-    /// Set while a destination waits for the right moment to be pushed.
+
+    /// Set while a validated destination waits to be pushed.
     @Published private(set) var hasPendingDestination = false
+
     /// True when the destination must wait for the feature to finish
-    /// dismissing. False when the deeplink arrived with nothing presented, so
-    /// the host can deliver it right away.
+    /// dismissing. False when the deeplink arrived with nothing presented —
+    /// a cold start, or a notification tapped on the dashboard — so the host
+    /// can deliver it right away.
     @Published private(set) var awaitsDismissal = false
 
     private var pendingDestination: SandboxDeeplinkDestination?
     private let opener: (URL) -> Void
     private weak var presenter: TanyaAIPresentationGateway?
 
+    /// - Parameter opener: how to hand a URL to the system. Injected so tests
+    ///   can observe it instead of leaving the app.
     init(opener: @escaping (URL) -> Void) {
         self.opener = opener
     }
 
+    /// The presentation gateway to close when a deeplink arrives. Held weakly:
+    /// the scene owns both objects.
     func attach(presenter: TanyaAIPresentationGateway) {
         self.presenter = presenter
     }
 
-    /// Called by the feature. Maps the action to a route, builds the URL, and
-    /// hands it to the system so the app re-enters through its own deeplink
-    /// entry point.
+    /// Handler passed to `TanyaAIModule.makeView(onAction:)`.
+    ///
+    /// Validates the deeplink the response sent, then opens it so the app
+    /// re-enters through its own deeplink entry point. Returns `false` — and
+    /// does nothing at all — when the deeplink is not one this app accepts.
     @discardableResult
     func handle(_ action: TanyaAIAction) -> Bool {
-        guard let route = SandboxDeeplinkRoute(rawValue: action.route) else {
-            return false
-        }
-        let destination = SandboxDeeplinkDestination(
-            route: route,
-            parameters: action.parameters
-        )
-        guard let url = SandboxDeeplink.url(for: destination) else {
+        guard let destination = SandboxDeeplink.destination(
+            from: action.deeplink
+        ),
+        let url = URL(string: destination.deeplink) else {
             return false
         }
         opener(url)
@@ -52,6 +57,9 @@ final class SandboxDeeplinkRouter: ObservableObject {
 
     /// The single deeplink entry point: cold start, external app, push
     /// notification, and the Tanya AI hand-off all land here.
+    ///
+    /// Validates again — this URL may come from anywhere — then holds the
+    /// destination and asks the feature to close if it is on screen.
     @discardableResult
     func receive(_ url: URL) -> Bool {
         guard let destination = SandboxDeeplink.destination(from: url) else {
@@ -68,7 +76,9 @@ final class SandboxDeeplinkRouter: ObservableObject {
         return true
     }
 
-    /// Called once the full-screen presentation has finished dismissing.
+    /// Pushes the pending destination. Call it once the screen is clear: after
+    /// the feature finished dismissing and the stack returned to the
+    /// dashboard.
     func deliverPendingDestination() {
         guard let destination = pendingDestination else {
             return
@@ -79,6 +89,8 @@ final class SandboxDeeplinkRouter: ObservableObject {
         activeDestination = destination
     }
 
+    /// Called when the user navigates back, so the pushed destination is not
+    /// restored on the next render.
     func clearDestination() {
         activeDestination = nil
     }

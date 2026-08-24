@@ -109,27 +109,49 @@ tidak boleh masuk log, analytics, crash report, clipboard, atau storage.
 
 ## Deeplink hand-off
 
-[`Deeplink/`](Deeplink) menambahkan satu hal di atas dua tingkat di atas:
-tombol di bubble (atau `handoff` pada konfirmasi) menyerahkan navigasi ke
-aplikasi Anda.
+Tombol di bubble (atau `handoff` pada konfirmasi) menyerahkan navigasi ke
+aplikasi Anda. Backend mengirim deeplink utuh sebagai satu string, misalnya
+`ocbcid://mobile?type=transfer`.
+
+### Siapa menulis apa
+
+| Lapisan | Tanggung jawab | Perlu Anda kerjakan? |
+| --- | --- | --- |
+| Backend | Kirim `content.actions`, atau `handoff` di konfirmasi, berisi string deeplink | Ya — di sisi server |
+| Paket / SDK | Render tombolnya, laporkan deeplink lewat `onAction`. Tidak parsing, tidak membuka, tidak menutup dirinya | **Tidak ada.** Sudah tersedia |
+| App Anda | Validasi deeplink, buka/rutekan, tutup fitur, kembali ke dashboard, push destinasi | Ya — ini seluruh pekerjaannya |
+
+Di sisi app, konkretnya cuma tiga hal:
+
+1. **Satu handler** di `TanyaAIModule.makeView(onAction:)`.
+2. **Satu validasi** — kalau deeplink handler existing Anda sudah punya
+   parser, panggil itu; jangan bikin parser kedua.
+3. **Satu urutan** tutup → dashboard → push, di layar root.
+
+### File contoh
 
 | File | Isi |
 | --- | --- |
-| `HostDeeplinkBridge.swift` | Allowlist route, penyusunan URL, entry point deeplink tunggal, dan penundaan destinasi |
+| `HostDeeplinkBridge.swift` | `handle(_:)` validasi + buka, `receive(_:)` entry point deeplink, `deliverPendingDestination()` push saat layar sudah bersih, `validate(_:)` batas keamanannya |
 | `HostDeeplinkRootScreen.swift` | Urutan tutup → kembali ke dashboard → push destinasi |
 
-Empat hal yang menentukan berhasil-tidaknya:
+### Empat hal yang menentukan berhasil-tidaknya
 
-- **Backend tidak pernah mengirim URL.** `TanyaAIAction` berisi `route` dan
-  `parameters`; host yang memetakan ke destinasi dan menolak route yang tidak
-  dikenal. Ini yang mencegah respons mengarahkan app ke layar yang tidak Anda
-  izinkan.
+- **Validasi sebelum membuka.** String-nya datang dari stream, jadi
+  perlakukan seperti input tidak tepercaya: cek scheme (ini yang menolak
+  `https`, `tel:`, dan link ke app lain), cek host entry point, cek tujuannya
+  ada di allowlist. Tanpa itu, respons bisa mengarahkan app Anda ke mana saja.
 - **Fitur tidak menutup dirinya sendiri.** Host yang menutup, karena presentasi
   full screen tidak bisa mem-push apa pun di bawahnya.
 - **Destinasi dikirim dari `onDismiss`,** bukan tepat setelah binding di-set
   `false` — saat itu cover masih beranimasi.
-- **Pop dan push jangan di tick yang sama.** Set detail non-aktif dulu, push
-  destinasi di `DispatchQueue.main.async` berikutnya.
+- **Pop dan push jangan di tick yang sama.** `NavigationView` membuang push
+  yang dimulai saat pop masih beranimasi; beri jeda selama animasi pop.
+
+Satu kasus yang mudah terlewat: deeplink yang datang saat tidak ada apa pun
+yang ter-present — cold start, atau notifikasi ditekan dari dashboard — tidak
+punya dismissal untuk ditunggu. Kirim langsung, jangan menunggu `onDismiss`
+yang tidak akan pernah datang.
 
 Round-trip lewat `UIApplication.open` membuat hand-off memakai jalur deeplink
 yang sama dengan push notification atau app lain — daftarkan scheme-nya di

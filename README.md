@@ -94,27 +94,29 @@ moving to the SwiftUI `App` lifecycle. The package itself remains pure SwiftUI.
 ### Host actions and deeplinks
 
 A bubble can ask the host to open one of its own screens. The response carries
-a route key and parameters, never a URL:
+the deeplink as one string, such as `ocbcid://mobile?type=transfer`:
 
 ```text
 Action card or confirmation handoff
     → TanyaAIChatOutput.performAction
     → TanyaAIRouter
     → onAction handler in the host
-    → host maps route to its own deeplink
+    → host validates the deeplink against its own allowlist
     → feature closes, stack returns to the dashboard, destination is pushed
 ```
 
-The package never opens a URL, never dismisses itself for an action, and never
-navigates outside its own `NavigationStack`. The host owns the allowlist, so a
-response cannot steer the app into a screen the host never sanctioned. Schema
+The package never parses or opens the deeplink, never dismisses itself for an
+action, and never navigates outside its own `NavigationStack`. The host owns
+the allowlist, so a response cannot steer the app into a screen — or another
+app — that the host never sanctioned. Schema
 in [`docs/BUBBLE_SCHEMA.md`](docs/BUBBLE_SCHEMA.md), sequencing in
 [`docs/INTEGRATION.md`](docs/INTEGRATION.md).
 
 The sandbox demonstrates the full round trip: `--deeplink` streams an action
-card and a confirmation with `handoff`, `SandboxDeeplinkRouter` maps the route
-onto `tanyaaisandbox://open?route=…`, and `SceneDelegate` receives it through
-`scene(_:openURLContexts:)` exactly as an external caller would.
+card and a confirmation with `handoff`, `SandboxDeeplink` validates
+`tanyaaisandbox://mobile?type=…` against its allowlist, and `SceneDelegate`
+receives the opened URL through `scene(_:openURLContexts:)` exactly as an
+external caller would. One button carries an `https` link the host rejects.
 
 ### Package targets
 
