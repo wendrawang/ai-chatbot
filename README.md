@@ -20,9 +20,10 @@ internal identifiers, or customer data.
 ## Quick start
 
 Open `TanyaAISandbox.xcodeproj`, select an iPhone simulator, and run the
-`TanyaAISandbox` scheme. The initial screen simulates a legacy SwiftUI
-navigation hierarchy. Its detail screen opens Tanya AI as an independent,
-full-screen SwiftUI feature.
+`TanyaAISandbox` scheme. The app boots through `AppDelegate` and
+`SceneDelegate`, exactly like an existing UIKit-lifecycle host. The initial
+screen simulates a legacy SwiftUI navigation hierarchy. Its detail screen opens
+Tanya AI as an independent, full-screen SwiftUI feature.
 
 The demo PIN is `123456`. It exists only in the mock authorization service.
 
@@ -33,10 +34,31 @@ DEVELOPER_DIR=/Applications/Xcode.app/Contents/Developer \
   ./Scripts/verify.sh
 ```
 
+### Launch arguments
+
+`SceneDelegate` reads one optional launch argument through `SandboxLaunchMode`.
+Add it in **Edit Scheme → Run → Arguments** to reproduce a UI test locally.
+
+| Argument | Root screen | Initial prompt | Mock chunk delay | Used by |
+| --- | --- | --- | --- | --- |
+| none | `LegacyRootScreen` | none | 0.04 s | `TanyaAILegacyIntegrationTests` |
+| `--showcase` | Tanya AI directly | `showcase all bubbles` | 0.001 s | `TanyaAISandboxScreenshotTests` |
+| `--stress-chat` | Tanya AI directly | `stress conversation` | 0.001 s | `TanyaAIStressUITests` |
+
+`--showcase` streams `MockTanyaAIShowcaseFixture` in one response: every
+confirmation and receipt card, every insight card, the four status levels, the
+unsupported-content fallback, and the suggestion strip. It exists so the
+screenshot test can scroll each semantic bubble into the viewport and store the
+images in [`Artifacts/Screenshots`](Artifacts/Screenshots). `--stress-chat`
+streams the 5,000-message fixture used by the scroll stress test. Both skip the
+legacy host screen and shorten the mock chunk delay so a UI run does not wait
+on simulated streaming.
+
 ## Architecture
 
 ```text
-Host application
+Host application (UIKit AppDelegate and SceneDelegate)
+├── UIWindow and UIHostingController root
 ├── existing navigation
 ├── authenticated network session
 ├── mTLS, pinning, token and headers
@@ -60,6 +82,13 @@ View → ViewModel → UseCase → Repository → injected transport
 `TanyaAIRouter` owns a small typed path and one optional authorization sheet.
 Only a requested destination is rendered. There is no hidden `NavigationLink`
 graph and no UIKit navigation object inside the production package.
+
+The sandbox host keeps the classic UIKit lifecycle. `AppDelegate` supplies the
+scene configuration, `SceneDelegate` builds the `UIWindow`, owns the
+presentation gateway, and hosts the root SwiftUI screen in a
+`UIHostingController`. The lifecycle boundary stays in the host, so an existing
+`AppDelegate` and `SceneDelegate` application can adopt the feature without
+moving to the SwiftUI `App` lifecycle. The package itself remains pure SwiftUI.
 
 ### Package targets
 
@@ -877,3 +906,6 @@ Examples:
 - [`docs/BUBBLE_SCHEMA.md`](docs/BUBBLE_SCHEMA.md)
 - [`docs/INTEGRATION.md`](docs/INTEGRATION.md)
 - [`docs/PERFORMANCE.md`](docs/PERFORMANCE.md)
+- [`Examples/NavigationViewHost`](Examples/NavigationViewHost) — copy-ready
+  adapters and wiring for a `NavigationView` host that keeps `AppDelegate` and
+  `SceneDelegate`
