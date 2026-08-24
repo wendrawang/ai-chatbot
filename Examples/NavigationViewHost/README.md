@@ -119,41 +119,61 @@ aplikasi Anda. Backend mengirim deeplink utuh sebagai satu string, misalnya
 | --- | --- | --- |
 | Backend | Kirim `content.actions`, atau `handoff` di konfirmasi, berisi string deeplink | Ya — di sisi server |
 | Paket / SDK | Render tombolnya, laporkan deeplink lewat `onAction`. Tidak parsing, tidak membuka, tidak menutup dirinya | **Tidak ada.** Sudah tersedia |
-| App Anda | Validasi deeplink, buka/rutekan, tutup fitur, kembali ke dashboard, push destinasi | Ya — ini seluruh pekerjaannya |
+| App Anda | Cek link ini milik app Anda, tunggu fitur tertutup, lalu serahkan ke deeplink handler yang sudah ada | Ya — dan itu saja |
 
-Di sisi app, konkretnya cuma tiga hal:
+Yang **tidak** perlu Anda tulis ulang: parsing `type`, pemetaan ke layar, dan
+kembali ke dashboard. Deeplink handler existing Anda sudah melakukannya —
+hand-off ini cuma memberi URL ke handler itu pada saat yang tepat.
 
-1. **Satu handler** di `TanyaAIModule.makeView(onAction:)`.
-2. **Satu validasi** — kalau deeplink handler existing Anda sudah punya
-   parser, panggil itu; jangan bikin parser kedua.
-3. **Satu urutan** tutup → dashboard → push, di layar root.
+Validasinya sengaja hanya dua baris: **scheme** dan **host**. Scheme yang
+menolak `https://…`, `tel:`, dan link yang akan membuka app lain; host
+mengikat link ke entry point deeplink Anda. Sisanya urusan handler existing —
+parser kedua di sini hanya akan menyimpang dari yang asli.
 
-### File contoh
+### Dua tingkat
 
-| File | Isi |
-| --- | --- |
-| `HostDeeplinkBridge.swift` | `handle(_:)` validasi + buka, `receive(_:)` entry point deeplink, `deliverPendingDestination()` push saat layar sudah bersih, `validate(_:)` batas keamanannya |
-| `HostDeeplinkRootScreen.swift` | Urutan tutup → kembali ke dashboard → push destinasi |
+| | [`Deeplink/Minimal`](Deeplink/Minimal) | [`Deeplink/Production`](Deeplink/Production) |
+| --- | --- | --- |
+| Bentuk | Satu file, dua `@State` di layar root | Objek `HostDeeplinkBridge` tersendiri |
+| Jalur | Panggil handler existing langsung | Round-trip lewat `UIApplication.open`, masuk lagi via `scene(_:openURLContexts:)` |
+| Cold start | Tidak ditangani | Ditangani (`onAppear`/`onChange`) |
+| Entry point | Hanya hand-off | Satu entry point untuk semua sumber deeplink |
 
-### Empat hal yang menentukan berhasil-tidaknya
+Mulai dari `Minimal/`. Isinya benar-benar cuma ini:
 
-- **Validasi sebelum membuka.** String-nya datang dari stream, jadi
-  perlakukan seperti input tidak tepercaya: cek scheme (ini yang menolak
-  `https`, `tel:`, dan link ke app lain), cek host entry point, cek tujuannya
-  ada di allowlist. Tanpa itu, respons bisa mengarahkan app Anda ke mana saja.
-- **Fitur tidak menutup dirinya sendiri.** Host yang menutup, karena presentasi
-  full screen tidak bisa mem-push apa pun di bawahnya.
-- **Destinasi dikirim dari `onDismiss`,** bukan tepat setelah binding di-set
+```swift
+private func handle(_ action: TanyaAIAction) {
+    guard let url = URL(string: action.deeplink),
+          url.scheme == "ocbcid",
+          url.host == "mobile" else {
+        return
+    }
+    pendingDeeplink = url      // ditahan dulu
+    showsTanyaAI = false       // tutup fitur
+}
+
+private func openPendingDeeplink() {   // dipanggil dari onDismiss
+    guard let url = pendingDeeplink else { return }
+    pendingDeeplink = nil
+    AppDeeplinkHandler.open(url)       // handler existing Anda
+}
+```
+
+### Tiga hal yang menentukan berhasil-tidaknya
+
+- **Deeplink ditahan dulu, jangan langsung dibuka.** Fitur tampil full screen;
+  navigasi yang terjadi di bawahnya akan hilang.
+- **Fitur tidak menutup dirinya sendiri.** Host yang menutup.
+- **Serahkan URL dari `onDismiss`,** bukan tepat setelah binding di-set
   `false` — saat itu cover masih beranimasi.
-- **Pop dan push jangan di tick yang sama.** `NavigationView` membuang push
-  yang dimulai saat pop masih beranimasi; beri jeda selama animasi pop.
 
-Satu kasus yang mudah terlewat: deeplink yang datang saat tidak ada apa pun
-yang ter-present — cold start, atau notifikasi ditekan dari dashboard — tidak
-punya dismissal untuk ditunggu. Kirim langsung, jangan menunggu `onDismiss`
-yang tidak akan pernah datang.
+Kalau handler existing Anda **tidak** otomatis kembali ke dashboard, pop dulu
+di `onDismiss`, lalu serahkan URL-nya setelah animasi pop selesai —
+`NavigationView` membuang push yang dimulai saat pop masih berjalan. Versi
+sandbox (`TanyaAISandboxApp/LegacyRootScreen.swift`) memperlihatkan pola itu,
+karena sandbox tidak punya deeplink handler sendiri.
 
-Round-trip lewat `UIApplication.open` membuat hand-off memakai jalur deeplink
-yang sama dengan push notification atau app lain — daftarkan scheme-nya di
-`CFBundleURLTypes`. Kalau round-trip tidak memberi keuntungan, panggil
-`receive(url)` langsung; sisanya identik.
+Round-trip lewat `UIApplication.open` di versi Production membuat hand-off
+memakai jalur yang sama dengan push notification atau app lain — daftarkan
+scheme-nya di `CFBundleURLTypes`. Kalau round-trip tidak memberi keuntungan,
+panggil handler-nya langsung seperti versi minimal.

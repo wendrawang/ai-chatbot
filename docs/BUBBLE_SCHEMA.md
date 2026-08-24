@@ -93,11 +93,11 @@ data: {
 routing. The package forwards the deeplink and does nothing else: it does not
 parse it, open it, dismiss itself, or navigate.
 
-Because the string arrives from the stream, the host must validate it before
-opening — at minimum the scheme, the entry host, and the destination itself.
-Anything the app does not recognise is dropped. Without that check a response
-could point at another app, at `https`, or at a screen the host never meant to
-expose from chat.
+Because the string arrives from the stream, the host must check it before
+opening: the scheme has to be the app's own, and the host has to be the app's
+deeplink entry point. Anything else is dropped. Without that check a response
+could point at another app or at a web page. Resolving the link to a screen
+stays with the host's existing deeplink handler.
 
 ## Dynamic suggestions
 

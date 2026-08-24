@@ -101,22 +101,23 @@ Action card or confirmation handoff
     → TanyaAIChatOutput.performAction
     → TanyaAIRouter
     → onAction handler in the host
-    → host validates the deeplink against its own allowlist
-    → feature closes, stack returns to the dashboard, destination is pushed
+    → host checks the scheme and its deeplink entry host
+    → feature closes, then the host's existing deeplink handler takes over
 ```
 
 The package never parses or opens the deeplink, never dismisses itself for an
-action, and never navigates outside its own `NavigationStack`. The host owns
-the allowlist, so a response cannot steer the app into a screen — or another
-app — that the host never sanctioned. Schema
+action, and never navigates outside its own `NavigationStack`. The host checks
+that the link is its own before opening it, so a response cannot point the app
+at a web page or at another app. Schema
 in [`docs/BUBBLE_SCHEMA.md`](docs/BUBBLE_SCHEMA.md), sequencing in
 [`docs/INTEGRATION.md`](docs/INTEGRATION.md).
 
 The sandbox demonstrates the full round trip: `--deeplink` streams an action
-card and a confirmation with `handoff`, `SandboxDeeplink` validates
-`tanyaaisandbox://mobile?type=…` against its allowlist, and `SceneDelegate`
-receives the opened URL through `scene(_:openURLContexts:)` exactly as an
-external caller would. One button carries an `https` link the host rejects.
+card and a confirmation with `handoff`, `SandboxDeeplink` accepts
+`tanyaaisandbox://mobile?…`, and `SceneDelegate` receives the opened URL
+through `scene(_:openURLContexts:)` exactly as an external caller would. One
+button carries an `https` link the host rejects. `SandboxDeeplinkDispatcher`
+stands in for the deeplink handler a real host application already owns.
 
 ### Package targets
 

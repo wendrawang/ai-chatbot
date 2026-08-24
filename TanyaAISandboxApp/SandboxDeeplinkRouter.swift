@@ -40,15 +40,12 @@ final class SandboxDeeplinkRouter: ObservableObject {
 
     /// Handler passed to `TanyaAIModule.makeView(onAction:)`.
     ///
-    /// Validates the deeplink the response sent, then opens it so the app
+    /// Checks that the link belongs to this app, then opens it so the app
     /// re-enters through its own deeplink entry point. Returns `false` — and
-    /// does nothing at all — when the deeplink is not one this app accepts.
+    /// does nothing at all — for anything else.
     @discardableResult
     func handle(_ action: TanyaAIAction) -> Bool {
-        guard let destination = SandboxDeeplink.destination(
-            from: action.deeplink
-        ),
-        let url = URL(string: destination.deeplink) else {
+        guard let url = SandboxDeeplink.accepted(action.deeplink) else {
             return false
         }
         opener(url)
@@ -58,11 +55,15 @@ final class SandboxDeeplinkRouter: ObservableObject {
     /// The single deeplink entry point: cold start, external app, push
     /// notification, and the Tanya AI hand-off all land here.
     ///
-    /// Validates again — this URL may come from anywhere — then holds the
-    /// destination and asks the feature to close if it is on screen.
+    /// Checks the link again — this URL may come from anywhere — resolves it
+    /// through the app's dispatcher, then holds the destination and asks the
+    /// feature to close if it is on screen.
     @discardableResult
     func receive(_ url: URL) -> Bool {
-        guard let destination = SandboxDeeplink.destination(from: url) else {
+        guard let accepted = SandboxDeeplink.accepted(url),
+              let destination = SandboxDeeplinkDispatcher.destination(
+                for: accepted
+              ) else {
             return false
         }
         let isFeaturePresented = presenter?.isPresented ?? false

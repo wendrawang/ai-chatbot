@@ -1,19 +1,37 @@
 import Foundation
 
-/// Destinations this app is willing to open on request.
+/// Validates that a link belongs to this app, and nothing more.
 ///
-/// This enum is the allowlist. A `type` the backend invents but the app does
-/// not know is dropped, so a response can never steer the app somewhere the
-/// host never sanctioned.
-enum SandboxDeeplinkType: String, CaseIterable {
-    case transfer
-    case statement
+/// Shape: `tanyaaisandbox://mobile?type=transfer&amount=1250000` — the same
+/// shape a push notification or another app would send.
+///
+/// Only two checks live here, because only two are the package's business to
+/// force on the host: the scheme is this app's, and the host is the app's
+/// deeplink entry point. Everything after that — which screen a `type` means,
+/// which parameters it takes — belongs to the app's existing deeplink
+/// dispatcher, which already knows.
+enum SandboxDeeplink {
+    static let scheme = "tanyaaisandbox"
+    static let host = "mobile"
 
-    var title: String {
-        switch self {
-        case .transfer: return "Transfer Form"
-        case .statement: return "Statement Detail"
+    /// Accepts the string a response sent, or `nil` when it is not a link this
+    /// app opens.
+    ///
+    /// The scheme check is the one that matters: it rejects `https://…`,
+    /// `tel:`, and links that would launch a different app.
+    static func accepted(_ deeplink: String) -> URL? {
+        guard let url = URL(string: deeplink) else {
+            return nil
         }
+        return accepted(url)
+    }
+
+    /// Same check for a `URL` that arrived from the system.
+    static func accepted(_ url: URL) -> URL? {
+        guard url.scheme == scheme, url.host == host else {
+            return nil
+        }
+        return url
     }
 }
 
@@ -26,57 +44,18 @@ struct SandboxDeeplinkParameter: Equatable, Identifiable {
     var id: String { name }
 }
 
-/// A deeplink that passed validation, ready to be pushed.
-struct SandboxDeeplinkDestination: Equatable {
-    let type: SandboxDeeplinkType
-    let parameters: [String: String]
-    /// The original string, kept for logging and for the demo screen.
-    let deeplink: String
-
-    var title: String { type.title }
-
-    var sortedParameters: [SandboxDeeplinkParameter] {
-        parameters
-            .sorted { $0.key < $1.key }
-            .map { SandboxDeeplinkParameter(name: $0.key, value: $0.value) }
-    }
-}
-
-/// Validates the deeplinks this app accepts.
+/// Stand-in for the deeplink dispatcher the host application already owns.
 ///
-/// Shape: `tanyaaisandbox://mobile?type=transfer&amount=1250000` — the same
-/// shape a push notification or another app would send.
-enum SandboxDeeplink {
-    static let scheme = "tanyaaisandbox"
-    static let host = "mobile"
-    private static let typeKey = "type"
-
-    /// Turns the string a response sent into a destination, or `nil` when it
-    /// fails any check.
-    ///
-    /// Four checks, in order:
-    /// 1. it parses as a URL at all;
-    /// 2. the scheme is this app's — which is what rejects `https://…`,
-    ///    `tel:`, and links into other apps;
-    /// 3. the host is the expected entry point;
-    /// 4. `type` is in the allowlist above.
-    ///
-    /// Everything else in the query is passed through as parameters.
-    static func destination(from deeplink: String) -> SandboxDeeplinkDestination? {
-        guard let url = URL(string: deeplink) else {
-            return nil
-        }
-        return destination(from: url)
-    }
-
-    /// Same validation, for a `URL` that arrived from the system.
-    static func destination(from url: URL) -> SandboxDeeplinkDestination? {
-        guard url.scheme == scheme,
-              url.host == host,
-              let components = URLComponents(
-                url: url,
-                resolvingAgainstBaseURL: false
-              ) else {
+/// A real app has this already: the code that reads the URL and decides which
+/// screen to open. The sandbox has no such code, so it keeps a tiny version
+/// here. In your project this whole type is replaced by the call into your
+/// existing handler.
+enum SandboxDeeplinkDispatcher {
+    static func destination(for url: URL) -> SandboxDeeplinkDestination? {
+        guard let components = URLComponents(
+            url: url,
+            resolvingAgainstBaseURL: false
+        ) else {
             return nil
         }
 
@@ -86,7 +65,7 @@ enum SandboxDeeplink {
             guard let value = item.value else {
                 return
             }
-            if item.name == typeKey {
+            if item.name == "type" {
                 typeValue = value
             } else {
                 parameters[item.name] = value
@@ -102,5 +81,34 @@ enum SandboxDeeplink {
             parameters: parameters,
             deeplink: url.absoluteString
         )
+    }
+}
+
+/// Screens the sandbox dispatcher knows how to open.
+enum SandboxDeeplinkType: String, CaseIterable {
+    case transfer
+    case statement
+
+    var title: String {
+        switch self {
+        case .transfer: return "Transfer Form"
+        case .statement: return "Statement Detail"
+        }
+    }
+}
+
+/// A deeplink that passed validation and resolved to a screen.
+struct SandboxDeeplinkDestination: Equatable {
+    let type: SandboxDeeplinkType
+    let parameters: [String: String]
+    /// The original string, kept for logging and for the demo screen.
+    let deeplink: String
+
+    var title: String { type.title }
+
+    var sortedParameters: [SandboxDeeplinkParameter] {
+        parameters
+            .sorted { $0.key < $1.key }
+            .map { SandboxDeeplinkParameter(name: $0.key, value: $0.value) }
     }
 }
