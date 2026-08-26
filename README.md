@@ -34,6 +34,15 @@ DEVELOPER_DIR=/Applications/Xcode.app/Contents/Developer \
   ./Scripts/verify.sh
 ```
 
+Build, install, and launch on a simulator in one step:
+
+```sh
+./Scripts/run_sandbox.sh --deeplink
+```
+
+Any argument is forwarded to the app, so the launch modes below work directly.
+Override the device with `TANYA_AI_SIMULATOR`.
+
 ### Launch arguments
 
 `SceneDelegate` reads one optional launch argument through `SandboxLaunchMode`.
@@ -45,6 +54,13 @@ Add it in **Edit Scheme → Run → Arguments** to reproduce a UI test locally.
 | `--showcase` | Tanya AI directly | `showcase all bubbles` | 0.001 s | `TanyaAISandboxScreenshotTests` |
 | `--stress-chat` | Tanya AI directly | `stress conversation` | 0.001 s | `TanyaAIStressUITests` |
 | `--deeplink` | `LegacyRootScreen` | `deeplink hand-off` | 0.001 s | `TanyaAIDeeplinkUITests` |
+
+`--deeplink` opens on the legacy host and streams an action card plus a
+confirmation that hands off. Walk it: **Open legacy detail → Open Tanya AI →
+Open transfer form**. The feature closes, the stack returns to Legacy Home, and
+the destination is pushed with a back button reading "Legacy Home". The blocked
+`https` button does nothing, and Confirm on the hand-off approval never opens
+the PIN sheet.
 
 `--showcase` streams `MockTanyaAIShowcaseFixture` in one response: every
 confirmation and receipt card, every insight card, the four status levels, the
