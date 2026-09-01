@@ -114,6 +114,138 @@ Requirements for this path:
 - keep UIKit in the host only. The package sources stay free of UIKit,
   `UIViewRepresentable`, and hosting controllers.
 
+## Host actions and deeplinks
+
+An action card, or a confirmation carrying `handoff`, reports a deeplink to
+the host instead of navigating:
+
+```swift
+TanyaAIModule.makeView(
+    configuration: configuration,
+    dependencies: dependencies,
+    onClose: { showsTanyaAI = false },
+    onAction: { action in
+        deeplinkRouter.handle(action)
+    }
+)
+```
+
+`TanyaAIAction` carries `identifier` and `deeplink` — the full string the
+backend sent, such as `ocbcid://mobile?type=transfer`. The package does not
+parse it, and `identifier` is for accessibility identifiers and analytics, not
+for routing.
+
+Check that the link belongs to the app before opening it. Two checks are
+enough, and deliberately the whole of it:
+
+```swift
+guard let url = URL(string: action.deeplink),
+      url.scheme == "ocbcid",   // rejects https, tel, and other apps
+      url.host == "mobile"      // the app's deeplink entry point
+else {
+    return          // not something this app opens: do nothing
+}
+existingDeeplinkHandler.open(url)
+```
+
+What the link means past that — which screen, which parameters — belongs to
+the deeplink handler the app already has. A second parser here would only
+drift from it. Worked examples in
+[`Examples/NavigationViewHost/Deeplink`](../Examples/NavigationViewHost/Deeplink).
+
+Reuse the validation your existing deeplink handler already performs rather
+than writing a second parser. Without it a response could point at another
+app, at a web page, or at a screen you never meant to reach from chat.
+
+### What lives where
+
+| Layer | Responsibility |
+| --- | --- |
+| Backend | Sends `content.actions`, or `handoff` on a confirmation, with the deeplink string |
+| Package (SDK) | Renders the buttons and reports the deeplink through `onAction`. Nothing else — no parsing, no opening, no dismissal |
+| Host app | Checks the scheme and entry host, closes the feature, then hands the URL to its existing deeplink handler |
+
+Nothing in the package needs changing to adopt this, and nothing needs
+reimplementing in the host: parsing the deeplink, mapping it to a screen, and
+returning to the dashboard are what the app's existing handler already does.
+The work is the `onAction` handler and the sequencing below.
+
+The feature does not close itself when an action fires. Sequence it in the
+host, because a full-screen presentation cannot push anything underneath
+itself:
+
+1. keep the destination pending;
+2. dismiss the feature;
+3. once the dismissal finishes, return to the dashboard (or whatever root the
+   deeplink expects);
+4. then push the destination.
+
+In SwiftUI that means delivering the destination from `fullScreenCover`'s
+`onDismiss`, not straight after setting the binding to `false`. Popping and
+pushing in the same runloop tick also fights the navigation animation, so let
+the pop settle first:
+
+```swift
+.fullScreenCover(isPresented: $presenter.isPresented, onDismiss: {
+    guard router.hasPendingDestination else { return }
+    let isPopping = isDetailActive
+    isDetailActive = false
+    // NavigationView drops a push that starts while a pop is still animating.
+    DispatchQueue.main.asyncAfter(deadline: .now() + (isPopping ? 0.35 : 0)) {
+        router.deliverPendingDestination()
+    }
+}) {
+    presenter.makeView()
+}
+```
+
+A deeplink can also arrive with nothing presented — a cold start, or a push
+notification tapped from the dashboard. There is no dismissal to wait for
+then, so the host must deliver it directly instead of waiting on `onDismiss`.
+
+Two ways to reach the destination, both valid:
+
+- **Round-trip through the URL.** Build the deeplink URL from the route and
+  call `UIApplication.shared.open`. The app re-enters through
+  `scene(_:openURLContexts:)`, so the hand-off runs the same code path a push
+  notification or another app would. `Info.plist` must declare the scheme in
+  `CFBundleURLTypes`. This is what `TanyaAISandboxApp` does.
+- **Call the router directly.** Skip the URL and invoke the same function the
+  deeplink handler calls. Fewer moving parts and easier to test; use it when
+  the round trip buys nothing.
+
+### Testing the hand-off
+
+`MockTanyaAIActionFixture` builds a stream carrying deeplinks you choose, so
+the whole path can run without a backend:
+
+```swift
+let transport = MockTanyaAIStreamingTransport(
+    scenario: .custom(
+        MockTanyaAIActionFixture.actionCardChunks(
+            buttons: [
+                .init(
+                    title: "Open transfer",
+                    deeplink: "ocbcid://mobile?type=transfer",
+                    identifier: "open-transfer"
+                )
+            ]
+        )
+    )
+)
+```
+
+`approvalHandoffChunks(deeplink:)` covers the second entry point, where the
+confirmation hands off and the PIN sheet must not appear. Buttons carry
+`action.<identifier>` as their accessibility identifier. `TanyaAITestSupport`
+belongs to debug and test targets only.
+
+Before that, check the deeplink alone —
+`xcrun simctl openurl booted "ocbcid://mobile?type=transfer"`. If the URL does
+not open the screen on its own, the hand-off cannot either; the usual cause is
+a scheme missing from `CFBundleURLTypes`, which makes `UIApplication.open`
+fail silently.
+
 ## Streaming adapter
 
 Implement `TanyaAIStreamingTransport` in the host. Translate the relative

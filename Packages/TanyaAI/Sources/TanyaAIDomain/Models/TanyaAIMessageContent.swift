@@ -7,5 +7,6 @@ public enum TanyaAIMessageContent: Equatable {
     case approval(TanyaAIApprovalPayload)
     case receipt(TanyaAIReceiptPayload)
     case status(TanyaAIStatusPayload)
+    case actions(TanyaAIActionPayload)
     case unsupported(String)
 }

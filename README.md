@@ -34,6 +34,15 @@ DEVELOPER_DIR=/Applications/Xcode.app/Contents/Developer \
   ./Scripts/verify.sh
 ```
 
+Build, install, and launch on a simulator in one step:
+
+```sh
+./Scripts/run_sandbox.sh --deeplink
+```
+
+Any argument is forwarded to the app, so the launch modes below work directly.
+Override the device with `TANYA_AI_SIMULATOR`.
+
 ### Launch arguments
 
 `SceneDelegate` reads one optional launch argument through `SandboxLaunchMode`.
@@ -44,6 +53,14 @@ Add it in **Edit Scheme → Run → Arguments** to reproduce a UI test locally.
 | none | `LegacyRootScreen` | none | 0.04 s | `TanyaAILegacyIntegrationTests` |
 | `--showcase` | Tanya AI directly | `showcase all bubbles` | 0.001 s | `TanyaAISandboxScreenshotTests` |
 | `--stress-chat` | Tanya AI directly | `stress conversation` | 0.001 s | `TanyaAIStressUITests` |
+| `--deeplink` | `LegacyRootScreen` | `deeplink hand-off` | 0.001 s | `TanyaAIDeeplinkUITests` |
+
+`--deeplink` opens on the legacy host and streams an action card plus a
+confirmation that hands off. Walk it: **Open legacy detail → Open Tanya AI →
+Open transfer form**. The feature closes, the stack returns to Legacy Home, and
+the destination is pushed with a back button reading "Legacy Home". The blocked
+`https` button does nothing, and Confirm on the hand-off approval never opens
+the PIN sheet.
 
 `--showcase` streams `MockTanyaAIShowcaseFixture` in one response: every
 confirmation and receipt card, every insight card, the four status levels, the
@@ -89,6 +106,38 @@ presentation gateway, and hosts the root SwiftUI screen in a
 `UIHostingController`. The lifecycle boundary stays in the host, so an existing
 `AppDelegate` and `SceneDelegate` application can adopt the feature without
 moving to the SwiftUI `App` lifecycle. The package itself remains pure SwiftUI.
+
+### Host actions and deeplinks
+
+A bubble can ask the host to open one of its own screens. The response carries
+the deeplink as one string, such as `ocbcid://mobile?type=transfer`:
+
+```text
+Action card or confirmation handoff
+    → TanyaAIChatOutput.performAction
+    → TanyaAIRouter
+    → onAction handler in the host
+    → host checks the scheme and its deeplink entry host
+    → feature closes, then the host's existing deeplink handler takes over
+```
+
+The package never parses or opens the deeplink, never dismisses itself for an
+action, and never navigates outside its own `NavigationStack`. The host checks
+that the link is its own before opening it, so a response cannot point the app
+at a web page or at another app. Schema
+in [`docs/BUBBLE_SCHEMA.md`](docs/BUBBLE_SCHEMA.md), sequencing in
+[`docs/INTEGRATION.md`](docs/INTEGRATION.md).
+
+`MockTanyaAIActionFixture` in `TanyaAITestSupport` builds a stream carrying
+deeplinks of your own, so a host can exercise the hand-off before the backend
+sends one.
+
+The sandbox demonstrates the full round trip: `--deeplink` streams an action
+card and a confirmation with `handoff`, `SandboxDeeplink` accepts
+`tanyaaisandbox://mobile?…`, and `SceneDelegate` receives the opened URL
+through `scene(_:openURLContexts:)` exactly as an external caller would. One
+button carries an `https` link the host rejects. `SandboxDeeplinkDispatcher`
+stands in for the deeplink handler a real host application already owns.
 
 ### Package targets
 

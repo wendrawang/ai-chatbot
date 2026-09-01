@@ -6,6 +6,7 @@ struct TanyaAIMessageRowView: View {
     let onApprovalEdit: (TanyaAIApprovalPayload) -> Void
     let onApprovalCancel: (TanyaAIApprovalPayload) -> Void
     let onApproval: (TanyaAIApprovalPayload) -> Void
+    let onAction: (TanyaAIAction) -> Void
 
     var body: some View {
         HStack {
@@ -49,6 +50,8 @@ struct TanyaAIMessageRowView: View {
             TanyaAIReceiptBubble(payload: payload)
         case .status(let payload):
             TanyaAIStatusBubble(payload: payload)
+        case .actions(let payload):
+            TanyaAIActionBubble(payload: payload, onAction: onAction)
         case .unsupported(let message):
             TanyaAIStatusBubble(
                 payload: TanyaAIStatusPayload(

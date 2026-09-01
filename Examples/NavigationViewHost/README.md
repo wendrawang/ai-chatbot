@@ -106,3 +106,163 @@ tidak boleh masuk log, analytics, crash report, clipboard, atau storage.
    generation yang terus tumbuh.
 3. Putus koneksi di tengah stream — error banner muncul, tidak crash.
 4. Salah PIN lalu benar; pastikan tidak ada PIN yang muncul di log.
+
+## Deeplink hand-off
+
+Tombol di bubble (atau `handoff` pada konfirmasi) menyerahkan navigasi ke
+aplikasi Anda. Backend mengirim deeplink utuh sebagai satu string, misalnya
+`ocbcid://mobile?type=transfer`.
+
+### Siapa menulis apa
+
+| Lapisan | Tanggung jawab | Perlu Anda kerjakan? |
+| --- | --- | --- |
+| Backend | Kirim `content.actions`, atau `handoff` di konfirmasi, berisi string deeplink | Ya — di sisi server |
+| Paket / SDK | Render tombolnya, laporkan deeplink lewat `onAction`. Tidak parsing, tidak membuka, tidak menutup dirinya | **Tidak ada.** Sudah tersedia |
+| App Anda | Cek link ini milik app Anda, tunggu fitur tertutup, lalu serahkan ke deeplink handler yang sudah ada | Ya — dan itu saja |
+
+Yang **tidak** perlu Anda tulis ulang: parsing `type`, pemetaan ke layar, dan
+kembali ke dashboard. Deeplink handler existing Anda sudah melakukannya —
+hand-off ini cuma memberi URL ke handler itu pada saat yang tepat.
+
+Validasinya sengaja hanya dua baris: **scheme** dan **host**. Scheme yang
+menolak `https://…`, `tel:`, dan link yang akan membuka app lain; host
+mengikat link ke entry point deeplink Anda. Sisanya urusan handler existing —
+parser kedua di sini hanya akan menyimpang dari yang asli.
+
+### Dua tingkat
+
+| | [`Deeplink/Minimal`](Deeplink/Minimal) | [`Deeplink/Production`](Deeplink/Production) |
+| --- | --- | --- |
+| Bentuk | Satu file, dua `@State` di layar root | Objek `HostDeeplinkBridge` tersendiri |
+| Jalur | Panggil handler existing langsung | Round-trip lewat `UIApplication.open`, masuk lagi via `scene(_:openURLContexts:)` |
+| Cold start | Tidak ditangani | Ditangani (`onAppear`/`onChange`) |
+| Entry point | Hanya hand-off | Satu entry point untuk semua sumber deeplink |
+
+Mulai dari `Minimal/`. Isinya benar-benar cuma ini:
+
+```swift
+private func handle(_ action: TanyaAIAction) {
+    guard let url = URL(string: action.deeplink),
+          url.scheme == "ocbcid",
+          url.host == "mobile" else {
+        return
+    }
+    pendingDeeplink = url      // ditahan dulu
+    showsTanyaAI = false       // tutup fitur
+}
+
+private func openPendingDeeplink() {   // dipanggil dari onDismiss
+    guard let url = pendingDeeplink else { return }
+    pendingDeeplink = nil
+    AppDeeplinkHandler.open(url)       // handler existing Anda
+}
+```
+
+### Tiga hal yang menentukan berhasil-tidaknya
+
+- **Deeplink ditahan dulu, jangan langsung dibuka.** Fitur tampil full screen;
+  navigasi yang terjadi di bawahnya akan hilang.
+- **Fitur tidak menutup dirinya sendiri.** Host yang menutup.
+- **Serahkan URL dari `onDismiss`,** bukan tepat setelah binding di-set
+  `false` — saat itu cover masih beranimasi.
+
+Kalau handler existing Anda **tidak** otomatis kembali ke dashboard, pop dulu
+di `onDismiss`, lalu serahkan URL-nya setelah animasi pop selesai —
+`NavigationView` membuang push yang dimulai saat pop masih berjalan. Versi
+sandbox (`TanyaAISandboxApp/LegacyRootScreen.swift`) memperlihatkan pola itu,
+karena sandbox tidak punya deeplink handler sendiri.
+
+Round-trip lewat `UIApplication.open` di versi Production membuat hand-off
+memakai jalur yang sama dengan push notification atau app lain — daftarkan
+scheme-nya di `CFBundleURLTypes`. Kalau round-trip tidak memberi keuntungan,
+panggil handler-nya langsung seperti versi minimal.
+
+### Menguji hand-off tanpa backend
+
+Tiga lapis, dari yang paling murah:
+
+**1. Deeplink handler Anda sendiri, tanpa Tanya AI.** Pastikan dulu URL-nya
+memang membuka layar yang benar:
+
+```sh
+xcrun simctl openurl booted "ocbcid://mobile?type=transfer&amount=1250000"
+```
+
+Kalau ini saja tidak jalan, hand-off pasti tidak jalan. Penyebab paling
+sering: scheme belum terdaftar di `CFBundleURLTypes`, sehingga
+`UIApplication.open` gagal diam-diam tanpa error.
+
+**2. Handler-nya saja, sebagai unit test.** `handle(_:)` menerima
+`TanyaAIAction` biasa, jadi tidak perlu UI:
+
+```swift
+func testHandOffOpensTheAppsOwnDeeplink() {
+    var opened: [URL] = []
+    let bridge = HostDeeplinkBridge(
+        presenter: presenter,
+        dispatch: { _ in },
+        open: { opened.append($0) }
+    )
+
+    bridge.handle(
+        TanyaAIAction(
+            identifier: "open-transfer",
+            deeplink: "ocbcid://mobile?type=transfer"
+        )
+    )
+    bridge.handle(
+        TanyaAIAction(
+            identifier: "phishing",
+            deeplink: "https://example.com/promo"
+        )
+    )
+
+    XCTAssertEqual(opened.map(\.absoluteString), [
+        "ocbcid://mobile?type=transfer"
+    ])
+}
+```
+
+Dua assertion sekaligus: yang benar diteruskan, yang bukan milik app Anda
+tidak.
+
+**3. Alur penuh di simulator, dengan stream palsu.** Arahkan mock transport ke
+deeplink Anda sendiri:
+
+```swift
+let transport = MockTanyaAIStreamingTransport(
+    scenario: .custom(
+        MockTanyaAIActionFixture.actionCardChunks(
+            buttons: [
+                .init(
+                    title: "Open transfer",
+                    deeplink: "ocbcid://mobile?type=transfer",
+                    identifier: "open-transfer"
+                ),
+                .init(
+                    title: "Blocked link",
+                    style: "secondary",
+                    deeplink: "https://example.com/promo",
+                    identifier: "blocked"
+                )
+            ]
+        )
+    )
+)
+```
+
+Butuh `import TanyaAITestSupport` — target debug/test saja, jangan ikut ke
+Release. Untuk menguji jalur kedua (konfirmasi yang hand-off, bukan kartu
+aksi) pakai `MockTanyaAIActionFixture.approvalHandoffChunks(deeplink:)`; PIN
+sheet tidak boleh muncul sama sekali.
+
+Tombolnya bisa ditekan dari UI test lewat `action.<identifier>`, misalnya
+`app.buttons["action.open-transfer"]`.
+
+Yang layak dipastikan saat run pertama:
+
+1. Tanya AI benar-benar tertutup sebelum navigasi terjadi.
+2. Layar tujuan muncul, dan tombol back-nya menunjuk dashboard — bukan
+   menumpuk di atas layar sebelumnya.
+3. Tombol `https` tidak melakukan apa pun, dan fitur tetap terbuka.

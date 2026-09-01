@@ -10,6 +10,7 @@ final class TanyaAIRouter: ObservableObject {
 
     private let dependencyContainer: TanyaAIDependencyContainer
     private let closeHandler: () -> Void
+    private let actionHandler: (TanyaAIAction) -> Void
     private var activeApproval: TanyaAIApprovalPayload?
     private weak var activePINViewModel: TanyaAIPINViewModel?
     private var hasStarted = false
@@ -19,10 +20,12 @@ final class TanyaAIRouter: ObservableObject {
 
     init(
         dependencyContainer: TanyaAIDependencyContainer,
-        closeHandler: @escaping () -> Void
+        closeHandler: @escaping () -> Void,
+        actionHandler: @escaping (TanyaAIAction) -> Void = { _ in }
     ) {
         self.dependencyContainer = dependencyContainer
         self.closeHandler = closeHandler
+        self.actionHandler = actionHandler
         chatViewModel = dependencyContainer.makeChatViewModel()
         chatViewModel.onOutput = { [weak self] output in
             self?.handle(output)
@@ -41,6 +44,11 @@ final class TanyaAIRouter: ObservableObject {
         dependencyContainer.startInitialPrompt(on: chatViewModel)
     }
 
+    /// Turns a chat intent into navigation.
+    ///
+    /// `history` stays inside the feature's own stack, `approval` opens the
+    /// PIN sheet, and `performAction` leaves the package entirely: it is
+    /// forwarded to the host and the feature does nothing else.
     func handle(_ output: TanyaAIChatOutput) {
         switch output {
         case .close:
@@ -49,6 +57,8 @@ final class TanyaAIRouter: ObservableObject {
             path.append(.history)
         case .requestApproval(let approval):
             presentAuthorization(for: approval)
+        case .performAction(let action):
+            actionHandler(action)
         }
     }
 

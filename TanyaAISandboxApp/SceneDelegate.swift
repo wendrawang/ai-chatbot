@@ -5,6 +5,7 @@ import UIKit
 final class SceneDelegate: UIResponder, UIWindowSceneDelegate {
     var window: UIWindow?
     private var presentationGateway: TanyaAIPresentationGateway?
+    private var deeplinkRouter: SandboxDeeplinkRouter?
 
     func scene(
         _ scene: UIScene,
@@ -22,6 +23,21 @@ final class SceneDelegate: UIResponder, UIWindowSceneDelegate {
         window.rootViewController = makeRootController(for: launchMode)
         window.makeKeyAndVisible()
         self.window = window
+
+        connectionOptions.urlContexts.forEach { context in
+            deeplinkRouter?.receive(context.url)
+        }
+    }
+
+    /// Deeplinks that arrive while the app is running, including the one the
+    /// hand-off just opened.
+    func scene(
+        _ scene: UIScene,
+        openURLContexts URLContexts: Set<UIOpenURLContext>
+    ) {
+        URLContexts.forEach { context in
+            deeplinkRouter?.receive(context.url)
+        }
     }
 
     private func makeRootController(
@@ -33,16 +49,38 @@ final class SceneDelegate: UIResponder, UIWindowSceneDelegate {
         if launchMode.isStandaloneFeature {
             return UIHostingController(rootView: gateway.makeView())
         }
+
+        let router = makeDeeplinkRouter(gateway: gateway)
+        deeplinkRouter = router
         return UIHostingController(
-            rootView: LegacyRootScreen(tanyaAIPresenter: gateway)
+            rootView: LegacyRootScreen(
+                tanyaAIPresenter: gateway,
+                deeplinkRouter: router
+            )
         )
+    }
+
+    /// Wires the hand-off. The feature reports a deeplink, this router
+    /// validates it against the app's allowlist and opens it, and the app
+    /// re-enters through the same entry point an external caller would use.
+    private func makeDeeplinkRouter(
+        gateway: TanyaAIPresentationGateway
+    ) -> SandboxDeeplinkRouter {
+        let router = SandboxDeeplinkRouter { url in
+            UIApplication.shared.open(url)
+        }
+        router.attach(presenter: gateway)
+        gateway.onAction { [weak router] action in
+            router?.handle(action)
+        }
+        return router
     }
 
     private func makeGateway(
         for launchMode: SandboxLaunchMode
     ) -> TanyaAIPresentationGateway {
         let dependencies = SandboxTanyaAIFactory.makeDependencies(
-            showsShowcase: launchMode.isStandaloneFeature
+            showsShowcase: launchMode.usesFastStreaming
         )
         return TanyaAIPresentationGateway(
             dependencies: dependencies,
