@@ -8,4 +8,14 @@ public protocol TanyaAIChatUseCaseProtocol: AnyObject {
         onEvent: @escaping (TanyaAIStreamEvent) -> Void,
         completion: @escaping (Result<Void, Error>) -> Void
     ) -> TanyaAICancellable
+
+    func observeUnsolicitedEvents(
+        _ onEvent: @escaping (TanyaAIStreamEvent) -> Void
+    )
+}
+
+public extension TanyaAIChatUseCaseProtocol {
+    func observeUnsolicitedEvents(
+        _ onEvent: @escaping (TanyaAIStreamEvent) -> Void
+    ) {}
 }

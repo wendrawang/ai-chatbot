@@ -54,6 +54,7 @@ Add it in **Edit Scheme → Run → Arguments** to reproduce a UI test locally.
 | `--showcase` | Tanya AI directly | `showcase all bubbles` | 0.001 s | `TanyaAISandboxScreenshotTests` |
 | `--stress-chat` | Tanya AI directly | `stress conversation` | 0.001 s | `TanyaAIStressUITests` |
 | `--deeplink` | `LegacyRootScreen` | `deeplink hand-off` | 0.001 s | `TanyaAIDeeplinkUITests` |
+| `--vendor-session` | `LegacyRootScreen` | `vendor session demo` | 0.01 s | demo manual |
 
 `--deeplink` opens on the legacy host and streams an action card plus a
 confirmation that hands off. Walk it: **Open legacy detail → Open Tanya AI →
@@ -138,6 +139,23 @@ card and a confirmation with `handoff`, `SandboxDeeplink` accepts
 through `scene(_:openURLContexts:)` exactly as an external caller would. One
 button carries an `https` link the host rejects. `SandboxDeeplinkDispatcher`
 stands in for the deeplink handler a real host application already owns.
+
+### Transports
+
+The chat reaches the backend through one of two injected transports:
+
+| Transport | Shape | Repository |
+| --- | --- | --- |
+| `TanyaAIStreamingTransport` | Request: message, chunks, completion | `DefaultTanyaAIRepository` |
+| `TanyaAIChatSession` | Session: connect, then send and receive | `TanyaAISessionRepository` |
+
+The second one exists for hosts whose chat runs on a vendor live-chat SDK. The
+package still owns the UI: the vendor's rich payload carries the same JSON the
+SSE stream would, so the typed cards, the PIN sheet, and the deeplink hand-off
+are unchanged. Everything vendor-shaped stops at a host adapter, and the
+package never imports the vendor. See
+[`Examples/VendorChatSDK`](Examples/VendorChatSDK), and run
+`./Scripts/run_sandbox.sh --vendor-session` to see it end to end.
 
 ### Package targets
 

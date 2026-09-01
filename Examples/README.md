@@ -14,7 +14,9 @@ compiled here.
 | [`NavigationViewHost/Production`](NavigationViewHost/Production) | Release-ready version: pinning, expiry checks, host theme, presentation gateway |
 | [`NavigationViewHost/Deeplink`](NavigationViewHost/Deeplink) | Handing a bubble action to the host's existing deeplink handler, minimal and full |
 
-Both target the same host shape — SwiftUI `NavigationView` screens hosted from
+| [`VendorChatSDK`](VendorChatSDK) | Driving the chat from a vendor live-chat SDK while keeping the package's own UI |
+
+Both NavigationViewHost folders target the same host shape — SwiftUI `NavigationView` screens hosted from
 `AppDelegate` and `SceneDelegate`.
 
 The sandbox target stays the executable proof: it exercises the same

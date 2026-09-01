@@ -246,6 +246,33 @@ not open the screen on its own, the hand-off cannot either; the usual cause is
 a scheme missing from `CFBundleURLTypes`, which makes `UIApplication.open`
 fail silently.
 
+## Choosing a transport
+
+The chat reaches the backend through exactly one of two transports, and
+everything above the repository is identical either way:
+
+| | `TanyaAIStreamingTransport` | `TanyaAIChatSession` |
+| --- | --- | --- |
+| Shape | Request: one message, a stream of chunks, a completion | Session: connect once, then send and receive |
+| Backed by | The host's own networking (SSE) | A vendor live-chat SDK, adapted by the host |
+| Injected as | `TanyaAIDependencies(streamingTransport:...)` | `TanyaAIDependencies(chatSession:...)` |
+
+Typed cards, the PIN sheet, and the deeplink hand-off do not change between
+them. A vendor SDK carries the same JSON as `structuredPayload`, and the
+package decodes it with the same decoder it uses for SSE.
+
+Two things a session has that a request does not:
+
+- **Messages nobody asked for.** An agent replying on their own arrives
+  outside any turn; the package routes those to a separate observer so they
+  cannot be mistaken for the reply in flight.
+- **No completion per request.** A turn ends on `messageCompleted`, `failed`,
+  or an unexpected `disconnected`. If the vendor has no "last message" marker,
+  agree one with the bot team - without it the typing indicator never stops.
+
+A worked adapter is in
+[`Examples/VendorChatSDK`](../Examples/VendorChatSDK).
+
 ## Streaming adapter
 
 Implement `TanyaAIStreamingTransport` in the host. Translate the relative

@@ -21,4 +21,10 @@ public final class TanyaAIChatUseCase: TanyaAIChatUseCaseProtocol {
             completion: completion
         )
     }
+
+    public func observeUnsolicitedEvents(
+        _ onEvent: @escaping (TanyaAIStreamEvent) -> Void
+    ) {
+        repository.observeUnsolicitedEvents(onEvent)
+    }
 }

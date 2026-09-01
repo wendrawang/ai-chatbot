@@ -6,6 +6,8 @@ import TanyaAIDomain
 public final class TanyaAIChatViewModel: ObservableObject {
     @Published public private(set) var messages: [TanyaAIMessageItemViewModel]
     @Published public private(set) var isGenerating = false
+    /// True while the agent or bot is composing on a session transport.
+    @Published public private(set) var isAgentTyping = false
     @Published public private(set) var errorMessage: String?
     @Published public private(set) var suggestions: [TanyaAISuggestion]
     @Published public var inputText = ""
@@ -31,6 +33,18 @@ public final class TanyaAIChatViewModel: ObservableObject {
         messages = [welcomeMessage]
         messageStore = TanyaAIMessageStore(welcomeMessage: welcomeMessage)
         suggestions = TanyaAISuggestion.sandboxDefaults
+        observeUnsolicitedEvents()
+    }
+
+    /// A session transport delivers messages nobody asked for - an agent
+    /// replying on their own, or a hand-off pushed by the channel. Over SSE
+    /// this observer is never called.
+    private func observeUnsolicitedEvents() {
+        useCase.observeUnsolicitedEvents { [weak self] event in
+            TanyaAIMainQueue.perform {
+                self?.handle(event)
+            }
+        }
     }
 
     public func sendCurrentMessage() {
@@ -118,7 +132,12 @@ public final class TanyaAIChatViewModel: ObservableObject {
         case .responseCompleted:
             textDeltaBuffer.flushAll()
             isGenerating = false
+            isAgentTyping = false
             activeRequest = nil
+        case .hostAction(let action):
+            onOutput?(.performAction(action))
+        case .typing(let isTyping):
+            isAgentTyping = isTyping
         case .heartbeat:
             break
         }

@@ -80,7 +80,8 @@ final class SceneDelegate: UIResponder, UIWindowSceneDelegate {
         for launchMode: SandboxLaunchMode
     ) -> TanyaAIPresentationGateway {
         let dependencies = SandboxTanyaAIFactory.makeDependencies(
-            showsShowcase: launchMode.usesFastStreaming
+            showsShowcase: launchMode.usesFastStreaming,
+            usesVendorSession: launchMode.usesVendorSession
         )
         return TanyaAIPresentationGateway(
             dependencies: dependencies,
