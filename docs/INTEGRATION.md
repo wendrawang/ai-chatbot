@@ -267,8 +267,9 @@ Two things a session has that a request does not:
   outside any turn; the package routes those to a separate observer so they
   cannot be mistaken for the reply in flight.
 - **No completion per request.** A turn ends on `messageCompleted`, `failed`,
-  or an unexpected `disconnected`. If the vendor has no "last message" marker,
-  agree one with the bot team - without it the typing indicator never stops.
+  or an unexpected `disconnected`. An SDK that delivers whole messages closes
+  the turn on each one; an SDK that streams tokens needs a "last message"
+  marker agreed with the bot team, or the typing indicator never stops.
 
 A worked adapter is in
 [`Examples/VendorChatSDK`](../Examples/VendorChatSDK).

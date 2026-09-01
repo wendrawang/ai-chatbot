@@ -27,24 +27,54 @@ let dependencies = TanyaAIDependencies(
 )
 ```
 
-## Yang harus Anda isi
+## Isi file
 
-`VendorChatSessionAdapter.swift` di folder ini memakai **placeholder** untuk
-tipe SDK vendor (`VendorLiveChatClient`, `VendorMessage`, dan delegate-nya).
-Hapus placeholder itu, `import` modul vendor, lalu isi lima titik berikut:
+`DolphinChatSessionAdapter.swift` sudah memakai API asli SDK: `Connector`,
+`DolphinProfile`, `DolphinMessage`, `setupConnection(baseUrl:clientId:clientSecrect:)`,
+`enableGetQueue(isEnable:)`, `constructConnector(profile:)`,
+`onSendMessage(messages:dataUser:)`, dan empat notifikasi
+`com.connector.*`. `DolphinChatSessionSupport.swift` berisi `Configuration`
+dan `DolphinMessageMapper`.
 
-| Titik | Isi |
+Pemasangannya:
+
+```swift
+let adapter = DolphinChatSessionAdapter(
+    connector: connector,
+    profile: dolphinProfile,
+    configuration: .init(
+        baseUrl: baseUrl,
+        clientId: clientId,
+        clientSecrect: clientSecrect,
+        dataUser: sample
+    ),
+    mapper: DolphinMessageMapper(
+        identifier: { $0.messageId ?? UUID().uuidString },
+        text: { $0.message },
+        payload: { $0.payload as? [String: Any] }
+    )
+)
+
+let dependencies = TanyaAIDependencies(
+    chatSession: adapter,
+    authorizationService: AppTanyaAIAuthorization(),
+    theme: .app
+)
+```
+
+## Dua hal yang harus Anda cek di header framework
+
+Dokumentasi publik SDK menyebut tipenya tapi tidak field-nya, jadi dua titik
+ini sengaja dibuat terbuka dan tidak saya tebak:
+
+| Titik | Cara memastikan |
 | --- | --- |
-| `connect()` | Panggil koneksi SDK, termasuk token/otentikasi nasabah |
-| `send(text:requestIdentifier:)` | Panggil pengiriman pesan SDK |
-| Callback pesan masuk | Petakan ke `messageStarted` / `messageDelta` / `messageCompleted` |
-| Callback payload kaya | Petakan ke `structuredPayload(name:json:)` |
-| Callback error & disconnect | Petakan ke `failed` / `disconnected` |
+| `DolphinMessageMapper` | Buka `DolphinMessage` di Xcode (Cmd-klik), isi tiga closure: id, teks, payload |
+| `isConnected:` | Nilai `Int` mana dari `com.connector.connectionStatus` yang berarti tersambung. Default menganggap `1` |
 
-Catatan jujur: dokumentasi SDK vendor tidak bisa diakses dari lingkungan tempat
-kode ini disusun (domainnya diblokir proxy), jadi nama kelas dan delegate di
-file contoh **bukan** nama asli SDK 3Dolphins. Strukturnya yang relevan, bukan
-simbolnya.
+Selain itu: dokumentasi tidak menyebutkan pemanggilan teardown. `disconnect()`
+saat ini hanya melepas observer — kalau header punya fungsi penutup koneksi,
+panggil di situ.
 
 ## Kontrak dengan tim bot
 
@@ -86,10 +116,14 @@ jalankan `./Scripts/run_sandbox.sh --vendor-session` untuk melihat keduanya.
 - **Sesi hidup lebih lama dari satu giliran.** Pesan bisa datang tanpa diminta
   (agen membalas sendiri). Paket meneruskannya lewat observer terpisah, jadi
   tidak akan tertukar dengan giliran yang sedang berjalan.
-- **Tidak ada `completion` per request.** Giliran dianggap selesai saat
-  `messageCompleted`, `failed`, atau `disconnected` dengan error. Kalau SDK
-  vendor tidak punya penanda "pesan terakhir", sepakati satu dengan tim bot -
-  tanpa itu, indikator mengetik tidak akan pernah berhenti.
+- **SDK ini mengirim pesan utuh, bukan token.** Jadi satu pesan masuk = satu
+  balasan selesai, dan giliran ditutup di situ. Tidak perlu menyepakati
+  penanda "pesan terakhir" dengan tim bot.
+- **Notifikasi bisa datang dari thread mana pun.** Tidak masalah: ViewModel di
+  paket sudah hop ke main queue sendiri.
+- **`NotificationCenter` itu global.** Kalau ada dua layar memakai `Connector`
+  sekaligus, keduanya menerima notifikasi yang sama. Adapter ini melepas
+  observer di `disconnect()` dan `deinit`, jadi pastikan fitur ditutup rapi.
 - **Reconnect adalah keadaan normal**, bukan error. Kirim `disconnected(nil)`
   untuk penutupan yang wajar dan simpan error hanya untuk yang tidak wajar.
 - **PIN dan otorisasi tidak lewat kanal vendor.** Tetap lewat
