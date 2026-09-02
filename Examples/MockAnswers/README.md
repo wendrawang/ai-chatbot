@@ -45,9 +45,12 @@ skrip di sini sekaligus jadi contoh kontrak untuk tim bot.
 kegagalan decode menghentikan **seluruh** stream, bukan cuma kartu itu. Kalau
 kosong, kirim `"items": []`.
 
-**`messageIdentifier` kartu harus beda dari `messageIdentifier` teks.**
-Identifier yang sama menimpa bubble teks alih-alih menambah kartu — teksnya
-hilang tanpa error.
+**`messageIdentifier` kartu harus beda dari `messageIdentifier` teks, dan
+harus baru di tiap balasan.** Identifier yang sama menimpa bubble yang sudah
+ada alih-alih menambah yang baru: teks tertimpa kartu, atau — yang paling
+membingungkan — konfirmasi yang sudah dibatalkan nasabah terlihat terbuka
+kembali. Skrip di sini memakai `turn` acak per balasan supaya itu tidak
+terjadi.
 
 **`response.completed` wajib dikirim.** Tanpa itu indikator mengetik tidak
 pernah berhenti dan tombol kirim tetap jadi tombol stop. `neverCompletes`
