@@ -173,26 +173,7 @@ public final class TanyaAIChatViewModel: ObservableObject {
         message.update(content: .text(existingText + text))
     }
 
-    private func appendContent(
-        identifier: String,
-        content: TanyaAIMessageContent
-    ) {
-        if let existingMessage = message(identifier: identifier) {
-            existingMessage.update(content: content)
-            indexApproval(content, message: existingMessage)
-            return
-        }
-        let message = TanyaAIMessage(
-            identifier: identifier,
-            role: .assistant,
-            content: content
-        )
-        let itemViewModel = TanyaAIMessageItemViewModel(message: message)
-        appendMessage(itemViewModel)
-        indexApproval(content, message: itemViewModel)
-    }
-
-    private func message(identifier: String) -> TanyaAIMessageItemViewModel? {
+    func message(identifier: String) -> TanyaAIMessageItemViewModel? {
         messageStore.message(identifier: identifier)
     }
 
@@ -202,12 +183,12 @@ public final class TanyaAIChatViewModel: ObservableObject {
         messageStore.approval(identifier: identifier)
     }
 
-    private func appendMessage(_ message: TanyaAIMessageItemViewModel) {
+    func appendMessage(_ message: TanyaAIMessageItemViewModel) {
         messageStore.append(message)
         messages.append(message)
     }
 
-    private func indexApproval(
+    func indexApproval(
         _ content: TanyaAIMessageContent,
         message: TanyaAIMessageItemViewModel
     ) {
