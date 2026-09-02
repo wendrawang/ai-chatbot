@@ -99,6 +99,48 @@ deeplink entry point. Anything else is dropped. Without that check a response
 could point at another app or at a web page. Resolving the link to a screen
 stays with the host's existing deeplink handler.
 
+## Text formatting
+
+Reply text may carry inline styling, so a labelled list reads as one answer
+instead of several bubbles. The wire format is a closed set of bracket tags:
+
+| Tag | Renders |
+| --- | --- |
+| `[bold]wen[/bold]` | Bold |
+| `[strike]wen[/strike]` | Struck through |
+| `[color]wen\|25C36B[/color]` | Text in `#25C36B` |
+
+```json
+event: text.delta
+data: {
+  "messageIdentifier": "text-1",
+  "text": "[bold]1. Tentukan tujuan[/bold]: pilih jangka waktu."
+}
+```
+
+Markdown is deliberately not used. Asterisks are ordinary characters in
+banking copy - masked cards, footnote markers - and a closed tag set means a
+response can reach exactly these three styles and nothing else: no links, no
+images, no headings.
+
+Behaviour the client guarantees:
+
+- **An unknown tag is dropped and its text kept.** A backend that ships a new
+  tag before the app supports it degrades to plain text rather than showing
+  markup to the customer.
+- **An unclosed tag styles the remainder.** Text arrives in chunks, so
+  `[bold]wen` is already bold while the rest is on its way.
+- **A half-arrived tag is hidden.** `wen [bo` renders as `wen ` instead of
+  flashing raw markup, and completes on the next chunk.
+- **A mismatched closing tag keeps the content** and forgets the styling.
+- **Anything else is literal.** `biaya [1] gratis` shows its brackets.
+
+`[color]` carries its value inside the element, after the last `|`, and only
+six-digit RRGGBB is accepted; anything else leaves the text unstyled. Note
+that this hands colour choice to the response: a value with poor contrast
+against the bubble is the backend's mistake to make. If that matters, restrict
+the palette server-side, or map names to theme tokens instead of sending hex.
+
 ## Dynamic suggestions
 
 Suggestions are delivered as a separate stream event:

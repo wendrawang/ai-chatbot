@@ -139,6 +139,15 @@ through `scene(_:openURLContexts:)` exactly as an external caller would. One
 button carries an `https` link the host rejects. `SandboxDeeplinkDispatcher`
 stands in for the deeplink handler a real host application already owns.
 
+### Reply formatting
+
+Reply text may carry inline styling through a closed set of bracket tags -
+`[bold]`, `[strike]`, and `[color]text|RRGGBB[/color]` - so a labelled list
+stays inside one bubble. Markdown is deliberately not used: asterisks are
+ordinary characters in banking copy, and a closed tag set means a response
+cannot introduce links, images, or headings. Contract, including how partial
+tags behave mid-stream, in [`docs/BUBBLE_SCHEMA.md`](docs/BUBBLE_SCHEMA.md).
+
 ### Package targets
 
 | Target | Responsibility |
