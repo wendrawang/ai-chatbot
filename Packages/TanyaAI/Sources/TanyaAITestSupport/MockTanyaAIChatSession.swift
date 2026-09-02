@@ -20,6 +20,8 @@ public final class MockTanyaAIChatSession: TanyaAIChatSession {
 
     /// Every text passed to `send`, in order. Useful in tests.
     public private(set) var sentTexts: [String] = []
+    /// The context attached to each sent message, in the same order.
+    public private(set) var sentContexts: [TanyaAIContext?] = []
     public private(set) var isConnected = false
 
     private let reply: (String) -> [TanyaAIChatSessionEvent]
@@ -46,8 +48,13 @@ public final class MockTanyaAIChatSession: TanyaAIChatSession {
         emit([.connected], startingAt: 0)
     }
 
-    public func send(text: String, requestIdentifier: String) {
+    public func send(
+        text: String,
+        context: TanyaAIContext?,
+        requestIdentifier: String
+    ) {
         sentTexts.append(text)
+        sentContexts.append(context)
         emit(reply(text), startingAt: 1)
     }
 

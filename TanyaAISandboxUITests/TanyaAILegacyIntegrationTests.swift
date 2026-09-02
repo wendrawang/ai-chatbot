@@ -22,6 +22,12 @@ final class TanyaAILegacyIntegrationTests: XCTestCase {
 
         let messageList = application.scrollViews["chat.messageList"]
         XCTAssertTrue(messageList.waitForExistence(timeout: 5))
+        // The chat was opened from the detail screen, so it carries that
+        // screen's context and shows the customer what it was told.
+        XCTAssertTrue(
+            application.staticTexts["About: Legacy detail - state 1"]
+                .waitForExistence(timeout: 5)
+        )
         XCTAssertFalse(application.staticTexts["Legacy state: 1"].isHittable)
         capture(name: "legacy-tanya-ai-full-screen")
 

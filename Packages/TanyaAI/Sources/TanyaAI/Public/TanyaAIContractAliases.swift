@@ -13,3 +13,4 @@ public typealias TanyaAIAuthorizationService =
 public typealias TanyaAIChatSession = TanyaAIContracts.TanyaAIChatSession
 public typealias TanyaAIChatSessionEvent =
     TanyaAIContracts.TanyaAIChatSessionEvent
+public typealias TanyaAIContext = TanyaAIContracts.TanyaAIContext

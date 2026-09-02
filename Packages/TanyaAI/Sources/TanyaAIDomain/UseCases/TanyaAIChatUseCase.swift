@@ -27,4 +27,8 @@ public final class TanyaAIChatUseCase: TanyaAIChatUseCaseProtocol {
     ) {
         repository.observeUnsolicitedEvents(onEvent)
     }
+
+    public func updateContext(_ context: TanyaAIContext?) {
+        repository.updateContext(context)
+    }
 }

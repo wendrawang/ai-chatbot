@@ -19,11 +19,19 @@ public protocol TanyaAIChatSession: AnyObject {
 
     /// Sends one customer message.
     ///
-    /// - Parameter requestIdentifier: correlates the reply with this turn when
-    ///   the vendor echoes an identifier back. Adapters that cannot correlate
-    ///   may ignore it: the package falls back to the message identifier the
-    ///   vendor supplies.
-    func send(text: String, requestIdentifier: String)
+    /// - Parameters:
+    ///   - context: where the chat was opened from, or nil once the customer
+    ///     clears it. Pass it to the vendor as metadata - most SDKs have a
+    ///     custom-data field for exactly this - never as visible chat text.
+    ///   - requestIdentifier: correlates the reply with this turn when the
+    ///     vendor echoes an identifier back. Adapters that cannot correlate
+    ///     may ignore it: the package falls back to the message identifier the
+    ///     vendor supplies.
+    func send(
+        text: String,
+        context: TanyaAIContext?,
+        requestIdentifier: String
+    )
 
     /// Closes the channel. Called when the feature is released.
     func disconnect()

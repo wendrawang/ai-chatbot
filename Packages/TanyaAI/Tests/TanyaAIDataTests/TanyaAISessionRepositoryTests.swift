@@ -115,6 +115,40 @@ final class TanyaAISessionRepositoryTests: XCTestCase {
         XCTAssertEqual(actions.first?.deeplink, "ocbcid://mobile?type=transfer")
     }
 
+    func testContextTravelsWithEveryMessageUntilItIsCleared() {
+        let session = SessionSpy()
+        let repository = TanyaAISessionRepository(
+            session: session,
+            context: TanyaAIContext(
+                screen: "transfer.form",
+                parameters: ["amount": "1250000"],
+                summary: "About: transfer"
+            )
+        )
+
+        repository.sendMessage(
+            conversationIdentifier: nil,
+            text: "Halo",
+            onEvent: { _ in },
+            completion: { _ in }
+        )
+        repository.updateContext(nil)
+        repository.sendMessage(
+            conversationIdentifier: nil,
+            text: "Lagi",
+            onEvent: { _ in },
+            completion: { _ in }
+        )
+
+        XCTAssertEqual(session.sentContexts.count, 2)
+        XCTAssertEqual(session.sentContexts[0]?.screen, "transfer.form")
+        XCTAssertEqual(
+            session.sentContexts[0]?.parameters["amount"],
+            "1250000"
+        )
+        XCTAssertNil(session.sentContexts[1] ?? nil)
+    }
+
     func testEventsOutsideATurnReachTheUnsolicitedObserver() {
         let session = SessionSpy()
         let repository = TanyaAISessionRepository(session: session)
@@ -174,14 +208,20 @@ private enum SessionError: Error {
 private final class SessionSpy: TanyaAIChatSession {
     var onEvent: ((TanyaAIChatSessionEvent) -> Void)?
     private(set) var sentTexts: [String] = []
+    private(set) var sentContexts: [TanyaAIContext?] = []
     private(set) var isConnected = false
 
     func connect() {
         isConnected = true
     }
 
-    func send(text: String, requestIdentifier: String) {
+    func send(
+        text: String,
+        context: TanyaAIContext?,
+        requestIdentifier: String
+    ) {
         sentTexts.append(text)
+        sentContexts.append(context)
     }
 
     func disconnect() {

@@ -10,11 +10,15 @@ public final class TanyaAIChatViewModel: ObservableObject {
     @Published public private(set) var isAgentTyping = false
     @Published public private(set) var errorMessage: String?
     @Published public private(set) var suggestions: [TanyaAISuggestion]
+    /// One line describing what the chat was told about the screen it was
+    /// opened from. Nil hides the chip; the customer can clear it.
+    @Published public private(set) var contextSummary: String?
     @Published public var inputText = ""
 
     public var onOutput: ((TanyaAIChatOutput) -> Void)?
 
-    private let useCase: TanyaAIChatUseCaseProtocol
+    /// Internal so the intents extension in its own file can reach it.
+    let useCase: TanyaAIChatUseCaseProtocol
     private var activeRequest: TanyaAICancellable?
     private var conversationIdentifier: String?
     private var messageStore: TanyaAIMessageStore
@@ -27,8 +31,12 @@ public final class TanyaAIChatViewModel: ObservableObject {
         )
     }
 
-    public init(useCase: TanyaAIChatUseCaseProtocol) {
+    public init(
+        useCase: TanyaAIChatUseCaseProtocol,
+        context: TanyaAIContext? = nil
+    ) {
         self.useCase = useCase
+        contextSummary = context?.summary
         let welcomeMessage = TanyaAIWelcomeMessageFactory.makeMessage()
         messages = [welcomeMessage]
         messageStore = TanyaAIMessageStore(welcomeMessage: welcomeMessage)
@@ -82,6 +90,10 @@ public final class TanyaAIChatViewModel: ObservableObject {
         activeRequest = nil
         textDeltaBuffer.flushAll()
         isGenerating = false
+    }
+
+    func setContextSummary(_ summary: String?) {
+        contextSummary = summary
     }
 
     public func close() {

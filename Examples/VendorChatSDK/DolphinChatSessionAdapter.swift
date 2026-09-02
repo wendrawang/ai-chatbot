@@ -65,12 +65,20 @@ final class DolphinChatSessionAdapter: NSObject, TanyaAIChatSession {
         connector.constructConnector(profile: profile)
     }
 
-    func send(text: String, requestIdentifier: String) {
+    func send(
+        text: String,
+        context: TanyaAIContext?,
+        requestIdentifier: String
+    ) {
         // The SDK echoes no correlation id, so requestIdentifier is unused:
         // the turn ends when the next inbound message completes.
+        //
+        // Context is metadata, never chat text. `dataUser` is the SDK's
+        // custom-data field, so it rides along there; agree the key with the
+        // bot team.
         connector.onSendMessage(
             messages: text,
-            dataUser: configuration.dataUser
+            dataUser: configuration.dataUser(with: context)
         )
     }
 

@@ -17,7 +17,10 @@ final class TanyaAIDependencyContainer {
 
     func makeChatViewModel() -> TanyaAIChatViewModel {
         let useCase = TanyaAIChatUseCase(repository: makeRepository())
-        return TanyaAIChatViewModel(useCase: useCase)
+        return TanyaAIChatViewModel(
+            useCase: useCase,
+            context: configuration.context
+        )
     }
 
     /// One transport per graph. A vendor session wins when both are somehow
@@ -25,14 +28,18 @@ final class TanyaAIDependencyContainer {
     /// because both initializers require one.
     private func makeRepository() -> TanyaAIRepository {
         if let session = dependencies.chatSession {
-            return TanyaAISessionRepository(session: session)
+            return TanyaAISessionRepository(
+                session: session,
+                context: configuration.context
+            )
         }
         guard let transport = dependencies.streamingTransport else {
             return TanyaAIUnavailableRepository()
         }
         return DefaultTanyaAIRepository(
             transport: transport,
-            messagePath: configuration.messagePath
+            messagePath: configuration.messagePath,
+            context: configuration.context
         )
     }
 

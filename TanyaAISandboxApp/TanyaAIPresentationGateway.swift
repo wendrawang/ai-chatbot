@@ -11,6 +11,10 @@ final class TanyaAIPresentationGateway:
     private let dependencies: TanyaAIDependencies
     private let configuration: TanyaAIConfiguration
     private var actionHandler: ((TanyaAIAction) -> Void)?
+    /// Set by the screen that opens the feature, consumed by the next
+    /// `makeView`. Each presentation builds a fresh graph, so context does not
+    /// leak from one presentation into the next.
+    private var pendingContext: TanyaAIContext?
 
     init(
         dependencies: TanyaAIDependencies,
@@ -24,6 +28,12 @@ final class TanyaAIPresentationGateway:
     /// Set once by the scene; the gateway itself does not interpret it.
     func onAction(_ handler: @escaping (TanyaAIAction) -> Void) {
         actionHandler = handler
+    }
+
+    /// Opens the feature carrying the originating screen's context.
+    func presentTanyaAI(context: TanyaAIContext?) {
+        pendingContext = context
+        presentTanyaAI()
     }
 
     /// Opens the feature. The binding drives `fullScreenCover` in the host
@@ -46,7 +56,11 @@ final class TanyaAIPresentationGateway:
     /// presentation gets its own router, ViewModels, and stream.
     func makeView() -> TanyaAIRootView {
         TanyaAIModule.makeView(
-            configuration: configuration,
+            configuration: TanyaAIConfiguration(
+                messagePath: configuration.messagePath,
+                initialPrompt: configuration.initialPrompt,
+                context: pendingContext ?? configuration.context
+            ),
             dependencies: dependencies,
             onClose: { [weak self] in
                 self?.dismissTanyaAI()

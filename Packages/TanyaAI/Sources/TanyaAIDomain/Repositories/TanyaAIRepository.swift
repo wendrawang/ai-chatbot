@@ -15,10 +15,16 @@ public protocol TanyaAIRepository: AnyObject {
     func observeUnsolicitedEvents(
         _ onEvent: @escaping (TanyaAIStreamEvent) -> Void
     )
+
+    /// Replaces the context sent with subsequent messages. Nil clears it,
+    /// which is what the customer dismissing the context chip means.
+    func updateContext(_ context: TanyaAIContext?)
 }
 
 public extension TanyaAIRepository {
     func observeUnsolicitedEvents(
         _ onEvent: @escaping (TanyaAIStreamEvent) -> Void
     ) {}
+
+    func updateContext(_ context: TanyaAIContext?) {}
 }

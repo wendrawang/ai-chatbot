@@ -128,3 +128,15 @@ jalankan `./Scripts/run_sandbox.sh --vendor-session` untuk melihat keduanya.
   untuk penutupan yang wajar dan simpan error hanya untuk yang tidak wajar.
 - **PIN dan otorisasi tidak lewat kanal vendor.** Tetap lewat
   `TanyaAIAuthorizationService` milik Anda.
+
+## Konteks halaman
+
+Kalau chat dibuka dari halaman tertentu, `TanyaAIConfiguration(context:)`
+mengirim konteksnya sebagai **metadata**, bukan teks chat. Di adapter ini
+konteks digabung ke `dataUser` - field custom milik SDK - di bawah kunci
+`appContext` (bisa diganti lewat `Configuration.contextKey`). Sepakati kunci
+itu dengan tim bot.
+
+Isinya seperlunya saja: payload ini keluar dari perangkat dan tersimpan di
+sisi pengelola bot. Tidak ada PIN, token, atau nomor rekening penuh.
+

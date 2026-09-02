@@ -19,9 +19,14 @@ public final class TanyaAISessionRepository: TanyaAIRepository {
     private var activeTurn: Turn?
     private var unsolicitedObserver: ((TanyaAIStreamEvent) -> Void)?
     private var hasConnected = false
+    private var context: TanyaAIContext?
 
-    public init(session: TanyaAIChatSession) {
+    public init(
+        session: TanyaAIChatSession,
+        context: TanyaAIContext? = nil
+    ) {
         self.session = session
+        self.context = context
         session.onEvent = { [weak self] event in
             self?.handle(event)
         }
@@ -50,15 +55,26 @@ public final class TanyaAISessionRepository: TanyaAIRepository {
         let needsConnect = !hasConnected
         hasConnected = true
         activeTurn = turn
+        let context = self.context
         lock.unlock()
 
         if needsConnect {
             session.connect()
         }
-        session.send(text: text, requestIdentifier: requestIdentifier)
+        session.send(
+            text: text,
+            context: context,
+            requestIdentifier: requestIdentifier
+        )
         return TurnCancellable { [weak self] in
             self?.finishTurn(identifier: requestIdentifier, result: nil)
         }
+    }
+
+    public func updateContext(_ context: TanyaAIContext?) {
+        lock.lock()
+        self.context = context
+        lock.unlock()
     }
 
     /// Events that arrive outside a turn: an agent replying on their own, a

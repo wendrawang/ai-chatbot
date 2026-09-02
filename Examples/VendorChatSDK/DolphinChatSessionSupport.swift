@@ -1,4 +1,5 @@
 import Foundation
+import TanyaAI
 // import imi_dolphin_livechat_ios
 
 extension DolphinChatSessionAdapter {
@@ -9,21 +10,39 @@ extension DolphinChatSessionAdapter {
         /// Spelled as the SDK spells it.
         let clientSecrect: String
         let enableGetQueue: Bool
-        /// Passed straight through as the SDK's `dataUser` argument.
-        let dataUser: Any
+        /// Base value passed as the SDK's `dataUser` argument.
+        let dataUser: [String: Any]
+        /// Key the bot reads the screen context from.
+        let contextKey: String
 
         init(
             baseUrl: String,
             clientId: String,
             clientSecrect: String,
             enableGetQueue: Bool = false,
-            dataUser: Any
+            dataUser: [String: Any] = [:],
+            contextKey: String = "appContext"
         ) {
             self.baseUrl = baseUrl
             self.clientId = clientId
             self.clientSecrect = clientSecrect
             self.enableGetQueue = enableGetQueue
             self.dataUser = dataUser
+            self.contextKey = contextKey
+        }
+
+        /// Merges the screen context into the SDK's custom-data field.
+        ///
+        /// If your deployment types `dataUser` as something other than a
+        /// dictionary, keep the merge here and convert at the call site - the
+        /// point is that context leaves as metadata, not as chat text.
+        func dataUser(with context: TanyaAIContext?) -> [String: Any] {
+            guard let context else {
+                return dataUser
+            }
+            var merged = dataUser
+            merged[contextKey] = context.payload
+            return merged
         }
     }
 }

@@ -140,6 +140,26 @@ through `scene(_:openURLContexts:)` exactly as an external caller would. One
 button carries an `https` link the host rejects. `SandboxDeeplinkDispatcher`
 stands in for the deeplink handler a real host application already owns.
 
+### Opening with context
+
+The host can hand the chat what the originating screen already knows:
+
+```swift
+TanyaAIConfiguration(
+    context: TanyaAIContext(
+        screen: "transfer.form",
+        parameters: ["amount": "1250000"],
+        summary: "About: transfer to Sample"
+    )
+)
+```
+
+It travels with every message as metadata - `context` in the SSE request body,
+custom data on a vendor session - and never as chat text. A chip above the
+conversation shows the customer what the bot was told, and dismissing it stops
+the context being sent. Details in
+[`docs/INTEGRATION.md`](docs/INTEGRATION.md).
+
 ### Transports
 
 The chat reaches the backend through one of two injected transports:
