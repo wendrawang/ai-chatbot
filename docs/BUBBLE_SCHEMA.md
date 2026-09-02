@@ -101,24 +101,45 @@ stays with the host's existing deeplink handler.
 
 ## Text formatting
 
-Reply text may carry inline emphasis, so a labelled list reads as one answer
-instead of several bubbles:
+Reply text may carry inline styling, so a labelled list reads as one answer
+instead of several bubbles. The wire format is a closed set of bracket tags:
+
+| Tag | Renders |
+| --- | --- |
+| `[bold]wen[/bold]` | Bold |
+| `[strike]wen[/strike]` | Struck through |
+| `[color]wen\|25C36B[/color]` | Text in `#25C36B` |
 
 ```json
 event: text.delta
 data: {
   "messageIdentifier": "text-1",
-  "text": "**1. Tentukan tujuan**: pilih jangka waktu dan target dana."
+  "text": "[bold]1. Tentukan tujuan[/bold]: pilih jangka waktu."
 }
 ```
 
-Only inline syntax is interpreted - bold, italic, inline code - and line
-breaks are preserved. Headings, images, links, tables, and block quotes are
-not: a response cannot introduce layout the package does not control, which is
-the same rule the typed content types follow.
+Markdown is deliberately not used. Asterisks are ordinary characters in
+banking copy - masked cards, footnote markers - and a closed tag set means a
+response can reach exactly these three styles and nothing else: no links, no
+images, no headings.
 
-Emphasis arriving mid-stream is safe. An unclosed `**` renders as literal
-asterisks until its pair arrives, then resolves.
+Behaviour the client guarantees:
+
+- **An unknown tag is dropped and its text kept.** A backend that ships a new
+  tag before the app supports it degrades to plain text rather than showing
+  markup to the customer.
+- **An unclosed tag styles the remainder.** Text arrives in chunks, so
+  `[bold]wen` is already bold while the rest is on its way.
+- **A half-arrived tag is hidden.** `wen [bo` renders as `wen ` instead of
+  flashing raw markup, and completes on the next chunk.
+- **A mismatched closing tag keeps the content** and forgets the styling.
+- **Anything else is literal.** `biaya [1] gratis` shows its brackets.
+
+`[color]` carries its value inside the element, after the last `|`, and only
+six-digit RRGGBB is accepted; anything else leaves the text unstyled. Note
+that this hands colour choice to the response: a value with poor contrast
+against the bubble is the backend's mistake to make. If that matters, restrict
+the palette server-side, or map names to theme tokens instead of sending hex.
 
 ## Dynamic suggestions
 

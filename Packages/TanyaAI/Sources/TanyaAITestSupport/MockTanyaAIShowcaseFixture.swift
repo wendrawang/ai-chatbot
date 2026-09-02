@@ -19,11 +19,13 @@ enum MockTanyaAIShowcaseFixture {
                 [
                     "messageIdentifier": messageIdentifier,
                     "text": "Here are the sanitized financial bubble "
-                        + "scenarios.\n\n**1. Confirmations**: approval "
-                        + "cards that lead to authorization.\n**2. "
-                        + "Insights**: portfolio, spending, and lists.\n"
-                        + "**3. Status**: every level, plus the unsupported "
-                        + "fallback."
+                        + "scenarios.\n\n[bold]1. Confirmations[/bold]: "
+                        + "approval cards that lead to authorization.\n"
+                        + "[bold]2. Insights[/bold]: portfolio, spending, "
+                        + "and lists.\n[bold]3. Status[/bold]: every level, "
+                        + "plus the unsupported fallback.\n\nStatus: "
+                        + "[color]sandbox data only|25C36B[/color], "
+                        + "[strike]production endpoints[/strike]."
                 ]
             )
         ]

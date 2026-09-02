@@ -6,7 +6,8 @@ enum TanyaAIWelcomeMessageFactory {
             identifier: "sandbox-welcome",
             role: .assistant,
             content: .text(
-                "**Welcome to the sanitized Tanya AI sandbox.** "
+                "[bold]Welcome to the sanitized Tanya AI "
+                    + "sandbox.[/bold] "
                     + "Ask for a sample portfolio to start the demo."
             )
         )

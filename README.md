@@ -141,11 +141,12 @@ stands in for the deeplink handler a real host application already owns.
 
 ### Reply formatting
 
-Reply text may use inline emphasis - `**bold**`, `*italic*`, `` `code` `` -
-and keeps its line breaks, so a labelled list stays inside one bubble. Block
-syntax is deliberately not interpreted: headings, images, links, and tables
-would hand layout control to the response. Contract in
-[`docs/BUBBLE_SCHEMA.md`](docs/BUBBLE_SCHEMA.md).
+Reply text may carry inline styling through a closed set of bracket tags -
+`[bold]`, `[strike]`, and `[color]text|RRGGBB[/color]` - so a labelled list
+stays inside one bubble. Markdown is deliberately not used: asterisks are
+ordinary characters in banking copy, and a closed tag set means a response
+cannot introduce links, images, or headings. Contract, including how partial
+tags behave mid-stream, in [`docs/BUBBLE_SCHEMA.md`](docs/BUBBLE_SCHEMA.md).
 
 ### Package targets
 
