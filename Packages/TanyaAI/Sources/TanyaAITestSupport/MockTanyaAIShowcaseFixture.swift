@@ -18,7 +18,12 @@ enum MockTanyaAIShowcaseFixture {
                 "text.delta",
                 [
                     "messageIdentifier": messageIdentifier,
-                    "text": "Here are the sanitized financial bubble scenarios."
+                    "text": "Here are the sanitized financial bubble "
+                        + "scenarios.\n\n**1. Confirmations**: approval "
+                        + "cards that lead to authorization.\n**2. "
+                        + "Insights**: portfolio, spending, and lists.\n"
+                        + "**3. Status**: every level, plus the unsupported "
+                        + "fallback."
                 ]
             )
         ]

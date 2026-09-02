@@ -99,6 +99,27 @@ deeplink entry point. Anything else is dropped. Without that check a response
 could point at another app or at a web page. Resolving the link to a screen
 stays with the host's existing deeplink handler.
 
+## Text formatting
+
+Reply text may carry inline emphasis, so a labelled list reads as one answer
+instead of several bubbles:
+
+```json
+event: text.delta
+data: {
+  "messageIdentifier": "text-1",
+  "text": "**1. Tentukan tujuan**: pilih jangka waktu dan target dana."
+}
+```
+
+Only inline syntax is interpreted - bold, italic, inline code - and line
+breaks are preserved. Headings, images, links, tables, and block quotes are
+not: a response cannot introduce layout the package does not control, which is
+the same rule the typed content types follow.
+
+Emphasis arriving mid-stream is safe. An unclosed `**` renders as literal
+asterisks until its pair arrives, then resolves.
+
 ## Dynamic suggestions
 
 Suggestions are delivered as a separate stream event:
