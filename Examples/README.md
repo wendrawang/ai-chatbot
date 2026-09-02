@@ -13,6 +13,7 @@ compiled here.
 | [`NavigationViewHost/Minimal`](NavigationViewHost/Minimal) | Smallest wiring that makes the feature work: two thin adapters and one modifier |
 | [`NavigationViewHost/Production`](NavigationViewHost/Production) | Release-ready version: pinning, expiry checks, host theme, presentation gateway |
 | [`NavigationViewHost/Deeplink`](NavigationViewHost/Deeplink) | Handing a bubble action to the host's existing deeplink handler, minimal and full |
+| [`MockAnswers`](MockAnswers) | Scripted AI answers for demo and QA builds, with no backend |
 
 Both target the same host shape — SwiftUI `NavigationView` screens hosted from
 `AppDelegate` and `SceneDelegate`.
