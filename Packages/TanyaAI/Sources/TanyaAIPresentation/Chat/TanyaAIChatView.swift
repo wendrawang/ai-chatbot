@@ -13,6 +13,7 @@ public struct TanyaAIChatView: View {
         VStack(spacing: 0) {
             header
             separator
+            contextChip
             TanyaAIMessageListView(viewModel: viewModel)
             errorBanner
             suggestionStrip
@@ -52,6 +53,36 @@ public struct TanyaAIChatView: View {
         .padding(.horizontal, 8)
         .padding(.top, 8)
         .foregroundColor(theme.colors.accent)
+    }
+
+    /// What the chat was told about the screen it was opened from.
+    ///
+    /// Shown rather than hidden: the customer should be able to see the
+    /// context the bot was handed, and remove it.
+    @ViewBuilder
+    private var contextChip: some View {
+        if let summary = viewModel.contextSummary {
+            HStack(spacing: 8) {
+                Image(systemName: "doc.text.magnifyingglass")
+                    .foregroundColor(theme.colors.accent)
+                Text(summary)
+                    .font(theme.fonts.footnote)
+                    .foregroundColor(theme.colors.secondaryText)
+                    .lineLimit(2)
+                Spacer(minLength: 8)
+                Button(action: viewModel.clearContext) {
+                    Image(systemName: "xmark")
+                        .font(theme.fonts.caption)
+                        .frame(width: 32, height: 32)
+                }
+                .foregroundColor(theme.colors.secondaryText)
+                .accessibility(label: Text("Clear context"))
+            }
+            .padding(.horizontal, 16)
+            .padding(.vertical, 6)
+            .background(theme.colors.surface)
+            .tanyaAIAccessibilityIdentifier("chat.contextChip")
+        }
     }
 
     @ViewBuilder

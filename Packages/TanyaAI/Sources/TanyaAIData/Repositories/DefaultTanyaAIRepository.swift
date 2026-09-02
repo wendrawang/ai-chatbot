@@ -5,13 +5,23 @@ import TanyaAIDomain
 public final class DefaultTanyaAIRepository: TanyaAIRepository {
     private let transport: TanyaAIStreamingTransport
     private let messagePath: String
+    private let lock = NSLock()
+    private var context: TanyaAIContext?
 
     public init(
         transport: TanyaAIStreamingTransport,
-        messagePath: String
+        messagePath: String,
+        context: TanyaAIContext? = nil
     ) {
         self.transport = transport
         self.messagePath = messagePath
+        self.context = context
+    }
+
+    public func updateContext(_ context: TanyaAIContext?) {
+        lock.lock()
+        self.context = context
+        lock.unlock()
     }
 
     @discardableResult
@@ -46,9 +56,15 @@ public final class DefaultTanyaAIRepository: TanyaAIRepository {
         conversationIdentifier: String?,
         text: String
     ) -> TanyaAIStreamRequest {
-        var payload = ["message": text]
+        var payload: [String: Any] = ["message": text]
         if let conversationIdentifier = conversationIdentifier {
             payload["conversationIdentifier"] = conversationIdentifier
+        }
+        lock.lock()
+        let context = self.context
+        lock.unlock()
+        if let context {
+            payload["context"] = context.payload
         }
         let body = (try? JSONSerialization.data(withJSONObject: payload)) ?? Data()
         return TanyaAIStreamRequest(

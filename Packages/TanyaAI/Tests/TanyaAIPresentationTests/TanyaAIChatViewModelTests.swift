@@ -39,6 +39,55 @@ final class TanyaAIChatViewModelTests: XCTestCase {
         XCTAssertEqual(receivedApproval, approval)
     }
 
+    func testContextChipShowsTheSummaryAndClearingStopsSendingIt() {
+        let useCase = TanyaAIChatUseCaseStub()
+        let viewModel = TanyaAIChatViewModel(
+            useCase: useCase,
+            context: TanyaAIContext(
+                screen: "transfer.form",
+                parameters: ["amount": "1250000"],
+                summary: "About: transfer"
+            )
+        )
+
+        XCTAssertEqual(viewModel.contextSummary, "About: transfer")
+
+        viewModel.clearContext()
+
+        XCTAssertNil(viewModel.contextSummary)
+        XCTAssertTrue(useCase.didClearContext)
+    }
+
+    func testChannelSourcedActionLeavesThroughTheSameOutput() {
+        let useCase = TanyaAIChatUseCaseStub()
+        let viewModel = TanyaAIChatViewModel(useCase: useCase)
+        var received: [TanyaAIAction] = []
+        viewModel.onOutput = { output in
+            if case .performAction(let action) = output {
+                received.append(action)
+            }
+        }
+        let action = TanyaAIAction(
+            identifier: "vendor-handoff",
+            deeplink: "ocbcid://mobile?type=transfer"
+        )
+
+        useCase.sendUnsolicited(.hostAction(action))
+
+        XCTAssertEqual(received, [action])
+        XCTAssertEqual(viewModel.messages.count, 1)
+    }
+
+    func testAgentTypingDrivesTheIndicatorWithoutStartingAGeneration() {
+        let useCase = TanyaAIChatUseCaseStub()
+        let viewModel = TanyaAIChatViewModel(useCase: useCase)
+
+        useCase.sendUnsolicited(.typing(true))
+
+        XCTAssertTrue(viewModel.isAgentTyping)
+        XCTAssertFalse(viewModel.isGenerating)
+    }
+
     func testSelectingSuggestionSendsItsPrompt() {
         let useCase = TanyaAIChatUseCaseStub()
         let viewModel = TanyaAIChatViewModel(useCase: useCase)
@@ -140,6 +189,8 @@ private extension TanyaAIApprovalPayload.Kind {
 private final class TanyaAIChatUseCaseStub: TanyaAIChatUseCaseProtocol {
     private var eventHandler: ((TanyaAIStreamEvent) -> Void)?
     private var completionHandler: ((Result<Void, Error>) -> Void)?
+    private var unsolicitedHandler: ((TanyaAIStreamEvent) -> Void)?
+    private(set) var didClearContext = false
     private(set) var receivedText: String?
 
     func sendMessage(
@@ -154,8 +205,22 @@ private final class TanyaAIChatUseCaseStub: TanyaAIChatUseCaseProtocol {
         return TanyaAINoOpCancellable()
     }
 
+    func observeUnsolicitedEvents(
+        _ onEvent: @escaping (TanyaAIStreamEvent) -> Void
+    ) {
+        unsolicitedHandler = onEvent
+    }
+
     func send(_ event: TanyaAIStreamEvent) {
         eventHandler?(event)
+    }
+
+    func sendUnsolicited(_ event: TanyaAIStreamEvent) {
+        unsolicitedHandler?(event)
+    }
+
+    func updateContext(_ context: TanyaAIContext?) {
+        didClearContext = context == nil
     }
 
     func complete(_ result: Result<Void, Error>) {

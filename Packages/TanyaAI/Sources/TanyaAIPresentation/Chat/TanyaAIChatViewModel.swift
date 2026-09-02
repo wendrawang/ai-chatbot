@@ -6,13 +6,19 @@ import TanyaAIDomain
 public final class TanyaAIChatViewModel: ObservableObject {
     @Published public private(set) var messages: [TanyaAIMessageItemViewModel]
     @Published public private(set) var isGenerating = false
+    /// True while the agent or bot is composing on a session transport.
+    @Published public private(set) var isAgentTyping = false
     @Published public private(set) var errorMessage: String?
     @Published public private(set) var suggestions: [TanyaAISuggestion]
+    /// One line describing what the chat was told about the screen it was
+    /// opened from. Nil hides the chip; the customer can clear it.
+    @Published public private(set) var contextSummary: String?
     @Published public var inputText = ""
 
     public var onOutput: ((TanyaAIChatOutput) -> Void)?
 
-    private let useCase: TanyaAIChatUseCaseProtocol
+    /// Internal so the intents extension in its own file can reach it.
+    let useCase: TanyaAIChatUseCaseProtocol
     private var activeRequest: TanyaAICancellable?
     private var conversationIdentifier: String?
     private var messageStore: TanyaAIMessageStore
@@ -25,12 +31,28 @@ public final class TanyaAIChatViewModel: ObservableObject {
         )
     }
 
-    public init(useCase: TanyaAIChatUseCaseProtocol) {
+    public init(
+        useCase: TanyaAIChatUseCaseProtocol,
+        context: TanyaAIContext? = nil
+    ) {
         self.useCase = useCase
+        contextSummary = context?.summary
         let welcomeMessage = TanyaAIWelcomeMessageFactory.makeMessage()
         messages = [welcomeMessage]
         messageStore = TanyaAIMessageStore(welcomeMessage: welcomeMessage)
         suggestions = TanyaAISuggestion.sandboxDefaults
+        observeUnsolicitedEvents()
+    }
+
+    /// A session transport delivers messages nobody asked for - an agent
+    /// replying on their own, or a hand-off pushed by the channel. Over SSE
+    /// this observer is never called.
+    private func observeUnsolicitedEvents() {
+        useCase.observeUnsolicitedEvents { [weak self] event in
+            TanyaAIMainQueue.perform {
+                self?.handle(event)
+            }
+        }
     }
 
     public func sendCurrentMessage() {
@@ -68,6 +90,10 @@ public final class TanyaAIChatViewModel: ObservableObject {
         activeRequest = nil
         textDeltaBuffer.flushAll()
         isGenerating = false
+    }
+
+    func setContextSummary(_ summary: String?) {
+        contextSummary = summary
     }
 
     public func close() {
@@ -118,7 +144,12 @@ public final class TanyaAIChatViewModel: ObservableObject {
         case .responseCompleted:
             textDeltaBuffer.flushAll()
             isGenerating = false
+            isAgentTyping = false
             activeRequest = nil
+        case .hostAction(let action):
+            onOutput?(.performAction(action))
+        case .typing(let isTyping):
+            isAgentTyping = isTyping
         case .heartbeat:
             break
         }

@@ -1,4 +1,5 @@
 import SwiftUI
+import TanyaAI
 
 struct LegacyDetailScreen: View {
     let tanyaAIPresenter: TanyaAIPresenting
@@ -53,8 +54,24 @@ struct LegacyDetailScreen: View {
         .legacyCardStyle()
     }
 
+    /// What this screen already knows, handed to the chat when it opens.
+    ///
+    /// Only what the customer can already see on this screen - never a token,
+    /// a PIN, or a full account number.
+    private func openTanyaAI() {
+        tanyaAIPresenter.presentTanyaAI(context: chatContext)
+    }
+
+    private var chatContext: TanyaAIContext {
+        TanyaAIContext(
+            screen: "legacy.detail",
+            parameters: ["legacyCounter": "\(legacyCounter)"],
+            summary: "About: Legacy detail - state \(legacyCounter)"
+        )
+    }
+
     private var openTanyaAIButton: some View {
-        Button(action: tanyaAIPresenter.presentTanyaAI) {
+        Button(action: openTanyaAI) {
             HStack {
                 Image(systemName: "sparkles")
                 Text("Open Tanya AI outside legacy navigation")

@@ -16,12 +16,31 @@ final class TanyaAIDependencyContainer {
     }
 
     func makeChatViewModel() -> TanyaAIChatViewModel {
-        let repository = DefaultTanyaAIRepository(
-            transport: dependencies.streamingTransport,
-            messagePath: configuration.messagePath
+        let useCase = TanyaAIChatUseCase(repository: makeRepository())
+        return TanyaAIChatViewModel(
+            useCase: useCase,
+            context: configuration.context
         )
-        let useCase = TanyaAIChatUseCase(repository: repository)
-        return TanyaAIChatViewModel(useCase: useCase)
+    }
+
+    /// One transport per graph. A vendor session wins when both are somehow
+    /// present, and an empty `TanyaAIDependencies` cannot be built at all
+    /// because both initializers require one.
+    private func makeRepository() -> TanyaAIRepository {
+        if let session = dependencies.chatSession {
+            return TanyaAISessionRepository(
+                session: session,
+                context: configuration.context
+            )
+        }
+        guard let transport = dependencies.streamingTransport else {
+            return TanyaAIUnavailableRepository()
+        }
+        return DefaultTanyaAIRepository(
+            transport: transport,
+            messagePath: configuration.messagePath,
+            context: configuration.context
+        )
     }
 
     func makeHistoryViewModel() -> TanyaAIHistoryViewModel {

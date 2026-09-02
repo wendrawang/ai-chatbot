@@ -1,10 +1,12 @@
 import Foundation
 
-enum SandboxLaunchMode {
+enum SandboxLaunchMode: Equatable {
     case legacyHost
     case showcase
     case stressChat
     case deeplink
+    /// Chat driven by a vendor SDK session instead of the SSE transport.
+    case vendorSession
 
     init(arguments: [String]) {
         if arguments.contains("--stress-chat") {
@@ -13,6 +15,8 @@ enum SandboxLaunchMode {
             self = .showcase
         } else if arguments.contains("--deeplink") {
             self = .deeplink
+        } else if arguments.contains("--vendor-session") {
+            self = .vendorSession
         } else {
             self = .legacyHost
         }
@@ -24,7 +28,7 @@ enum SandboxLaunchMode {
     /// back on the dashboard, so the dashboard must exist.
     var isStandaloneFeature: Bool {
         switch self {
-        case .legacyHost, .deeplink:
+        case .legacyHost, .deeplink, .vendorSession:
             return false
         case .showcase, .stressChat:
             return true
@@ -37,9 +41,14 @@ enum SandboxLaunchMode {
         switch self {
         case .legacyHost:
             return false
-        case .showcase, .stressChat, .deeplink:
+        case .showcase, .stressChat, .deeplink, .vendorSession:
             return true
         }
+    }
+
+    /// Uses the mock vendor session instead of the mock SSE transport.
+    var usesVendorSession: Bool {
+        self == .vendorSession
     }
 
     var initialPrompt: String? {
@@ -52,6 +61,8 @@ enum SandboxLaunchMode {
             return "stress conversation"
         case .deeplink:
             return "deeplink hand-off"
+        case .vendorSession:
+            return "vendor session demo"
         }
     }
 }

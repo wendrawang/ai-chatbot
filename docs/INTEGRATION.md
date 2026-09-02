@@ -246,6 +246,76 @@ not open the screen on its own, the hand-off cannot either; the usual cause is
 a scheme missing from `CFBundleURLTypes`, which makes `UIApplication.open`
 fail silently.
 
+## Opening with context
+
+A chat opened from the transfer screen should not start empty. Pass what that
+screen already knows:
+
+```swift
+TanyaAIModule.makeView(
+    configuration: TanyaAIConfiguration(
+        context: TanyaAIContext(
+            screen: "transfer.form",
+            parameters: ["beneficiary": "Sample", "amount": "1250000"],
+            summary: "About: transfer to Sample"
+        )
+    ),
+    dependencies: dependencies,
+    onClose: { showsTanyaAI = false },
+    onAction: { action in deeplinkBridge.handle(action) }
+)
+```
+
+`screen` is a key agreed with the bot team, `parameters` are values already on
+that screen, and `summary` is one line shown to the customer above the
+conversation.
+
+The context is metadata, not a message: it rides in the request body as
+`context` on the SSE transport, and in the vendor SDK's custom-data field on a
+session transport. It never appears as chat text, and it travels with every
+message in that presentation, not only the first.
+
+Set it per presentation. Each presentation builds a fresh graph, so the same
+screen opened with different values is simply a different context.
+
+**What not to put in it.** This payload leaves the device and is stored by
+whoever runs the bot: no PIN, no token, no full account number, and nothing
+the customer cannot already see on the screen. `summary` is the exception that
+stays on the device - it exists for the customer, not for the bot.
+
+**The customer can remove it.** The chip above the conversation carries a
+dismiss control; from that point the context stops being sent. Showing it is
+deliberate: what the bot was told about the customer should not be hidden from
+them.
+
+## Choosing a transport
+
+The chat reaches the backend through exactly one of two transports, and
+everything above the repository is identical either way:
+
+| | `TanyaAIStreamingTransport` | `TanyaAIChatSession` |
+| --- | --- | --- |
+| Shape | Request: one message, a stream of chunks, a completion | Session: connect once, then send and receive |
+| Backed by | The host's own networking (SSE) | A vendor live-chat SDK, adapted by the host |
+| Injected as | `TanyaAIDependencies(streamingTransport:...)` | `TanyaAIDependencies(chatSession:...)` |
+
+Typed cards, the PIN sheet, and the deeplink hand-off do not change between
+them. A vendor SDK carries the same JSON as `structuredPayload`, and the
+package decodes it with the same decoder it uses for SSE.
+
+Two things a session has that a request does not:
+
+- **Messages nobody asked for.** An agent replying on their own arrives
+  outside any turn; the package routes those to a separate observer so they
+  cannot be mistaken for the reply in flight.
+- **No completion per request.** A turn ends on `messageCompleted`, `failed`,
+  or an unexpected `disconnected`. An SDK that delivers whole messages closes
+  the turn on each one; an SDK that streams tokens needs a "last message"
+  marker agreed with the bot team, or the typing indicator never stops.
+
+A worked adapter is in
+[`Examples/VendorChatSDK`](../Examples/VendorChatSDK).
+
 ## Streaming adapter
 
 Implement `TanyaAIStreamingTransport` in the host. Translate the relative

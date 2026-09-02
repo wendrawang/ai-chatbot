@@ -62,7 +62,7 @@ struct TanyaAIMessageListView: View {
                 .id(message.id)
             }
 
-            if viewModel.isGenerating {
+            if viewModel.isGenerating || viewModel.isAgentTyping {
                 TanyaAITypingIndicatorView()
                     .padding(.horizontal, 16)
                     .padding(.vertical, 6)

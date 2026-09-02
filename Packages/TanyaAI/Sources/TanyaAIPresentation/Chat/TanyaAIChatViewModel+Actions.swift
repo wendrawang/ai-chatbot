@@ -1,3 +1,4 @@
+import TanyaAIContracts
 import TanyaAIDomain
 
 /// Approval and hand-off intents.
@@ -19,6 +20,14 @@ public extension TanyaAIChatViewModel {
             return
         }
         onOutput?(.requestApproval(payload))
+    }
+
+    /// The customer dismissed the context chip: stop sending the context from
+    /// the next message on. Messages already sent kept it, which is exactly
+    /// why the chip is visible in the first place.
+    func clearContext() {
+        setContextSummary(nil)
+        useCase.updateContext(nil)
     }
 
     /// A button on an action card. Reports the deeplink and nothing else.
