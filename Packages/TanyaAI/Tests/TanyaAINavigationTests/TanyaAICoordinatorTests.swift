@@ -50,8 +50,62 @@ final class TanyaAICoordinatorTests: XCTestCase {
         window.isHidden = true
     }
 
+    func testActionReachesTheHostWithoutNavigatingOrOpeningAnything() {
+        let navigationController = UINavigationController()
+        var received: [TanyaAIAction] = []
+        let coordinator = makeCoordinator(
+            navigationController: navigationController,
+            onAction: { received.append($0) }
+        )
+        coordinator.start()
+        let action = TanyaAIAction(
+            identifier: "open-transfer",
+            deeplink: "ocbcid://mobile?type=transfer"
+        )
+
+        coordinator.handleForTesting(.performAction(action))
+
+        XCTAssertEqual(received, [action])
+        XCTAssertEqual(navigationController.viewControllers.count, 1)
+        XCTAssertNil(navigationController.presentedViewController)
+    }
+
+    /// A confirmation carrying a hand-off skips the PIN sheet entirely: the
+    /// existing screen owns the authorization instead.
+    func testApprovalHandoffReportsTheDeeplinkInsteadOfPresentingPIN() {
+        let navigationController = UINavigationController()
+        var received: [TanyaAIAction] = []
+        let coordinator = makeCoordinator(
+            navigationController: navigationController,
+            onAction: { received.append($0) }
+        )
+        coordinator.start()
+        let handoff = TanyaAIAction(
+            identifier: "handoff-transfer",
+            deeplink: "ocbcid://mobile?type=transfer"
+        )
+        var approval = makeApproval(.transfer)
+        approval = TanyaAIApprovalPayload(
+            approvalIdentifier: approval.approvalIdentifier,
+            transactionIdentifier: approval.transactionIdentifier,
+            challengeIdentifier: approval.challengeIdentifier,
+            kind: approval.kind,
+            title: approval.title,
+            summary: approval.summary,
+            expiresAt: approval.expiresAt,
+            handoff: handoff,
+            state: .awaitingApproval
+        )
+
+        coordinator.chatViewModelForTesting?.approve(approval)
+
+        XCTAssertEqual(received, [handoff])
+        XCTAssertNil(navigationController.presentedViewController)
+    }
+
     private func makeCoordinator(
-        navigationController: UINavigationController
+        navigationController: UINavigationController,
+        onAction: @escaping (TanyaAIAction) -> Void = { _ in }
     ) -> TanyaAICoordinator {
         let dependencies = TanyaAIDependencies(
             streamingTransport: MockTanyaAIStreamingTransport(),
@@ -65,7 +119,8 @@ final class TanyaAICoordinatorTests: XCTestCase {
         return TanyaAICoordinator(
             navigationController: navigationController,
             dependencyContainer: dependencyContainer,
-            containerController: UIViewController()
+            containerController: UIViewController(),
+            actionHandler: onAction
         )
     }
 

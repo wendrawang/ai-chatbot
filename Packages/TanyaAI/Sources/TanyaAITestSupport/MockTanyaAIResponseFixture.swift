@@ -11,6 +11,9 @@ enum MockTanyaAIResponseFixture {
         if prompt.contains("showcase") {
             return MockTanyaAIShowcaseFixture.chunks(identifier: identifier)
         }
+        if prompt.contains("deeplink") {
+            return MockTanyaAIDeeplinkFixture.chunks(identifier: identifier)
+        }
         if prompt.contains("conversion") || prompt.contains("currency") {
             return MockTanyaAIConfirmationFixture.conversionChunks(identifier)
         }

@@ -8,6 +8,7 @@ struct TanyaAIMessageTableRow: View {
     let onApprovalEdit: (TanyaAIApprovalPayload) -> Void
     let onApprovalCancel: (TanyaAIApprovalPayload) -> Void
     let onApproval: (TanyaAIApprovalPayload) -> Void
+    let onAction: (TanyaAIAction) -> Void
 
     var body: some View {
         Group {
@@ -16,7 +17,8 @@ struct TanyaAIMessageTableRow: View {
                     viewModel: message,
                     onApprovalEdit: onApprovalEdit,
                     onApprovalCancel: onApprovalCancel,
-                    onApproval: onApproval
+                    onApproval: onApproval,
+                    onAction: onAction
                 )
             } else {
                 TanyaAITypingIndicatorView()

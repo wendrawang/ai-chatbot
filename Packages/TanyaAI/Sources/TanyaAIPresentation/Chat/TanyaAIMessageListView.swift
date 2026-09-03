@@ -12,7 +12,8 @@ struct TanyaAIMessageListView: View {
             theme: theme,
             onApprovalEdit: viewModel.editApproval,
             onApprovalCancel: viewModel.cancelApproval,
-            onApproval: viewModel.approve
+            onApproval: viewModel.approve,
+            onAction: viewModel.perform
         )
     }
 }

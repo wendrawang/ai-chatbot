@@ -8,17 +8,20 @@ final class TanyaAICoordinator: NSObject {
     private let navigationController: UINavigationController
     private let dependencyContainer: TanyaAIDependencyContainer
     private weak var containerController: UIViewController?
+    private let actionHandler: (TanyaAIAction) -> Void
     private weak var chatViewModel: TanyaAIChatViewModel?
     private weak var chatController: UIViewController?
 
     init(
         navigationController: UINavigationController,
         dependencyContainer: TanyaAIDependencyContainer,
-        containerController: UIViewController
+        containerController: UIViewController,
+        actionHandler: @escaping (TanyaAIAction) -> Void = { _ in }
     ) {
         self.navigationController = navigationController
         self.dependencyContainer = dependencyContainer
         self.containerController = containerController
+        self.actionHandler = actionHandler
         super.init()
         navigationController.delegate = self
     }
@@ -84,6 +87,11 @@ final class TanyaAICoordinator: NSObject {
         navigationController.present(controller, animated: true)
     }
 
+    /// Turns a chat intent into navigation.
+    ///
+    /// `history` and `approval` stay inside the feature's own stack.
+    /// `performAction` leaves the package entirely: it is forwarded to the
+    /// host, and the feature neither opens the deeplink nor dismisses itself.
     private func handle(_ output: TanyaAIChatOutput) {
         switch output {
         case .close:
@@ -92,6 +100,8 @@ final class TanyaAICoordinator: NSObject {
             show(.history)
         case .requestApproval(let payload):
             show(.approval(payload))
+        case .performAction(let action):
+            actionHandler(action)
         }
     }
 
@@ -123,6 +133,19 @@ final class TanyaAICoordinator: NSObject {
         )
     }
 }
+
+#if DEBUG
+extension TanyaAICoordinator {
+    /// Test seam: the chat's own output path, without a rendered view.
+    func handleForTesting(_ output: TanyaAIChatOutput) {
+        handle(output)
+    }
+
+    var chatViewModelForTesting: TanyaAIChatViewModel? {
+        chatViewModel
+    }
+}
+#endif
 
 extension TanyaAICoordinator: UINavigationControllerDelegate {
     func navigationController(

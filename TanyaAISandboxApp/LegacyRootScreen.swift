@@ -2,6 +2,9 @@ import SwiftUI
 
 struct LegacyRootScreen: View {
     let tanyaAIPresenter: TanyaAIPresenting
+    @ObservedObject var deeplinkRouter: SandboxDeeplinkRouter
+
+    @State private var isDetailActive = false
 
     var body: some View {
         NavigationView {
@@ -12,8 +15,41 @@ struct LegacyRootScreen: View {
             .listStyle(GroupedListStyle())
             .navigationBarTitle("Legacy Home")
             .legacyAccessibilityIdentifier("legacy.home")
+            .background(deeplinkTargetLink)
         }
         .navigationViewStyle(StackNavigationViewStyle())
+        .onChange(of: deeplinkRouter.activeDestination) { destination in
+            // A deeplink lands on the dashboard first: pop whatever the
+            // customer had pushed before the destination appears.
+            if destination != nil {
+                isDetailActive = false
+            }
+        }
+    }
+
+    /// `NavigationView` has no programmatic push of its own, so the deeplink
+    /// destination needs a hidden, state-driven link.
+    private var deeplinkTargetLink: some View {
+        NavigationLink(
+            destination: deeplinkDestination,
+            isActive: Binding(
+                get: { deeplinkRouter.activeDestination != nil },
+                set: { isActive in
+                    if isActive == false {
+                        deeplinkRouter.clearDestination()
+                    }
+                }
+            ),
+            label: { EmptyView() }
+        )
+        .hidden()
+    }
+
+    @ViewBuilder
+    private var deeplinkDestination: some View {
+        if let destination = deeplinkRouter.activeDestination {
+            SandboxDeeplinkTargetScreen(destination: destination)
+        }
     }
 
     private var introductionSection: some View {
@@ -37,7 +73,8 @@ struct LegacyRootScreen: View {
             NavigationLink(
                 destination: LegacyDetailScreen(
                     tanyaAIPresenter: tanyaAIPresenter
-                )
+                ),
+                isActive: $isDetailActive
             ) {
                 HStack(spacing: 12) {
                     Image(systemName: "building.columns")
