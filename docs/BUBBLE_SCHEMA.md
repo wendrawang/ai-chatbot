@@ -34,6 +34,18 @@ Confirmation variants share one typed approval renderer:
 - savings plan;
 - generic fallback.
 
+A confirmation that reached `completed`, `failed`, `expired`, or `cancelled`
+is closed and never changes again. Two consequences for the response contract:
+
+- a later `content.approval` reusing the same `messageIdentifier` renders a
+  **new** bubble rather than reopening the closed one, so a confirmation the
+  customer rejected stays rejected on screen;
+- a state update arriving late - an authorization callback for a sheet the
+  customer already dismissed - is ignored.
+
+Reuse of a `messageIdentifier` is still worth avoiding: send a fresh one per
+confirmation, and the intent is unambiguous.
+
 Every pending confirmation exposes the same `Confirm` intent. The internal
 router lazily presents the numeric PIN bottom sheet. PIN values are
 short-lived presentation state and never become chat content or stream data.

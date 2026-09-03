@@ -48,7 +48,10 @@ public extension TanyaAIChatViewModel {
         state: TanyaAIApprovalPayload.State
     ) {
         guard let message = approvalMessage(identifier: identifier),
-              case .approval(var payload) = message.content else {
+              case .approval(var payload) = message.content,
+              payload.state.isSettled == false else {
+            // A late callback - a PIN sheet dismissed after the customer
+            // already cancelled - must not revive a closed confirmation.
             return
         }
         payload.state = state
