@@ -7,7 +7,6 @@
 #   ./Scripts/run_sandbox.sh                 legacy host screen
 #   ./Scripts/run_sandbox.sh --deeplink      hand-off demo
 #   ./Scripts/run_sandbox.sh --showcase      every bubble
-#   ./Scripts/run_sandbox.sh --stress-chat   5,000 messages
 #
 # Override the device with TANYA_AI_SIMULATOR.
 

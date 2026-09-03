@@ -1,3 +1,5 @@
+import Combine
+import Foundation
 import SwiftUI
 
 struct LegacyRootScreen: View {
@@ -5,6 +7,7 @@ struct LegacyRootScreen: View {
     @ObservedObject var deeplinkRouter: SandboxDeeplinkRouter
 
     @State private var isDetailActive = false
+    @State private var isDestinationActive = false
 
     var body: some View {
         NavigationView {
@@ -18,12 +21,24 @@ struct LegacyRootScreen: View {
             .background(deeplinkTargetLink)
         }
         .navigationViewStyle(StackNavigationViewStyle())
-        .onChange(of: deeplinkRouter.activeDestination) { destination in
-            // A deeplink lands on the dashboard first: pop whatever the
-            // customer had pushed before the destination appears.
-            if destination != nil {
-                isDetailActive = false
-            }
+        .onReceive(deeplinkRouter.$activeDestination, perform: receive)
+    }
+
+    /// A deeplink lands on the dashboard first, so the customer's own push is
+    /// popped before the destination is activated.
+    ///
+    /// The two links share one `NavigationView`, and it drops a push that
+    /// starts while a pop is still running - so the activation waits for the
+    /// pop animation instead of happening in the same pass.
+    private func receive(_ destination: SandboxDeeplinkDestination?) {
+        guard destination != nil else {
+            isDestinationActive = false
+            return
+        }
+        let popDelay: TimeInterval = isDetailActive ? 0.4 : 0
+        isDetailActive = false
+        DispatchQueue.main.asyncAfter(deadline: .now() + popDelay) {
+            isDestinationActive = true
         }
     }
 
@@ -33,9 +48,10 @@ struct LegacyRootScreen: View {
         NavigationLink(
             destination: deeplinkDestination,
             isActive: Binding(
-                get: { deeplinkRouter.activeDestination != nil },
+                get: { isDestinationActive },
                 set: { isActive in
                     if isActive == false {
+                        isDestinationActive = false
                         deeplinkRouter.clearDestination()
                     }
                 }

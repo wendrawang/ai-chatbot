@@ -69,6 +69,45 @@ final class TanyaAIApprovalBubbleTests: XCTestCase {
         XCTAssertEqual(approvalPayloads(in: viewModel).count, 1)
     }
 
+    /// Text is streamed, not sent as one content event, so the delta path
+    /// needs the same guard: a reply about the cancelled transfer must not
+    /// overwrite the record of it.
+    func testTextDeltaAfterASettledApprovalOpensANewBubble() {
+        let useCase = UseCaseStub()
+        let viewModel = makeViewModel(useCase: useCase)
+
+        useCase.send(approvalEvent())
+        viewModel.cancelApproval(makeApproval())
+        useCase.send(
+            .textDelta(messageIdentifier: "approval-card", text: "Baik, ")
+        )
+        useCase.send(.responseCompleted(messageIdentifier: "approval-card"))
+
+        XCTAssertEqual(approvalPayloads(in: viewModel).map(\.state), [.cancelled])
+        XCTAssertEqual(texts(in: viewModel).last, "Baik, ")
+    }
+
+    /// The replacement is remembered, so the rest of the turn lands in the
+    /// bubble the first delta opened instead of one bubble per chunk.
+    func testFurtherDeltasReachTheReplacementBubble() {
+        let useCase = UseCaseStub()
+        let viewModel = makeViewModel(useCase: useCase)
+
+        useCase.send(approvalEvent())
+        viewModel.cancelApproval(makeApproval())
+        useCase.send(
+            .textDelta(messageIdentifier: "approval-card", text: "Baik, ")
+        )
+        useCase.send(.responseCompleted(messageIdentifier: "approval-card"))
+        useCase.send(
+            .textDelta(messageIdentifier: "approval-card", text: "dibatalkan.")
+        )
+        useCase.send(.responseCompleted(messageIdentifier: "approval-card"))
+
+        XCTAssertEqual(texts(in: viewModel).last, "Baik, dibatalkan.")
+        XCTAssertEqual(viewModel.messages.count, 4)
+    }
+
     // MARK: - Helpers
 
     /// Opens a turn, which is what registers the event handler.
@@ -96,6 +135,17 @@ final class TanyaAIApprovalBubbleTests: XCTestCase {
                 return nil
             }
             return payload
+        }
+    }
+
+    private func texts(
+        in viewModel: TanyaAIChatViewModel
+    ) -> [String] {
+        viewModel.messages.compactMap { message in
+            guard case .text(let value) = message.content else {
+                return nil
+            }
+            return value
         }
     }
 

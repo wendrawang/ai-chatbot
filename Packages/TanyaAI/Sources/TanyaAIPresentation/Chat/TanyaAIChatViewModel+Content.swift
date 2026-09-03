@@ -8,24 +8,40 @@ extension TanyaAIChatViewModel {
     /// update: a settled approval. A cancelled or completed confirmation is a
     /// record of what the customer did, so a later message about the same
     /// transaction opens a new bubble instead of reopening the old one.
+    ///
+    /// The replacement is remembered, so every further chunk of that turn -
+    /// text deltas included - reaches the new bubble instead of opening one
+    /// bubble per chunk.
     func appendContent(
         identifier: String,
         content: TanyaAIMessageContent
     ) {
-        guard let existingMessage = message(identifier: identifier) else {
-            appendMessage(identifier: identifier, content: content)
+        let target = resolvedIdentifier(for: identifier)
+        guard let existingMessage = message(identifier: target) else {
+            appendMessage(identifier: target, content: content)
             return
         }
 
         guard isSettledApproval(existingMessage.content) == false else {
-            appendMessage(
-                identifier: unusedIdentifier(basedOn: identifier),
-                content: content
-            )
+            let replacement = unusedIdentifier(basedOn: identifier)
+            redirectedIdentifiers[identifier] = replacement
+            appendMessage(identifier: replacement, content: content)
             return
         }
 
         existingMessage.update(content: content)
+    }
+
+    /// The bubble a message identifier currently belongs to.
+    func resolvedIdentifier(for identifier: String) -> String {
+        redirectedIdentifiers[identifier] ?? identifier
+    }
+
+    func isSettledApproval(_ content: TanyaAIMessageContent) -> Bool {
+        guard case .approval(let payload) = content else {
+            return false
+        }
+        return payload.state.isSettled
     }
 
     private func appendMessage(
@@ -38,15 +54,6 @@ extension TanyaAIChatViewModel {
             content: content
         )
         appendMessage(TanyaAIMessageItemViewModel(message: message))
-    }
-
-    private func isSettledApproval(
-        _ content: TanyaAIMessageContent
-    ) -> Bool {
-        guard case .approval(let payload) = content else {
-            return false
-        }
-        return payload.state.isSettled
     }
 
     /// Derives an identifier the conversation is not already using, so a

@@ -41,7 +41,9 @@ enum TanyaAIMarkupTag: String {
 /// - **Unclosed tags still style the remainder.** Text arrives in chunks, so
 ///   `[bold]wen` is bold while the rest is still on its way.
 /// - **A half-arrived tag at the end is hidden.** `wen [bo` renders as `wen `
-///   rather than flashing the raw tag, and completes on the next chunk.
+///   rather than flashing the raw tag, and completes on the next chunk. Only
+///   a fragment shaped like a tag is hidden, so `Nilai [USD 100` keeps its
+///   text instead of losing everything after the bracket.
 /// - **Anything else stays literal.** A stray `[` is just a bracket.
 enum TanyaAIMarkupParser {
     static func runs(from source: String) -> [TanyaAIMarkupRun] {
@@ -57,6 +59,12 @@ enum TanyaAIMarkupParser {
             }
 
             guard let token = Token(source: source, from: index) else {
+                guard isPartialTag(source[index...]) else {
+                    // An ordinary bracket the copy happens to contain.
+                    buffer.append(source[index])
+                    index = source.index(after: index)
+                    continue
+                }
                 // No closing bracket yet: a tag still arriving. Drop the
                 // fragment; the next chunk completes it.
                 break
@@ -85,6 +93,18 @@ enum TanyaAIMarkupParser {
             frames[frames.count - 1].append(runs: frame.styledRuns())
         }
         return frames[0].runs.filter { $0.text.isEmpty == false }
+    }
+
+    /// `[bo` at the end of a chunk is a tag still on its way, so it is
+    /// hidden. `[USD 100` is ordinary copy that opens a bracket, so it is
+    /// kept: dropping it would lose the rest of the message.
+    private static func isPartialTag(_ fragment: Substring) -> Bool {
+        var name = fragment.dropFirst()
+        if name.hasPrefix("/") {
+            name = name.dropFirst()
+        }
+        return name.count <= 12
+            && name.allSatisfy { $0.isLowercase && $0.isLetter }
     }
 
     private static func close(_ name: String, in frames: inout [Frame]) {

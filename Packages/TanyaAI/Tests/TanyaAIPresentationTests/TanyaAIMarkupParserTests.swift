@@ -88,4 +88,18 @@ final class TanyaAIMarkupParserTests: XCTestCase {
 
         XCTAssertEqual(runs.map(\.text).joined(), "wen ok")
     }
+
+    /// Only a fragment shaped like a tag is treated as one still arriving.
+    /// An unclosed bracket in ordinary copy keeps the rest of the message.
+    func testUnclosedBracketInOrdinaryCopyKeepsTheText() {
+        let runs = TanyaAIMarkupParser.runs(from: "Nilai [USD 100 per hari")
+
+        XCTAssertEqual(runs.map(\.text).joined(), "Nilai [USD 100 per hari")
+    }
+
+    func testHalfArrivedTagIsStillHidden() {
+        let runs = TanyaAIMarkupParser.runs(from: "saya [bo")
+
+        XCTAssertEqual(runs.map(\.text).joined(), "saya ")
+    }
 }

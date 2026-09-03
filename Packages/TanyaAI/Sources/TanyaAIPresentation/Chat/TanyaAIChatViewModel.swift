@@ -13,6 +13,9 @@ public final class TanyaAIChatViewModel: ObservableObject {
     public var onOutput: ((TanyaAIChatOutput) -> Void)?
 
     private let useCase: TanyaAIChatUseCaseProtocol
+    /// Maps a message identifier the backend reuses onto the bubble that
+    /// replaced a settled confirmation. See `appendContent`.
+    var redirectedIdentifiers: [String: String] = [:]
     private var activeRequest: TanyaAICancellable?
     private var conversationIdentifier: String?
     private lazy var textDeltaBuffer = TanyaAITextDeltaBuffer {
@@ -152,14 +155,20 @@ public final class TanyaAIChatViewModel: ObservableObject {
     }
 
     private func appendAssistantPlaceholder(identifier: String) {
-        guard message(identifier: identifier) == nil else {
+        let target = resolvedIdentifier(for: identifier)
+        if let existing = message(identifier: target),
+           isSettledApproval(existing.content) == false {
             return
         }
         appendContent(identifier: identifier, content: .text(""))
     }
 
     private func appendTextDeltaNow(identifier: String, text: String) {
-        guard let message = message(identifier: identifier) else {
+        // Text may not overwrite a settled confirmation either: routing
+        // through `appendContent` gives the delta a fresh bubble.
+        let target = resolvedIdentifier(for: identifier)
+        guard let message = message(identifier: target),
+              isSettledApproval(message.content) == false else {
             appendContent(identifier: identifier, content: .text(text))
             return
         }

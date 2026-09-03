@@ -1,3 +1,4 @@
+import Foundation
 import SwiftUI
 
 /// The waiting state, shaped like the reply it will become.
@@ -19,7 +20,11 @@ struct TanyaAITypingIndicatorView: View {
         .accessibilityElement(children: .ignore)
         .accessibility(label: Text("Tanya AI is responding"))
         .onAppear {
-            isAnimating = true
+            // Starting the loop in the same pass the view appears leaves the
+            // dots static: the animation modifier is not installed yet.
+            DispatchQueue.main.async {
+                isAnimating = true
+            }
         }
     }
 
