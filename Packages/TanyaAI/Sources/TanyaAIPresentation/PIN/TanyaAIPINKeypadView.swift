@@ -35,15 +35,18 @@ struct TanyaAIPINKeypadView: View {
     }
 
     private func digitButton(_ digit: Int) -> some View {
-        Button(action: { onDigit(digit) }) {
-            Text(String(digit))
-                .font(Font(theme.fonts.title))
-                .foregroundColor(Color(theme.colors.primaryText))
-                .frame(maxWidth: .infinity)
-                .frame(height: 54)
-                .background(Color(theme.colors.surface))
-                .cornerRadius(14)
-        }
+        Button(
+            action: { onDigit(digit) },
+            label: {
+                Text(String(digit))
+                    .font(Font(theme.fonts.title))
+                    .foregroundColor(Color(theme.colors.primaryText))
+                    .frame(maxWidth: .infinity)
+                    .frame(height: 54)
+                    .background(Color(theme.colors.surface))
+                    .cornerRadius(14)
+            }
+        )
         .buttonStyle(PlainButtonStyle())
         .accessibility(label: Text("Digit \(digit)"))
         .tanyaAIAccessibilityIdentifier("pin.digit.\(digit)")

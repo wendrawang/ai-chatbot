@@ -35,7 +35,7 @@ struct SandboxDeeplinkTargetScreen: View {
             }
             .padding(20)
         }
-        .navigationBarTitle(destination.title, displayMode: .inline)
+        .navigationBarTitle(Text(destination.title), displayMode: .inline)
         .legacyAccessibilityIdentifier("deeplink.target")
     }
 }

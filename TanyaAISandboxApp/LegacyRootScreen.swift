@@ -8,6 +8,8 @@ struct LegacyRootScreen: View {
 
     @State private var isDetailActive = false
     @State private var isDestinationActive = false
+    /// Set while a destination waits for the customer's own push to go away.
+    @State private var awaitsDetailPop = false
 
     var body: some View {
         NavigationView {
@@ -28,16 +30,31 @@ struct LegacyRootScreen: View {
     /// popped before the destination is activated.
     ///
     /// The two links share one `NavigationView`, and it drops a push that
-    /// starts while a pop is still running - so the activation waits for the
-    /// pop animation instead of happening in the same pass.
+    /// starts while a pop is still running. Rather than guess how long the pop
+    /// takes, the destination waits for the detail screen to report that it
+    /// has actually gone - see `detailDidDisappear`.
     private func receive(_ destination: SandboxDeeplinkDestination?) {
         guard destination != nil else {
             isDestinationActive = false
             return
         }
-        let popDelay: TimeInterval = isDetailActive ? 0.4 : 0
+        guard isDetailActive else {
+            isDestinationActive = true
+            return
+        }
+        awaitsDetailPop = true
         isDetailActive = false
-        DispatchQueue.main.asyncAfter(deadline: .now() + popDelay) {
+    }
+
+    /// The pop has finished, so the destination can be pushed onto the
+    /// dashboard. Ignored for an ordinary back tap, when nothing is waiting.
+    private func detailDidDisappear() {
+        guard awaitsDetailPop else {
+            return
+        }
+        awaitsDetailPop = false
+        // One hop, so the push starts after the pop has fully unwound.
+        DispatchQueue.main.async {
             isDestinationActive = true
         }
     }
@@ -89,7 +106,8 @@ struct LegacyRootScreen: View {
             NavigationLink(
                 destination: LegacyDetailScreen(
                     tanyaAIPresenter: tanyaAIPresenter
-                ),
+                )
+                .onDisappear(perform: detailDidDisappear),
                 isActive: $isDetailActive
             ) {
                 HStack(spacing: 12) {

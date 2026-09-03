@@ -6,34 +6,35 @@ import XCTest
 final class TanyaAIActionDecodingTests: XCTestCase {
     private let decoder = TanyaAIStreamEventDecoder()
 
-    func testActionCardDecodesButtonsAndParameters() throws {
-        let result = try decoder.decode(
-            makeEvent(
-                name: "content.actions",
-                payload: [
-                    "messageIdentifier": "actions-message",
-                    "title": "Continue in the app",
-                    "detail": "Sanitized detail",
-                    "actions": [
-                        [
-                            "title": "Open transfer form",
-                            "style": "primary",
-                            "action": [
-                                "identifier": "open-transfer",
-                                "deeplink":
-                                    "ocbcid://mobile?type=transfer"
-                            ]
-                        ],
-                        [
-                            "title": "Open statement",
-                            "action": [
-                                "identifier": "open-statement",
-                                "deeplink": "ocbcid://mobile?type=statement"
-                            ]
-                        ]
+    /// The two-button card the assertions below read.
+    private var actionCardPayload: [String: Any] {
+        [
+            "messageIdentifier": "actions-message",
+            "title": "Continue in the app",
+            "detail": "Sanitized detail",
+            "actions": [
+                [
+                    "title": "Open transfer form",
+                    "style": "primary",
+                    "action": [
+                        "identifier": "open-transfer",
+                        "deeplink": "ocbcid://mobile?type=transfer"
+                    ]
+                ],
+                [
+                    "title": "Open statement",
+                    "action": [
+                        "identifier": "open-statement",
+                        "deeplink": "ocbcid://mobile?type=statement"
                     ]
                 ]
-            )
+            ]
+        ]
+    }
+
+    func testActionCardDecodesButtonsAndParameters() throws {
+        let result = try decoder.decode(
+            makeEvent(name: "content.actions", payload: actionCardPayload)
         )
 
         guard case .content(let identifier, .actions(let payload)) = result else {

@@ -11,11 +11,19 @@ final class TanyaAIStreamEventDecoder {
     }
 
     func decode(_ event: TanyaAISSEEvent) throws -> TanyaAIStreamEvent? {
+        if let content = try decodeContent(event) {
+            return content
+        }
+        return try decodeLifecycle(event)
+    }
+
+    /// Bubble payloads. Returns `nil` for any other event name, including a
+    /// `content.*` this version does not know - `decodeLifecycle` sends that
+    /// on to `decodeUnknown`, which degrades it to an unsupported bubble.
+    private func decodeContent(
+        _ event: TanyaAISSEEvent
+    ) throws -> TanyaAIStreamEvent? {
         switch event.name {
-        case "response.started":
-            return try decodeStarted(event.data)
-        case "text.delta":
-            return try decodeText(event.data)
         case "content.information":
             return try decodeInformation(event.data)
         case "content.chart":
@@ -32,6 +40,20 @@ final class TanyaAIStreamEventDecoder {
             return try decodeActions(event.data)
         case "content.status":
             return try decodeStatus(event.data)
+        default:
+            return nil
+        }
+    }
+
+    /// Everything that frames a response rather than filling it.
+    private func decodeLifecycle(
+        _ event: TanyaAISSEEvent
+    ) throws -> TanyaAIStreamEvent? {
+        switch event.name {
+        case "response.started":
+            return try decodeStarted(event.data)
+        case "text.delta":
+            return try decodeText(event.data)
         case "response.suggestions":
             return try decodeSuggestions(event.data)
         case "response.completed":

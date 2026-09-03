@@ -3,10 +3,7 @@ import TanyaAIDomain
 
 struct TanyaAIMessageRowView: View {
     @ObservedObject var viewModel: TanyaAIMessageItemViewModel
-    let onApprovalEdit: (TanyaAIApprovalPayload) -> Void
-    let onApprovalCancel: (TanyaAIApprovalPayload) -> Void
-    let onApproval: (TanyaAIApprovalPayload) -> Void
-    let onAction: (TanyaAIAction) -> Void
+    let handlers: TanyaAIMessageRowHandlers
 
     var body: some View {
         HStack {
@@ -42,16 +39,16 @@ struct TanyaAIMessageRowView: View {
         case .approval(let payload):
             TanyaAIApprovalBubble(
                 payload: payload,
-                onEdit: { onApprovalEdit(payload) },
-                onCancel: { onApprovalCancel(payload) },
-                onApprove: { onApproval(payload) }
+                onEdit: { handlers.onApprovalEdit(payload) },
+                onCancel: { handlers.onApprovalCancel(payload) },
+                onApprove: { handlers.onApproval(payload) }
             )
         case .receipt(let payload):
             TanyaAIReceiptBubble(payload: payload)
         case .status(let payload):
             TanyaAIStatusBubble(payload: payload)
         case .actions(let payload):
-            TanyaAIActionBubble(payload: payload, onAction: onAction)
+            TanyaAIActionBubble(payload: payload, onAction: handlers.onAction)
         case .unsupported(let message):
             TanyaAIStatusBubble(
                 payload: TanyaAIStatusPayload(

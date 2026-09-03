@@ -10,10 +10,12 @@ struct TanyaAIMessageListView: View {
             isGenerating: viewModel.isGenerating,
             showsSuggestions: viewModel.showsSuggestions,
             theme: theme,
-            onApprovalEdit: viewModel.editApproval,
-            onApprovalCancel: viewModel.cancelApproval,
-            onApproval: viewModel.approve,
-            onAction: viewModel.perform
+            handlers: TanyaAIMessageRowHandlers(
+                onApprovalEdit: viewModel.editApproval,
+                onApprovalCancel: viewModel.cancelApproval,
+                onApproval: viewModel.approve,
+                onAction: viewModel.perform
+            )
         )
     }
 }

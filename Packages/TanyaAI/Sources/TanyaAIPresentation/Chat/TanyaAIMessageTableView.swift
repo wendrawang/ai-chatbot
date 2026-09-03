@@ -9,10 +9,7 @@ struct TanyaAIMessageTableView: UIViewRepresentable {
     let isGenerating: Bool
     let showsSuggestions: Bool
     let theme: TanyaAITheme
-    let onApprovalEdit: (TanyaAIApprovalPayload) -> Void
-    let onApprovalCancel: (TanyaAIApprovalPayload) -> Void
-    let onApproval: (TanyaAIApprovalPayload) -> Void
-    let onAction: (TanyaAIAction) -> Void
+    let handlers: TanyaAIMessageRowHandlers
 
     func makeCoordinator() -> Coordinator {
         Coordinator()
@@ -43,10 +40,7 @@ struct TanyaAIMessageTableView: UIViewRepresentable {
             isGenerating: isGenerating,
             showsSuggestions: showsSuggestions,
             theme: theme,
-            onApprovalEdit: onApprovalEdit,
-            onApprovalCancel: onApprovalCancel,
-            onApproval: onApproval,
-            onAction: onAction
+            handlers: handlers
         )
     }
 }

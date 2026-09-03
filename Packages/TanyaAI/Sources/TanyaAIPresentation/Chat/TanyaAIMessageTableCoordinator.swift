@@ -13,10 +13,7 @@ extension TanyaAIMessageTableView {
         private var followsLatestMessage = true
         private var scrollRequestIdentifier = 0
         private var theme = TanyaAITheme.sandbox
-        private var onApprovalEdit: (TanyaAIApprovalPayload) -> Void = { _ in }
-        private var onApprovalCancel: (TanyaAIApprovalPayload) -> Void = { _ in }
-        private var onApproval: (TanyaAIApprovalPayload) -> Void = { _ in }
-        private var onAction: (TanyaAIAction) -> Void = { _ in }
+        private var handlers = TanyaAIMessageRowHandlers.inert
         private var subscriptions: [String: AnyCancellable] = [:]
 
         func attach(_ tableView: TanyaAITrackingTableView) {
@@ -31,10 +28,7 @@ extension TanyaAIMessageTableView {
             isGenerating: Bool,
             showsSuggestions: Bool,
             theme: TanyaAITheme,
-            onApprovalEdit: @escaping (TanyaAIApprovalPayload) -> Void,
-            onApprovalCancel: @escaping (TanyaAIApprovalPayload) -> Void,
-            onApproval: @escaping (TanyaAIApprovalPayload) -> Void,
-            onAction: @escaping (TanyaAIAction) -> Void
+            handlers: TanyaAIMessageRowHandlers
         ) {
             let updateState = makeUpdateState(
                 messages: messages,
@@ -45,10 +39,7 @@ extension TanyaAIMessageTableView {
             self.isGenerating = isGenerating
             self.showsSuggestions = showsSuggestions
             self.theme = theme
-            self.onApprovalEdit = onApprovalEdit
-            self.onApprovalCancel = onApprovalCancel
-            self.onApproval = onApproval
-            self.onAction = onAction
+            self.handlers = handlers
             bindMessages(messages)
 
             tableView?.backgroundColor = theme.colors.background
@@ -108,10 +99,7 @@ extension TanyaAIMessageTableView {
             return TanyaAIMessageTableRow(
                 message: message,
                 theme: theme,
-                onApprovalEdit: onApprovalEdit,
-                onApprovalCancel: onApprovalCancel,
-                onApproval: onApproval,
-                onAction: onAction
+                handlers: handlers
             )
         }
 
@@ -122,8 +110,7 @@ extension TanyaAIMessageTableView {
                 guard subscriptions[message.id] == nil else {
                     return
                 }
-                subscriptions[message.id] = message.objectWillChange.sink {
-                    [weak self] in
+                subscriptions[message.id] = message.objectWillChange.sink { [weak self] in
                     DispatchQueue.main.async {
                         self?.refreshRowHeight()
                     }

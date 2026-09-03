@@ -18,11 +18,9 @@ public final class TanyaAIChatViewModel: ObservableObject {
     var redirectedIdentifiers: [String: String] = [:]
     private var activeRequest: TanyaAICancellable?
     private var conversationIdentifier: String?
-    private lazy var textDeltaBuffer = TanyaAITextDeltaBuffer {
-        [weak self] messageIdentifier, text in
-
+    private lazy var textDeltaBuffer = TanyaAITextDeltaBuffer { [weak self] identifier, text in
         self?.appendTextDeltaNow(
-            identifier: messageIdentifier,
+            identifier: identifier,
             text: text
         )
     }
