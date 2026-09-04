@@ -9,7 +9,7 @@ final class TanyaAIRepositoryTests: XCTestCase {
         let receivedEvents = events(for: "Show my sample portfolio")
 
         XCTAssertTrue(receivedEvents.contains { event in
-            if case .content(_, .portfolio(_)) = event { return true }
+            if case .content(_, .portfolio) = event { return true }
             return false
         })
     }
@@ -18,7 +18,7 @@ final class TanyaAIRepositoryTests: XCTestCase {
         let receivedEvents = events(for: "What is my transfer limit?")
 
         XCTAssertTrue(receivedEvents.contains { event in
-            if case .content(_, .information(_)) = event { return true }
+            if case .content(_, .information) = event { return true }
             return false
         })
     }
@@ -27,7 +27,7 @@ final class TanyaAIRepositoryTests: XCTestCase {
         let receivedEvents = events(for: "Show my spending insight")
 
         XCTAssertTrue(receivedEvents.contains { event in
-            if case .content(_, .chart(_)) = event { return true }
+            if case .content(_, .chart) = event { return true }
             return false
         })
     }
@@ -36,7 +36,7 @@ final class TanyaAIRepositoryTests: XCTestCase {
         let receivedEvents = events(for: "Create a sample transfer")
 
         XCTAssertTrue(receivedEvents.contains { event in
-            if case .content(_, .approval(_)) = event { return true }
+            if case .content(_, .approval) = event { return true }
             return false
         })
     }

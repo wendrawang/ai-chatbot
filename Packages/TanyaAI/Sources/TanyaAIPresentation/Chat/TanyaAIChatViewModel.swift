@@ -6,6 +6,9 @@ import TanyaAIDomain
 public final class TanyaAIChatViewModel: ObservableObject {
     @Published public private(set) var messages: [TanyaAIMessageItemViewModel]
     @Published public private(set) var isGenerating = false
+    /// The agent or bot is composing between turns. Only a session transport
+    /// reports this; over SSE it stays false.
+    @Published public private(set) var isAgentTyping = false
     @Published public private(set) var errorMessage: String?
     @Published public private(set) var suggestions: [TanyaAISuggestion]
     @Published public var inputText = ""
@@ -13,13 +16,14 @@ public final class TanyaAIChatViewModel: ObservableObject {
     public var onOutput: ((TanyaAIChatOutput) -> Void)?
 
     private let useCase: TanyaAIChatUseCaseProtocol
+    /// Maps a message identifier the backend reuses onto the bubble that
+    /// replaced a settled confirmation. See `appendContent`.
+    var redirectedIdentifiers: [String: String] = [:]
     private var activeRequest: TanyaAICancellable?
     private var conversationIdentifier: String?
-    private lazy var textDeltaBuffer = TanyaAITextDeltaBuffer {
-        [weak self] messageIdentifier, text in
-
+    private lazy var textDeltaBuffer = TanyaAITextDeltaBuffer { [weak self] identifier, text in
         self?.appendTextDeltaNow(
-            identifier: messageIdentifier,
+            identifier: identifier,
             text: text
         )
     }
@@ -60,6 +64,15 @@ public final class TanyaAIChatViewModel: ObservableObject {
         !isGenerating && !suggestions.isEmpty
     }
 
+    /// Whether the waiting bubble belongs at the end of the conversation.
+    ///
+    /// Separate from `isGenerating`, which also drives the send/stop button: an
+    /// agent typing between turns should show the dots without turning the
+    /// send button into a stop button for a turn nobody started.
+    public var showsTypingRow: Bool {
+        isGenerating || isAgentTyping
+    }
+
     public func cancelGeneration() {
         activeRequest?.cancel()
         activeRequest = nil
@@ -73,36 +86,6 @@ public final class TanyaAIChatViewModel: ObservableObject {
 
     public func openHistory() {
         onOutput?(.openHistory)
-    }
-
-    public func approve(_ payload: TanyaAIApprovalPayload) {
-        guard payload.state == .awaitingApproval else {
-            return
-        }
-        onOutput?(.requestApproval(payload))
-    }
-
-    public func editApproval(_ payload: TanyaAIApprovalPayload) {
-        inputText = "Change \(payload.title.lowercased()): "
-    }
-
-    public func cancelApproval(_ payload: TanyaAIApprovalPayload) {
-        updateApproval(
-            identifier: payload.approvalIdentifier,
-            state: .cancelled
-        )
-    }
-
-    public func updateApproval(
-        identifier: String,
-        state: TanyaAIApprovalPayload.State
-    ) {
-        guard let message = approvalMessage(identifier: identifier),
-              case .approval(var payload) = message.content else {
-            return
-        }
-        payload.state = state
-        message.update(content: .approval(payload))
     }
 
     deinit {
@@ -143,7 +126,12 @@ public final class TanyaAIChatViewModel: ObservableObject {
         case .responseCompleted:
             textDeltaBuffer.flushAll()
             isGenerating = false
+            isAgentTyping = false
             activeRequest = nil
+        case .hostAction(let action):
+            onOutput?(.performAction(action))
+        case .typing(let isTyping):
+            isAgentTyping = isTyping
         case .heartbeat:
             break
         }
@@ -158,13 +146,17 @@ public final class TanyaAIChatViewModel: ObservableObject {
         }
     }
 
+    func appendMessage(_ message: TanyaAIMessageItemViewModel) {
+        messages.append(message)
+    }
+
     private func appendUserMessage(_ text: String) {
         let message = TanyaAIMessage(
             identifier: UUID().uuidString,
             role: .user,
             content: .text(text)
         )
-        messages.append(TanyaAIMessageItemViewModel(message: message))
+        appendMessage(TanyaAIMessageItemViewModel(message: message))
     }
 
     private func makeSuggestion(
@@ -178,14 +170,20 @@ public final class TanyaAIChatViewModel: ObservableObject {
     }
 
     private func appendAssistantPlaceholder(identifier: String) {
-        guard message(identifier: identifier) == nil else {
+        let target = resolvedIdentifier(for: identifier)
+        if let existing = message(identifier: target),
+           isSettledApproval(existing.content) == false {
             return
         }
         appendContent(identifier: identifier, content: .text(""))
     }
 
     private func appendTextDeltaNow(identifier: String, text: String) {
-        guard let message = message(identifier: identifier) else {
+        // Text may not overwrite a settled confirmation either: routing
+        // through `appendContent` gives the delta a fresh bubble.
+        let target = resolvedIdentifier(for: identifier)
+        guard let message = message(identifier: target),
+              isSettledApproval(message.content) == false else {
             appendContent(identifier: identifier, content: .text(text))
             return
         }
@@ -198,30 +196,18 @@ public final class TanyaAIChatViewModel: ObservableObject {
         message.update(content: .text(existingText + text))
     }
 
-    private func appendContent(
-        identifier: String,
-        content: TanyaAIMessageContent
-    ) {
-        if let existingMessage = message(identifier: identifier) {
-            existingMessage.update(content: content)
-            return
-        }
-        let message = TanyaAIMessage(
-            identifier: identifier,
-            role: .assistant,
-            content: content
-        )
-        messages.append(TanyaAIMessageItemViewModel(message: message))
-    }
-
-    private func message(identifier: String) -> TanyaAIMessageItemViewModel? {
+    func message(identifier: String) -> TanyaAIMessageItemViewModel? {
         messages.first { $0.id == identifier }
     }
 
-    private func approvalMessage(
+    /// The newest bubble carrying this approval identifier.
+    ///
+    /// A settled confirmation stays on screen, so a repeated approval creates
+    /// a second bubble; state updates belong to the newest one.
+    func approvalMessage(
         identifier: String
     ) -> TanyaAIMessageItemViewModel? {
-        messages.first { message in
+        messages.last { message in
             guard case .approval(let payload) = message.content else {
                 return false
             }
@@ -241,7 +227,8 @@ public final class TanyaAIChatViewModel: ObservableObject {
             identifier: "sandbox-welcome",
             role: .assistant,
             content: .text(
-                "Welcome to the sanitized Tanya AI sandbox. "
+                "[bold]Welcome to the sanitized Tanya AI "
+                    + "sandbox.[/bold] "
                     + "Ask for a sample portfolio to start the demo."
             )
         )

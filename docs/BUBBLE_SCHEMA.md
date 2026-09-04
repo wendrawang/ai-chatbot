@@ -17,6 +17,7 @@ Current semantic content types are:
 - chart;
 - financial list;
 - status;
+- host actions;
 - unsupported fallback.
 
 The schema is hybrid rather than one generic `summary` payload. Approvals and
@@ -33,9 +34,110 @@ Confirmation variants share one typed approval renderer:
 - savings plan;
 - generic fallback.
 
+A confirmation that reached `completed`, `failed`, `expired`, or `cancelled`
+is closed and never changes again. Two consequences for the response contract:
+
+- a later `content.approval` reusing the same `messageIdentifier` renders a
+  **new** bubble rather than reopening the closed one, so a confirmation the
+  customer rejected stays rejected on screen;
+- a state update arriving late - an authorization callback for a sheet the
+  customer already dismissed - is ignored.
+
+Reuse of a `messageIdentifier` is still worth avoiding: send a fresh one per
+confirmation, and the intent is unambiguous.
+
 Every pending confirmation exposes the same `Confirm` intent. The internal
 UIKit coordinator lazily presents the numeric PIN bottom sheet. PIN values are
 short-lived presentation state and never become chat content or stream data.
+
+## Host actions
+
+An action asks the host to open one of its own screens. The response carries
+the deeplink as one string, in whatever shape the host's existing deeplink
+handler already accepts:
+
+```json
+event: content.actions
+data: {
+  "messageIdentifier": "actions-1",
+  "title": "Continue in the app",
+  "detail": "These open the existing screens.",
+  "actions": [
+    {
+      "title": "Open transfer form",
+      "style": "primary",
+      "action": {
+        "identifier": "open-transfer",
+        "deeplink": "ocbcid://mobile?type=transfer&accountNumber=0000111122"
+      }
+    }
+  ]
+}
+```
+
+`style` accepts `primary` and `secondary`; anything else falls back to
+`primary`. An empty `actions` array renders the unsupported fallback instead
+of an empty card. `identifier` is for accessibility identifiers and analytics,
+never for routing.
+
+A confirmation can hand off the same way. When `handoff` is present the
+`Confirm` button stops opening the in-feature PIN sheet and reports the action
+to the host, so an existing authorization flow can take over:
+
+```json
+event: content.approval
+data: {
+  "messageIdentifier": "approval-1",
+  "approvalIdentifier": "approval-1",
+  "transactionIdentifier": "transaction-1",
+  "challengeIdentifier": "challenge-1",
+  "kind": "transfer",
+  "title": "Confirm your transfer",
+  "summary": [{ "label": "To", "value": "Sample Beneficiary" }],
+  "expiresAt": "2099-01-01T00:00:00Z",
+  "handoff": {
+    "identifier": "handoff-transfer",
+    "deeplink": "ocbcid://mobile?type=transfer&amount=1250000"
+  }
+}
+```
+
+The package forwards the deeplink and does nothing else: it does not parse it,
+open it, dismiss itself, or navigate. Because the string arrives from the
+stream, the host must check it before opening: the scheme has to be the app's
+own, and the host has to be the app's deeplink entry point. Anything else is
+dropped. Resolving the link to a screen stays with the host's existing
+deeplink handler.
+
+## Text formatting
+
+Reply text may carry inline styling, so a labelled list reads as one answer
+instead of several bubbles. The wire format is a closed set of bracket tags:
+
+| Tag | Renders |
+| --- | --- |
+| `[bold]wen[/bold]` | Bold |
+| `[strike]wen[/strike]` | Struck through |
+| `[color]wen\|25C36B[/color]` | Text in `#25C36B` |
+
+Markdown is deliberately not used. Asterisks are ordinary characters in
+banking copy - masked cards, footnote markers - and a closed tag set means a
+response can reach exactly these three styles and nothing else: no links, no
+images, no headings.
+
+Behaviour the client guarantees:
+
+- **An unknown tag is dropped and its text kept**, so a backend can ship a new
+  tag before the app supports it.
+- **An unclosed tag styles the remainder**, since text arrives in chunks.
+- **A half-arrived tag is hidden** rather than flashing raw markup.
+- **A mismatched closing tag keeps the content** and forgets the styling.
+- **Anything else is literal.** `biaya [1] gratis` shows its brackets.
+
+`[color]` carries its value inside the element, after the last `|`, and only
+six-digit RRGGBB is accepted. Note that this hands colour choice to the
+response: a value with poor contrast against the bubble is the backend's
+mistake to make. If that matters, restrict the palette server-side.
 
 ## Dynamic suggestions
 

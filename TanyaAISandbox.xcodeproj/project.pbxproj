@@ -7,161 +7,176 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		0BB8E8151960C252C06450DA /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = D9A1A4C01DC79D3328C88280 /* AppDelegate.swift */; };
-		1CA92CA57E32B862F11D861F /* TanyaAITestSupport in Frameworks */ = {isa = PBXBuildFile; productRef = F3B7E254EC0433D0CEDD6826 /* TanyaAITestSupport */; };
-		1D8DE16B7F0DAD1BFC9E1E89 /* TanyaAI in Frameworks */ = {isa = PBXBuildFile; productRef = 58E31E293931C0BEB05CCBFA /* TanyaAI */; };
-		20F6433CF3D5AB1F818606CD /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = E26EB967AF77C75D627ED5E2 /* LaunchScreen.storyboard */; };
-		2CFE102578A5C36B08CD5393 /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 75DF572D5C65A1C4BDF65631 /* Foundation.framework */; };
-		47936502ED4E1935FBA7D8B6 /* LegacyRootScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6015565B66ECFC2744A1DCBD /* LegacyRootScreen.swift */; };
-		4FE595F47D83392E012A6FA4 /* TanyaAISandboxScreenshotTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5A7BBB4C0F760A9A19D8CF99 /* TanyaAISandboxScreenshotTests.swift */; };
-		55B981E0E67D405D32BD3D85 /* SceneDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = AE494567E9354FB9D2046C74 /* SceneDelegate.swift */; };
-		6DBB8963E9D1E4962233A0A6 /* TanyaAIPresentationGateway.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0385B1E2771190868EDC8DF /* TanyaAIPresentationGateway.swift */; };
-		A6B37EBA9BB25705663BDC05 /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 75DF572D5C65A1C4BDF65631 /* Foundation.framework */; };
-		B5D5497BBE53F6C87A2ED163 /* TanyaAILegacyIntegrationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 39279DB6FB9DEE909E2FF9C1 /* TanyaAILegacyIntegrationTests.swift */; };
-		D7F9AAA77745B6FB6DBBFD11 /* SandboxTanyaAIFactory.swift in Sources */ = {isa = PBXBuildFile; fileRef = BBCCC3178C8BB298C1873DEB /* SandboxTanyaAIFactory.swift */; };
-		E55CF1F697FC2CEA9ADFBA11 /* TanyaAIPresenting.swift in Sources */ = {isa = PBXBuildFile; fileRef = 63B2603280C6AB28072D09AB /* TanyaAIPresenting.swift */; };
-		F46A388F92DAAAC72F1E58BB /* LegacyDetailScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 63D95A595ADAE6788FA210DC /* LegacyDetailScreen.swift */; };
+		041EB0A38FECFB6A1C66005E /* SandboxDeeplinkRouter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 07C4E8E55A8EFAF0AC6922A0 /* SandboxDeeplinkRouter.swift */; };
+		0AFB6CB58E7290B712D010B1 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 70CFE8BD94B72FBCCE2311C1 /* AppDelegate.swift */; };
+		13CA2389E13414C1E0CB8343 /* TanyaAI in Frameworks */ = {isa = PBXBuildFile; productRef = 9627AD4B39B303BD8CD05BA5 /* TanyaAI */; };
+		304162CCC830F4E2E5632101 /* TanyaAITestSupport in Frameworks */ = {isa = PBXBuildFile; productRef = 870A4D65FE1218EE251CA25D /* TanyaAITestSupport */; };
+		34B717CE4EA7C9E4D566A3F8 /* SandboxDeeplinkTargetScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = CA0D836C1A7C1D32B8981370 /* SandboxDeeplinkTargetScreen.swift */; };
+		352CFBC1EB799871E306D0BC /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = DC22E48A3BC510F6588D1021 /* Foundation.framework */; };
+		43E63F02E1D6B07790013F22 /* SandboxDeeplink.swift in Sources */ = {isa = PBXBuildFile; fileRef = 148F07EFF527950A02C421D5 /* SandboxDeeplink.swift */; };
+		444E992FC52353BE1B227883 /* TanyaAIDeeplinkUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = FCD7FF35914116153FF82D62 /* TanyaAIDeeplinkUITests.swift */; };
+		493B485D74E9A74251B18D4F /* TanyaAIPresentationGateway.swift in Sources */ = {isa = PBXBuildFile; fileRef = AE096B74D3B9C7C470A1D3F3 /* TanyaAIPresentationGateway.swift */; };
+		4C84ADDD09655DBD968024B2 /* SceneDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2A9B571F8ED290B3A882A4E /* SceneDelegate.swift */; };
+		557A42E0AFC2D94E1DE95604 /* SandboxLaunchMode.swift in Sources */ = {isa = PBXBuildFile; fileRef = EC2648368DA0417411077E2F /* SandboxLaunchMode.swift */; };
+		5957121FB6BE776F57965AB2 /* LegacyDetailScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 73A6C0B3F0D4913590E4BAD6 /* LegacyDetailScreen.swift */; };
+		63218DD3C86BCDAD7537B5CF /* LegacyRootScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 18BDC0C19339CDE3D87B06D1 /* LegacyRootScreen.swift */; };
+		6E96C0B62403EA4F1C091D7E /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 0BBA5E367F770695F81247A2 /* LaunchScreen.storyboard */; };
+		8418AB747D69C5958453C96B /* TanyaAIPresenting.swift in Sources */ = {isa = PBXBuildFile; fileRef = C3789D080ABFB78236A669CC /* TanyaAIPresenting.swift */; };
+		A6D8D02C4EA21956973AD779 /* TanyaAISandboxScreenshotTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B69A2053E5604A5AB055D3D6 /* TanyaAISandboxScreenshotTests.swift */; };
+		BFEBFDD98ADD6A22BDA76B66 /* SandboxTanyaAIFactory.swift in Sources */ = {isa = PBXBuildFile; fileRef = D86E14521CF6442EA5C3CA2C /* SandboxTanyaAIFactory.swift */; };
+		C0BB1D37DDCDE5260547B08E /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = DC22E48A3BC510F6588D1021 /* Foundation.framework */; };
+		F777495EB0B8667D7805C10C /* TanyaAILegacyIntegrationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D012FBE90950C1E19A6D8B99 /* TanyaAILegacyIntegrationTests.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
-		F2ABCD48F954FB0DA5A6BF53 /* PBXContainerItemProxy */ = {
+		EF0AF398BAEA6698330DF818 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
-			containerPortal = 7338609FE5D5E3DEFB196D8C /* Project object */;
+			containerPortal = 331C8D1438CCF3C92F711D45 /* Project object */;
 			proxyType = 1;
-			remoteGlobalIDString = D626DE8B12941D94ED624442;
+			remoteGlobalIDString = AE58F0D896762896F203952F;
 			remoteInfo = TanyaAISandbox;
 		};
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
-		39279DB6FB9DEE909E2FF9C1 /* TanyaAILegacyIntegrationTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = TanyaAILegacyIntegrationTests.swift; sourceTree = "<group>"; };
-		5A7BBB4C0F760A9A19D8CF99 /* TanyaAISandboxScreenshotTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = TanyaAISandboxScreenshotTests.swift; sourceTree = "<group>"; };
-		6015565B66ECFC2744A1DCBD /* LegacyRootScreen.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = LegacyRootScreen.swift; sourceTree = "<group>"; };
-		63806E82DB4E72F83F729461 /* TanyaAISandboxUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = TanyaAISandboxUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
-		63B2603280C6AB28072D09AB /* TanyaAIPresenting.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = TanyaAIPresenting.swift; sourceTree = "<group>"; };
-		63D95A595ADAE6788FA210DC /* LegacyDetailScreen.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = LegacyDetailScreen.swift; sourceTree = "<group>"; };
-		75DF572D5C65A1C4BDF65631 /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS18.0.sdk/System/Library/Frameworks/Foundation.framework; sourceTree = DEVELOPER_DIR; };
-		9BB9F5D78410FFCA85971A3D /* Tanya AI Sandbox.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "Tanya AI Sandbox.app"; sourceTree = BUILT_PRODUCTS_DIR; };
-		AE494567E9354FB9D2046C74 /* SceneDelegate.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = SceneDelegate.swift; sourceTree = "<group>"; };
-		BBCCC3178C8BB298C1873DEB /* SandboxTanyaAIFactory.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = SandboxTanyaAIFactory.swift; sourceTree = "<group>"; };
-		C0385B1E2771190868EDC8DF /* TanyaAIPresentationGateway.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = TanyaAIPresentationGateway.swift; sourceTree = "<group>"; };
-		D9A1A4C01DC79D3328C88280 /* AppDelegate.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
-		E26EB967AF77C75D627ED5E2 /* LaunchScreen.storyboard */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = file.storyboard; path = LaunchScreen.storyboard; sourceTree = "<group>"; };
-		FE4ED52B7DD9AA1F37F8C675 /* Info.plist */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		07C4E8E55A8EFAF0AC6922A0 /* SandboxDeeplinkRouter.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = SandboxDeeplinkRouter.swift; sourceTree = "<group>"; };
+		0BBA5E367F770695F81247A2 /* LaunchScreen.storyboard */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = file.storyboard; path = LaunchScreen.storyboard; sourceTree = "<group>"; };
+		148F07EFF527950A02C421D5 /* SandboxDeeplink.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = SandboxDeeplink.swift; sourceTree = "<group>"; };
+		18BDC0C19339CDE3D87B06D1 /* LegacyRootScreen.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = LegacyRootScreen.swift; sourceTree = "<group>"; };
+		4F4F5B9F1AD4AD40EA0844A6 /* TanyaAISandboxUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = TanyaAISandboxUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		70CFE8BD94B72FBCCE2311C1 /* AppDelegate.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
+		73A6C0B3F0D4913590E4BAD6 /* LegacyDetailScreen.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = LegacyDetailScreen.swift; sourceTree = "<group>"; };
+		AE096B74D3B9C7C470A1D3F3 /* TanyaAIPresentationGateway.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = TanyaAIPresentationGateway.swift; sourceTree = "<group>"; };
+		B69A2053E5604A5AB055D3D6 /* TanyaAISandboxScreenshotTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = TanyaAISandboxScreenshotTests.swift; sourceTree = "<group>"; };
+		BCB062BD0D165B7BD4F80133 /* Tanya AI Sandbox.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "Tanya AI Sandbox.app"; sourceTree = BUILT_PRODUCTS_DIR; };
+		C3789D080ABFB78236A669CC /* TanyaAIPresenting.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = TanyaAIPresenting.swift; sourceTree = "<group>"; };
+		CA0D836C1A7C1D32B8981370 /* SandboxDeeplinkTargetScreen.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = SandboxDeeplinkTargetScreen.swift; sourceTree = "<group>"; };
+		CACF5250D82FC7B823CD8687 /* Info.plist */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		D012FBE90950C1E19A6D8B99 /* TanyaAILegacyIntegrationTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = TanyaAILegacyIntegrationTests.swift; sourceTree = "<group>"; };
+		D2A9B571F8ED290B3A882A4E /* SceneDelegate.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = SceneDelegate.swift; sourceTree = "<group>"; };
+		D86E14521CF6442EA5C3CA2C /* SandboxTanyaAIFactory.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = SandboxTanyaAIFactory.swift; sourceTree = "<group>"; };
+		DC22E48A3BC510F6588D1021 /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS18.0.sdk/System/Library/Frameworks/Foundation.framework; sourceTree = DEVELOPER_DIR; };
+		EC2648368DA0417411077E2F /* SandboxLaunchMode.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = SandboxLaunchMode.swift; sourceTree = "<group>"; };
+		FCD7FF35914116153FF82D62 /* TanyaAIDeeplinkUITests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = TanyaAIDeeplinkUITests.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
-		38BA86ADD98D301F29A6C1C6 /* Frameworks */ = {
+		03297EB9EA6EF3CBEE62A918 /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				A6B37EBA9BB25705663BDC05 /* Foundation.framework in Frameworks */,
-				1D8DE16B7F0DAD1BFC9E1E89 /* TanyaAI in Frameworks */,
-				1CA92CA57E32B862F11D861F /* TanyaAITestSupport in Frameworks */,
+				C0BB1D37DDCDE5260547B08E /* Foundation.framework in Frameworks */,
+				13CA2389E13414C1E0CB8343 /* TanyaAI in Frameworks */,
+				304162CCC830F4E2E5632101 /* TanyaAITestSupport in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
-		EE4BA0A12C8AECA13C6CEEF2 /* Frameworks */ = {
+		570A6F4464EDF4F7D695B57A /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				2CFE102578A5C36B08CD5393 /* Foundation.framework in Frameworks */,
+				352CFBC1EB799871E306D0BC /* Foundation.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
-		0A966F41B6D96588C044E66C /* Products */ = {
+		0561390A656FFFA3D37C33FE /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
-				9BB9F5D78410FFCA85971A3D /* Tanya AI Sandbox.app */,
-				63806E82DB4E72F83F729461 /* TanyaAISandboxUITests.xctest */,
+				3C3EDFC4A10013FB7D3A11AE /* iOS */,
+			);
+			name = Frameworks;
+			sourceTree = "<group>";
+		};
+		3C3EDFC4A10013FB7D3A11AE /* iOS */ = {
+			isa = PBXGroup;
+			children = (
+				DC22E48A3BC510F6588D1021 /* Foundation.framework */,
+			);
+			name = iOS;
+			sourceTree = "<group>";
+		};
+		49AFC24E6A78BA80C1252510 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				BCB062BD0D165B7BD4F80133 /* Tanya AI Sandbox.app */,
+				4F4F5B9F1AD4AD40EA0844A6 /* TanyaAISandboxUITests.xctest */,
 			);
 			name = Products;
 			sourceTree = "<group>";
 		};
-		1064CA3C6F9619D52CCA9FB3 = {
+		691C3EE3A272050DB5B54BDB /* TanyaAISandboxApp */ = {
 			isa = PBXGroup;
 			children = (
-				0A966F41B6D96588C044E66C /* Products */,
-				BD8679BDEA46F725E4C3FD06 /* Frameworks */,
-				5E79B7588B0F0DF62F8B1CAA /* TanyaAISandboxApp */,
-				7370E6307A9E245CE803C148 /* TanyaAISandboxUITests */,
-			);
-			sourceTree = "<group>";
-		};
-		5E79B7588B0F0DF62F8B1CAA /* TanyaAISandboxApp */ = {
-			isa = PBXGroup;
-			children = (
-				D9A1A4C01DC79D3328C88280 /* AppDelegate.swift */,
-				63D95A595ADAE6788FA210DC /* LegacyDetailScreen.swift */,
-				6015565B66ECFC2744A1DCBD /* LegacyRootScreen.swift */,
-				BBCCC3178C8BB298C1873DEB /* SandboxTanyaAIFactory.swift */,
-				AE494567E9354FB9D2046C74 /* SceneDelegate.swift */,
-				C0385B1E2771190868EDC8DF /* TanyaAIPresentationGateway.swift */,
-				63B2603280C6AB28072D09AB /* TanyaAIPresenting.swift */,
-				FE4ED52B7DD9AA1F37F8C675 /* Info.plist */,
-				E26EB967AF77C75D627ED5E2 /* LaunchScreen.storyboard */,
+				70CFE8BD94B72FBCCE2311C1 /* AppDelegate.swift */,
+				73A6C0B3F0D4913590E4BAD6 /* LegacyDetailScreen.swift */,
+				18BDC0C19339CDE3D87B06D1 /* LegacyRootScreen.swift */,
+				148F07EFF527950A02C421D5 /* SandboxDeeplink.swift */,
+				07C4E8E55A8EFAF0AC6922A0 /* SandboxDeeplinkRouter.swift */,
+				CA0D836C1A7C1D32B8981370 /* SandboxDeeplinkTargetScreen.swift */,
+				EC2648368DA0417411077E2F /* SandboxLaunchMode.swift */,
+				D86E14521CF6442EA5C3CA2C /* SandboxTanyaAIFactory.swift */,
+				D2A9B571F8ED290B3A882A4E /* SceneDelegate.swift */,
+				AE096B74D3B9C7C470A1D3F3 /* TanyaAIPresentationGateway.swift */,
+				C3789D080ABFB78236A669CC /* TanyaAIPresenting.swift */,
+				CACF5250D82FC7B823CD8687 /* Info.plist */,
+				0BBA5E367F770695F81247A2 /* LaunchScreen.storyboard */,
 			);
 			name = TanyaAISandboxApp;
 			path = TanyaAISandboxApp;
 			sourceTree = "<group>";
 		};
-		7370E6307A9E245CE803C148 /* TanyaAISandboxUITests */ = {
+		A5863065CF7FEFE59DC4F56F = {
 			isa = PBXGroup;
 			children = (
-				39279DB6FB9DEE909E2FF9C1 /* TanyaAILegacyIntegrationTests.swift */,
-				5A7BBB4C0F760A9A19D8CF99 /* TanyaAISandboxScreenshotTests.swift */,
+				49AFC24E6A78BA80C1252510 /* Products */,
+				0561390A656FFFA3D37C33FE /* Frameworks */,
+				691C3EE3A272050DB5B54BDB /* TanyaAISandboxApp */,
+				F1B0F413F570C1B8B15D3AEE /* TanyaAISandboxUITests */,
+			);
+			sourceTree = "<group>";
+		};
+		F1B0F413F570C1B8B15D3AEE /* TanyaAISandboxUITests */ = {
+			isa = PBXGroup;
+			children = (
+				FCD7FF35914116153FF82D62 /* TanyaAIDeeplinkUITests.swift */,
+				D012FBE90950C1E19A6D8B99 /* TanyaAILegacyIntegrationTests.swift */,
+				B69A2053E5604A5AB055D3D6 /* TanyaAISandboxScreenshotTests.swift */,
 			);
 			name = TanyaAISandboxUITests;
 			path = TanyaAISandboxUITests;
 			sourceTree = "<group>";
 		};
-		A05DF7B857DFD8183DFD3A9C /* iOS */ = {
-			isa = PBXGroup;
-			children = (
-				75DF572D5C65A1C4BDF65631 /* Foundation.framework */,
-			);
-			name = iOS;
-			sourceTree = "<group>";
-		};
-		BD8679BDEA46F725E4C3FD06 /* Frameworks */ = {
-			isa = PBXGroup;
-			children = (
-				A05DF7B857DFD8183DFD3A9C /* iOS */,
-			);
-			name = Frameworks;
-			sourceTree = "<group>";
-		};
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
-		4CB706EFC5CACCCCFBA0B8EC /* TanyaAISandboxUITests */ = {
+		4726B6BEC50FAD4183AC8EA2 /* TanyaAISandboxUITests */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = 62D2FF914765BB29A93F5FCA /* Build configuration list for PBXNativeTarget "TanyaAISandboxUITests" */;
+			buildConfigurationList = 4E799179DCA98594D606FDB7 /* Build configuration list for PBXNativeTarget "TanyaAISandboxUITests" */;
 			buildPhases = (
-				FC798E3877CEBF10E2EBA317 /* Sources */,
-				EE4BA0A12C8AECA13C6CEEF2 /* Frameworks */,
-				5E277D6CD52489DDFE6706F7 /* Resources */,
+				50CAF3790FC2B91A92A1EA65 /* Sources */,
+				570A6F4464EDF4F7D695B57A /* Frameworks */,
+				9E85FCBEB13ECE8D788772F8 /* Resources */,
 			);
 			buildRules = (
 			);
 			dependencies = (
-				47AA4D6D7693366FC21971FD /* PBXTargetDependency */,
+				1EAC82FB58ABC46FDB931C90 /* PBXTargetDependency */,
 			);
 			name = TanyaAISandboxUITests;
 			productName = TanyaAISandboxUITests;
-			productReference = 63806E82DB4E72F83F729461 /* TanyaAISandboxUITests.xctest */;
+			productReference = 4F4F5B9F1AD4AD40EA0844A6 /* TanyaAISandboxUITests.xctest */;
 			productType = "com.apple.product-type.bundle.ui-testing";
 		};
-		D626DE8B12941D94ED624442 /* TanyaAISandbox */ = {
+		AE58F0D896762896F203952F /* TanyaAISandbox */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = 20540389AC82FF496CA8BA93 /* Build configuration list for PBXNativeTarget "TanyaAISandbox" */;
+			buildConfigurationList = 13940D31E62595AE5018CAFD /* Build configuration list for PBXNativeTarget "TanyaAISandbox" */;
 			buildPhases = (
-				D3BF0040D9C70B3669788296 /* Sources */,
-				38BA86ADD98D301F29A6C1C6 /* Frameworks */,
-				1D30A9DC8254419B6F5A640E /* Resources */,
+				5AB92ABBBA2E94BF6504F91B /* Sources */,
+				03297EB9EA6EF3CBEE62A918 /* Frameworks */,
+				1F910A2A4FBF86E412872E20 /* Resources */,
 			);
 			buildRules = (
 			);
@@ -169,23 +184,23 @@
 			);
 			name = TanyaAISandbox;
 			packageProductDependencies = (
-				58E31E293931C0BEB05CCBFA /* TanyaAI */,
-				F3B7E254EC0433D0CEDD6826 /* TanyaAITestSupport */,
+				9627AD4B39B303BD8CD05BA5 /* TanyaAI */,
+				870A4D65FE1218EE251CA25D /* TanyaAITestSupport */,
 			);
 			productName = TanyaAISandbox;
-			productReference = 9BB9F5D78410FFCA85971A3D /* Tanya AI Sandbox.app */;
+			productReference = BCB062BD0D165B7BD4F80133 /* Tanya AI Sandbox.app */;
 			productType = "com.apple.product-type.application";
 		};
 /* End PBXNativeTarget section */
 
 /* Begin PBXProject section */
-		7338609FE5D5E3DEFB196D8C /* Project object */ = {
+		331C8D1438CCF3C92F711D45 /* Project object */ = {
 			isa = PBXProject;
 			attributes = {
 				LastSwiftUpdateCheck = 2660;
 				LastUpgradeCheck = 2660;
 			};
-			buildConfigurationList = 32382BBE4D35B115B0CFAB3B /* Build configuration list for PBXProject "TanyaAISandbox" */;
+			buildConfigurationList = 9139D0921DD602FFCA4A5DB7 /* Build configuration list for PBXProject "TanyaAISandbox" */;
 			compatibilityVersion = "Xcode 3.2";
 			developmentRegion = en;
 			hasScannedForEncodings = 0;
@@ -193,32 +208,32 @@
 				en,
 				Base,
 			);
-			mainGroup = 1064CA3C6F9619D52CCA9FB3;
+			mainGroup = A5863065CF7FEFE59DC4F56F;
 			minimizedProjectReferenceProxies = 0;
 			packageReferences = (
-				E67E6BCD8BF6629268E04BA8 /* XCLocalSwiftPackageReference "TanyaAI" */,
+				62C6CE51997A1FFE6B371710 /* XCLocalSwiftPackageReference "TanyaAI" */,
 			);
 			preferredProjectObjectVersion = 77;
-			productRefGroup = 0A966F41B6D96588C044E66C /* Products */;
+			productRefGroup = 49AFC24E6A78BA80C1252510 /* Products */;
 			projectDirPath = "";
 			projectRoot = "";
 			targets = (
-				D626DE8B12941D94ED624442 /* TanyaAISandbox */,
-				4CB706EFC5CACCCCFBA0B8EC /* TanyaAISandboxUITests */,
+				AE58F0D896762896F203952F /* TanyaAISandbox */,
+				4726B6BEC50FAD4183AC8EA2 /* TanyaAISandboxUITests */,
 			);
 		};
 /* End PBXProject section */
 
 /* Begin PBXResourcesBuildPhase section */
-		1D30A9DC8254419B6F5A640E /* Resources */ = {
+		1F910A2A4FBF86E412872E20 /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				20F6433CF3D5AB1F818606CD /* LaunchScreen.storyboard in Resources */,
+				6E96C0B62403EA4F1C091D7E /* LaunchScreen.storyboard in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
-		5E277D6CD52489DDFE6706F7 /* Resources */ = {
+		9E85FCBEB13ECE8D788772F8 /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -228,96 +243,63 @@
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
-		D3BF0040D9C70B3669788296 /* Sources */ = {
+		50CAF3790FC2B91A92A1EA65 /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				0BB8E8151960C252C06450DA /* AppDelegate.swift in Sources */,
-				F46A388F92DAAAC72F1E58BB /* LegacyDetailScreen.swift in Sources */,
-				47936502ED4E1935FBA7D8B6 /* LegacyRootScreen.swift in Sources */,
-				D7F9AAA77745B6FB6DBBFD11 /* SandboxTanyaAIFactory.swift in Sources */,
-				55B981E0E67D405D32BD3D85 /* SceneDelegate.swift in Sources */,
-				6DBB8963E9D1E4962233A0A6 /* TanyaAIPresentationGateway.swift in Sources */,
-				E55CF1F697FC2CEA9ADFBA11 /* TanyaAIPresenting.swift in Sources */,
+				444E992FC52353BE1B227883 /* TanyaAIDeeplinkUITests.swift in Sources */,
+				F777495EB0B8667D7805C10C /* TanyaAILegacyIntegrationTests.swift in Sources */,
+				A6D8D02C4EA21956973AD779 /* TanyaAISandboxScreenshotTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
-		FC798E3877CEBF10E2EBA317 /* Sources */ = {
+		5AB92ABBBA2E94BF6504F91B /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				B5D5497BBE53F6C87A2ED163 /* TanyaAILegacyIntegrationTests.swift in Sources */,
-				4FE595F47D83392E012A6FA4 /* TanyaAISandboxScreenshotTests.swift in Sources */,
+				0AFB6CB58E7290B712D010B1 /* AppDelegate.swift in Sources */,
+				5957121FB6BE776F57965AB2 /* LegacyDetailScreen.swift in Sources */,
+				63218DD3C86BCDAD7537B5CF /* LegacyRootScreen.swift in Sources */,
+				43E63F02E1D6B07790013F22 /* SandboxDeeplink.swift in Sources */,
+				041EB0A38FECFB6A1C66005E /* SandboxDeeplinkRouter.swift in Sources */,
+				34B717CE4EA7C9E4D566A3F8 /* SandboxDeeplinkTargetScreen.swift in Sources */,
+				557A42E0AFC2D94E1DE95604 /* SandboxLaunchMode.swift in Sources */,
+				BFEBFDD98ADD6A22BDA76B66 /* SandboxTanyaAIFactory.swift in Sources */,
+				4C84ADDD09655DBD968024B2 /* SceneDelegate.swift in Sources */,
+				493B485D74E9A74251B18D4F /* TanyaAIPresentationGateway.swift in Sources */,
+				8418AB747D69C5958453C96B /* TanyaAIPresenting.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXSourcesBuildPhase section */
 
 /* Begin PBXTargetDependency section */
-		47AA4D6D7693366FC21971FD /* PBXTargetDependency */ = {
+		1EAC82FB58ABC46FDB931C90 /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
 			name = TanyaAISandbox;
-			target = D626DE8B12941D94ED624442 /* TanyaAISandbox */;
-			targetProxy = F2ABCD48F954FB0DA5A6BF53 /* PBXContainerItemProxy */;
+			target = AE58F0D896762896F203952F /* TanyaAISandbox */;
+			targetProxy = EF0AF398BAEA6698330DF818 /* PBXContainerItemProxy */;
 		};
 /* End PBXTargetDependency section */
 
 /* Begin XCBuildConfiguration section */
-		20CDEC4F35D0F92632C99427 /* Release */ = {
+		16147FA652FF871D9B87B05F /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				ALWAYS_SEARCH_USER_PATHS = NO;
-				CLANG_ANALYZER_NONNULL = YES;
-				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
-				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
-				CLANG_CXX_LIBRARY = "libc++";
-				CLANG_ENABLE_MODULES = YES;
-				CLANG_ENABLE_OBJC_ARC = YES;
-				CLANG_ENABLE_OBJC_WEAK = YES;
-				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
-				CLANG_WARN_BOOL_CONVERSION = YES;
-				CLANG_WARN_COMMA = YES;
-				CLANG_WARN_CONSTANT_CONVERSION = YES;
-				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
-				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
-				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
-				CLANG_WARN_EMPTY_BODY = YES;
-				CLANG_WARN_ENUM_CONVERSION = YES;
-				CLANG_WARN_INFINITE_RECURSION = YES;
-				CLANG_WARN_INT_CONVERSION = YES;
-				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
-				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
-				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
-				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
-				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
-				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
-				CLANG_WARN_STRICT_PROTOTYPES = YES;
-				CLANG_WARN_SUSPICIOUS_MOVE = YES;
-				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
-				CLANG_WARN_UNREACHABLE_CODE = YES;
-				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
-				COPY_PHASE_STRIP = NO;
-				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
-				ENABLE_NS_ASSERTIONS = NO;
-				ENABLE_STRICT_OBJC_MSGSEND = YES;
-				GCC_C_LANGUAGE_STANDARD = gnu11;
-				GCC_NO_COMMON_BLOCKS = YES;
-				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
-				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
-				GCC_WARN_UNDECLARED_SELECTOR = YES;
-				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
-				GCC_WARN_UNUSED_FUNCTION = YES;
-				GCC_WARN_UNUSED_VARIABLE = YES;
-				MTL_ENABLE_DEBUG_INFO = NO;
-				MTL_FAST_MATH = YES;
-				PRODUCT_NAME = "$(TARGET_NAME)";
-				SWIFT_COMPILATION_MODE = wholemodule;
-				SWIFT_OPTIMIZATION_LEVEL = "-O";
+				CLANG_ENABLE_OBJC_WEAK = NO;
+				CODE_SIGN_STYLE = Automatic;
+				GENERATE_INFOPLIST_FILE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 15.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.example.tanyaai.sandbox.uitests;
+				SDKROOT = iphoneos;
 				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = 1;
+				TEST_TARGET_NAME = TanyaAISandbox;
+				VALIDATE_PRODUCT = YES;
 			};
 			name = Release;
 		};
-		2E075A30E87297876441CA21 /* Release */ = {
+		6BA79CC48688241ACD9200A9 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = "";
@@ -326,7 +308,7 @@
 				CODE_SIGN_STYLE = Automatic;
 				GENERATE_INFOPLIST_FILE = NO;
 				INFOPLIST_FILE = TanyaAISandboxApp/Info.plist;
-				IPHONEOS_DEPLOYMENT_TARGET = 13.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 15.0;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
 				PRODUCT_BUNDLE_IDENTIFIER = com.example.tanyaai.sandbox;
 				PRODUCT_NAME = "Tanya AI Sandbox";
@@ -337,23 +319,26 @@
 			};
 			name = Release;
 		};
-		854EAD03AE10B57A01B8EF31 /* Release */ = {
+		83DCD464E5C04521B5182CE8 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = "";
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CLANG_ENABLE_OBJC_WEAK = NO;
 				CODE_SIGN_STYLE = Automatic;
-				GENERATE_INFOPLIST_FILE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 13.0;
-				PRODUCT_BUNDLE_IDENTIFIER = com.example.tanyaai.sandbox.uitests;
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = TanyaAISandboxApp/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 15.0;
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
+				PRODUCT_BUNDLE_IDENTIFIER = com.example.tanyaai.sandbox;
+				PRODUCT_NAME = "Tanya AI Sandbox";
 				SDKROOT = iphoneos;
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = 1;
-				TEST_TARGET_NAME = TanyaAISandbox;
-				VALIDATE_PRODUCT = YES;
 			};
-			name = Release;
+			name = Debug;
 		};
-		9D2F8F5A22CC94954C44DA6F /* Debug */ = {
+		92A9282B58E2833A530F5247 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
@@ -414,13 +399,67 @@
 			};
 			name = Debug;
 		};
-		C0DECB4F952C9E0B79D0328D /* Debug */ = {
+		DEFC9B94096EAAF664C5E0F9 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				MTL_FAST_MATH = YES;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_COMPILATION_MODE = wholemodule;
+				SWIFT_OPTIMIZATION_LEVEL = "-O";
+				SWIFT_VERSION = 5.0;
+			};
+			name = Release;
+		};
+		F586B7964FCF3B2285E4E157 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				CLANG_ENABLE_OBJC_WEAK = NO;
 				CODE_SIGN_STYLE = Automatic;
 				GENERATE_INFOPLIST_FILE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 13.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 15.0;
 				PRODUCT_BUNDLE_IDENTIFIER = com.example.tanyaai.sandbox.uitests;
 				SDKROOT = iphoneos;
 				SWIFT_VERSION = 5.0;
@@ -429,51 +468,32 @@
 			};
 			name = Debug;
 		};
-		C6FD3770AB302B04F28D61D5 /* Debug */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				ASSETCATALOG_COMPILER_APPICON_NAME = "";
-				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
-				CLANG_ENABLE_OBJC_WEAK = NO;
-				CODE_SIGN_STYLE = Automatic;
-				GENERATE_INFOPLIST_FILE = NO;
-				INFOPLIST_FILE = TanyaAISandboxApp/Info.plist;
-				IPHONEOS_DEPLOYMENT_TARGET = 13.0;
-				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
-				PRODUCT_BUNDLE_IDENTIFIER = com.example.tanyaai.sandbox;
-				PRODUCT_NAME = "Tanya AI Sandbox";
-				SDKROOT = iphoneos;
-				SWIFT_VERSION = 5.0;
-				TARGETED_DEVICE_FAMILY = 1;
-			};
-			name = Debug;
-		};
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
-		20540389AC82FF496CA8BA93 /* Build configuration list for PBXNativeTarget "TanyaAISandbox" */ = {
+		13940D31E62595AE5018CAFD /* Build configuration list for PBXNativeTarget "TanyaAISandbox" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
-				2E075A30E87297876441CA21 /* Release */,
-				C6FD3770AB302B04F28D61D5 /* Debug */,
+				6BA79CC48688241ACD9200A9 /* Release */,
+				83DCD464E5C04521B5182CE8 /* Debug */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		32382BBE4D35B115B0CFAB3B /* Build configuration list for PBXProject "TanyaAISandbox" */ = {
+		4E799179DCA98594D606FDB7 /* Build configuration list for PBXNativeTarget "TanyaAISandboxUITests" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
-				9D2F8F5A22CC94954C44DA6F /* Debug */,
-				20CDEC4F35D0F92632C99427 /* Release */,
+				16147FA652FF871D9B87B05F /* Release */,
+				F586B7964FCF3B2285E4E157 /* Debug */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		62D2FF914765BB29A93F5FCA /* Build configuration list for PBXNativeTarget "TanyaAISandboxUITests" */ = {
+		9139D0921DD602FFCA4A5DB7 /* Build configuration list for PBXProject "TanyaAISandbox" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
-				854EAD03AE10B57A01B8EF31 /* Release */,
-				C0DECB4F952C9E0B79D0328D /* Debug */,
+				92A9282B58E2833A530F5247 /* Debug */,
+				DEFC9B94096EAAF664C5E0F9 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
@@ -481,24 +501,24 @@
 /* End XCConfigurationList section */
 
 /* Begin XCLocalSwiftPackageReference section */
-		E67E6BCD8BF6629268E04BA8 /* XCLocalSwiftPackageReference "TanyaAI" */ = {
+		62C6CE51997A1FFE6B371710 /* XCLocalSwiftPackageReference "TanyaAI" */ = {
 			isa = XCLocalSwiftPackageReference;
 			relativePath = Packages/TanyaAI;
 		};
 /* End XCLocalSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
-		58E31E293931C0BEB05CCBFA /* TanyaAI */ = {
+		870A4D65FE1218EE251CA25D /* TanyaAITestSupport */ = {
 			isa = XCSwiftPackageProductDependency;
-			package = E67E6BCD8BF6629268E04BA8 /* XCLocalSwiftPackageReference "TanyaAI" */;
-			productName = TanyaAI;
-		};
-		F3B7E254EC0433D0CEDD6826 /* TanyaAITestSupport */ = {
-			isa = XCSwiftPackageProductDependency;
-			package = E67E6BCD8BF6629268E04BA8 /* XCLocalSwiftPackageReference "TanyaAI" */;
+			package = 62C6CE51997A1FFE6B371710 /* XCLocalSwiftPackageReference "TanyaAI" */;
 			productName = TanyaAITestSupport;
+		};
+		9627AD4B39B303BD8CD05BA5 /* TanyaAI */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 62C6CE51997A1FFE6B371710 /* XCLocalSwiftPackageReference "TanyaAI" */;
+			productName = TanyaAI;
 		};
 /* End XCSwiftPackageProductDependency section */
 	};
-	rootObject = 7338609FE5D5E3DEFB196D8C /* Project object */;
+	rootObject = 331C8D1438CCF3C92F711D45 /* Project object */;
 }

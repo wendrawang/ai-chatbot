@@ -7,12 +7,15 @@ struct TanyaAIMessageListView: View {
     var body: some View {
         TanyaAIMessageTableView(
             messages: viewModel.messages,
-            isGenerating: viewModel.isGenerating,
+            showsTypingRow: viewModel.showsTypingRow,
             showsSuggestions: viewModel.showsSuggestions,
             theme: theme,
-            onApprovalEdit: viewModel.editApproval,
-            onApprovalCancel: viewModel.cancelApproval,
-            onApproval: viewModel.approve
+            handlers: TanyaAIMessageRowHandlers(
+                onApprovalEdit: viewModel.editApproval,
+                onApprovalCancel: viewModel.cancelApproval,
+                onApproval: viewModel.approve,
+                onAction: viewModel.perform
+            )
         )
     }
 }

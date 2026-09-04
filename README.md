@@ -1,13 +1,13 @@
 # Tanya AI Sandbox
 
-A sanitized iOS 13 reference implementation for a modular conversational
+A sanitized iOS 15 reference implementation for a modular conversational
 feature. The repository contains only deterministic demo data. It must never
 contain production endpoints, certificates, secrets, proprietary source code,
 internal identifiers, or customer data.
 
 ## Goals
 
-- Run on iOS 13 while keeping navigation deterministic.
+- Run on iOS 15 while keeping navigation deterministic.
 - Stay isolated from a host application's `NavigationView` and
   `NavigationLink` hierarchy.
 - Use UIKit for navigation and SwiftUI for screens.
@@ -25,6 +25,20 @@ navigation hierarchy. Its detail screen opens Tanya AI as an independent,
 full-screen UIKit feature.
 
 The demo PIN is `123456`. It exists only in the mock authorization service.
+
+Build, install, and launch on a simulator in one step:
+
+```sh
+./Scripts/run_sandbox.sh --deeplink
+```
+
+Any argument is forwarded to the app. `--showcase` renders every bubble, and
+`--deeplink` opens on the legacy host and streams an action card plus a
+confirmation that hands off: **Open legacy detail → Open Tanya AI → Open
+transfer form**. The feature closes, the stack returns to Legacy Home, and the
+destination is pushed with a back button reading "Legacy Home". The blocked
+`https` button does nothing, and Confirm on the hand-off approval never opens
+the PIN sheet.
 
 Run all local verification:
 
@@ -60,6 +74,44 @@ View → ViewModel → UseCase → Repository → injected transport
 Internal destinations are created only when the UIKit coordinator receives a
 route. The package does not build a graph of hidden `NavigationLink` values and
 does not construct every destination during rendering.
+
+### Host actions and deeplinks
+
+A bubble can ask the host to open one of its own screens. The response carries
+the deeplink as one string, such as `ocbcid://mobile?type=transfer`:
+
+```text
+Action card or confirmation handoff
+    → TanyaAIChatOutput.performAction
+    → TanyaAICoordinator
+    → onAction handler in the host
+    → host checks the scheme and its deeplink entry host
+    → feature closes, then the host's existing deeplink handler takes over
+```
+
+The package never parses or opens the deeplink, never dismisses itself for an
+action, and never navigates outside its own navigation controller. The host
+checks that the link is its own before opening it, so a response cannot point
+the app at a web page or at another app. Schema in
+[`docs/BUBBLE_SCHEMA.md`](docs/BUBBLE_SCHEMA.md), sequencing in
+[`docs/INTEGRATION.md`](docs/INTEGRATION.md).
+
+`MockTanyaAIActionFixture` in `TanyaAITestSupport` builds a stream carrying
+deeplinks of your own, so a host can exercise the hand-off before the backend
+sends one. The sandbox shows the full round trip: `--deeplink` streams an
+action card and a confirmation with `handoff`, `SandboxDeeplink` accepts
+`tanyaaisandbox://mobile?…`, and `SceneDelegate` receives the opened URL
+through `scene(_:openURLContexts:)` exactly as an external caller would. One
+button carries an `https` link the host rejects.
+
+### Reply formatting
+
+Reply text may carry inline styling through a closed set of bracket tags -
+`[bold]`, `[strike]`, and `[color]text|RRGGBB[/color]` - so a labelled list
+stays inside one bubble. Markdown is deliberately not used: asterisks are
+ordinary characters in banking copy, and a closed tag set means a response
+cannot introduce links, images, or headings. Contract, including how partial
+tags behave mid-stream, in [`docs/BUBBLE_SCHEMA.md`](docs/BUBBLE_SCHEMA.md).
 
 ### Package targets
 

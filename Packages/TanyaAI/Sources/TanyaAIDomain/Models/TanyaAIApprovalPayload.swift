@@ -27,6 +27,10 @@ public struct TanyaAIApprovalPayload: Equatable {
     public let summary: [TanyaAIKeyValue]
     public let notice: String?
     public let expiresAt: Date
+    /// When present, Confirm hands the deeplink to the host instead of
+    /// opening the in-feature PIN sheet. Use it while an existing screen still
+    /// owns the transaction.
+    public let handoff: TanyaAIAction?
     public var state: State
 
     public init(
@@ -38,6 +42,7 @@ public struct TanyaAIApprovalPayload: Equatable {
         summary: [TanyaAIKeyValue],
         notice: String? = nil,
         expiresAt: Date,
+        handoff: TanyaAIAction? = nil,
         state: State
     ) {
         self.approvalIdentifier = approvalIdentifier
@@ -48,6 +53,24 @@ public struct TanyaAIApprovalPayload: Equatable {
         self.summary = summary
         self.notice = notice
         self.expiresAt = expiresAt
+        self.handoff = handoff
         self.state = state
+    }
+}
+
+public extension TanyaAIApprovalPayload.State {
+    /// The approval is closed and must never change again.
+    ///
+    /// A cancelled or completed confirmation is a record of what happened. A
+    /// later message about the same transaction is a new request, not an edit
+    /// of the old one - otherwise a bubble the customer already rejected
+    /// would reopen itself.
+    var isSettled: Bool {
+        switch self {
+        case .awaitingApproval, .authorizing, .processing:
+            return false
+        case .completed, .failed, .expired, .cancelled:
+            return true
+        }
     }
 }

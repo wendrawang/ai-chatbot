@@ -5,6 +5,12 @@ set -eu
 PROJECT_ROOT="$(CDPATH= cd -- "$(dirname -- "$0")/.." && pwd)"
 MAXIMUM_LINES=250
 
+# SwiftLint loads sourcekitd out of the toolchain, so it needs a real Xcode
+# even when xcode-select still points at the Command Line Tools. verify.sh
+# exports the same default; repeated here so a direct run behaves the same.
+DEVELOPER_DIR="${DEVELOPER_DIR:-/Applications/Xcode.app/Contents/Developer}"
+export DEVELOPER_DIR
+
 find "$PROJECT_ROOT/TanyaAISandboxApp" \
   "$PROJECT_ROOT/TanyaAISandboxUITests" \
   "$PROJECT_ROOT/Packages/TanyaAI/Sources" \
