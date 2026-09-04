@@ -19,7 +19,7 @@ struct LegacyRootScreen: View {
             }
             .listStyle(GroupedListStyle())
             .navigationBarTitle("Legacy Home")
-            .legacyAccessibilityIdentifier("legacy.home")
+            .accessibilityIdentifier("legacy.home")
             .background(deeplinkTargetLink)
         }
         .navigationViewStyle(StackNavigationViewStyle())
@@ -116,18 +116,7 @@ struct LegacyRootScreen: View {
                     Text("Open legacy detail")
                 }
             }
-            .legacyAccessibilityIdentifier("legacy.openDetail")
-        }
-    }
-}
-
-extension View {
-    @ViewBuilder
-    func legacyAccessibilityIdentifier(_ identifier: String) -> some View {
-        if #available(iOS 14.0, *) {
-            accessibilityIdentifier(identifier)
-        } else {
-            self
+            .accessibilityIdentifier("legacy.openDetail")
         }
     }
 }

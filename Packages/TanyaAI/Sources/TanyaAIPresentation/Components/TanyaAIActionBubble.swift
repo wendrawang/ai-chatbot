@@ -16,7 +16,7 @@ struct TanyaAIActionBubble: View {
         .cornerRadius(18)
         .frame(maxWidth: 340, alignment: .leading)
         .accessibilityElement(children: .contain)
-        .tanyaAIAccessibilityIdentifier("actions.card")
+        .accessibilityIdentifier("actions.card")
     }
 
     @ViewBuilder
@@ -50,7 +50,7 @@ struct TanyaAIActionBubble: View {
                 .foregroundColor(foregroundColor(for: button.style))
                 .background(backgroundColor(for: button.style))
                 .cornerRadius(12)
-                .tanyaAIAccessibilityIdentifier(
+                .accessibilityIdentifier(
                     "action.\(button.action.identifier)"
                 )
             }

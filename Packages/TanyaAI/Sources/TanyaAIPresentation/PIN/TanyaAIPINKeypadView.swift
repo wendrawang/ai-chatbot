@@ -49,7 +49,7 @@ struct TanyaAIPINKeypadView: View {
         )
         .buttonStyle(PlainButtonStyle())
         .accessibility(label: Text("Digit \(digit)"))
-        .tanyaAIAccessibilityIdentifier("pin.digit.\(digit)")
+        .accessibilityIdentifier("pin.digit.\(digit)")
     }
 
     private var deleteButton: some View {
@@ -62,7 +62,7 @@ struct TanyaAIPINKeypadView: View {
         }
         .buttonStyle(PlainButtonStyle())
         .accessibility(label: Text("Delete PIN digit"))
-        .tanyaAIAccessibilityIdentifier("pin.delete")
+        .accessibilityIdentifier("pin.delete")
     }
 
     private var keypadSpacer: some View {

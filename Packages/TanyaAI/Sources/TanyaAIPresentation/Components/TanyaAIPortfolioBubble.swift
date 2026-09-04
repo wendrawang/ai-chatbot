@@ -22,7 +22,7 @@ struct TanyaAIPortfolioBubble: View {
         .cornerRadius(18)
         .frame(maxWidth: 340, alignment: .leading)
         .accessibilityElement(children: .contain)
-        .tanyaAIAccessibilityIdentifier("portfolio.summary")
+        .accessibilityIdentifier("portfolio.summary")
     }
 
     private var header: some View {

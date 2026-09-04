@@ -21,7 +21,7 @@ struct SandboxDeeplinkTargetScreen: View {
                 Text(destination.deeplink)
                     .font(.footnote)
                     .foregroundColor(.secondary)
-                    .legacyAccessibilityIdentifier("deeplink.url")
+                    .accessibilityIdentifier("deeplink.url")
 
                 ForEach(destination.sortedParameters) { parameter in
                     HStack {
@@ -36,6 +36,6 @@ struct SandboxDeeplinkTargetScreen: View {
             .padding(20)
         }
         .navigationBarTitle(Text(destination.title), displayMode: .inline)
-        .legacyAccessibilityIdentifier("deeplink.target")
+        .accessibilityIdentifier("deeplink.target")
     }
 }

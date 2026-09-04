@@ -7,7 +7,8 @@ import SwiftUI
 /// an image, or a heading, because there is no syntax for them to use.
 ///
 /// Runs are concatenated as `Text` rather than assembled into an
-/// `AttributedString`, which keeps the deployment target at iOS 13.
+/// `AttributedString`: the styles here are a closed set that `Text` already
+/// carries, so the extra type would buy nothing.
 struct TanyaAIRichText: View {
     let text: String
     let font: Font

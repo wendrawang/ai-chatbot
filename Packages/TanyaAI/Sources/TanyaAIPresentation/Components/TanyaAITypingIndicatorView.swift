@@ -5,6 +5,10 @@ import SwiftUI
 ///
 /// Three dots inside an assistant bubble rather than a spinner on a row of
 /// its own, so the conversation does not jump when the answer arrives.
+///
+/// The animation is scoped to `isAnimating`. The unscoped `animation(_:)`
+/// would animate every change in this subtree - including the layout the row
+/// gets when the table first places it - which reads as a stray slide.
 struct TanyaAITypingIndicatorView: View {
     @Environment(\.tanyaAITheme) private var theme
     @State private var isAnimating = false
@@ -38,7 +42,8 @@ struct TanyaAITypingIndicatorView: View {
                     .animation(
                         Animation.easeInOut(duration: 0.6)
                             .repeatForever()
-                            .delay(Double(index) * 0.2)
+                            .delay(Double(index) * 0.2),
+                        value: isAnimating
                     )
             }
         }

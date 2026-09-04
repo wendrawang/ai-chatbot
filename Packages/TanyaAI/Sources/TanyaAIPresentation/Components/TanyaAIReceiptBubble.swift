@@ -16,7 +16,7 @@ struct TanyaAIReceiptBubble: View {
         .cornerRadius(18)
         .frame(maxWidth: 340, alignment: .leading)
         .accessibilityElement(children: .contain)
-        .tanyaAIAccessibilityIdentifier("receipt.success")
+        .accessibilityIdentifier("receipt.success")
     }
 
     private var successHeader: some View {

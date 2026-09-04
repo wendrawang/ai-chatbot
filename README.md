@@ -1,13 +1,13 @@
 # Tanya AI Sandbox
 
-A sanitized iOS 13 reference implementation for a modular conversational
+A sanitized iOS 15 reference implementation for a modular conversational
 feature. The repository contains only deterministic demo data. It must never
 contain production endpoints, certificates, secrets, proprietary source code,
 internal identifiers, or customer data.
 
 ## Goals
 
-- Run on iOS 13 while keeping navigation deterministic.
+- Run on iOS 15 while keeping navigation deterministic.
 - Stay isolated from a host application's `NavigationView` and
   `NavigationLink` hierarchy.
 - Use UIKit for navigation and SwiftUI for screens.
