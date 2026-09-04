@@ -8,7 +8,7 @@ extension TanyaAIMessageTableView {
     final class Coordinator: NSObject, UITableViewDataSource, UITableViewDelegate {
         private weak var tableView: UITableView?
         private var messages: [TanyaAIMessageItemViewModel] = []
-        private var isGenerating = false
+        private var showsTypingRow = false
         private var showsSuggestions = false
         private var followsLatestMessage = true
         private var scrollRequestIdentifier = 0
@@ -25,18 +25,18 @@ extension TanyaAIMessageTableView {
 
         func update(
             messages: [TanyaAIMessageItemViewModel],
-            isGenerating: Bool,
+            showsTypingRow: Bool,
             showsSuggestions: Bool,
             theme: TanyaAITheme,
             handlers: TanyaAIMessageRowHandlers
         ) {
             let updateState = makeUpdateState(
                 messages: messages,
-                isGenerating: isGenerating,
+                showsTypingRow: showsTypingRow,
                 showsSuggestions: showsSuggestions
             )
             self.messages = messages
-            self.isGenerating = isGenerating
+            self.showsTypingRow = showsTypingRow
             self.showsSuggestions = showsSuggestions
             self.theme = theme
             self.handlers = handlers
@@ -91,7 +91,7 @@ extension TanyaAIMessageTableView {
         }
 
         private var rowCount: Int {
-            messages.count + (isGenerating ? 1 : 0)
+            messages.count + (showsTypingRow ? 1 : 0)
         }
 
         private func rowView(at index: Int) -> TanyaAIMessageTableRow {
@@ -175,11 +175,11 @@ extension TanyaAIMessageTableView {
 
         private func makeUpdateState(
             messages: [TanyaAIMessageItemViewModel],
-            isGenerating: Bool,
+            showsTypingRow: Bool,
             showsSuggestions: Bool
         ) -> UpdateState {
             let identifiersChanged = self.messages.map(\.id) != messages.map(\.id)
-            let nextRows = messages.count + (isGenerating ? 1 : 0)
+            let nextRows = messages.count + (showsTypingRow ? 1 : 0)
             let rowsChanged = identifiersChanged || rowCount != nextRows
             return UpdateState(
                 rowsChanged: rowsChanged,

@@ -6,6 +6,9 @@ import TanyaAIDomain
 public final class TanyaAIChatViewModel: ObservableObject {
     @Published public private(set) var messages: [TanyaAIMessageItemViewModel]
     @Published public private(set) var isGenerating = false
+    /// The agent or bot is composing between turns. Only a session transport
+    /// reports this; over SSE it stays false.
+    @Published public private(set) var isAgentTyping = false
     @Published public private(set) var errorMessage: String?
     @Published public private(set) var suggestions: [TanyaAISuggestion]
     @Published public var inputText = ""
@@ -61,6 +64,15 @@ public final class TanyaAIChatViewModel: ObservableObject {
         !isGenerating && !suggestions.isEmpty
     }
 
+    /// Whether the waiting bubble belongs at the end of the conversation.
+    ///
+    /// Separate from `isGenerating`, which also drives the send/stop button: an
+    /// agent typing between turns should show the dots without turning the
+    /// send button into a stop button for a turn nobody started.
+    public var showsTypingRow: Bool {
+        isGenerating || isAgentTyping
+    }
+
     public func cancelGeneration() {
         activeRequest?.cancel()
         activeRequest = nil
@@ -114,7 +126,12 @@ public final class TanyaAIChatViewModel: ObservableObject {
         case .responseCompleted:
             textDeltaBuffer.flushAll()
             isGenerating = false
+            isAgentTyping = false
             activeRequest = nil
+        case .hostAction(let action):
+            onOutput?(.performAction(action))
+        case .typing(let isTyping):
+            isAgentTyping = isTyping
         case .heartbeat:
             break
         }

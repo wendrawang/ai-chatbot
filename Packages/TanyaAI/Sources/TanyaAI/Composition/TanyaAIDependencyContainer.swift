@@ -16,12 +16,28 @@ final class TanyaAIDependencyContainer {
     }
 
     func makeChatViewModel() -> TanyaAIChatViewModel {
-        let repository = DefaultTanyaAIRepository(
-            transport: dependencies.streamingTransport,
+        let useCase = TanyaAIChatUseCase(repository: makeRepository())
+        return TanyaAIChatViewModel(useCase: useCase)
+    }
+
+    /// One transport per graph. A vendor session wins when both are somehow
+    /// present, and an empty `TanyaAIDependencies` cannot be built at all
+    /// because both initializers require one.
+    ///
+    /// `context` is nil here: the page-context feature is not on this branch,
+    /// so the session contract keeps its parameter - identical to the vendor
+    /// branch, so the two do not conflict - and always receives nil.
+    private func makeRepository() -> TanyaAIRepository {
+        if let session = dependencies.chatSession {
+            return TanyaAISessionRepository(session: session)
+        }
+        guard let transport = dependencies.streamingTransport else {
+            return TanyaAIUnavailableRepository()
+        }
+        return DefaultTanyaAIRepository(
+            transport: transport,
             messagePath: configuration.messagePath
         )
-        let useCase = TanyaAIChatUseCase(repository: repository)
-        return TanyaAIChatViewModel(useCase: useCase)
     }
 
     func makeHistoryViewModel() -> TanyaAIHistoryViewModel {

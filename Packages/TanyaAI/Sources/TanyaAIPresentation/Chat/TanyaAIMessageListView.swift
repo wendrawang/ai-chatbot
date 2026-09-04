@@ -7,7 +7,7 @@ struct TanyaAIMessageListView: View {
     var body: some View {
         TanyaAIMessageTableView(
             messages: viewModel.messages,
-            isGenerating: viewModel.isGenerating,
+            showsTypingRow: viewModel.showsTypingRow,
             showsSuggestions: viewModel.showsSuggestions,
             theme: theme,
             handlers: TanyaAIMessageRowHandlers(

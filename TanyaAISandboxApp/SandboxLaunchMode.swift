@@ -4,12 +4,16 @@ enum SandboxLaunchMode {
     case legacyHost
     case showcase
     case deeplink
+    /// Chat driven by a vendor SDK session instead of the SSE transport.
+    case vendorSession
 
     init(arguments: [String]) {
         if arguments.contains("--showcase") {
             self = .showcase
         } else if arguments.contains("--deeplink") {
             self = .deeplink
+        } else if arguments.contains("--vendor-session") {
+            self = .vendorSession
         } else {
             self = .legacyHost
         }
@@ -23,7 +27,7 @@ enum SandboxLaunchMode {
         switch self {
         case .legacyHost, .deeplink:
             return false
-        case .showcase:
+        case .showcase, .vendorSession:
             return true
         }
     }
@@ -34,7 +38,7 @@ enum SandboxLaunchMode {
         switch self {
         case .legacyHost:
             return false
-        case .showcase, .deeplink:
+        case .showcase, .deeplink, .vendorSession:
             return true
         }
     }
@@ -47,6 +51,14 @@ enum SandboxLaunchMode {
             return "showcase all bubbles"
         case .deeplink:
             return "deeplink hand-off"
+        case .vendorSession:
+            return "vendor session demo"
         }
+    }
+
+    /// Swaps the mock SSE transport for a mock vendor chat session.
+    /// Everything above the repository is identical, which is the point.
+    var usesVendorSession: Bool {
+        self == .vendorSession
     }
 }
