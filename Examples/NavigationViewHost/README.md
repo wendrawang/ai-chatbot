@@ -27,10 +27,10 @@ ganti nama tipe `Minimal*`/`Host*` dan placeholder `App*` dengan milik Anda.
 
 ## Prasyarat
 
-1. **Deployment target minimal iOS 16.** Paket memakai `NavigationStack`,
-   `presentationDetents`, dan `.toolbar(.hidden, for:)`. Ini blocker keras.
-   `NavigationView` di app Anda tetap boleh dipakai — tidak perlu ikut
-   dimigrasi ke `NavigationStack`.
+1. **Deployment target minimal iOS 15.** Navigasi internal fitur ini memakai
+   `UINavigationController`, bukan `NavigationStack`, jadi tidak ada syarat
+   iOS 16. `NavigationView` di app Anda tetap dipakai apa adanya — tidak perlu
+   dimigrasi.
 2. Tambahkan paket lokal `Packages/TanyaAI` ke project, lalu link produk
    **`TanyaAI`** ke target app. Tambahkan **`TanyaAIDesignSystem`** juga kalau
    memakai `.sandbox` versi minimal. `TanyaAITestSupport` hanya untuk target
@@ -86,6 +86,65 @@ Detail kontrak yang perlu dipatuhi transport:
 Untuk otorisasi: kembalikan `.completed` kalau transaksi tuntas, `.processing`
 kalau masih diproses backend — bubble approval menampilkan status berbeda. PIN
 tidak boleh masuk log, analytics, crash report, clipboard, atau storage.
+
+## Host SwiftUI yang bukan root
+
+`Minimal/` dan `Production/` sama-sama memanggil `attach(rootController:)`
+dari `SceneDelegate`. Itu hanya berlaku kalau layar yang mem-present **adalah**
+root window.
+
+Kebanyakan aplikasi tidak begitu. Coordinator utamanya muncul setelah login,
+di dalam tab, atau di tengah stack — dan sebuah `View` SwiftUI tidak punya
+`UIViewController` sendiri untuk dijadikan tempat present.
+
+`SwiftUIHost/` menutup celah itu. `TanyaAIHostAnchor` menaruh satu controller
+kosong berukuran nol di hierarki, semata supaya presenter punya pegangan;
+UIKit lalu naik ke controller terdekat yang bisa mem-present, yaitu layar yang
+sedang dilihat nasabah.
+
+```swift
+struct MainCoordinator: View {
+    let presenter: HostTanyaAIPresenter
+
+    var body: some View {
+        NavigationView { ... }
+            .navigationViewStyle(StackNavigationViewStyle())
+            .tanyaAIHost(presenter)          // <- satu baris
+    }
+}
+```
+
+Membuka fitur jadi `presenter.presentTanyaAI()`, bukan menyetel flag.
+
+### Kenapa ini menghapus `isShowTanyaAI` dan `pendingDeeplink`
+
+Keduanya bukan state layar.
+
+Apakah fitur sedang tampil adalah milik presenter — layar tidak perlu
+menyimpan salinannya yang bisa melenceng. Dan urutan hand-off deeplink adalah
+*completion* dari dismissal, bukan variabel kedua yang harus dijaga tetap
+sinkron:
+
+```swift
+// sebelum — dua @State, urutannya diatur lewat onDismiss
+pendingDeeplink = url
+isShowTanyaAI = false
+
+// sesudah — urutannya adalah completion-nya
+presenter.dismissTanyaAI {
+    DeeplinkManager.instance.openUrlScheme(url)
+}
+```
+
+`HostDeeplinkBridge` sudah membungkus pola ini, termasuk kasus deeplink yang
+datang saat fitur **tidak** sedang tampil.
+
+### Yang sudah diverifikasi
+
+Berbeda dari file contoh lain di folder ini, `SwiftUIHost/` di-type-check
+terhadap paket sungguhan, dan polanya dijalankan lewat UI test deeplink
+sandbox — present, hand-off, dismissal beserta completion-nya, sampai
+destinasi ter-push. Jadi ini bukan sekadar sketsa.
 
 ## Yang tidak boleh
 
