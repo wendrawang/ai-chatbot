@@ -19,7 +19,7 @@ final class HostTanyaAIPresenter: HostTanyaAIPresenting {
     private weak var rootController: UIViewController?
     private weak var activeController: UIViewController?
 
-    private let dependencies: TanyaAIDependencies
+    private let makeDependencies: () -> TanyaAIDependencies
     private let configuration: TanyaAIConfiguration
     private var actionHandler: ((TanyaAIAction) -> Void)?
 
@@ -29,12 +29,27 @@ final class HostTanyaAIPresenter: HostTanyaAIPresenting {
         activeController != nil
     }
 
-    init(
+    /// A transport that may be shared between presentations: the host's own
+    /// SSE networking holds nothing between requests.
+    convenience init(
         dependencies: TanyaAIDependencies,
         configuration: TanyaAIConfiguration = TanyaAIConfiguration()
     ) {
-        self.dependencies = dependencies
+        self.init(configuration: configuration) { dependencies }
+    }
+
+    /// A transport that must be rebuilt for each presentation.
+    ///
+    /// A vendor chat session holds a channel, an event handler, and a
+    /// connection. Sharing one instance lets the released graph's `deinit`
+    /// clear the handler the new graph just installed - a second chat that
+    /// opens normally and then never answers.
+    init(
+        configuration: TanyaAIConfiguration = TanyaAIConfiguration(),
+        makeDependencies: @escaping () -> TanyaAIDependencies
+    ) {
         self.configuration = configuration
+        self.makeDependencies = makeDependencies
     }
 
     /// The controller the feature is presented from - usually the hosting
@@ -56,7 +71,7 @@ final class HostTanyaAIPresenter: HostTanyaAIPresenting {
         }
         let controller = TanyaAIModule.makeViewController(
             configuration: configuration,
-            dependencies: dependencies,
+            dependencies: makeDependencies(),
             onAction: { [weak self] action in
                 self?.actionHandler?(action)
             }

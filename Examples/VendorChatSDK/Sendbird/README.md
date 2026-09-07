@@ -91,41 +91,41 @@ Dan di logout, satu-satunya tempat `SendbirdChat.disconnect` boleh dipanggil:
 SendbirdChat.disconnect { session.clear() }
 ```
 
-**3. Saat chat dibuka** — composition membuat adapter baru per presentasi:
+**3. Saat chat dibuka** — tidak ada yang Anda panggil. Composition membuat
+adapter baru per presentasi, dan paket yang memanggil `connect()` (malas, saat
+pesan pertama dikirim) serta `disconnect()` (saat graph dilepas).
+
+Ketiganya sudah jadi kode di folder ini:
+
+| File | Isinya |
+| --- | --- |
+| `SendbirdAppLifecycle.swift` | `initialize` saat launch, `connect` saat login, `disconnect` **hanya** saat logout |
+| `SendbirdTanyaAIComposition.swift` | composition root: adapter baru tiap presentasi, ingat `channelURL` terakhir |
+| `SendbirdChatSessionAdapter.swift` | terjemahan Sendbird ⇄ `TanyaAIChatSessionEvent` |
+
+Yang tersisa untuk Anda tulis sendiri hanya dua, dan keduanya tidak ada
+hubungannya dengan Sendbird — keduanya punya contoh di
+`Examples/NavigationViewHost/Production/`:
+
+- `HostTanyaAITheme` — memetakan design token Anda ke `UIColor`/`UIFont`.
+- `HostTransactionAuthorizing` — menyambung PIN sheet ke API otorisasi
+  transaksi Anda. PIN tetap lewat jalur Anda sendiri, tidak lewat Sendbird.
+
+Merakitnya di scene:
 
 ```swift
-final class TanyaAIComposition {
-    private let botUserId: String
-    private let authorizing: HostTransactionAuthorizing
-    /// Channel terakhir, supaya percakapan bisa diteruskan.
-    private var lastChannelURL: String?
-
-    func makeDependencies(continuesLastConversation: Bool) -> TanyaAIDependencies {
-        let adapter = SendbirdChatSessionAdapter(
-            botUserId: botUserId,
-            channelURL: continuesLastConversation ? lastChannelURL : nil
-        )
-        adapter.onChannelReady = { [weak self] url in
-            self?.lastChannelURL = url
-        }
-        return TanyaAIDependencies(
-            chatSession: adapter,
-            authorizationService: HostTanyaAIAuthorizationService(
-                authorizing: authorizing
-            ),
-            theme: .host
-        )
-    }
-}
+let composition = SendbirdTanyaAIComposition(
+    botUserId: AppConfig.tanyaAIBotUserId,
+    authorizing: AppEnvironment.shared.transactionAuthorizer
+)
+let presenter = composition.makePresenter()
+presenter.attach(rootController: rootController)
 ```
 
-Satu adapter untuk satu graph. Jangan dipakai ulang antar presentasi: adapter
-menyimpan `onEvent`, dan `deinit` graph lama akan menghapusnya - ARC bisa
-melepas graph lama *setelah* graph baru dibangun, sehingga chat kedua diam.
-
-Sisanya - `GroupChannel.createChannel`, `sendUserMessage`, delegate masuk -
-tidak pernah Anda panggil sendiri. Paket yang memanggil `connect()` (malas,
-saat pesan pertama dikirim) dan `disconnect()` (saat graph dilepas).
+Presenter menerima *factory*, bukan satu set dependency tetap. Itu disengaja:
+satu adapter untuk satu presentasi. Kalau dipakai ulang, `deinit` graph lama
+menghapus `onEvent` yang baru saja dipasang graph baru — chat kedua terbuka
+normal lalu tidak pernah menjawab.
 
 ## Status verifikasi
 

@@ -194,4 +194,5 @@ extension SendbirdChatSessionAdapter: BaseChannelDelegate, GroupChannelDelegate 
 
 enum SendbirdAdapterError: Error {
     case channelUnavailable
+    case notSignedIn
 }
