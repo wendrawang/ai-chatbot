@@ -15,7 +15,13 @@ protocol HostTanyaAIPresenting: AnyObject {
 /// It holds a presentation, not a feature graph: `makeViewController` is
 /// called per presentation, so each session gets its own controller, router,
 /// ViewModels, and stream.
-final class HostTanyaAIPresenter: HostTanyaAIPresenting {
+/// `ObservableObject` conformance carries no published state. It exists so a
+/// host whose screens are built without parameters - a coordinator created as
+/// `MainCoordinator()` deep inside a root screen - can reach the presenter
+/// through `.environmentObject(...)` instead of threading it down by hand.
+/// Injecting an already-built presenter is safe; what must never happen is
+/// building the composition inside a `body`.
+final class HostTanyaAIPresenter: HostTanyaAIPresenting, ObservableObject {
     private weak var rootController: UIViewController?
     private weak var activeController: UIViewController?
 
