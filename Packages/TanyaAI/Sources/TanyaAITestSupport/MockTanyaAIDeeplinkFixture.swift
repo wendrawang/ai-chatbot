@@ -1,4 +1,5 @@
 import Foundation
+import TanyaAIContracts
 
 /// Sanitized fixture for the sandbox hand-off demo.
 ///
@@ -10,13 +11,7 @@ import Foundation
 /// `MockTanyaAIActionFixture` rather than reuse this one: the deeplinks here
 /// are the sandbox's, not yours.
 enum MockTanyaAIDeeplinkFixture {
-    static func chunks(identifier: String) -> [Data] {
-        MockTanyaAIResponseFixture.irregularChunks(
-            from: events(identifier: identifier).joined()
-        )
-    }
-
-    private static func events(identifier: String) -> [String] {
+    static func events(identifier: String) -> [TanyaAIChatSessionEvent] {
         let messageIdentifier = "deeplink-text-\(identifier)"
         return [
             event(
@@ -69,7 +64,9 @@ enum MockTanyaAIDeeplinkFixture {
         ]
     }
 
-    private static func handoffApprovalEvent(_ identifier: String) -> String {
+    private static func handoffApprovalEvent(
+        _ identifier: String
+    ) -> TanyaAIChatSessionEvent {
         event(
             "content.approval",
             [
@@ -97,7 +94,7 @@ enum MockTanyaAIDeeplinkFixture {
     private static func event(
         _ name: String,
         _ payload: [String: Any]
-    ) -> String {
+    ) -> TanyaAIChatSessionEvent {
         MockTanyaAIResponseFixture.event(name, payload)
     }
 }

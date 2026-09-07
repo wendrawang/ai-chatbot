@@ -33,9 +33,7 @@ final class TanyaAIActionDecodingTests: XCTestCase {
     }
 
     func testActionCardDecodesButtonsAndParameters() throws {
-        let result = try decoder.decode(
-            makeEvent(name: "content.actions", payload: actionCardPayload)
-        )
+        let result = try decoder.decode(name: "content.actions", json: json(actionCardPayload))
 
         guard case .content(let identifier, .actions(let payload)) = result else {
             return XCTFail("Expected action content")
@@ -56,11 +54,7 @@ final class TanyaAIActionDecodingTests: XCTestCase {
     }
 
     func testUnknownButtonStyleFallsBackToPrimary() throws {
-        let result = try decoder.decode(
-            makeEvent(
-                name: "content.actions",
-                payload: actionsPayload(style: "neon-glow")
-            )
+        let result = try decoder.decode(name: "content.actions", json: json(actionsPayload(style: "neon-glow"))
         )
 
         guard case .content(_, .actions(let payload)) = result else {
@@ -78,9 +72,7 @@ final class TanyaAIActionDecodingTests: XCTestCase {
             "deeplink": "not a url at all"
         ]
 
-        let result = try decoder.decode(
-            makeEvent(name: "content.approval", payload: payload)
-        )
+        let result = try decoder.decode(name: "content.approval", json: json(payload))
 
         guard case .content(_, .approval(let approval)) = result else {
             return XCTFail("Expected approval content")
@@ -89,15 +81,10 @@ final class TanyaAIActionDecodingTests: XCTestCase {
     }
 
     func testEmptyActionListDegradesToUnsupportedContent() throws {
-        let result = try decoder.decode(
-            makeEvent(
-                name: "content.actions",
-                payload: [
+        let result = try decoder.decode(name: "content.actions", json: json([
                     "messageIdentifier": "actions-message",
                     "actions": []
-                ]
-            )
-        )
+                ]))
 
         guard case .content(_, .unsupported(let message)) = result else {
             return XCTFail("Expected unsupported content")
@@ -109,8 +96,7 @@ final class TanyaAIActionDecodingTests: XCTestCase {
     }
 
     func testApprovalWithoutHandoffKeepsInFeatureAuthorization() throws {
-        let result = try decoder.decode(
-            makeEvent(name: "content.approval", payload: approvalPayload())
+        let result = try decoder.decode(name: "content.approval", json: json(approvalPayload())
         )
 
         guard case .content(_, .approval(let payload)) = result else {
@@ -126,9 +112,7 @@ final class TanyaAIActionDecodingTests: XCTestCase {
             "deeplink": "ocbcid://mobile?type=transfer&amount=1250000"
         ]
 
-        let result = try decoder.decode(
-            makeEvent(name: "content.approval", payload: payload)
-        )
+        let result = try decoder.decode(name: "content.approval", json: json(payload))
 
         guard case .content(_, .approval(let approval)) = result else {
             return XCTFail("Expected approval content")
@@ -168,14 +152,10 @@ final class TanyaAIActionDecodingTests: XCTestCase {
         ]
     }
 
-    private func makeEvent(
-        name: String,
-        payload: [String: Any]
-    ) -> TanyaAISSEEvent {
-        let data = (try? JSONSerialization.data(
+    private func json(_ payload: [String: Any]) -> Data {
+        (try? JSONSerialization.data(
             withJSONObject: payload,
             options: [.sortedKeys]
         )) ?? Data()
-        return TanyaAISSEEvent(name: name, data: data)
     }
 }

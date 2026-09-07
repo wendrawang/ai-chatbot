@@ -6,8 +6,8 @@ import TanyaAIDomain
 public final class TanyaAIChatViewModel: ObservableObject {
     @Published public private(set) var messages: [TanyaAIMessageItemViewModel]
     @Published public private(set) var isGenerating = false
-    /// The agent or bot is composing between turns. Only a session transport
-    /// reports this; over SSE it stays false.
+    /// The agent or bot is composing between turns, reported by the channel
+    /// rather than by a turn the customer started.
     @Published public private(set) var isAgentTyping = false
     @Published public private(set) var errorMessage: String?
     @Published public private(set) var suggestions: [TanyaAISuggestion]

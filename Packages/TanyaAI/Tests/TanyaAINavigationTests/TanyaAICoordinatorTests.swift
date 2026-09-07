@@ -108,7 +108,7 @@ final class TanyaAICoordinatorTests: XCTestCase {
         onAction: @escaping (TanyaAIAction) -> Void = { _ in }
     ) -> TanyaAICoordinator {
         let dependencies = TanyaAIDependencies(
-            streamingTransport: MockTanyaAIStreamingTransport(),
+            chatSession: MockTanyaAIChatSession.sandbox(),
             authorizationService: MockTanyaAIAuthorizationService(),
             theme: .sandbox
         )

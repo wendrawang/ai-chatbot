@@ -4,7 +4,7 @@ import TanyaAIDomain
 import XCTest
 @testable import TanyaAIData
 
-/// The session transport has to look identical to the SSE one from the
+/// The session repository has to look identical to a request-shaped one from
 /// repository boundary upward, so these tests assert the mapping and the turn
 /// bookkeeping rather than any vendor behaviour.
 final class TanyaAISessionRepositoryTests: XCTestCase {
@@ -33,7 +33,7 @@ final class TanyaAISessionRepositoryTests: XCTestCase {
         }
     }
 
-    func testStructuredPayloadRendersTheSameTypedCardAsSSE() {
+    func testStructuredPayloadRendersATypedCard() {
         let session = SessionSpy()
         let repository = TanyaAISessionRepository(session: session)
         var events: [TanyaAIStreamEvent] = []

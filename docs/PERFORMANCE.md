@@ -12,7 +12,6 @@ passed after the typed-bubble and fallback audit.
 | Check | Fixture | Result |
 | --- | --- | --- |
 | Scroll frame rate | 120 stable message rows | 60.40 FPS |
-| Stream parser | 1,000 SSE events | 7 ms average |
 | Parser process peak | XCTest process | 47.86 MB |
 | Parser memory delta | Per measured iteration | 0 KB |
 | Chat lifecycle | Active request then release | Passed |

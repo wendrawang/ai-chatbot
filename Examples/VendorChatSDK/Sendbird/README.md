@@ -1,13 +1,12 @@
 # Sendbird sebagai transport Tanya AI
 
-Sendbird bukan SSE. `TanyaAIStreamingTransport` berbentuk *request*: satu
-request, aliran potongan, satu completion. Sendbird berbentuk *sesi*: connect
-sekali, lalu pesan datang sendiri — balasan bot, balasan agent, update antrean,
-reconnect.
+Paket ini berbicara ke backend lewat satu seam saja: `TanyaAIChatSession` —
+connect sekali, lalu pesan datang sendiri. Bentuk itu cocok dengan Sendbird
+apa adanya: balasan bot, balasan agent, update antrean, dan reconnect semuanya
+punya tempat.
 
-Karena itu adapter ini memakai `TanyaAIChatSession`, bukan
-`TanyaAIStreamingTransport`. Di atas repository semuanya identik, jadi bubble
-bertipe, PIN sheet, dan hand-off deeplink tidak berubah sama sekali.
+Adapter di bawah ini seluruh terjemahannya. Di atasnya, bubble bertipe, PIN
+sheet, dan hand-off deeplink tidak tahu Sendbird itu ada.
 
 ## Kapan memanggil apa
 
@@ -46,8 +45,7 @@ alih-alih membuat nasabah buntu.
 ## Yang harus dikerjakan tim bot, bukan iOS
 
 Bubble bertipe (approval, chart, actions) **hanya muncul kalau bot
-mengirimkannya**. Bot harus menaruh JSON yang sama persis seperti kalau lewat
-SSE ke pesan Sendbird:
+mengirimkannya**. Bot harus menaruh JSON skema paket ini ke pesan Sendbird:
 
 - `customType` = nama event, misalnya `content.approval` atau `content.actions`
 - `data` = objek `data` milik event itu

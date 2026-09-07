@@ -117,8 +117,8 @@ extension SendbirdChatSessionAdapter: GroupChannelDelegate {
 
         let identifier = String(message.messageId)
 
-        // A typed card: the bot puts the same JSON it would have streamed over
-        // SSE into the message, and this passes it through untouched.
+        // A typed card: the bot puts the package's own event JSON into the
+        // message, and this passes it through untouched.
         if let name = message.customType,
            name.hasPrefix("content."),
            let json = message.data.data(using: .utf8),

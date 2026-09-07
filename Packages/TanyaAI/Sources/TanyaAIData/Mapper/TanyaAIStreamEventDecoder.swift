@@ -10,36 +10,37 @@ final class TanyaAIStreamEventDecoder {
         self.decoder = decoder
     }
 
-    func decode(_ event: TanyaAISSEEvent) throws -> TanyaAIStreamEvent? {
-        if let content = try decodeContent(event) {
+    func decode(name: String, json: Data) throws -> TanyaAIStreamEvent? {
+        if let content = try decodeContent(name: name, json: json) {
             return content
         }
-        return try decodeLifecycle(event)
+        return try decodeLifecycle(name: name, json: json)
     }
 
     /// Bubble payloads. Returns `nil` for any other event name, including a
     /// `content.*` this version does not know - `decodeLifecycle` sends that
     /// on to `decodeUnknown`, which degrades it to an unsupported bubble.
     private func decodeContent(
-        _ event: TanyaAISSEEvent
+        name: String,
+        json: Data
     ) throws -> TanyaAIStreamEvent? {
-        switch event.name {
+        switch name {
         case "content.information":
-            return try decodeInformation(event.data)
+            return try decodeInformation(json)
         case "content.chart":
-            return try decodeChart(event.data)
+            return try decodeChart(json)
         case "content.portfolio":
-            return try decodePortfolio(event.data)
+            return try decodePortfolio(json)
         case "content.financial-list":
-            return try decodeFinancialList(event.data)
+            return try decodeFinancialList(json)
         case "content.approval":
-            return try decodeApproval(event.data)
+            return try decodeApproval(json)
         case "content.receipt":
-            return try decodeReceipt(event.data)
+            return try decodeReceipt(json)
         case "content.actions":
-            return try decodeActions(event.data)
+            return try decodeActions(json)
         case "content.status":
-            return try decodeStatus(event.data)
+            return try decodeStatus(json)
         default:
             return nil
         }
@@ -47,33 +48,35 @@ final class TanyaAIStreamEventDecoder {
 
     /// Everything that frames a response rather than filling it.
     private func decodeLifecycle(
-        _ event: TanyaAISSEEvent
+        name: String,
+        json: Data
     ) throws -> TanyaAIStreamEvent? {
-        switch event.name {
+        switch name {
         case "response.started":
-            return try decodeStarted(event.data)
+            return try decodeStarted(json)
         case "text.delta":
-            return try decodeText(event.data)
+            return try decodeText(json)
         case "response.suggestions":
-            return try decodeSuggestions(event.data)
+            return try decodeSuggestions(json)
         case "response.completed":
-            return try decodeCompleted(event.data)
+            return try decodeCompleted(json)
         case "heartbeat":
             return .heartbeat
         default:
-            return try decodeUnknown(event)
+            return try decodeUnknown(name: name, json: json)
         }
     }
 
     private func decodeUnknown(
-        _ event: TanyaAISSEEvent
+        name: String,
+        json: Data
     ) throws -> TanyaAIStreamEvent? {
-        guard event.name.hasPrefix("content.") else {
+        guard name.hasPrefix("content.") else {
             return nil
         }
         let payload = try decoder.decode(
             TanyaAIUnsupportedContentDTO.self,
-            from: event.data
+            from: json
         )
         let message = payload.fallbackText
             ?? "This content requires a newer app version."

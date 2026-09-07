@@ -44,8 +44,7 @@ final class SceneDelegate: UIResponder, UIWindowSceneDelegate {
         for launchMode: SandboxLaunchMode
     ) -> UIViewController {
         let dependencies = SandboxTanyaAIFactory.makeDependencies(
-            showsShowcase: launchMode.usesFastStreaming,
-            usesVendorSession: launchMode.usesVendorSession
+            showsShowcase: launchMode.usesFastStreaming
         )
 
         if launchMode.isStandaloneFeature {

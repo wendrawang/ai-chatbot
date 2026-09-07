@@ -1,12 +1,9 @@
 public struct TanyaAIConfiguration: Equatable {
-    public let messagePath: String
+    /// Sent as the customer's first message when the chat opens. Nil opens an
+    /// empty conversation.
     public let initialPrompt: String?
 
-    public init(
-        messagePath: String = "/sandbox/v1/chat/messages",
-        initialPrompt: String? = nil
-    ) {
-        self.messagePath = messagePath
+    public init(initialPrompt: String? = nil) {
         self.initialPrompt = initialPrompt
     }
 }

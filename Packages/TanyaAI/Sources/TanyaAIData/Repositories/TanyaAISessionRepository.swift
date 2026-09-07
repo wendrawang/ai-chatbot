@@ -2,11 +2,10 @@ import Foundation
 import TanyaAIContracts
 import TanyaAIDomain
 
-/// Drives the chat from a vendor SDK session instead of an SSE request.
+/// Drives the chat from a vendor SDK session.
 ///
-/// Same `TanyaAIRepository` contract as the streaming version, so nothing
-/// above this layer knows which transport is in use. Two differences are
-/// handled here:
+/// Turns a session into the request-shaped `TanyaAIRepository` the layers
+/// above expect. Two differences are handled here:
 ///
 /// - a session has no per-request completion, so a turn ends on
 ///   `messageCompleted`, `failed`, or an unexpected `disconnected`;
@@ -121,12 +120,10 @@ public final class TanyaAISessionRepository: TanyaAIRepository {
     }
 
     /// A malformed card must not tear down the channel: it degrades to the
-    /// unsupported fallback, exactly as it would over SSE.
+    /// unsupported fallback.
     private func emitStructured(name: String, json: Data) {
         do {
-            guard let event = try decoder.decode(
-                TanyaAISSEEvent(name: name, data: json)
-            ) else {
+            guard let event = try decoder.decode(name: name, json: json) else {
                 return
             }
             emit(event)

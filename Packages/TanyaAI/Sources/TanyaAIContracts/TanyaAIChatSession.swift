@@ -2,10 +2,9 @@ import Foundation
 
 /// A vendor chat SDK acting as the transport.
 ///
-/// The SSE transport is request-shaped: one request, a stream of chunks, a
-/// completion. A live-chat SDK is session-shaped: connect once, then send and
-/// receive on an open channel, including messages nobody asked for — an agent
-/// replying, a queue update, a reconnect.
+/// The shape is a session, not a request: connect once, then send and receive
+/// on an open channel - including messages nobody asked for, such as an agent
+/// replying, a queue update, or a reconnect.
 ///
 /// The host implements this over the vendor SDK. The package owns the chat UI
 /// and never imports the vendor.
@@ -65,8 +64,8 @@ public enum TanyaAIChatSessionEvent {
     ///   - json: the event's `data` object, as sent by the bot.
     ///
     /// This is what keeps the typed bubbles working over a vendor channel: the
-    /// bot embeds the same JSON it would have streamed over SSE, and the
-    /// adapter passes it through untouched.
+    /// bot embeds the schema in `docs/BUBBLE_SCHEMA.md`, and the adapter passes
+    /// it through untouched.
     case structuredPayload(name: String, json: Data)
 
     /// The agent or bot is composing.

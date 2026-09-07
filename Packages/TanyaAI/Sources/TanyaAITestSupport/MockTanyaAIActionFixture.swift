@@ -1,23 +1,22 @@
 import Foundation
+import TanyaAIContracts
 
-/// Builds a sanitized stream that hands your own deeplinks to the host.
+/// Builds sanitized events that hand your own deeplinks to the host.
 ///
-/// Point the mock transport at it to see the hand-off end to end without a
+/// Point a mock session at it to see the hand-off end to end without a
 /// backend:
 ///
 /// ```swift
-/// let transport = MockTanyaAIStreamingTransport(
-///     scenario: .custom(
-///         MockTanyaAIActionFixture.actionCardChunks(
-///             buttons: [
-///                 .init(
-///                     title: "Open transfer",
-///                     deeplink: "ocbcid://mobile?type=transfer"
-///                 )
-///             ]
-///         )
+/// let session = MockTanyaAIChatSession { _ in
+///     MockTanyaAIActionFixture.actionCardEvents(
+///         buttons: [
+///             .init(
+///                 title: "Open transfer",
+///                 deeplink: "ocbcid://mobile?type=transfer"
+///             )
+///         ]
 ///     )
-/// )
+/// }
 /// ```
 public enum MockTanyaAIActionFixture {
     /// One button on the generated action card.
@@ -59,13 +58,13 @@ public enum MockTanyaAIActionFixture {
     /// Use it to check that tapping a button reaches the host, that the host
     /// accepts the deeplink, and that the destination opens after the feature
     /// closes.
-    public static func actionCardChunks(
+    public static func actionCardEvents(
         identifier: String = "demo",
         message: String = "Your existing screens can take over from here.",
         title: String? = "Continue in the app",
         detail: String? = nil,
         buttons: [Button]
-    ) -> [Data] {
+    ) -> [TanyaAIChatSessionEvent] {
         let messageIdentifier = "action-text-\(identifier)"
         var events = [
             event("response.started", ["messageIdentifier": messageIdentifier]),
@@ -81,7 +80,7 @@ public enum MockTanyaAIActionFixture {
         events.append(
             event("response.completed", ["messageIdentifier": messageIdentifier])
         )
-        return MockTanyaAIResponseFixture.irregularChunks(from: events.joined())
+        return events
     }
 
     /// A confirmation whose Confirm button hands off instead of opening the
@@ -89,7 +88,7 @@ public enum MockTanyaAIActionFixture {
     ///
     /// Use it to check the second entry point: the same handler must run, and
     /// the PIN sheet must never appear.
-    public static func approvalHandoffChunks(
+    public static func approvalHandoffEvents(
         identifier: String = "demo",
         title: String = "Confirm your transfer",
         summary: [(label: String, value: String)] = [
@@ -97,7 +96,7 @@ public enum MockTanyaAIActionFixture {
             ("Amount", "IDR 1,250,000")
         ],
         deeplink: String
-    ) -> [Data] {
+    ) -> [TanyaAIChatSessionEvent] {
         let messageIdentifier = "handoff-text-\(identifier)"
         let events = [
             event("response.started", ["messageIdentifier": messageIdentifier]),
@@ -129,7 +128,7 @@ public enum MockTanyaAIActionFixture {
             ),
             event("response.completed", ["messageIdentifier": messageIdentifier])
         ]
-        return MockTanyaAIResponseFixture.irregularChunks(from: events.joined())
+        return events
     }
 
     static func actionsEvent(
@@ -137,7 +136,7 @@ public enum MockTanyaAIActionFixture {
         title: String?,
         detail: String?,
         buttons: [Button]
-    ) -> String {
+    ) -> TanyaAIChatSessionEvent {
         var payload: [String: Any] = [
             "messageIdentifier": "action-card-\(identifier)",
             "actions": buttons.map { button in
@@ -163,7 +162,7 @@ public enum MockTanyaAIActionFixture {
     private static func event(
         _ name: String,
         _ payload: [String: Any]
-    ) -> String {
+    ) -> TanyaAIChatSessionEvent {
         MockTanyaAIResponseFixture.event(name, payload)
     }
 }

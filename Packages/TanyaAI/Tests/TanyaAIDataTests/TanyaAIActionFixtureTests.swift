@@ -1,18 +1,19 @@
 import Foundation
+import TanyaAIContracts
 import TanyaAIDomain
 import TanyaAITestSupport
 import XCTest
 @testable import TanyaAIData
 
-/// Proves the fixture a host uses to test its deeplink hand-off produces a
-/// stream the package actually decodes, and that the deeplink reaches the
+/// Proves the fixture a host uses to test its deeplink hand-off produces
+/// events the package actually decodes, and that the deeplink reaches the
 /// other side unchanged.
 final class TanyaAIActionFixtureTests: XCTestCase {
     private let deeplink = "ocbcid://mobile?type=transfer&amount=1250000"
 
     func testActionCardFixtureDeliversTheDeeplinkUnchanged() {
         let events = events(
-            for: MockTanyaAIActionFixture.actionCardChunks(
+            for: MockTanyaAIActionFixture.actionCardEvents(
                 buttons: [
                     MockTanyaAIActionFixture.Button(
                         title: "Open transfer",
@@ -37,7 +38,7 @@ final class TanyaAIActionFixtureTests: XCTestCase {
 
     func testApprovalHandoffFixtureCarriesTheDeeplink() {
         let events = events(
-            for: MockTanyaAIActionFixture.approvalHandoffChunks(
+            for: MockTanyaAIActionFixture.approvalHandoffEvents(
                 deeplink: deeplink
             )
         )
@@ -53,17 +54,15 @@ final class TanyaAIActionFixtureTests: XCTestCase {
         XCTAssertEqual(approvals.first?.handoff?.deeplink, deeplink)
     }
 
-    private func events(for chunks: [Data]) -> [TanyaAIStreamEvent] {
-        let completionExpectation = expectation(description: "stream completes")
-        let transport = MockTanyaAIStreamingTransport(
-            scenario: .custom(chunks),
+    private func events(
+        for sessionEvents: [TanyaAIChatSessionEvent]
+    ) -> [TanyaAIStreamEvent] {
+        let completionExpectation = expectation(description: "turn completes")
+        let session = MockTanyaAIChatSession(
             callbackQueue: DispatchQueue(label: "action.fixture.test"),
-            chunkDelay: 0.001
-        )
-        let repository = DefaultTanyaAIRepository(
-            transport: transport,
-            messagePath: "/sandbox/messages"
-        )
+            stepDelay: 0.001
+        ) { _ in sessionEvents }
+        let repository = TanyaAISessionRepository(session: session)
         var receivedEvents: [TanyaAIStreamEvent] = []
 
         _ = repository.sendMessage(

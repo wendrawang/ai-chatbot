@@ -86,26 +86,24 @@ Worked examples, minimal and full, are in
 
 ### Testing the hand-off
 
-`MockTanyaAIActionFixture` builds a stream carrying deeplinks you choose, so
-the whole path can run without a backend:
+`MockTanyaAIActionFixture` builds events carrying deeplinks you choose, so the
+whole path can run without a backend:
 
 ```swift
-let transport = MockTanyaAIStreamingTransport(
-    scenario: .custom(
-        MockTanyaAIActionFixture.actionCardChunks(
-            buttons: [
-                .init(
-                    title: "Open transfer",
-                    deeplink: "ocbcid://mobile?type=transfer",
-                    identifier: "open-transfer"
-                )
-            ]
-        )
+let session = MockTanyaAIChatSession { _ in
+    MockTanyaAIActionFixture.actionCardEvents(
+        buttons: [
+            .init(
+                title: "Open transfer",
+                deeplink: "ocbcid://mobile?type=transfer",
+                identifier: "open-transfer"
+            )
+        ]
     )
-)
+}
 ```
 
-`approvalHandoffChunks(deeplink:)` covers the second entry point, where the
+`approvalHandoffEvents(deeplink:)` covers the second entry point, where the
 confirmation hands off and the PIN sheet must not appear. Buttons carry
 `action.<identifier>` as their accessibility identifier. `TanyaAITestSupport`
 belongs to debug and test targets only.
@@ -116,16 +114,16 @@ not open the screen on its own, the hand-off cannot either; the usual cause is
 a scheme missing from `CFBundleURLTypes`, which makes `UIApplication.open`
 fail silently.
 
-## Streaming adapter
+## Chat session adapter
 
-Implement `TanyaAIStreamingTransport` in the host application. The adapter
-translates `TanyaAIStreamRequest` into the host's request type and executes it
-with the existing authenticated session. It should inherit the host's mTLS,
-server trust, certificate pinning, headers, token refresh, timeout, tracing, and
-logging policy.
+Implement `TanyaAIChatSession` in the host application over the vendor chat
+SDK. The adapter opens the channel, sends one message per turn, and translates
+the vendor's callbacks into `TanyaAIChatSessionEvent`.
 
-The package parses the streamed bytes and owns the backend event schema. It
-does not receive certificates, tokens, hosts, or network-session objects.
+It should inherit the host's own connection policy: the vendor SDK is
+initialised and connected by the application, not by a chat screen. The package
+never imports the vendor and receives no certificates, tokens, hosts, or
+session objects.
 
 ## Authorization adapter
 

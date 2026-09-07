@@ -7,15 +7,13 @@ final class TanyaAIStreamEventDecoderTests: XCTestCase {
     private let decoder = TanyaAIStreamEventDecoder()
 
     func testUnknownContentUsesSafeFallback() throws {
-        let event = makeEvent(
+        let result = try decoder.decode(
             name: "content.future-card",
-            payload: [
+            json: json([
                 "messageIdentifier": "future-message",
                 "fallbackText": "Update the app to view this card."
-            ]
+            ])
         )
-
-        let result = try decoder.decode(event)
 
         guard case .content(let identifier, .unsupported(let message)) = result else {
             return XCTFail("Expected unsupported content")
@@ -25,12 +23,10 @@ final class TanyaAIStreamEventDecoderTests: XCTestCase {
     }
 
     func testUnknownContentUsesDefaultFallbackText() throws {
-        let event = makeEvent(
+        let result = try decoder.decode(
             name: "content.future-card",
-            payload: ["messageIdentifier": "future-message"]
+            json: json(["messageIdentifier": "future-message"])
         )
-
-        let result = try decoder.decode(event)
 
         guard case .content(_, .unsupported(let message)) = result else {
             return XCTFail("Expected unsupported content")
@@ -39,23 +35,19 @@ final class TanyaAIStreamEventDecoderTests: XCTestCase {
     }
 
     func testUnknownNonContentEventIsIgnored() throws {
-        let event = makeEvent(name: "telemetry.sample", payload: [:])
-
-        XCTAssertNil(try decoder.decode(event))
+        XCTAssertNil(
+            try decoder.decode(name: "telemetry.sample", json: json([:]))
+        )
     }
 
     func testUnknownVisualValuesUseAllowlistedDefaults() throws {
         let chartResult = try decoder.decode(
-            makeEvent(
-                name: "content.chart",
-                payload: chartPayload(type: "three-dimensional")
-            )
+            name: "content.chart",
+            json: json(chartPayload(type: "three-dimensional"))
         )
         let statusResult = try decoder.decode(
-            makeEvent(
-                name: "content.status",
-                payload: statusPayload(level: "critical")
-            )
+            name: "content.status",
+            json: json(statusPayload(level: "critical"))
         )
 
         guard case .content(_, .chart(let chart)) = chartResult,
@@ -67,23 +59,19 @@ final class TanyaAIStreamEventDecoderTests: XCTestCase {
     }
 
     func testMalformedKnownEventThrows() {
-        let event = TanyaAISSEEvent(
-            name: "content.chart",
-            data: Data("not-json".utf8)
+        XCTAssertThrowsError(
+            try decoder.decode(
+                name: "content.chart",
+                json: Data("not-json".utf8)
+            )
         )
-
-        XCTAssertThrowsError(try decoder.decode(event))
     }
 
-    private func makeEvent(
-        name: String,
-        payload: [String: Any]
-    ) -> TanyaAISSEEvent {
-        let data = (try? JSONSerialization.data(
+    private func json(_ payload: [String: Any]) -> Data {
+        (try? JSONSerialization.data(
             withJSONObject: payload,
             options: [.sortedKeys]
         )) ?? Data()
-        return TanyaAISSEEvent(name: name, data: data)
     }
 
     private func chartPayload(type: String) -> [String: Any] {

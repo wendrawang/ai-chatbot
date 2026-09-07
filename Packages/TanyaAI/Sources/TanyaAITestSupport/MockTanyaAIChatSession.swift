@@ -80,6 +80,18 @@ public extension MockTanyaAIChatSession {
     /// A reply that exercises every path a session transport adds: typing,
     /// streamed text, a typed card carrying the host's own deeplink, and a
     /// hand-off pushed by the channel itself.
+    /// The sandbox's own answers, picked from what the customer typed.
+    ///
+    /// Same fixtures the demo app uses, so a host can see every bubble type
+    /// before a real SDK is wired in.
+    public static func sandbox(
+        stepDelay: TimeInterval = 0.05
+    ) -> MockTanyaAIChatSession {
+        MockTanyaAIChatSession(stepDelay: stepDelay) { text in
+            MockTanyaAIResponseFixture.events(for: text)
+        }
+    }
+
     static func demo(
         deeplink: String,
         callbackQueue: DispatchQueue = .main,
