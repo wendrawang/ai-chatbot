@@ -23,6 +23,22 @@ NavigationView {
 Button("Tanya AI") { tanyaAI.present() }
 ```
 
+Kalau layar itu dibuat tanpa argumen — `MainCoordinator()` di tengah root
+screen, misalnya — `TanyaAIHost` adalah `ObservableObject`, jadi bisa
+di-inject lewat environment seperti state object yang sudah Anda oper:
+
+```swift
+MainCoordinator()
+    .environmentObject(appState)
+    .environmentObject(tanyaAI)
+```
+
+```swift
+struct MainCoordinator: View {
+    @EnvironmentObject var tanyaAI: TanyaAIHost
+}
+```
+
 Itu saja. Tidak ada presenter, bridge, atau composition root yang perlu Anda
 tulis sendiri.
 

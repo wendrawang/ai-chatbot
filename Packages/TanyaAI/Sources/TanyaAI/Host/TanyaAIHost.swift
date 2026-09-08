@@ -1,3 +1,4 @@
+import Combine
 import Foundation
 import TanyaAIContracts
 import TanyaAIDesignSystem
@@ -25,7 +26,12 @@ import UIKit
 /// Create it where the signed-in session lives, not in a `View`: a `View` is a
 /// value that SwiftUI rebuilds whenever it likes, and a presentation must not
 /// depend on that.
-public final class TanyaAIHost {
+///
+/// It is an `ObservableObject` carrying no published state, purely so a host
+/// can inject it with `.environmentObject(_:)`. A coordinator written as
+/// `MainCoordinator()` deep inside a root screen has no initializer to thread
+/// anything through, and that is the common shape.
+public final class TanyaAIHost: ObservableObject {
     private let theme: TanyaAITheme
     private let authorizationService: TanyaAIAuthorizationService?
     private let deeplinkScheme: String
