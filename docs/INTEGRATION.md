@@ -82,7 +82,7 @@ Two cases worth handling explicitly:
   inside the completion, before opening the destination.
 
 Worked examples, minimal and full, are in
-[`Examples/NavigationViewHost/Deeplink`](../Examples/NavigationViewHost/Deeplink).
+[`Examples/HostIntegration`](../Examples/HostIntegration).
 
 ### Testing the hand-off
 

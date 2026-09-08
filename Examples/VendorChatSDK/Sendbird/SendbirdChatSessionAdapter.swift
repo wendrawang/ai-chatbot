@@ -19,7 +19,14 @@ final class SendbirdChatSessionAdapter: NSObject, TanyaAIChatSession {
     private let botUserId: String
     private let existingChannelURL: String?
     private let delegateIdentifier = "tanyaai.session.\(UUID().uuidString)"
+    private let lock = NSLock()
     private var channel: GroupChannel?
+    /// Messages typed before the channel finished opening.
+    ///
+    /// The package calls `connect()` and `send(...)` back to back, and opening
+    /// a channel is a round trip - so without this the customer's first
+    /// message is dropped in silence.
+    private var queuedMessages: [String] = []
 
     /// Reports the channel the session settled on, so the host can store it
     /// and pass it back as `channelURL` to continue this conversation later.
@@ -56,13 +63,24 @@ final class SendbirdChatSessionAdapter: NSObject, TanyaAIChatSession {
         }
     }
 
+    /// `requestIdentifier` is not sent: Sendbird will not echo it back, so
+    /// correlating on it would be a promise this adapter cannot keep. The
+    /// package falls back to the message identifier Sendbird supplies.
     func send(text: String, context: TanyaAIContext?, requestIdentifier: String) {
+        lock.lock()
+        let channel = self.channel
+        if channel == nil {
+            queuedMessages.append(text)
+        }
+        lock.unlock()
+
         guard let channel else {
             return
         }
-        // `requestIdentifier` is not sent: Sendbird will not echo it back, so
-        // correlating on it would be a promise this adapter cannot keep. The
-        // package falls back to the message identifier Sendbird supplies.
+        sendNow(text, on: channel)
+    }
+
+    private func sendNow(_ text: String, on channel: GroupChannel) {
         channel.sendUserMessage(text) { [weak self] _, error in
             if let error {
                 self?.onEvent?(.failed(error))
@@ -75,7 +93,10 @@ final class SendbirdChatSessionAdapter: NSObject, TanyaAIChatSession {
         // application's connection - closing the chat with it would take push
         // notifications and presence down for the whole app.
         SendbirdChat.removeChannelDelegate(forIdentifier: delegateIdentifier)
+        lock.lock()
         channel = nil
+        queuedMessages = []
+        lock.unlock()
     }
 
     // MARK: - Channel
@@ -83,13 +104,18 @@ final class SendbirdChatSessionAdapter: NSObject, TanyaAIChatSession {
     private func createChannel() {
         let params = GroupChannelCreateParams()
         params.name = "Tanya AI"
-        params.addUserIds([botUserId])
+        // The sample app only ever adds `[User]` objects, which this adapter
+        // does not have - it is given ids. Check this line against the SDK
+        // header: `userIds`, `addUserIds(_:)`, and `addUsers(_:)` have all
+        // existed across versions.
+        var memberIds = [botUserId]
         if let currentUserId = SendbirdChat.getCurrentUser()?.userId {
-            params.addUserIds([currentUserId])
+            memberIds.append(currentUserId)
         }
+        params.userIds = memberIds
         GroupChannel.createChannel(params: params) { [weak self] channel, error in
             guard let channel else {
-                self?.onEvent?(.failed(error ?? SendbirdAdapterError.channelUnavailable))
+                self?.failToOpen(error ?? SendbirdAdapterError.channelUnavailable)
                 return
             }
             self?.adopt(channel)
@@ -97,15 +123,37 @@ final class SendbirdChatSessionAdapter: NSObject, TanyaAIChatSession {
     }
 
     private func adopt(_ channel: GroupChannel) {
+        lock.lock()
         self.channel = channel
+        let pending = queuedMessages
+        queuedMessages = []
+        lock.unlock()
+
         onChannelReady?(channel.channelURL)
         onEvent?(.connected)
+        pending.forEach { sendNow($0, on: channel) }
+    }
+
+    /// The channel never opened. Ending the turn is what matters: a queued
+    /// message with nowhere to go would otherwise leave the customer watching
+    /// a typing indicator that never resolves.
+    private func failToOpen(_ error: Error) {
+        lock.lock()
+        queuedMessages = []
+        lock.unlock()
+        onEvent?(.failed(error))
     }
 }
 
 // MARK: - Incoming messages
 
-extension SendbirdChatSessionAdapter: GroupChannelDelegate {
+/// Both protocols, deliberately.
+///
+/// `channel(_:didReceive:)` is declared on `BaseChannelDelegate`, and
+/// `channelDidUpdateTypingStatus` on `GroupChannelDelegate`. Conforming to
+/// only the second one risks never being handed an incoming message - which
+/// fails silently, as a chat where the bot never answers.
+extension SendbirdChatSessionAdapter: BaseChannelDelegate, GroupChannelDelegate {
     func channel(_ sender: BaseChannel, didReceive message: BaseMessage) {
         guard sender.channelURL == channel?.channelURL else {
             return
@@ -146,4 +194,5 @@ extension SendbirdChatSessionAdapter: GroupChannelDelegate {
 
 enum SendbirdAdapterError: Error {
     case channelUnavailable
+    case notSignedIn
 }
