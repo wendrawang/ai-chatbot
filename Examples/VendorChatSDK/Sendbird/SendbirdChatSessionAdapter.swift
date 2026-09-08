@@ -21,6 +21,9 @@ final class SendbirdChatSessionAdapter: NSObject, TanyaAIChatSession {
     private let delegateIdentifier = "tanyaai.session.\(UUID().uuidString)"
     private let lock = NSLock()
     private var channel: GroupChannel?
+    /// True once a channel is being opened, so a burst of sends does not
+    /// create several channels for one conversation.
+    private var isOpeningChannel = false
     /// Messages typed before the channel finished opening.
     ///
     /// The package calls `connect()` and `send(...)` back to back, and opening
@@ -45,18 +48,27 @@ final class SendbirdChatSessionAdapter: NSObject, TanyaAIChatSession {
 
     // MARK: - TanyaAIChatSession
 
+    /// Called when the feature appears, before anyone has spoken.
+    ///
+    /// The delegate is registered straight away, so a bot greeting or an agent
+    /// reaching out arrives even if the customer never types. A *new*
+    /// conversation still defers `createChannel` to the first message, so
+    /// opening the chat and closing it again leaves no empty channel behind.
     func connect() {
         SendbirdChat.addChannelDelegate(self, identifier: delegateIdentifier)
 
         guard let existingChannelURL else {
-            createChannel()
             return
         }
+        lock.lock()
+        isOpeningChannel = true
+        lock.unlock()
+
         GroupChannel.getChannel(url: existingChannelURL) { [weak self] channel, error in
             guard let channel else {
                 // A stored channel that no longer exists must not dead-end the
                 // customer: fall back to a new conversation.
-                self?.createChannel()
+                self?.openNewChannel()
                 return
             }
             self?.adopt(channel)
@@ -69,12 +81,18 @@ final class SendbirdChatSessionAdapter: NSObject, TanyaAIChatSession {
     func send(text: String, context: TanyaAIContext?, requestIdentifier: String) {
         lock.lock()
         let channel = self.channel
+        var startsChannel = false
         if channel == nil {
             queuedMessages.append(text)
+            startsChannel = !isOpeningChannel
+            isOpeningChannel = true
         }
         lock.unlock()
 
         guard let channel else {
+            if startsChannel {
+                createChannel()
+            }
             return
         }
         sendNow(text, on: channel)
@@ -95,11 +113,17 @@ final class SendbirdChatSessionAdapter: NSObject, TanyaAIChatSession {
         SendbirdChat.removeChannelDelegate(forIdentifier: delegateIdentifier)
         lock.lock()
         channel = nil
+        isOpeningChannel = false
         queuedMessages = []
         lock.unlock()
     }
 
     // MARK: - Channel
+
+    /// Retry path after a stored channel turned out to be gone.
+    private func openNewChannel() {
+        createChannel()
+    }
 
     private func createChannel() {
         let params = GroupChannelCreateParams()
@@ -125,6 +149,7 @@ final class SendbirdChatSessionAdapter: NSObject, TanyaAIChatSession {
     private func adopt(_ channel: GroupChannel) {
         lock.lock()
         self.channel = channel
+        isOpeningChannel = false
         let pending = queuedMessages
         queuedMessages = []
         lock.unlock()
@@ -140,6 +165,7 @@ final class SendbirdChatSessionAdapter: NSObject, TanyaAIChatSession {
     private func failToOpen(_ error: Error) {
         lock.lock()
         queuedMessages = []
+        isOpeningChannel = false
         lock.unlock()
         onEvent?(.failed(error))
     }

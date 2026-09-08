@@ -21,14 +21,19 @@ final class SendbirdTanyaAIComposition {
     /// same conversation instead of starting an empty one.
     private var lastChannelURL: String?
 
+    /// - Parameter channelURL: the conversation to reopen. Nil starts a new
+    ///   one. Pass a stored URL to continue where the customer left off - or,
+    ///   during development, to point two builds at the same channel.
     init(
         botUserId: String,
         deeplinkScheme: String,
-        deeplinkHost: String? = nil
+        deeplinkHost: String? = nil,
+        channelURL: String? = nil
     ) {
         self.botUserId = botUserId
         self.deeplinkScheme = deeplinkScheme
         self.deeplinkHost = deeplinkHost
+        self.lastChannelURL = channelURL
     }
 
     /// One host per signed-in session.

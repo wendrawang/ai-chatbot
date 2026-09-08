@@ -8,6 +8,47 @@ import XCTest
 /// repository boundary upward, so these tests assert the mapping and the turn
 /// bookkeeping rather than any vendor behaviour.
 final class TanyaAISessionRepositoryTests: XCTestCase {
+    /// The channel has to be listening before anyone speaks. A bot that
+    /// greets first, an agent reaching out, and a reopened conversation all
+    /// arrive unprompted; connecting on the first customer message would drop
+    /// every one of them.
+    func testSessionConnectsWhenTheFeatureAppears() {
+        let session = SessionSpy()
+        let repository = TanyaAISessionRepository(session: session)
+
+        XCTAssertTrue(session.isConnected)
+        XCTAssertTrue(session.sentTexts.isEmpty)
+        // The repository closes the session in deinit, so it has to outlive
+        // the assertions - releasing it here would disconnect before they run.
+        withExtendedLifetime(repository) {}
+    }
+
+    /// The other half of the same rule: closing the feature closes the
+    /// channel, so a released graph leaves no delegate registered.
+    func testReleasingTheRepositoryClosesTheSession() {
+        let session = SessionSpy()
+        autoreleasepool {
+            _ = TanyaAISessionRepository(session: session)
+        }
+
+        XCTAssertFalse(session.isConnected)
+    }
+
+    func testUnpromptedReplyReachesTheObserverBeforeAnyTurn() {
+        let session = SessionSpy()
+        let repository = TanyaAISessionRepository(session: session)
+        var unsolicited: [TanyaAIStreamEvent] = []
+        repository.observeUnsolicitedEvents { unsolicited.append($0) }
+
+        session.emit(.messageStarted(messageIdentifier: "greeting"))
+        session.emit(
+            .messageDelta(messageIdentifier: "greeting", text: "Halo!")
+        )
+
+        XCTAssertEqual(unsolicited.count, 2)
+        withExtendedLifetime(repository) {}
+    }
+
     func testTextRepliesMapToStreamEventsAndEndTheTurn() {
         let session = SessionSpy()
         let repository = TanyaAISessionRepository(session: session)
@@ -198,37 +239,5 @@ final class TanyaAISessionRepositoryTests: XCTestCase {
             withJSONObject: payload,
             options: [.sortedKeys]
         )) ?? Data()
-    }
-}
-
-private enum SessionError: Error {
-    case dropped
-}
-
-private final class SessionSpy: TanyaAIChatSession {
-    var onEvent: ((TanyaAIChatSessionEvent) -> Void)?
-    private(set) var sentTexts: [String] = []
-    private(set) var sentContexts: [TanyaAIContext?] = []
-    private(set) var isConnected = false
-
-    func connect() {
-        isConnected = true
-    }
-
-    func send(
-        text: String,
-        context: TanyaAIContext?,
-        requestIdentifier: String
-    ) {
-        sentTexts.append(text)
-        sentContexts.append(context)
-    }
-
-    func disconnect() {
-        isConnected = false
-    }
-
-    func emit(_ event: TanyaAIChatSessionEvent) {
-        onEvent?(event)
     }
 }

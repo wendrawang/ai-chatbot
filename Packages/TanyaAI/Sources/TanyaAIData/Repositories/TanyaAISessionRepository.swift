@@ -17,7 +17,6 @@ public final class TanyaAISessionRepository: TanyaAIRepository {
     private let lock = NSLock()
     private var activeTurn: Turn?
     private var unsolicitedObserver: ((TanyaAIStreamEvent) -> Void)?
-    private var hasConnected = false
     private var context: TanyaAIContext?
 
     public init(
@@ -29,6 +28,11 @@ public final class TanyaAISessionRepository: TanyaAIRepository {
         session.onEvent = { [weak self] event in
             self?.handle(event)
         }
+        // Opened here, not on the first message. The channel has to be
+        // listening before anyone speaks: a bot that greets first, an agent
+        // reaching out, or a reopened conversation all arrive unprompted, and
+        // connecting lazily would drop every one of them.
+        session.connect()
     }
 
     deinit {
@@ -51,15 +55,10 @@ public final class TanyaAISessionRepository: TanyaAIRepository {
         )
 
         lock.lock()
-        let needsConnect = !hasConnected
-        hasConnected = true
         activeTurn = turn
         let context = self.context
         lock.unlock()
 
-        if needsConnect {
-            session.connect()
-        }
         session.send(
             text: text,
             context: context,
