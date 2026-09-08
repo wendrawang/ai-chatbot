@@ -10,7 +10,6 @@ import UIKit
 /// ```swift
 /// let tanyaAI = TanyaAIHost(
 ///     theme: .sandbox,
-///     authorizationService: authorization,
 ///     deeplinkScheme: "ocbcid",
 ///     deeplinkHost: "mobile",
 ///     makeSession: { SendbirdChatSessionAdapter(botUserId: "cet-bot") },
@@ -28,7 +27,7 @@ import UIKit
 /// depend on that.
 public final class TanyaAIHost {
     private let theme: TanyaAITheme
-    private let authorizationService: TanyaAIAuthorizationService
+    private let authorizationService: TanyaAIAuthorizationService?
     private let deeplinkScheme: String
     private let deeplinkHost: String?
     private let initialPrompt: String?
@@ -44,6 +43,9 @@ public final class TanyaAIHost {
     }
 
     /// - Parameters:
+    ///   - authorizationService: runs the in-feature PIN sheet. Only a
+    ///     confirmation with no `handoff` reaches it, so a host whose
+    ///     confirmations all open its own flows leaves this nil.
     ///   - deeplinkScheme: the only scheme a bubble may hand back. Anything
     ///     else is dropped, which is what stops a reply from sending the
     ///     customer to `https://…` or into another application.
@@ -58,7 +60,7 @@ public final class TanyaAIHost {
     ///     feature has finished dismissing.
     public init(
         theme: TanyaAITheme,
-        authorizationService: TanyaAIAuthorizationService,
+        authorizationService: TanyaAIAuthorizationService? = nil,
         deeplinkScheme: String,
         deeplinkHost: String? = nil,
         initialPrompt: String? = nil,

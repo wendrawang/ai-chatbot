@@ -72,9 +72,13 @@ final class TanyaAICoordinator: NSObject {
     }
 
     private func showApproval(_ payload: TanyaAIApprovalPayload) {
-        let viewModel = dependencyContainer.makePINViewModel(
+        // Unreachable when no authorization service was injected: the
+        // ViewModel refuses the confirmation before it gets here.
+        guard let viewModel = dependencyContainer.makePINViewModel(
             approval: payload
-        )
+        ) else {
+            return
+        }
         viewModel.onOutput = { [weak self, weak viewModel] output in
             self?.handlePIN(output, approval: payload)
             viewModel?.clearSensitiveState()

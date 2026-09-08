@@ -28,8 +28,16 @@ public final class TanyaAIChatViewModel: ObservableObject {
         )
     }
 
-    public init(useCase: TanyaAIChatUseCaseProtocol) {
+    /// Whether the host injected an authorization service, and so whether a
+    /// confirmation without a hand-off can be completed in the chat.
+    let authorizesInFeature: Bool
+
+    public init(
+        useCase: TanyaAIChatUseCaseProtocol,
+        authorizesInFeature: Bool = true
+    ) {
         self.useCase = useCase
+        self.authorizesInFeature = authorizesInFeature
         messages = [Self.makeWelcomeMessage()]
         suggestions = TanyaAISuggestion.sandboxDefaults
     }
@@ -78,6 +86,13 @@ public final class TanyaAIChatViewModel: ObservableObject {
         activeRequest = nil
         textDeltaBuffer.flushAll()
         isGenerating = false
+    }
+
+    /// A confirmation arrived that this app cannot complete, because no
+    /// authorization service was injected. Says so instead of leaving the
+    /// customer with a Confirm button that does nothing.
+    func reportUnauthorizableApproval() {
+        errorMessage = "This confirmation has to be completed in the app."
     }
 
     public func close() {
@@ -159,16 +174,6 @@ public final class TanyaAIChatViewModel: ObservableObject {
         appendMessage(TanyaAIMessageItemViewModel(message: message))
     }
 
-    private func makeSuggestion(
-        _ payload: TanyaAISuggestionPayload
-    ) -> TanyaAISuggestion {
-        TanyaAISuggestion(
-            identifier: payload.identifier,
-            title: payload.title,
-            prompt: payload.prompt
-        )
-    }
-
     private func appendAssistantPlaceholder(identifier: String) {
         let target = resolvedIdentifier(for: identifier)
         if let existing = message(identifier: target),
@@ -196,42 +201,4 @@ public final class TanyaAIChatViewModel: ObservableObject {
         message.update(content: .text(existingText + text))
     }
 
-    func message(identifier: String) -> TanyaAIMessageItemViewModel? {
-        messages.first { $0.id == identifier }
-    }
-
-    /// The newest bubble carrying this approval identifier.
-    ///
-    /// A settled confirmation stays on screen, so a repeated approval creates
-    /// a second bubble; state updates belong to the newest one.
-    func approvalMessage(
-        identifier: String
-    ) -> TanyaAIMessageItemViewModel? {
-        messages.last { message in
-            guard case .approval(let payload) = message.content else {
-                return false
-            }
-            return payload.approvalIdentifier == identifier
-        }
-    }
-    private func performOnMain(_ action: @escaping () -> Void) {
-        if Thread.isMainThread {
-            action()
-        } else {
-            DispatchQueue.main.async(execute: action)
-        }
-    }
-
-    private static func makeWelcomeMessage() -> TanyaAIMessageItemViewModel {
-        let message = TanyaAIMessage(
-            identifier: "sandbox-welcome",
-            role: .assistant,
-            content: .text(
-                "[bold]Welcome to the sanitized Tanya AI "
-                    + "sandbox.[/bold] "
-                    + "Ask for a sample portfolio to start the demo."
-            )
-        )
-        return TanyaAIMessageItemViewModel(message: message)
-    }
 }

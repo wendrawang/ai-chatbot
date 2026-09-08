@@ -20,7 +20,10 @@ final class TanyaAIDependencyContainer {
             session: dependencies.chatSession
         )
         let useCase = TanyaAIChatUseCase(repository: repository)
-        return TanyaAIChatViewModel(useCase: useCase)
+        return TanyaAIChatViewModel(
+            useCase: useCase,
+            authorizesInFeature: dependencies.authorizationService != nil
+        )
     }
 
     func makeHistoryViewModel() -> TanyaAIHistoryViewModel {
@@ -36,10 +39,13 @@ final class TanyaAIDependencyContainer {
 
     func makePINViewModel(
         approval: TanyaAIApprovalPayload
-    ) -> TanyaAIPINViewModel {
-        TanyaAIPINViewModel(
+    ) -> TanyaAIPINViewModel? {
+        guard let service = dependencies.authorizationService else {
+            return nil
+        }
+        return TanyaAIPINViewModel(
             approval: approval,
-            authorizationService: dependencies.authorizationService
+            authorizationService: service
         )
     }
 }

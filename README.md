@@ -444,7 +444,7 @@ submission, cancellation, and deallocation.
 | `TanyaAIModule.makeViewController` | Creates one isolated feature graph and entry controller |
 | `TanyaAIHost` | One object the host creates: presentation plus deeplink hand-off |
 | `TanyaAIConfiguration.init` | Supplies an optional initial prompt |
-| `TanyaAIDependencies.init` | Injects chat session, authorization, and theme |
+| `TanyaAIDependencies.init` | Injects chat session, theme, and optional authorization |
 | `TanyaAIChatSession` | The host's adapter over a vendor chat SDK |
 | `TanyaAIAuthorizationService.authorize` | Delegates secure approval to the host |
 | `TanyaAICancellable.cancel` | Cancels an active stream or authorization task |
@@ -571,9 +571,6 @@ import TanyaAI
 
 let tanyaAI = TanyaAIHost(
     theme: theme,
-    authorizationService: HostAuthorizationAdapter(
-        authorizationClient: authorizationClient
-    ),
     deeplinkScheme: "ocbcid",
     deeplinkHost: "mobile",
     makeSession: { HostChatSessionAdapter() },

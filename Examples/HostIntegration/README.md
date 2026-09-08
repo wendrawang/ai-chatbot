@@ -6,7 +6,6 @@ Seluruh integrasi ada di satu objek: `TanyaAIHost`.
 // sekali, di tempat sesi login Anda hidup — bukan di dalam View
 let tanyaAI = TanyaAIHost(
     theme: .sandbox,
-    authorizationService: YourAuthorizationService(),
     deeplinkScheme: "ocbcid",
     deeplinkHost: "mobile",
     makeSession: { SendbirdChatSessionAdapter(botUserId: "cet-bot") },
@@ -50,15 +49,28 @@ Langkah 3 memakai completion dari dismissal, bukan timer. Ini bukan detail
 gaya: push yang dimulai selagi modal masih beranimasi pergi akan hilang tanpa
 error sama sekali.
 
-## Dua hal yang tetap harus Anda tulis
+## Yang harus Anda tulis
 
-| File di sini | Isinya |
-| --- | --- |
-| `HostTanyaAIAuthorizationService.swift` | Memanggil API otorisasi PIN existing Anda |
-| `HostTanyaAITheme.swift` | Memetakan design token Anda ke `TanyaAITheme` |
+| File di sini | Wajib? | Isinya |
+| --- | --- | --- |
+| `HostTanyaAITheme.swift` | ya | Memetakan design token Anda ke `TanyaAITheme` |
+| `HostTanyaAIAuthorizationService.swift` | tidak | Hanya kalau chat mengotorisasi transaksi sendiri |
 
 Plus satu adapter vendor — lihat
 [`../VendorChatSDK/Sendbird`](../VendorChatSDK/Sendbird).
+
+### Kapan `authorizationService` diperlukan
+
+PIN sheet di dalam fitur **hanya** terbuka untuk approval yang datang **tanpa**
+`handoff`. Kalau setiap konfirmasi dari bot membawa `handoff` — yaitu membuka
+flow existing Anda lewat deeplink — sheet itu tidak pernah muncul dan
+parameternya boleh dibiarkan nil.
+
+Ini keputusan kontrak bot, bukan keputusan iOS. Tanyakan ke tim bot apakah ada
+skenario approval yang harus diselesaikan **di dalam chat**.
+
+Kalau nil dan approval tanpa `handoff` tetap datang, tombol Confirm tidak diam
+saja: chat menolaknya dengan pesan yang terlihat, supaya tidak ada tombol mati.
 
 ## Yang tidak boleh
 

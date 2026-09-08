@@ -8,14 +8,23 @@ public extension TanyaAIChatViewModel {
     /// Confirm on an approval bubble.
     ///
     /// With a `handoff` the deeplink goes to the host and the in-feature PIN
-    /// sheet never opens. Without one the flow is unchanged: the coordinator
-    /// presents the PIN sheet and the injected authorization service runs.
+    /// sheet never opens. Without one the coordinator presents the PIN sheet
+    /// and the injected authorization service runs.
+    ///
+    /// A host that authorizes nothing in chat injects no service. If a
+    /// confirmation without a hand-off arrives anyway - a bot sending
+    /// something this app cannot complete - it is refused in the open, not
+    /// with a button that quietly does nothing.
     func approve(_ payload: TanyaAIApprovalPayload) {
         guard payload.state == .awaitingApproval else {
             return
         }
         if let handoff = payload.handoff {
             onOutput?(.performAction(handoff))
+            return
+        }
+        guard authorizesInFeature else {
+            reportUnauthorizableApproval()
             return
         }
         onOutput?(.requestApproval(payload))

@@ -112,12 +112,73 @@ final class TanyaAIApprovalBubbleTests: XCTestCase {
 
     /// Opens a turn, which is what registers the event handler.
     private func makeViewModel(
-        useCase: UseCaseStub
+        useCase: UseCaseStub,
+        authorizesInFeature: Bool = true
     ) -> TanyaAIChatViewModel {
-        let viewModel = TanyaAIChatViewModel(useCase: useCase)
+        let viewModel = TanyaAIChatViewModel(
+            useCase: useCase,
+            authorizesInFeature: authorizesInFeature
+        )
         viewModel.inputText = "konfirmasi"
         viewModel.sendCurrentMessage()
         return viewModel
+    }
+
+    /// A host that authorizes nothing in chat injects no service. A
+    /// confirmation that would need the PIN sheet must then be refused where
+    /// the customer can see it, and the bubble left untouched.
+    func testConfirmationIsRefusedWhenNothingCanAuthorizeIt() {
+        let useCase = UseCaseStub()
+        let viewModel = makeViewModel(
+            useCase: useCase,
+            authorizesInFeature: false
+        )
+        var outputs: [TanyaAIChatOutput] = []
+        viewModel.onOutput = { outputs.append($0) }
+
+        useCase.send(approvalEvent())
+        viewModel.approve(makeApproval())
+
+        XCTAssertNotNil(viewModel.errorMessage)
+        XCTAssertEqual(approvalPayloads(in: viewModel).first?.state, .awaitingApproval)
+        XCTAssertTrue(outputs.isEmpty)
+    }
+
+    /// A hand-off never needs the PIN sheet, so it still leaves for the host.
+    func testHandoffStillReachesTheHostWithoutAnAuthorizationService() {
+        let useCase = UseCaseStub()
+        let viewModel = makeViewModel(
+            useCase: useCase,
+            authorizesInFeature: false
+        )
+        var actions: [TanyaAIAction] = []
+        viewModel.onOutput = { output in
+            if case .performAction(let action) = output {
+                actions.append(action)
+            }
+        }
+
+        viewModel.approve(makeHandoffApproval())
+
+        XCTAssertNil(viewModel.errorMessage)
+        XCTAssertEqual(actions.first?.deeplink, "ocbcid://mobile?type=transfer")
+    }
+
+    private func makeHandoffApproval() -> TanyaAIApprovalPayload {
+        TanyaAIApprovalPayload(
+            approvalIdentifier: "approval-handoff",
+            transactionIdentifier: "transaction-demo",
+            challengeIdentifier: "challenge-demo",
+            kind: .transfer,
+            title: "Approve demo",
+            summary: [],
+            expiresAt: Date().addingTimeInterval(300),
+            handoff: TanyaAIAction(
+                identifier: "handoff-transfer",
+                deeplink: "ocbcid://mobile?type=transfer"
+            ),
+            state: .awaitingApproval
+        )
     }
 
     private func approvalEvent() -> TanyaAIStreamEvent {
