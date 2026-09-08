@@ -198,6 +198,10 @@ extension SendbirdChatSessionAdapter: BaseChannelDelegate, GroupChannelDelegate 
            let json = message.data.data(using: .utf8),
            json.isEmpty == false {
             onEvent?(.structuredPayload(name: name, json: json))
+            // A card is a whole reply, so the turn ends here. Without this the
+            // customer is left watching a typing indicator that never resolves
+            // and a send button stuck as Stop.
+            onEvent?(.messageCompleted(messageIdentifier: identifier))
             return
         }
 
