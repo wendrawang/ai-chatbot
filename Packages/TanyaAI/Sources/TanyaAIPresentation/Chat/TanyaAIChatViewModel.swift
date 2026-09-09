@@ -95,6 +95,18 @@ public final class TanyaAIChatViewModel: ObservableObject {
         isGenerating = false
     }
 
+    /// Puts a reopened conversation on screen.
+    ///
+    /// Replaces rather than appends, and drops the welcome message: a
+    /// returning customer should see where they left off, not a greeting
+    /// above their own history. An empty batch leaves the greeting alone.
+    private func restore(_ restored: [TanyaAIMessage]) {
+        guard restored.isEmpty == false else {
+            return
+        }
+        messages = restored.map(TanyaAIMessageItemViewModel.init)
+    }
+
     /// A confirmation arrived that this app cannot complete, because no
     /// authorization service was injected. Says so instead of leaving the
     /// customer with a Confirm button that does nothing.
@@ -154,6 +166,8 @@ public final class TanyaAIChatViewModel: ObservableObject {
             onOutput?(.performAction(action))
         case .typing(let isTyping):
             isAgentTyping = isTyping
+        case .history(let restored):
+            restore(restored)
         case .heartbeat:
             break
         }

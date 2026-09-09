@@ -41,6 +41,19 @@ final class TanyaAIChatViewModelTests: XCTestCase {
         XCTAssertFalse(viewModel.isGenerating)
     }
 
+    /// A reopened conversation replaces what is on screen, greeting and all.
+    func testHistoryReplacesTheConversation() {
+        let useCase = TanyaAIChatUseCaseStub()
+        let viewModel = TanyaAIChatViewModel(useCase: useCase)
+
+        useCase.sendUnsolicited(.history([
+            TanyaAIMessage(identifier: "1", role: .user, content: .text("Halo")),
+            TanyaAIMessage(identifier: "2", role: .assistant, content: .text("Hai"))
+        ]))
+
+        XCTAssertEqual(viewModel.messages.map(\.id), ["1", "2"])
+    }
+
     func testApprovalActionProducesTypedOutput() {
         let useCase = TanyaAIChatUseCaseStub()
         let viewModel = TanyaAIChatViewModel(useCase: useCase)

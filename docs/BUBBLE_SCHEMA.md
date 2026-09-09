@@ -1,5 +1,66 @@
 # Typed bubble and suggestion schema
 
+## How a bubble reaches the screen
+
+Each bubble is **one message on the vendor channel**. The event name goes in
+the message's `custom_type`, and the payload goes in `data` as a **JSON
+string** - not an object.
+
+```json
+{
+  "message_type": "MESG",
+  "user_id": "<bot>",
+  "message": "text shown if the app is too old to know this type",
+  "custom_type": "content.actions",
+  "data": "{\"messageIdentifier\":\"act-1\", ...}"
+}
+```
+
+Three rules follow from that shape:
+
+- **One message, one bubble.** A reply of text *then* a confirmation is two
+  messages sent in order. There is no array-of-bubbles format.
+- **`messageIdentifier` is required on every payload**, and should be unique
+  per bubble.
+- **A message with no `custom_type` is a text bubble**, taking `message` as
+  its content.
+
+A message whose `custom_type` does not begin with `content.` is treated as
+plain text.
+
+## Field reference
+
+**This table is the contract.** The JSON shown later in this document, and the
+payloads in `send-bubble.sh`, are examples of it - if they ever disagree, this
+table and the DTOs it mirrors are what the package actually decodes.
+
+Required unless marked optional. `expiresAt` is ISO 8601.
+
+| Event | Fields |
+| --- | --- |
+| `content.information` | `title?`, `text`, `items[]` of `{label, value}` |
+| `content.status` | `title`, `detail`, `level` |
+| `content.actions` | `title?`, `detail?`, `actions[]` of `{title, style?, action:{identifier, deeplink}}` |
+| `content.approval` | `approvalIdentifier`, `transactionIdentifier`, `challengeIdentifier`, `kind?`, `title`, `summary[]` of `{label, value}`, `notice?`, `expiresAt`, `handoff?:{identifier, deeplink}` |
+| `content.receipt` | `title`, `detail`, `summary[]` of `{label, value}`, `footnote?` |
+| `content.chart` | `title`, `subtitle?`, `totalValue?`, `chartType`, `series[]` of `{label, value (number), formattedValue}`, `footnote?` |
+| `content.portfolio` | `title`, `totalValue`, `performanceText`, `allocations[]` of `{label, value (number), formattedValue}`, `footnote?` |
+| `content.financial-list` | `title`, `style`, `rows[]` of `{title, subtitle?, value, detail?, tone?}`, `totalLabel?`, `totalValue?`, `totalCaption?`, `footnote?` |
+
+Allowlisted values - anything else falls back to the first entry:
+
+| Field | Accepts |
+| --- | --- |
+| `status.level` | `neutral`, `success`, `warning`, `error` |
+| `chart.chartType` | `bar`, `line`, `donut`, `progress` |
+| `financial-list.style` | `paidBills`, `incoming`, `holdings` |
+| `financial-list.rows[].tone` | `neutral`, `positive` |
+| `actions[].style` | `primary`, `secondary` |
+| `approval.kind` | `transfer`, `currencyConversion`, `timeDeposit`, `savingsPlan`, `generic` |
+
+Runnable examples of every one of these are in
+[`Examples/VendorChatSDK/Sendbird/send-bubble.sh`](../Examples/VendorChatSDK/Sendbird/send-bubble.sh).
+
 ## Rendering boundary
 
 The backend selects a semantic message type and sends its data. The iOS
@@ -56,19 +117,20 @@ An action asks the host to open one of its own screens. The response carries
 the deeplink as one string, in whatever shape the host's existing deeplink
 handler already accepts:
 
+`custom_type: content.actions`
+
 ```json
-event: content.actions
-data: {
-  "messageIdentifier": "actions-1",
-  "title": "Continue in the app",
-  "detail": "These open the existing screens.",
+{
+  "messageIdentifier": "act-1",
+  "title": "Lanjutkan di aplikasi",
+  "detail": "Membuka layar yang sudah ada",
   "actions": [
     {
-      "title": "Open transfer form",
+      "title": "Buka transfer",
       "style": "primary",
       "action": {
         "identifier": "open-transfer",
-        "deeplink": "ocbcid://mobile?type=transfer&accountNumber=0000111122"
+        "deeplink": "ocbcid://mobile?type=transfer"
       }
     }
   ]
@@ -84,16 +146,21 @@ A confirmation can hand off the same way. When `handoff` is present the
 `Confirm` button stops opening the in-feature PIN sheet and reports the action
 to the host, so an existing authorization flow can take over:
 
+`custom_type: content.approval`
+
 ```json
-event: content.approval
-data: {
-  "messageIdentifier": "approval-1",
-  "approvalIdentifier": "approval-1",
-  "transactionIdentifier": "transaction-1",
-  "challengeIdentifier": "challenge-1",
+{
+  "messageIdentifier": "apv-1",
+  "approvalIdentifier": "approval-001",
+  "transactionIdentifier": "trx-001",
+  "challengeIdentifier": "chl-001",
   "kind": "transfer",
-  "title": "Confirm your transfer",
-  "summary": [{ "label": "To", "value": "Sample Beneficiary" }],
+  "title": "Konfirmasi transfer Anda",
+  "summary": [
+    { "label": "Ke", "value": "Sample Beneficiary" },
+    { "label": "Jumlah", "value": "IDR 1.250.000" }
+  ],
+  "notice": "Otorisasi dilakukan di flow existing.",
   "expiresAt": "2099-01-01T00:00:00Z",
   "handoff": {
     "identifier": "handoff-transfer",
@@ -141,11 +208,10 @@ mistake to make. If that matters, restrict the palette server-side.
 
 ## Dynamic suggestions
 
-Suggestions are delivered as a separate stream event:
+Suggestions use the event name `response.suggestions`:
 
-```text
-event: response.suggestions
-data: {
+```json
+{
   "suggestions": [
     {
       "identifier": "incoming",
@@ -155,6 +221,11 @@ data: {
   ]
 }
 ```
+
+**Not currently reachable over a vendor channel.** The Sendbird adapter
+forwards only names beginning with `content.`, so a suggestion sent this way
+arrives as plain text. The package decodes the event; widening that filter in
+the adapter is what would connect it.
 
 The ViewModel replaces the current chips with the latest event. The backend
 may return suggestions after every response, return a different set for each

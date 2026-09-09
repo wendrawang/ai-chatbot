@@ -81,4 +81,45 @@ public enum TanyaAIChatSessionEvent {
 
     /// The session failed. Ends the current turn with an error.
     case failed(Error)
+
+    /// What the channel already held when it reopened, oldest first.
+    ///
+    /// Sent once, before anything else, by an adapter that can read the
+    /// conversation back. The package replaces the visible conversation with
+    /// it rather than appending, so reopening a chat shows where it left off.
+    case history([TanyaAIChatSessionMessage])
+}
+
+/// One message that was already in the channel.
+///
+/// Unlike a live reply, this carries who wrote it: a restored conversation
+/// has to show the customer's own turns, and only the channel knows which
+/// they were.
+public struct TanyaAIChatSessionMessage {
+    public enum Author: Equatable {
+        case customer
+        case assistant
+    }
+
+    public let identifier: String
+    public let author: Author
+    public let text: String
+    /// Event name of a typed card, when the message carried one.
+    public let structuredName: String?
+    /// That card's payload, in the package's own schema.
+    public let structuredJSON: Data?
+
+    public init(
+        identifier: String,
+        author: Author,
+        text: String,
+        structuredName: String? = nil,
+        structuredJSON: Data? = nil
+    ) {
+        self.identifier = identifier
+        self.author = author
+        self.text = text
+        self.structuredName = structuredName
+        self.structuredJSON = structuredJSON
+    }
 }

@@ -11,5 +11,9 @@ public enum TanyaAIStreamEvent: Equatable {
 
     /// The agent or bot is composing. Only a session transport raises this.
     case typing(Bool)
+    /// The conversation as it stood when it reopened, oldest first. Replaces
+    /// what is on screen rather than adding to it.
+    case history([TanyaAIMessage])
+
     case heartbeat
 }

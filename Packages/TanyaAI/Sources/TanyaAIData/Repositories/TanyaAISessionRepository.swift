@@ -98,6 +98,15 @@ public final class TanyaAISessionRepository: TanyaAIRepository {
             finishTurn(identifier: nil, result: .failure(error))
         case .failed(let error):
             finishTurn(identifier: nil, result: .failure(error))
+        default:
+            handleContent(event)
+        }
+    }
+
+    /// Everything that puts something on screen, as opposed to opening or
+    /// closing the channel.
+    private func handleContent(_ event: TanyaAIChatSessionEvent) {
+        switch event {
         case .messageStarted(let identifier):
             emit(.responseStarted(messageIdentifier: identifier))
         case .messageDelta(let identifier, let text):
@@ -109,13 +118,46 @@ public final class TanyaAISessionRepository: TanyaAIRepository {
             emitStructured(name: name, json: json)
         case .typing(let isTyping):
             emit(.typing(isTyping))
+        case .history(let messages):
+            emit(.history(messages.map(makeHistoryMessage)))
         case .hostAction(let identifier, let deeplink):
             emit(
                 .hostAction(
                     TanyaAIAction(identifier: identifier, deeplink: deeplink)
                 )
             )
+        default:
+            break
         }
+    }
+
+    /// A past message becomes the same content a live one would, so history
+    /// and new replies render through one path.
+    ///
+    /// A card that no longer decodes degrades to the unsupported bubble
+    /// rather than dropping the message out of the conversation.
+    private func makeHistoryMessage(
+        _ message: TanyaAIChatSessionMessage
+    ) -> TanyaAIMessage {
+        TanyaAIMessage(
+            identifier: message.identifier,
+            role: message.author == .customer ? .user : .assistant,
+            content: historyContent(message)
+        )
+    }
+
+    private func historyContent(
+        _ message: TanyaAIChatSessionMessage
+    ) -> TanyaAIMessageContent {
+        guard let name = message.structuredName,
+              let json = message.structuredJSON else {
+            return .text(message.text)
+        }
+        guard let event = try? decoder.decode(name: name, json: json),
+              case .content(_, let content) = event else {
+            return .unsupported("This content requires a newer app version.")
+        }
+        return content
     }
 
     /// A malformed card must not tear down the channel: it degrades to the

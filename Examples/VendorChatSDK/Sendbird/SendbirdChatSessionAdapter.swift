@@ -156,6 +156,7 @@ final class SendbirdChatSessionAdapter: NSObject, TanyaAIChatSession {
 
         onChannelReady?(channel.channelURL)
         onEvent?(.connected)
+        loadHistory(from: channel)
         pending.forEach { sendNow($0, on: channel) }
     }
 
