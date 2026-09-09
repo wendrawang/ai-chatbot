@@ -76,6 +76,23 @@ final class TanyaAISessionHistoryTests: XCTestCase {
         withExtendedLifetime(repository) {}
     }
 
+    /// A session that opens without sending history has none, and the screen
+    /// has to learn that or it waits on a batch that never comes.
+    func testConnectingWithoutHistoryReportsAnEmptyOne() {
+        let session = SessionSpy()
+        let repository = TanyaAISessionRepository(session: session)
+        var events: [TanyaAIStreamEvent] = []
+        repository.observeUnsolicitedEvents { events.append($0) }
+
+        session.emit(.connected)
+
+        guard case .history(let restored)? = events.first else {
+            return XCTFail("Expected an empty history event")
+        }
+        XCTAssertTrue(restored.isEmpty)
+        withExtendedLifetime(repository) {}
+    }
+
     private func message(
         identifier: String,
         author: TanyaAIChatSessionMessage.Author,

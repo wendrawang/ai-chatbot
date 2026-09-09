@@ -13,20 +13,26 @@ extension SendbirdChatSessionAdapter {
 
     /// Reads the conversation back, so reopening the chat is not an empty
     /// screen. Sent before anything else, and only when there is something.
-    func loadHistory(from channel: GroupChannel) {
+    func loadHistory(
+        from channel: GroupChannel,
+        completion: @escaping () -> Void
+    ) {
         let params = MessageListParams()
         params.previousResultSize = Self.historyLimit
         channel.getMessagesByTimestamp(.max, params: params) { [weak self] messages, _ in
             guard let self, let messages, messages.isEmpty == false else {
+                completion()
                 return
             }
             let restored = messages
                 .sorted { $0.messageId < $1.messageId }
                 .compactMap(self.makeHistoryMessage)
             guard restored.isEmpty == false else {
+                completion()
                 return
             }
             self.onEvent?(.history(restored))
+            completion()
         }
     }
 

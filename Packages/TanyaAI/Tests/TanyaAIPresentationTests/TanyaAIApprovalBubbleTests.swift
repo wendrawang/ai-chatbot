@@ -105,7 +105,7 @@ final class TanyaAIApprovalBubbleTests: XCTestCase {
         useCase.send(.responseCompleted(messageIdentifier: "approval-card"))
 
         XCTAssertEqual(texts(in: viewModel).last, "Baik, dibatalkan.")
-        XCTAssertEqual(viewModel.messages.count, 4)
+        XCTAssertEqual(viewModel.messages.count, 3)
     }
 
     // MARK: - Helpers

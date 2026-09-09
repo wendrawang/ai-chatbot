@@ -14,7 +14,7 @@ final class TanyaAIChatBehaviorTests: XCTestCase {
         viewModel.sendMessage("Second request")
 
         XCTAssertEqual(useCase.receivedTexts, ["First request"])
-        XCTAssertEqual(viewModel.messages.count, 2)
+        XCTAssertEqual(viewModel.messages.count, 1)
         XCTAssertTrue(viewModel.isGenerating)
     }
 
@@ -42,7 +42,7 @@ final class TanyaAIChatBehaviorTests: XCTestCase {
 
         XCTAssertFalse(viewModel.isGenerating)
         XCTAssertNotNil(viewModel.errorMessage)
-        XCTAssertEqual(viewModel.messages.count, 2)
+        XCTAssertEqual(viewModel.messages.count, 1)
     }
 
     func testNavigationActionsProduceOutputs() {

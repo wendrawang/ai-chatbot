@@ -9,6 +9,9 @@ public final class TanyaAIChatViewModel: ObservableObject {
     /// The agent or bot is composing between turns, reported by the channel
     /// rather than by a turn the customer started.
     @Published public private(set) var isAgentTyping = false
+    /// True until the channel reports what it already held. The conversation
+    /// stays empty meanwhile, so a greeting is never shown and then replaced.
+    @Published public private(set) var isRestoring = true
     @Published public private(set) var errorMessage: String?
     @Published public private(set) var suggestions: [TanyaAISuggestion]
     @Published public var inputText = ""
@@ -38,7 +41,7 @@ public final class TanyaAIChatViewModel: ObservableObject {
     ) {
         self.useCase = useCase
         self.authorizesInFeature = authorizesInFeature
-        messages = [Self.makeWelcomeMessage()]
+        messages = []
         suggestions = TanyaAISuggestion.sandboxDefaults
         // A reply nobody asked for still belongs on screen. Without this the
         // channel delivers it and the graph drops it on the floor.
@@ -60,6 +63,7 @@ public final class TanyaAIChatViewModel: ObservableObject {
         inputText = ""
         errorMessage = nil
         suggestions = []
+        isRestoring = false
         isGenerating = true
         appendUserMessage(message)
         startRequest(message)
@@ -85,7 +89,7 @@ public final class TanyaAIChatViewModel: ObservableObject {
     /// agent typing between turns should show the dots without turning the
     /// send button into a stop button for a turn nobody started.
     public var showsTypingRow: Bool {
-        isGenerating || isAgentTyping
+        isGenerating || isAgentTyping || isRestoring
     }
 
     public func cancelGeneration() {
@@ -101,7 +105,10 @@ public final class TanyaAIChatViewModel: ObservableObject {
     /// returning customer should see where they left off, not a greeting
     /// above their own history. An empty batch leaves the greeting alone.
     private func restore(_ restored: [TanyaAIMessage]) {
+        isRestoring = false
         guard restored.isEmpty == false else {
+            // Nothing to come back to, so this is a first conversation.
+            messages = [Self.makeWelcomeMessage()]
             return
         }
         messages = restored.map(TanyaAIMessageItemViewModel.init)

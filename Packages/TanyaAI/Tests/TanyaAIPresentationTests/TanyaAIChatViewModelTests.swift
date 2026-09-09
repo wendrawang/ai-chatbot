@@ -17,9 +17,9 @@ final class TanyaAIChatViewModelTests: XCTestCase {
         )
         useCase.complete(.success(()))
 
-        XCTAssertEqual(viewModel.messages.count, 3)
-        XCTAssertEqual(viewModel.messages[1].content, .text("Hello"))
-        XCTAssertEqual(viewModel.messages[2].content, .text("Hi there"))
+        XCTAssertEqual(viewModel.messages.count, 2)
+        XCTAssertEqual(viewModel.messages[0].content, .text("Hello"))
+        XCTAssertEqual(viewModel.messages[1].content, .text("Hi there"))
         XCTAssertFalse(viewModel.isGenerating)
     }
 
@@ -52,6 +52,21 @@ final class TanyaAIChatViewModelTests: XCTestCase {
         ]))
 
         XCTAssertEqual(viewModel.messages.map(\.id), ["1", "2"])
+    }
+
+    /// The greeting waits for the channel to say what it held. Showing it
+    /// first and swapping it for history is the blink this avoids.
+    func testGreetingWaitsUntilHistoryHasBeenReported() {
+        let useCase = TanyaAIChatUseCaseStub()
+        let viewModel = TanyaAIChatViewModel(useCase: useCase)
+
+        XCTAssertTrue(viewModel.messages.isEmpty)
+        XCTAssertTrue(viewModel.isRestoring)
+
+        useCase.sendUnsolicited(.history([]))
+
+        XCTAssertEqual(viewModel.messages.count, 1)
+        XCTAssertFalse(viewModel.isRestoring)
     }
 
     func testApprovalActionProducesTypedOutput() {

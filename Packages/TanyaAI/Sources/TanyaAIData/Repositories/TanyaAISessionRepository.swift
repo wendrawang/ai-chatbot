@@ -17,6 +17,7 @@ public final class TanyaAISessionRepository: TanyaAIRepository {
     private let lock = NSLock()
     private var activeTurn: Turn?
     private var unsolicitedObserver: ((TanyaAIStreamEvent) -> Void)?
+    private var hasReportedHistory = false
     private var context: TanyaAIContext?
 
     public init(
@@ -90,7 +91,10 @@ public final class TanyaAISessionRepository: TanyaAIRepository {
     private func handle(_ event: TanyaAIChatSessionEvent) {
         switch event {
         case .connected:
-            break
+            // A session that reports itself open without sending history has
+            // none. Saying so is what lets the screen settle instead of
+            // waiting on a batch that will never arrive.
+            reportEmptyHistoryIfNeeded()
         case .disconnected(let error):
             guard let error else {
                 return
@@ -119,6 +123,9 @@ public final class TanyaAISessionRepository: TanyaAIRepository {
         case .typing(let isTyping):
             emit(.typing(isTyping))
         case .history(let messages):
+            lock.lock()
+            hasReportedHistory = true
+            lock.unlock()
             emit(.history(messages.map(makeHistoryMessage)))
         case .hostAction(let identifier, let deeplink):
             emit(
@@ -129,6 +136,17 @@ public final class TanyaAISessionRepository: TanyaAIRepository {
         default:
             break
         }
+    }
+
+    private func reportEmptyHistoryIfNeeded() {
+        lock.lock()
+        let needed = !hasReportedHistory
+        hasReportedHistory = true
+        lock.unlock()
+        guard needed else {
+            return
+        }
+        emit(.history([]))
     }
 
     /// A past message becomes the same content a live one would, so history

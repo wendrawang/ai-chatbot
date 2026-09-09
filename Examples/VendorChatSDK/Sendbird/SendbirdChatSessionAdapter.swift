@@ -155,9 +155,13 @@ final class SendbirdChatSessionAdapter: NSObject, TanyaAIChatSession {
         lock.unlock()
 
         onChannelReady?(channel.channelURL)
-        onEvent?(.connected)
-        loadHistory(from: channel)
         pending.forEach { sendNow($0, on: channel) }
+        // `.connected` goes last, once history has been read: it is what tells
+        // the package the conversation is settled, so sending it first would
+        // put a greeting on screen that history is about to replace.
+        loadHistory(from: channel) { [weak self] in
+            self?.onEvent?(.connected)
+        }
     }
 
     /// The channel never opened. Ending the turn is what matters: a queued
