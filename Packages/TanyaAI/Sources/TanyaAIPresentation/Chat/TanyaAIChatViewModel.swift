@@ -40,6 +40,13 @@ public final class TanyaAIChatViewModel: ObservableObject {
         self.authorizesInFeature = authorizesInFeature
         messages = [Self.makeWelcomeMessage()]
         suggestions = TanyaAISuggestion.sandboxDefaults
+        // A reply nobody asked for still belongs on screen. Without this the
+        // channel delivers it and the graph drops it on the floor.
+        useCase.observeUnsolicitedEvents { [weak self] event in
+            self?.performOnMain {
+                self?.handle(event)
+            }
+        }
     }
 
     public func sendCurrentMessage() {
