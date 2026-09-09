@@ -4,68 +4,64 @@ import TanyaAIContracts
 enum MockTanyaAIResponseFixture {
     typealias ContentEvent = (name: String, payload: [String: Any])
 
-    static func chunks(for request: TanyaAIStreamRequest) -> [Data] {
-        let prompt = message(from: request).lowercased()
-        let identifier = request.requestIdentifier.lowercased()
+    /// Picks a canned answer from what the customer typed.
+    static func events(for prompt: String) -> [TanyaAIChatSessionEvent] {
+        let prompt = prompt.lowercased()
+        let identifier = UUID().uuidString.prefix(8).lowercased()
 
         if prompt.contains("showcase") {
-            return MockTanyaAIShowcaseFixture.chunks(identifier: identifier)
+            return MockTanyaAIShowcaseFixture.events(identifier: String(identifier))
+        }
+        if prompt.contains("deeplink") {
+            return MockTanyaAIDeeplinkFixture.events(identifier: String(identifier))
         }
         if prompt.contains("conversion") || prompt.contains("currency") {
-            return MockTanyaAIConfirmationFixture.conversionChunks(identifier)
+            return MockTanyaAIConfirmationFixture.conversionEvents(String(identifier))
         }
         if prompt.contains("deposit") {
-            return MockTanyaAIConfirmationFixture.depositChunks(identifier)
+            return MockTanyaAIConfirmationFixture.depositEvents(String(identifier))
         }
         if prompt.contains("saving") {
-            return MockTanyaAIConfirmationFixture.savingsChunks(identifier)
+            return MockTanyaAIConfirmationFixture.savingsEvents(String(identifier))
         }
         if prompt.contains("incoming") {
-            return MockTanyaAIInsightFixture.incomingChunks(identifier)
+            return MockTanyaAIInsightFixture.incomingEvents(String(identifier))
         }
         if prompt.contains("bill") {
-            return MockTanyaAIInsightFixture.billsChunks(identifier)
+            return MockTanyaAIInsightFixture.billsEvents(String(identifier))
         }
         if prompt.contains("spending") {
-            return MockTanyaAIInsightFixture.spendingChunks(identifier)
+            return MockTanyaAIInsightFixture.spendingEvents(String(identifier))
         }
         if prompt.contains("limit") {
-            return MockTanyaAIInsightFixture.informationChunks(identifier)
+            return MockTanyaAIInsightFixture.informationEvents(String(identifier))
         }
         if prompt.contains("transfer") {
-            return MockTanyaAIConfirmationFixture.transferChunks(identifier)
+            return MockTanyaAIConfirmationFixture.transferEvents(String(identifier))
         }
-        return MockTanyaAIInsightFixture.portfolioChunks(identifier)
+        return MockTanyaAIInsightFixture.portfolioEvents(String(identifier))
     }
 
-    static func responseChunks(
+    static func response(
         identifier: String,
         text: String,
         contents: [ContentEvent],
         suggestions: [[String: String]]
-    ) -> [Data] {
+    ) -> [TanyaAIChatSessionEvent] {
         let textIdentifier = "text-\(identifier)"
         var events = [
-            event(
-                "response.started",
-                ["messageIdentifier": textIdentifier]
-            ),
+            event("response.started", ["messageIdentifier": textIdentifier]),
             event(
                 "text.delta",
                 ["messageIdentifier": textIdentifier, "text": text]
             )
         ]
         events.append(contentsOf: contentEvents(contents, identifier: identifier))
+        events.append(event("response.suggestions", ["suggestions": suggestions]))
         events.append(
-            event("response.suggestions", ["suggestions": suggestions])
+            event("response.completed", ["messageIdentifier": textIdentifier])
         )
-        events.append(
-            event(
-                "response.completed",
-                ["messageIdentifier": textIdentifier]
-            )
-        )
-        return irregularChunks(from: events.joined())
+        return events
     }
 
     static func contentEvent(
@@ -73,45 +69,48 @@ enum MockTanyaAIResponseFixture {
         prefix: String,
         identifier: String,
         payload: [String: Any]
-    ) -> String {
+    ) -> TanyaAIChatSessionEvent {
         var content = payload
         content["messageIdentifier"] = "\(prefix)-\(identifier)"
         return event(name, content)
     }
 
+    /// Turns one fixture event into the session event that carries it.
+    ///
+    /// Text framing has dedicated cases - the turn only ends on
+    /// `messageCompleted`. Everything else rides `structuredPayload`, which is
+    /// exactly how a real bot ships a typed card over a vendor channel.
     static func event(
         _ name: String,
         _ payload: [String: Any]
-    ) -> String {
-        let data = try? JSONSerialization.data(
-            withJSONObject: payload,
-            options: [.sortedKeys]
-        )
-        let json = data.flatMap { String(data: $0, encoding: .utf8) } ?? "{}"
-        return "event: \(name)\ndata: \(json)\n\n"
+    ) -> TanyaAIChatSessionEvent {
+        let identifier = payload["messageIdentifier"] as? String ?? "message"
+        switch name {
+        case "response.started":
+            return .messageStarted(messageIdentifier: identifier)
+        case "text.delta":
+            return .messageDelta(
+                messageIdentifier: identifier,
+                text: payload["text"] as? String ?? ""
+            )
+        case "response.completed":
+            return .messageCompleted(messageIdentifier: identifier)
+        default:
+            return .structuredPayload(name: name, json: json(payload))
+        }
     }
 
-    static func irregularChunks(from source: String) -> [Data] {
-        let data = Data(source.utf8)
-        let lengths = [17, 9, 31, 5, 43, 12, 67, 23, 101]
-        var chunks: [Data] = []
-        var startIndex = 0
-        var lengthIndex = 0
-
-        while startIndex < data.count {
-            let length = lengths[lengthIndex % lengths.count]
-            let endIndex = min(startIndex + length, data.count)
-            chunks.append(data.subdata(in: startIndex..<endIndex))
-            startIndex = endIndex
-            lengthIndex += 1
-        }
-        return chunks
+    private static func json(_ payload: [String: Any]) -> Data {
+        (try? JSONSerialization.data(
+            withJSONObject: payload,
+            options: [.sortedKeys]
+        )) ?? Data("{}".utf8)
     }
 
     private static func contentEvents(
         _ contents: [ContentEvent],
         identifier: String
-    ) -> [String] {
+    ) -> [TanyaAIChatSessionEvent] {
         contents.enumerated().map { index, content in
             contentEvent(
                 content.name,
@@ -120,14 +119,5 @@ enum MockTanyaAIResponseFixture {
                 payload: content.payload
             )
         }
-    }
-
-    private static func message(from request: TanyaAIStreamRequest) -> String {
-        guard let object = try? JSONSerialization.jsonObject(with: request.body),
-              let dictionary = object as? [String: Any],
-              let message = dictionary["message"] as? String else {
-            return ""
-        }
-        return message
     }
 }

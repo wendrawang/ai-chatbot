@@ -21,7 +21,7 @@ struct TanyaAIApprovalBubble: View {
         .cornerRadius(18)
         .frame(maxWidth: 340, alignment: .leading)
         .accessibilityElement(children: .contain)
-        .tanyaAIAccessibilityIdentifier(
+        .accessibilityIdentifier(
             "confirmation.\(payload.kind.rawValue)"
         )
     }
@@ -92,7 +92,7 @@ struct TanyaAIApprovalBubble: View {
                 .foregroundColor(Color(theme.colors.userBubbleText))
                 .background(Color(theme.colors.accent))
                 .cornerRadius(12)
-                .tanyaAIAccessibilityIdentifier(
+                .accessibilityIdentifier(
                     "approval.open.\(payload.kind.rawValue)"
                 )
             }

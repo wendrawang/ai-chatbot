@@ -1,7 +1,8 @@
 import Foundation
+import TanyaAIContracts
 
 enum MockTanyaAIInsightFixture {
-    static func portfolioChunks(_ identifier: String) -> [Data] {
+    static func portfolioEvents(_ identifier: String) -> [TanyaAIChatSessionEvent] {
         response(
             identifier,
             text: "Here is your sanitized portfolio overview.",
@@ -9,7 +10,7 @@ enum MockTanyaAIInsightFixture {
         )
     }
 
-    static func spendingChunks(_ identifier: String) -> [Data] {
+    static func spendingEvents(_ identifier: String) -> [TanyaAIChatSessionEvent] {
         response(
             identifier,
             text: "Here is your month-to-date spending overview.",
@@ -17,7 +18,7 @@ enum MockTanyaAIInsightFixture {
         )
     }
 
-    static func informationChunks(_ identifier: String) -> [Data] {
+    static func informationEvents(_ identifier: String) -> [TanyaAIChatSessionEvent] {
         response(
             identifier,
             text: "Here is a sample limit overview.",
@@ -25,7 +26,7 @@ enum MockTanyaAIInsightFixture {
         )
     }
 
-    static func incomingChunks(_ identifier: String) -> [Data] {
+    static func incomingEvents(_ identifier: String) -> [TanyaAIChatSessionEvent] {
         response(
             identifier,
             text: "These are your incoming demo transactions.",
@@ -33,7 +34,7 @@ enum MockTanyaAIInsightFixture {
         )
     }
 
-    static func billsChunks(_ identifier: String) -> [Data] {
+    static func billsEvents(_ identifier: String) -> [TanyaAIChatSessionEvent] {
         response(
             identifier,
             text: "These are your paid demo bills.",
@@ -41,7 +42,9 @@ enum MockTanyaAIInsightFixture {
         )
     }
 
-    static func showcaseEvents(_ identifier: String) -> [String] {
+    static func showcaseEvents(
+        _ identifier: String
+    ) -> [TanyaAIChatSessionEvent] {
         [
             makeEvent(informationContent, prefix: "information", identifier),
             makeEvent(portfolioContent, prefix: "portfolio", identifier),
@@ -56,8 +59,8 @@ enum MockTanyaAIInsightFixture {
         _ identifier: String,
         text: String,
         contents: [MockTanyaAIResponseFixture.ContentEvent]
-    ) -> [Data] {
-        MockTanyaAIResponseFixture.responseChunks(
+    ) -> [TanyaAIChatSessionEvent] {
+        MockTanyaAIResponseFixture.response(
             identifier: identifier,
             text: text,
             contents: contents,
@@ -69,7 +72,7 @@ enum MockTanyaAIInsightFixture {
         _ content: MockTanyaAIResponseFixture.ContentEvent,
         prefix: String,
         _ identifier: String
-    ) -> String {
+    ) -> TanyaAIChatSessionEvent {
         MockTanyaAIResponseFixture.contentEvent(
             content.name,
             prefix: prefix,

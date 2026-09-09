@@ -73,7 +73,7 @@ final class TanyaAILifecycleTests: XCTestCase {
 
     private func makeDependencies() -> TanyaAIDependencies {
         TanyaAIDependencies(
-            streamingTransport: MockTanyaAIStreamingTransport(),
+            chatSession: MockTanyaAIChatSession.sandbox(),
             authorizationService: MockTanyaAIAuthorizationService(),
             theme: .sandbox
         )

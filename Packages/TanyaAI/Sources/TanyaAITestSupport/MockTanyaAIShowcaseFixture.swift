@@ -1,13 +1,8 @@
 import Foundation
+import TanyaAIContracts
 
 enum MockTanyaAIShowcaseFixture {
-    static func chunks(identifier: String) -> [Data] {
-        MockTanyaAIResponseFixture.irregularChunks(
-            from: events(identifier: identifier).joined()
-        )
-    }
-
-    private static func events(identifier: String) -> [String] {
+    static func events(identifier: String) -> [TanyaAIChatSessionEvent] {
         let messageIdentifier = "showcase-text-\(identifier)"
         var events = [
             event(
@@ -18,7 +13,14 @@ enum MockTanyaAIShowcaseFixture {
                 "text.delta",
                 [
                     "messageIdentifier": messageIdentifier,
-                    "text": "Here are the sanitized financial bubble scenarios."
+                    "text": "Here are the sanitized financial bubble "
+                        + "scenarios.\n\n[bold]1. Confirmations[/bold]: "
+                        + "approval cards that lead to authorization.\n"
+                        + "[bold]2. Insights[/bold]: portfolio, spending, "
+                        + "and lists.\n[bold]3. Status[/bold]: every level, "
+                        + "plus the unsupported fallback.\n\nStatus: "
+                        + "[color]sandbox data only|25C36B[/color], "
+                        + "[strike]production endpoints[/strike]."
                 ]
             )
         ]
@@ -40,7 +42,9 @@ enum MockTanyaAIShowcaseFixture {
         return events
     }
 
-    private static func statusEvents(_ identifier: String) -> [String] {
+    private static func statusEvents(
+        _ identifier: String
+    ) -> [TanyaAIChatSessionEvent] {
         let states = [
             ("neutral", "Information", "A neutral system update."),
             ("success", "Completed", "The sample request completed."),
@@ -68,7 +72,9 @@ enum MockTanyaAIShowcaseFixture {
         ]
     ]
 
-    private static func unsupportedEvent(_ identifier: String) -> String {
+    private static func unsupportedEvent(
+        _ identifier: String
+    ) -> TanyaAIChatSessionEvent {
         event(
             "content.future-card",
             [
@@ -89,7 +95,7 @@ enum MockTanyaAIShowcaseFixture {
     private static func event(
         _ name: String,
         _ payload: [String: Any]
-    ) -> String {
+    ) -> TanyaAIChatSessionEvent {
         MockTanyaAIResponseFixture.event(name, payload)
     }
 }

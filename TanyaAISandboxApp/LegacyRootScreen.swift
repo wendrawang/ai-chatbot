@@ -1,7 +1,15 @@
+import Combine
+import Foundation
 import SwiftUI
 
 struct LegacyRootScreen: View {
     let tanyaAIPresenter: TanyaAIPresenting
+    @ObservedObject var deeplinkRouter: SandboxDeeplinkRouter
+
+    @State private var isDetailActive = false
+    @State private var isDestinationActive = false
+    /// Set while a destination waits for the customer's own push to go away.
+    @State private var awaitsDetailPop = false
 
     var body: some View {
         NavigationView {
@@ -11,9 +19,70 @@ struct LegacyRootScreen: View {
             }
             .listStyle(GroupedListStyle())
             .navigationBarTitle("Legacy Home")
-            .legacyAccessibilityIdentifier("legacy.home")
+            .accessibilityIdentifier("legacy.home")
+            .background(deeplinkTargetLink)
         }
         .navigationViewStyle(StackNavigationViewStyle())
+        .onReceive(deeplinkRouter.$activeDestination, perform: receive)
+    }
+
+    /// A deeplink lands on the dashboard first, so the customer's own push is
+    /// popped before the destination is activated.
+    ///
+    /// The two links share one `NavigationView`, and it drops a push that
+    /// starts while a pop is still running. Rather than guess how long the pop
+    /// takes, the destination waits for the detail screen to report that it
+    /// has actually gone - see `detailDidDisappear`.
+    private func receive(_ destination: SandboxDeeplinkDestination?) {
+        guard destination != nil else {
+            isDestinationActive = false
+            return
+        }
+        guard isDetailActive else {
+            isDestinationActive = true
+            return
+        }
+        awaitsDetailPop = true
+        isDetailActive = false
+    }
+
+    /// The pop has finished, so the destination can be pushed onto the
+    /// dashboard. Ignored for an ordinary back tap, when nothing is waiting.
+    private func detailDidDisappear() {
+        guard awaitsDetailPop else {
+            return
+        }
+        awaitsDetailPop = false
+        // One hop, so the push starts after the pop has fully unwound.
+        DispatchQueue.main.async {
+            isDestinationActive = true
+        }
+    }
+
+    /// `NavigationView` has no programmatic push of its own, so the deeplink
+    /// destination needs a hidden, state-driven link.
+    private var deeplinkTargetLink: some View {
+        NavigationLink(
+            destination: deeplinkDestination,
+            isActive: Binding(
+                get: { isDestinationActive },
+                set: { isActive in
+                    if isActive == false {
+                        isDestinationActive = false
+                        deeplinkRouter.clearDestination()
+                    }
+                }
+            ),
+            label: { EmptyView() }
+        )
+        .hidden()
+    }
+
+    @ViewBuilder
+    private var deeplinkDestination: some View {
+        if let destination = deeplinkRouter.activeDestination {
+            SandboxDeeplinkTargetScreen(destination: destination)
+        }
     }
 
     private var introductionSection: some View {
@@ -38,6 +107,8 @@ struct LegacyRootScreen: View {
                 destination: LegacyDetailScreen(
                     tanyaAIPresenter: tanyaAIPresenter
                 )
+                .onDisappear(perform: detailDidDisappear),
+                isActive: $isDetailActive
             ) {
                 HStack(spacing: 12) {
                     Image(systemName: "building.columns")
@@ -45,18 +116,7 @@ struct LegacyRootScreen: View {
                     Text("Open legacy detail")
                 }
             }
-            .legacyAccessibilityIdentifier("legacy.openDetail")
-        }
-    }
-}
-
-extension View {
-    @ViewBuilder
-    func legacyAccessibilityIdentifier(_ identifier: String) -> some View {
-        if #available(iOS 14.0, *) {
-            accessibilityIdentifier(identifier)
-        } else {
-            self
+            .accessibilityIdentifier("legacy.openDetail")
         }
     }
 }

@@ -1,13 +1,13 @@
 # Tanya AI Sandbox
 
-A sanitized iOS 13 reference implementation for a modular conversational
+A sanitized iOS 15 reference implementation for a modular conversational
 feature. The repository contains only deterministic demo data. It must never
 contain production endpoints, certificates, secrets, proprietary source code,
 internal identifiers, or customer data.
 
 ## Goals
 
-- Run on iOS 13 while keeping navigation deterministic.
+- Run on iOS 15 while keeping navigation deterministic.
 - Stay isolated from a host application's `NavigationView` and
   `NavigationLink` hierarchy.
 - Use UIKit for navigation and SwiftUI for screens.
@@ -25,6 +25,20 @@ navigation hierarchy. Its detail screen opens Tanya AI as an independent,
 full-screen UIKit feature.
 
 The demo PIN is `123456`. It exists only in the mock authorization service.
+
+Build, install, and launch on a simulator in one step:
+
+```sh
+./Scripts/run_sandbox.sh --deeplink
+```
+
+Any argument is forwarded to the app. `--showcase` renders every bubble, and
+`--deeplink` opens on the legacy host and streams an action card plus a
+confirmation that hands off: **Open legacy detail → Open Tanya AI → Open
+transfer form**. The feature closes, the stack returns to Legacy Home, and the
+destination is pushed with a back button reading "Legacy Home". The blocked
+`https` button does nothing, and Confirm on the hand-off approval never opens
+the PIN sheet.
 
 Run all local verification:
 
@@ -61,6 +75,44 @@ Internal destinations are created only when the UIKit coordinator receives a
 route. The package does not build a graph of hidden `NavigationLink` values and
 does not construct every destination during rendering.
 
+### Host actions and deeplinks
+
+A bubble can ask the host to open one of its own screens. The response carries
+the deeplink as one string, such as `ocbcid://mobile?type=transfer`:
+
+```text
+Action card or confirmation handoff
+    → TanyaAIChatOutput.performAction
+    → TanyaAICoordinator
+    → onAction handler in the host
+    → host checks the scheme and its deeplink entry host
+    → feature closes, then the host's existing deeplink handler takes over
+```
+
+The package never parses or opens the deeplink, never dismisses itself for an
+action, and never navigates outside its own navigation controller. The host
+checks that the link is its own before opening it, so a response cannot point
+the app at a web page or at another app. Schema in
+[`docs/BUBBLE_SCHEMA.md`](docs/BUBBLE_SCHEMA.md), sequencing in
+[`docs/INTEGRATION.md`](docs/INTEGRATION.md).
+
+`MockTanyaAIActionFixture` in `TanyaAITestSupport` builds a stream carrying
+deeplinks of your own, so a host can exercise the hand-off before the backend
+sends one. The sandbox shows the full round trip: `--deeplink` streams an
+action card and a confirmation with `handoff`, `SandboxDeeplink` accepts
+`tanyaaisandbox://mobile?…`, and `SceneDelegate` receives the opened URL
+through `scene(_:openURLContexts:)` exactly as an external caller would. One
+button carries an `https` link the host rejects.
+
+### Reply formatting
+
+Reply text may carry inline styling through a closed set of bracket tags -
+`[bold]`, `[strike]`, and `[color]text|RRGGBB[/color]` - so a labelled list
+stays inside one bubble. Markdown is deliberately not used: asterisks are
+ordinary characters in banking copy, and a closed tag set means a response
+cannot introduce links, images, or headings. Contract, including how partial
+tags behave mid-stream, in [`docs/BUBBLE_SCHEMA.md`](docs/BUBBLE_SCHEMA.md).
+
 ### Package targets
 
 | Target | Responsibility |
@@ -68,7 +120,7 @@ does not construct every destination during rendering.
 | `TanyaAIContracts` | Narrow interfaces implemented by the host |
 | `TanyaAIDomain` | Models, repository protocol, and use cases |
 | `TanyaAIDesignSystem` | Host-injected colors and fonts |
-| `TanyaAIData` | SSE parser, DTO decoding, and repository implementation |
+| `TanyaAIData` | Session repository, DTO decoding, and event mapping |
 | `TanyaAIPresentation` | SwiftUI views and ViewModels |
 | `TanyaAI` | Public composition root and UIKit navigation |
 | `TanyaAITestSupport` | Sanitized mocks and deterministic fixtures |
@@ -153,26 +205,29 @@ Use an existing type when all answers are yes:
 Create a new semantic type if any answer is no. Extract a reusable view
 primitive only after two real semantic cards need the same layout.
 
-## Stream contract
+## Event contract
 
-The mock transport emits Server-Sent Event framing. A network chunk is not an
-event boundary, so `TanyaAISSEParser` buffers arbitrary fragments and supports
-both `\n\n` and `\r\n\r\n` separators.
+A reply is a sequence of events. The host adapter reports them through
+`TanyaAIChatSession`; the names and payloads below are the schema a bot has to
+produce, whichever vendor carries them.
 
 ### Response lifecycle
 
+| Session event | Meaning |
+| --- | --- |
+| `.messageStarted(messageIdentifier:)` | A reply is beginning |
+| `.messageDelta(messageIdentifier:text:)` | Text, whole or partial |
+| `.messageCompleted(messageIdentifier:)` | The reply is finished; the turn ends |
+
+Typed cards and suggestions travel as `.structuredPayload(name:json:)`, where
+`name` is the event name and `json` its payload:
+
 ```text
-event: response.started
-data: {"messageIdentifier":"message-001"}
+name: response.suggestions
+json: {"suggestions":[]}
 
-event: text.delta
-data: {"messageIdentifier":"message-001","text":"Sample response"}
-
-event: response.suggestions
-data: {"suggestions":[]}
-
-event: response.completed
-data: {"messageIdentifier":"message-001"}
+name: content.approval
+json: {"messageIdentifier":"message-001", ...}
 ```
 
 `response.suggestions` is response-driven. Suggestions may be returned after
@@ -387,9 +442,10 @@ submission, cancellation, and deallocation.
 | API | Use |
 | --- | --- |
 | `TanyaAIModule.makeViewController` | Creates one isolated feature graph and entry controller |
-| `TanyaAIConfiguration.init` | Supplies relative message path and optional initial prompt |
-| `TanyaAIDependencies.init` | Injects transport, authorization, and theme |
-| `TanyaAIStreamingTransport.stream` | Delivers raw response chunks and terminal result |
+| `TanyaAIHost` | One object the host creates: presentation plus deeplink hand-off |
+| `TanyaAIConfiguration.init` | Supplies an optional initial prompt |
+| `TanyaAIDependencies.init` | Injects chat session, theme, and optional authorization |
+| `TanyaAIChatSession` | The host's adapter over a vendor chat SDK |
 | `TanyaAIAuthorizationService.authorize` | Delegates secure approval to the host |
 | `TanyaAICancellable.cancel` | Cancels an active stream or authorization task |
 | `TanyaAITheme.init` | Maps host colors and fonts into the feature |
@@ -403,36 +459,39 @@ In Xcode, use **File → Add Package Dependencies → Add Local** and select
 `Packages/TanyaAI`. Link the `TanyaAI` product. The sandbox also links
 `TanyaAITestSupport`, but a host application must not ship that product.
 
-### 2. Implement streaming using the host network stack
+### 2. Adapt your chat SDK
+
+The chat reaches the backend through a vendor chat SDK. The package never
+imports the vendor: the host implements `TanyaAIChatSession` over it.
 
 ```swift
 import TanyaAI
 
-final class HostStreamingAdapter: TanyaAIStreamingTransport {
-    private let networkClient: HostStreamingNetworkClient
+final class HostChatSessionAdapter: TanyaAIChatSession {
+    var onEvent: ((TanyaAIChatSessionEvent) -> Void)?
 
-    init(networkClient: HostStreamingNetworkClient) {
-        self.networkClient = networkClient
+    func connect() {
+        // Open or join the channel, then report .connected.
     }
 
-    func stream(
-        _ request: TanyaAIStreamRequest,
-        onData: @escaping (Data) -> Void,
-        completion: @escaping (Result<Void, Error>) -> Void
-    ) -> TanyaAICancellable {
-        networkClient.stream(
-            path: request.path,
-            body: request.body,
-            requestIdentifier: request.requestIdentifier,
-            onData: onData,
-            completion: completion
-        )
+    func send(text: String, context: TanyaAIContext?, requestIdentifier: String) {
+        // Send one customer message on the open channel.
+    }
+
+    func disconnect() {
+        // Leave the channel. Not the application's own connection.
     }
 }
 ```
 
-The adapter must reuse the host's existing authenticated session. Do not put
-certificates, token refresh, absolute hosts, or mTLS setup inside Tanya AI.
+A reply arrives as `.messageStarted` / `.messageDelta` / `.messageCompleted`.
+A typed card arrives as `.structuredPayload(name:json:)`, carrying the same
+JSON `docs/BUBBLE_SCHEMA.md` describes - that is what keeps approval, chart,
+and action bubbles working over a vendor channel.
+
+A worked example is in
+[`Examples/VendorChatSDK/Sendbird`](Examples/VendorChatSDK/Sendbird).
+
 
 ### 3. Implement authorization using the host service
 
@@ -510,27 +569,22 @@ sandbox theme.
 ```swift
 import TanyaAI
 
-let dependencies = TanyaAIDependencies(
-    streamingTransport: HostStreamingAdapter(
-        networkClient: networkClient
-    ),
-    authorizationService: HostAuthorizationAdapter(
-        authorizationClient: authorizationClient
-    ),
-    theme: theme
+let tanyaAI = TanyaAIHost(
+    theme: theme,
+    deeplinkScheme: "ocbcid",
+    deeplinkHost: "mobile",
+    makeSession: { HostChatSessionAdapter() },
+    onDeeplink: { url in HostDeeplinkHandler.open(url) }
 )
+```
 
-let configuration = TanyaAIConfiguration(
-    messagePath: "/v1/chat/messages",
-    initialPrompt: nil
-)
+Apply one modifier to the screen it opens from, and call `present()`:
 
-let featureController = TanyaAIModule.makeViewController(
-    configuration: configuration,
-    dependencies: dependencies
-)
-featureController.modalPresentationStyle = .fullScreen
-presenter.present(featureController, animated: true)
+```swift
+NavigationView { ... }
+    .tanyaAIHost(tanyaAI)
+
+Button("Tanya AI") { tanyaAI.present() }
 ```
 
 `TanyaAIModule` is a factory, not a singleton. Build a fresh feature graph for
@@ -606,7 +660,7 @@ intent but may not call repositories, services, or routers.
 | UI state and typed output | ViewModel |
 | Feature orchestration and policy | UseCase |
 | Domain-facing data operations | Repository protocol |
-| JSON, SSE, and remote mapping | Data layer |
+| JSON decoding and remote mapping | Data layer |
 | mTLS, token, pinning, secure execution | Host adapter |
 | Internal screen transitions | UIKit coordinator |
 
@@ -657,7 +711,6 @@ Measured on 5 August 2026 with an iPhone 17 Pro simulator running iOS 26.5:
 | Feature composition coverage during UI run | 92.76% |
 | Lifecycle release checks | 3 passed, 0 retained test graph |
 | 120-row scroll sample | 60.40 FPS baseline; current gate passed |
-| SSE parser sample | 1,000 events; current gate passed |
 
 Presentation unit-test line coverage is 48.83% because SwiftUI body builders and
 simple view declarations are executable lines. Rendering coverage is therefore

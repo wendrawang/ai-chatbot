@@ -18,7 +18,7 @@ struct TanyaAIPINDigitIndicator: View {
         .accessibility(
             label: Text("\(enteredDigitCount) of 6 PIN digits entered")
         )
-        .tanyaAIAccessibilityIdentifier("pin.indicator")
+        .accessibilityIdentifier("pin.indicator")
     }
 
     private func indicatorColor(at index: Int) -> Color {

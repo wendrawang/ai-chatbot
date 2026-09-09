@@ -17,7 +17,7 @@ struct TanyaAIFinancialListBubble: View {
         .cornerRadius(18)
         .frame(maxWidth: 340, alignment: .leading)
         .accessibilityElement(children: .contain)
-        .tanyaAIAccessibilityIdentifier(
+        .accessibilityIdentifier(
             "financialList.\(payload.style.rawValue)"
         )
     }

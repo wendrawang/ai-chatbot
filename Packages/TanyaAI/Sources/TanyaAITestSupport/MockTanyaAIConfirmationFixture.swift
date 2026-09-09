@@ -1,7 +1,8 @@
 import Foundation
+import TanyaAIContracts
 
 enum MockTanyaAIConfirmationFixture {
-    static func conversionChunks(_ identifier: String) -> [Data] {
+    static func conversionEvents(_ identifier: String) -> [TanyaAIChatSessionEvent] {
         response(
             identifier,
             text: "Review the indicative conversion before confirming.",
@@ -9,7 +10,7 @@ enum MockTanyaAIConfirmationFixture {
         )
     }
 
-    static func depositChunks(_ identifier: String) -> [Data] {
+    static func depositEvents(_ identifier: String) -> [TanyaAIChatSessionEvent] {
         response(
             identifier,
             text: "Review the time deposit details before confirming.",
@@ -17,7 +18,7 @@ enum MockTanyaAIConfirmationFixture {
         )
     }
 
-    static func transferChunks(_ identifier: String) -> [Data] {
+    static func transferEvents(_ identifier: String) -> [TanyaAIChatSessionEvent] {
         response(
             identifier,
             text: "Review the demo transfer before confirming.",
@@ -25,7 +26,7 @@ enum MockTanyaAIConfirmationFixture {
         )
     }
 
-    static func savingsChunks(_ identifier: String) -> [Data] {
+    static func savingsEvents(_ identifier: String) -> [TanyaAIChatSessionEvent] {
         response(
             identifier,
             text: "Review the savings plan before confirming.",
@@ -33,7 +34,9 @@ enum MockTanyaAIConfirmationFixture {
         )
     }
 
-    static func showcaseEvents(_ identifier: String) -> [String] {
+    static func showcaseEvents(
+        _ identifier: String
+    ) -> [TanyaAIChatSessionEvent] {
         let contents = [
             conversionContent,
             conversionReceipt,
@@ -55,8 +58,8 @@ enum MockTanyaAIConfirmationFixture {
         _ identifier: String,
         text: String,
         content: MockTanyaAIResponseFixture.ContentEvent
-    ) -> [Data] {
-        MockTanyaAIResponseFixture.responseChunks(
+    ) -> [TanyaAIChatSessionEvent] {
+        MockTanyaAIResponseFixture.response(
             identifier: identifier,
             text: text,
             contents: [content],

@@ -1,12 +1,18 @@
+import TanyaAIDomain
 import UIKit
 
 final class TanyaAIContainerViewController: UIViewController {
     private let featureNavigationController = UINavigationController()
     private var coordinator: TanyaAICoordinator?
     private let dependencyContainer: TanyaAIDependencyContainer
+    private let actionHandler: (TanyaAIAction) -> Void
 
-    init(dependencyContainer: TanyaAIDependencyContainer) {
+    init(
+        dependencyContainer: TanyaAIDependencyContainer,
+        actionHandler: @escaping (TanyaAIAction) -> Void = { _ in }
+    ) {
         self.dependencyContainer = dependencyContainer
+        self.actionHandler = actionHandler
         super.init(nibName: nil, bundle: nil)
         modalPresentationStyle = .fullScreen
     }
@@ -48,7 +54,8 @@ final class TanyaAIContainerViewController: UIViewController {
         let coordinator = TanyaAICoordinator(
             navigationController: featureNavigationController,
             dependencyContainer: dependencyContainer,
-            containerController: self
+            containerController: self,
+            actionHandler: actionHandler
         )
         self.coordinator = coordinator
         coordinator.start()

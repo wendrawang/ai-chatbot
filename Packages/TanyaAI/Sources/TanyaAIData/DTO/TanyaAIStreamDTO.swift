@@ -46,6 +46,24 @@ struct TanyaAIPortfolioDTO: Decodable {
     let footnote: String?
 }
 
+struct TanyaAIActionDTO: Decodable {
+    let identifier: String
+    let deeplink: String
+}
+
+struct TanyaAIActionButtonDTO: Decodable {
+    let title: String
+    let style: String?
+    let action: TanyaAIActionDTO
+}
+
+struct TanyaAIActionsDTO: Decodable {
+    let messageIdentifier: String
+    let title: String?
+    let detail: String?
+    let actions: [TanyaAIActionButtonDTO]
+}
+
 struct TanyaAIApprovalDTO: Decodable {
     let messageIdentifier: String
     let approvalIdentifier: String
@@ -56,6 +74,7 @@ struct TanyaAIApprovalDTO: Decodable {
     let summary: [TanyaAIKeyValueDTO]
     let notice: String?
     let expiresAt: Date
+    let handoff: TanyaAIActionDTO?
 }
 
 struct TanyaAIFinancialListDTO: Decodable {

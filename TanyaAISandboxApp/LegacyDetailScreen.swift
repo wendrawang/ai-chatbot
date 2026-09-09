@@ -16,7 +16,7 @@ struct LegacyDetailScreen: View {
         }
         .background(Color(UIColor.systemGroupedBackground))
         .navigationBarTitle("Legacy Detail", displayMode: .inline)
-        .legacyAccessibilityIdentifier("legacy.detail")
+        .accessibilityIdentifier("legacy.detail")
     }
 
     private var statusCard: some View {
@@ -42,13 +42,13 @@ struct LegacyDetailScreen: View {
         VStack(alignment: .leading, spacing: 12) {
             Text("Legacy state: \(legacyCounter)")
                 .font(.headline)
-                .legacyAccessibilityIdentifier("legacy.counter")
+                .accessibilityIdentifier("legacy.counter")
 
             Button("Increase legacy state") {
                 legacyCounter += 1
             }
             .frame(minHeight: 44)
-            .legacyAccessibilityIdentifier("legacy.increment")
+            .accessibilityIdentifier("legacy.increment")
         }
         .legacyCardStyle()
     }
@@ -72,7 +72,7 @@ struct LegacyDetailScreen: View {
         .accessibility(
             hint: Text("Presents an independent full-screen UIKit feature")
         )
-        .legacyAccessibilityIdentifier("legacy.openTanyaAI")
+        .accessibilityIdentifier("legacy.openTanyaAI")
     }
 
     private var isolationNote: some View {

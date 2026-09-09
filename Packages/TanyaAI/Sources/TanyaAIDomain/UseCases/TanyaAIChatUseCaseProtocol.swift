@@ -8,4 +8,15 @@ public protocol TanyaAIChatUseCaseProtocol: AnyObject {
         onEvent: @escaping (TanyaAIStreamEvent) -> Void,
         completion: @escaping (Result<Void, Error>) -> Void
     ) -> TanyaAICancellable
+
+    /// Replies that arrive without the customer asking. Ignored by default.
+    func observeUnsolicitedEvents(
+        _ onEvent: @escaping (TanyaAIStreamEvent) -> Void
+    )
+}
+
+public extension TanyaAIChatUseCaseProtocol {
+    func observeUnsolicitedEvents(
+        _ onEvent: @escaping (TanyaAIStreamEvent) -> Void
+    ) {}
 }

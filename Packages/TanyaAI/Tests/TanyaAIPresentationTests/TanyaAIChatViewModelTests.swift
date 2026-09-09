@@ -23,6 +23,24 @@ final class TanyaAIChatViewModelTests: XCTestCase {
         XCTAssertFalse(viewModel.isGenerating)
     }
 
+    /// A bot that greets first, or any reply arriving between turns, still
+    /// belongs on screen. The session reports these outside a turn, and
+    /// nothing consumed them before.
+    func testUnpromptedReplyIsRendered() {
+        let useCase = TanyaAIChatUseCaseStub()
+        let viewModel = TanyaAIChatViewModel(useCase: useCase)
+        let before = viewModel.messages.count
+
+        useCase.sendUnsolicited(.responseStarted(messageIdentifier: "greet"))
+        useCase.sendUnsolicited(
+            .textDelta(messageIdentifier: "greet", text: "Halo!")
+        )
+        useCase.sendUnsolicited(.responseCompleted(messageIdentifier: "greet"))
+
+        XCTAssertEqual(viewModel.messages.count, before + 1)
+        XCTAssertFalse(viewModel.isGenerating)
+    }
+
     func testApprovalActionProducesTypedOutput() {
         let useCase = TanyaAIChatUseCaseStub()
         let viewModel = TanyaAIChatViewModel(useCase: useCase)
@@ -139,6 +157,7 @@ private extension TanyaAIApprovalPayload.Kind {
 
 private final class TanyaAIChatUseCaseStub: TanyaAIChatUseCaseProtocol {
     private var eventHandler: ((TanyaAIStreamEvent) -> Void)?
+    private var unsolicitedHandler: ((TanyaAIStreamEvent) -> Void)?
     private var completionHandler: ((Result<Void, Error>) -> Void)?
     private(set) var receivedText: String?
 
@@ -154,8 +173,19 @@ private final class TanyaAIChatUseCaseStub: TanyaAIChatUseCaseProtocol {
         return TanyaAINoOpCancellable()
     }
 
+    func observeUnsolicitedEvents(
+        _ onEvent: @escaping (TanyaAIStreamEvent) -> Void
+    ) {
+        unsolicitedHandler = onEvent
+    }
+
     func send(_ event: TanyaAIStreamEvent) {
         eventHandler?(event)
+    }
+
+    /// A reply that belongs to no turn - a bot greeting, an agent message.
+    func sendUnsolicited(_ event: TanyaAIStreamEvent) {
+        unsolicitedHandler?(event)
     }
 
     func complete(_ result: Result<Void, Error>) {

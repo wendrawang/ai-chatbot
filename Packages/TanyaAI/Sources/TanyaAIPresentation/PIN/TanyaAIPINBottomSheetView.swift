@@ -17,7 +17,7 @@ public struct TanyaAIPINBottomSheetView: View {
                 .background(Color(theme.colors.background))
                 .cornerRadius(20, corners: [.topLeft, .topRight])
         }
-        .tanyaAIAccessibilityIdentifier("pin.sheet")
+        .accessibilityIdentifier("pin.sheet")
     }
 
     private var sheetContent: some View {
