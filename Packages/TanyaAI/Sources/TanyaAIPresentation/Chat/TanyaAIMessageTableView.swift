@@ -5,9 +5,7 @@ import TanyaAIDomain
 import UIKit
 
 struct TanyaAIMessageTableView: UIViewRepresentable {
-    let messages: [TanyaAIMessageItemViewModel]
-    let showsTypingRow: Bool
-    let showsSuggestions: Bool
+    let state: TanyaAIMessageListState
     let theme: TanyaAITheme
     let handlers: TanyaAIMessageRowHandlers
 
@@ -35,12 +33,6 @@ struct TanyaAIMessageTableView: UIViewRepresentable {
     }
 
     func updateUIView(_ tableView: UITableView, context: Context) {
-        context.coordinator.update(
-            messages: messages,
-            showsTypingRow: showsTypingRow,
-            showsSuggestions: showsSuggestions,
-            theme: theme,
-            handlers: handlers
-        )
+        context.coordinator.update(state, theme: theme, handlers: handlers)
     }
 }

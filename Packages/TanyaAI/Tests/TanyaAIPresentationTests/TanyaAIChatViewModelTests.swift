@@ -17,9 +17,9 @@ final class TanyaAIChatViewModelTests: XCTestCase {
         )
         useCase.complete(.success(()))
 
-        XCTAssertEqual(viewModel.messages.count, 3)
-        XCTAssertEqual(viewModel.messages[1].content, .text("Hello"))
-        XCTAssertEqual(viewModel.messages[2].content, .text("Hi there"))
+        XCTAssertEqual(viewModel.messages.count, 2)
+        XCTAssertEqual(viewModel.messages[0].content, .text("Hello"))
+        XCTAssertEqual(viewModel.messages[1].content, .text("Hi there"))
         XCTAssertFalse(viewModel.isGenerating)
     }
 
@@ -153,42 +153,4 @@ private extension TanyaAIApprovalPayload.Kind {
         .transfer,
         .savingsPlan
     ]
-}
-
-private final class TanyaAIChatUseCaseStub: TanyaAIChatUseCaseProtocol {
-    private var eventHandler: ((TanyaAIStreamEvent) -> Void)?
-    private var unsolicitedHandler: ((TanyaAIStreamEvent) -> Void)?
-    private var completionHandler: ((Result<Void, Error>) -> Void)?
-    private(set) var receivedText: String?
-
-    func sendMessage(
-        conversationIdentifier: String?,
-        text: String,
-        onEvent: @escaping (TanyaAIStreamEvent) -> Void,
-        completion: @escaping (Result<Void, Error>) -> Void
-    ) -> TanyaAICancellable {
-        receivedText = text
-        eventHandler = onEvent
-        completionHandler = completion
-        return TanyaAINoOpCancellable()
-    }
-
-    func observeUnsolicitedEvents(
-        _ onEvent: @escaping (TanyaAIStreamEvent) -> Void
-    ) {
-        unsolicitedHandler = onEvent
-    }
-
-    func send(_ event: TanyaAIStreamEvent) {
-        eventHandler?(event)
-    }
-
-    /// A reply that belongs to no turn - a bot greeting, an agent message.
-    func sendUnsolicited(_ event: TanyaAIStreamEvent) {
-        unsolicitedHandler?(event)
-    }
-
-    func complete(_ result: Result<Void, Error>) {
-        completionHandler?(result)
-    }
 }

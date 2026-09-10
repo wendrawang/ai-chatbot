@@ -47,6 +47,12 @@ permukaan integrasinya.
 - **SwiftLint butuh Xcode penuh.** Ia memuat `sourcekitd` dari toolchain dan
   crash kalau `xcode-select` menunjuk ke Command Line Tools. Script sudah
   meng-export `DEVELOPER_DIR` sebagai penangkal.
+- **`reloadData` menggambar dari atas, dan `estimatedRowHeight` menggambar
+  dua kali.** Scroll ke bawah yang dijadwalkan `DispatchQueue.main.async`
+  sudah terlambat satu frame, lalu sel self-sizing melapor tinggi aslinya dan
+  kontennya bergeser lagi. Untuk daftar yang dimuat sekaligus (restore
+  riwayat), parkir serentak di update yang sama sampai tinggi berhenti
+  berubah — jangan tutupi dengan animasi.
 - **`makeSession` harus mengembalikan instance baru tiap presentasi.**
   Repository mengambil alih `onEvent` dan menutup sesi saat deinit, jadi
   instance bersama akan dicabut dari presentasi berikutnya.

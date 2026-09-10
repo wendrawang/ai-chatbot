@@ -9,6 +9,9 @@ public final class TanyaAIChatViewModel: ObservableObject {
     /// The agent or bot is composing between turns, reported by the channel
     /// rather than by a turn the customer started.
     @Published public private(set) var isAgentTyping = false
+    /// True until the channel reports what it already held. The conversation
+    /// stays empty meanwhile, so a greeting is never shown and then replaced.
+    @Published public private(set) var isRestoring = true
     @Published public private(set) var errorMessage: String?
     @Published public private(set) var suggestions: [TanyaAISuggestion]
     @Published public var inputText = ""
@@ -38,7 +41,7 @@ public final class TanyaAIChatViewModel: ObservableObject {
     ) {
         self.useCase = useCase
         self.authorizesInFeature = authorizesInFeature
-        messages = [Self.makeWelcomeMessage()]
+        messages = []
         suggestions = TanyaAISuggestion.sandboxDefaults
         // A reply nobody asked for still belongs on screen. Without this the
         // channel delivers it and the graph drops it on the floor.
@@ -60,6 +63,7 @@ public final class TanyaAIChatViewModel: ObservableObject {
         inputText = ""
         errorMessage = nil
         suggestions = []
+        isRestoring = false
         isGenerating = true
         appendUserMessage(message)
         startRequest(message)
@@ -76,7 +80,7 @@ public final class TanyaAIChatViewModel: ObservableObject {
     }
 
     public var showsSuggestions: Bool {
-        !isGenerating && !suggestions.isEmpty
+        !isGenerating && !isRestoring && !suggestions.isEmpty
     }
 
     /// Whether the waiting bubble belongs at the end of the conversation.
@@ -84,6 +88,9 @@ public final class TanyaAIChatViewModel: ObservableObject {
     /// Separate from `isGenerating`, which also drives the send/stop button: an
     /// agent typing between turns should show the dots without turning the
     /// send button into a stop button for a turn nobody started.
+    ///
+    /// Restoring is not one of these: it has its own loading state, and dots
+    /// promising a reply that nobody asked for would be a lie.
     public var showsTypingRow: Bool {
         isGenerating || isAgentTyping
     }
@@ -93,6 +100,27 @@ public final class TanyaAIChatViewModel: ObservableObject {
         activeRequest = nil
         textDeltaBuffer.flushAll()
         isGenerating = false
+    }
+
+    /// Puts a reopened conversation on screen.
+    ///
+    /// Replaces rather than appends: a returning customer should see where
+    /// they left off. An empty batch means there is nothing to come back to,
+    /// so this is where the greeting is finally earned.
+    private func restore(_ restored: [TanyaAIMessage]) {
+        isRestoring = false
+        // The customer may have typed before the channel answered. What they
+        // sent is newer than what it holds, so replacing here would delete
+        // their message, and the reply on its way to it.
+        guard messages.isEmpty else {
+            return
+        }
+        guard restored.isEmpty == false else {
+            // Nothing to come back to, so this is a first conversation.
+            messages = [Self.makeWelcomeMessage()]
+            return
+        }
+        messages = restored.map(TanyaAIMessageItemViewModel.init)
     }
 
     /// A confirmation arrived that this app cannot complete, because no
@@ -154,6 +182,8 @@ public final class TanyaAIChatViewModel: ObservableObject {
             onOutput?(.performAction(action))
         case .typing(let isTyping):
             isAgentTyping = isTyping
+        case .history(let restored):
+            restore(restored)
         case .heartbeat:
             break
         }
