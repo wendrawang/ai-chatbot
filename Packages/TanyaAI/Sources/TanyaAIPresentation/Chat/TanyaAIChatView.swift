@@ -13,13 +13,26 @@ public struct TanyaAIChatView: View {
         VStack(spacing: 0) {
             header
             separator
-            TanyaAIMessageListView(viewModel: viewModel)
+            conversation
             errorBanner
             suggestionStrip
             separator
             TanyaAIChatInputView(viewModel: viewModel)
         }
         .background(Color(theme.colors.background))
+    }
+
+    /// The list stays mounted while restoring so it already has its real
+    /// size when it is uncovered. Swapping it in only afterwards would hand
+    /// it a zero frame and draw the first sizing pass on screen.
+    private var conversation: some View {
+        ZStack {
+            TanyaAIMessageListView(viewModel: viewModel)
+            if viewModel.isRestoring {
+                TanyaAIRestoringView()
+            }
+        }
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
     }
 
     private var header: some View {

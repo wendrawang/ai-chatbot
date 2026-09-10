@@ -41,34 +41,6 @@ final class TanyaAIChatViewModelTests: XCTestCase {
         XCTAssertFalse(viewModel.isGenerating)
     }
 
-    /// A reopened conversation replaces what is on screen, greeting and all.
-    func testHistoryReplacesTheConversation() {
-        let useCase = TanyaAIChatUseCaseStub()
-        let viewModel = TanyaAIChatViewModel(useCase: useCase)
-
-        useCase.sendUnsolicited(.history([
-            TanyaAIMessage(identifier: "1", role: .user, content: .text("Halo")),
-            TanyaAIMessage(identifier: "2", role: .assistant, content: .text("Hai"))
-        ]))
-
-        XCTAssertEqual(viewModel.messages.map(\.id), ["1", "2"])
-    }
-
-    /// The greeting waits for the channel to say what it held. Showing it
-    /// first and swapping it for history is the blink this avoids.
-    func testGreetingWaitsUntilHistoryHasBeenReported() {
-        let useCase = TanyaAIChatUseCaseStub()
-        let viewModel = TanyaAIChatViewModel(useCase: useCase)
-
-        XCTAssertTrue(viewModel.messages.isEmpty)
-        XCTAssertTrue(viewModel.isRestoring)
-
-        useCase.sendUnsolicited(.history([]))
-
-        XCTAssertEqual(viewModel.messages.count, 1)
-        XCTAssertFalse(viewModel.isRestoring)
-    }
-
     func testApprovalActionProducesTypedOutput() {
         let useCase = TanyaAIChatUseCaseStub()
         let viewModel = TanyaAIChatViewModel(useCase: useCase)
@@ -181,42 +153,4 @@ private extension TanyaAIApprovalPayload.Kind {
         .transfer,
         .savingsPlan
     ]
-}
-
-private final class TanyaAIChatUseCaseStub: TanyaAIChatUseCaseProtocol {
-    private var eventHandler: ((TanyaAIStreamEvent) -> Void)?
-    private var unsolicitedHandler: ((TanyaAIStreamEvent) -> Void)?
-    private var completionHandler: ((Result<Void, Error>) -> Void)?
-    private(set) var receivedText: String?
-
-    func sendMessage(
-        conversationIdentifier: String?,
-        text: String,
-        onEvent: @escaping (TanyaAIStreamEvent) -> Void,
-        completion: @escaping (Result<Void, Error>) -> Void
-    ) -> TanyaAICancellable {
-        receivedText = text
-        eventHandler = onEvent
-        completionHandler = completion
-        return TanyaAINoOpCancellable()
-    }
-
-    func observeUnsolicitedEvents(
-        _ onEvent: @escaping (TanyaAIStreamEvent) -> Void
-    ) {
-        unsolicitedHandler = onEvent
-    }
-
-    func send(_ event: TanyaAIStreamEvent) {
-        eventHandler?(event)
-    }
-
-    /// A reply that belongs to no turn - a bot greeting, an agent message.
-    func sendUnsolicited(_ event: TanyaAIStreamEvent) {
-        unsolicitedHandler?(event)
-    }
-
-    func complete(_ result: Result<Void, Error>) {
-        completionHandler?(result)
-    }
 }

@@ -80,7 +80,7 @@ public final class TanyaAIChatViewModel: ObservableObject {
     }
 
     public var showsSuggestions: Bool {
-        !isGenerating && !suggestions.isEmpty
+        !isGenerating && !isRestoring && !suggestions.isEmpty
     }
 
     /// Whether the waiting bubble belongs at the end of the conversation.
@@ -88,8 +88,11 @@ public final class TanyaAIChatViewModel: ObservableObject {
     /// Separate from `isGenerating`, which also drives the send/stop button: an
     /// agent typing between turns should show the dots without turning the
     /// send button into a stop button for a turn nobody started.
+    ///
+    /// Restoring is not one of these: it has its own loading state, and dots
+    /// promising a reply that nobody asked for would be a lie.
     public var showsTypingRow: Bool {
-        isGenerating || isAgentTyping || isRestoring
+        isGenerating || isAgentTyping
     }
 
     public func cancelGeneration() {
@@ -101,11 +104,17 @@ public final class TanyaAIChatViewModel: ObservableObject {
 
     /// Puts a reopened conversation on screen.
     ///
-    /// Replaces rather than appends, and drops the welcome message: a
-    /// returning customer should see where they left off, not a greeting
-    /// above their own history. An empty batch leaves the greeting alone.
+    /// Replaces rather than appends: a returning customer should see where
+    /// they left off. An empty batch means there is nothing to come back to,
+    /// so this is where the greeting is finally earned.
     private func restore(_ restored: [TanyaAIMessage]) {
         isRestoring = false
+        // The customer may have typed before the channel answered. What they
+        // sent is newer than what it holds, so replacing here would delete
+        // their message, and the reply on its way to it.
+        guard messages.isEmpty else {
+            return
+        }
         guard restored.isEmpty == false else {
             // Nothing to come back to, so this is a first conversation.
             messages = [Self.makeWelcomeMessage()]

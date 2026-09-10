@@ -6,10 +6,13 @@ import UIKit
 
 extension TanyaAIMessageTableView {
     final class Coordinator: NSObject, UITableViewDataSource, UITableViewDelegate {
+        /// A layout that will not settle must not spin the loop in
+        /// `parkAtBottom`. Two passes cover the usual case: aim at the
+        /// estimated bottom, then at the measured one.
+        private static let maximumParkingPasses = 4
+
         private weak var tableView: UITableView?
-        private var messages: [TanyaAIMessageItemViewModel] = []
-        private var showsTypingRow = false
-        private var showsSuggestions = false
+        private var state = TanyaAIMessageListState.empty
         private var followsLatestMessage = true
         private var scrollRequestIdentifier = 0
         private var theme = TanyaAITheme.sandbox
@@ -24,29 +27,28 @@ extension TanyaAIMessageTableView {
         }
 
         func update(
-            messages: [TanyaAIMessageItemViewModel],
-            showsTypingRow: Bool,
-            showsSuggestions: Bool,
+            _ state: TanyaAIMessageListState,
             theme: TanyaAITheme,
             handlers: TanyaAIMessageRowHandlers
         ) {
-            let updateState = makeUpdateState(
-                messages: messages,
-                showsTypingRow: showsTypingRow,
-                showsSuggestions: showsSuggestions
-            )
-            self.messages = messages
-            self.showsTypingRow = showsTypingRow
-            self.showsSuggestions = showsSuggestions
+            let previous = self.state
+            self.state = state
             self.theme = theme
             self.handlers = handlers
-            bindMessages(messages)
+            bindMessages(state.messages)
 
             tableView?.backgroundColor = theme.colors.background
-            if updateState.rowsChanged {
+            let rowsChanged = state.rowsDiffer(from: previous)
+            if rowsChanged {
                 tableView?.reloadData()
             }
-            if updateState.requiresBottomAlignment && followsLatestMessage {
+            guard followsLatestMessage else {
+                return
+            }
+            if previous.isRestoring, state.isRestoring == false {
+                parkAtBottom()
+            } else if rowsChanged
+                || previous.showsSuggestions != state.showsSuggestions {
                 scheduleScrollToBottom(animated: false)
             }
         }
@@ -55,7 +57,7 @@ extension TanyaAIMessageTableView {
             _ tableView: UITableView,
             numberOfRowsInSection section: Int
         ) -> Int {
-            rowCount
+            state.rowCount
         }
 
         func tableView(
@@ -90,12 +92,10 @@ extension TanyaAIMessageTableView {
             followsLatestMessage = isNearBottom(scrollView)
         }
 
-        private var rowCount: Int {
-            messages.count + (showsTypingRow ? 1 : 0)
-        }
-
         private func rowView(at index: Int) -> TanyaAIMessageTableRow {
-            let message = index < messages.count ? messages[index] : nil
+            let message = index < state.messages.count
+                ? state.messages[index]
+                : nil
             return TanyaAIMessageTableRow(
                 message: message,
                 theme: theme,
@@ -134,6 +134,32 @@ extension TanyaAIMessageTableView {
             scheduleScrollToBottom(animated: false)
         }
 
+        /// Scrolls to the end now, and keeps doing it until the height stops
+        /// moving.
+        ///
+        /// A restored conversation has to reach the screen already at its
+        /// latest message. Scrolling on the next runloop, the way an appended
+        /// message can afford to, would draw one frame at the top of the
+        /// conversation first - which is the jump this removes. Self-sizing
+        /// cells report their real height only once laid out, so the first
+        /// scroll aims at an estimated bottom and the content grows out from
+        /// under it; converging inside this one runloop means the frame that
+        /// reaches the screen is the settled one.
+        private func parkAtBottom() {
+            guard let tableView = tableView else {
+                return
+            }
+            var lastHeight: CGFloat = -1
+            var passes = 0
+            while passes < Self.maximumParkingPasses,
+                  tableView.contentSize.height != lastHeight {
+                lastHeight = tableView.contentSize.height
+                tableView.layoutIfNeeded()
+                scrollToBottom(animated: false)
+                passes += 1
+            }
+        }
+
         private func scheduleScrollToBottom(animated: Bool) {
             scrollRequestIdentifier += 1
             let requestIdentifier = scrollRequestIdentifier
@@ -146,7 +172,7 @@ extension TanyaAIMessageTableView {
         }
 
         private func scrollToBottom(animated: Bool) {
-            guard rowCount > 0, let tableView = tableView else {
+            guard state.rowCount > 0, let tableView = tableView else {
                 return
             }
             tableView.layoutIfNeeded()
@@ -172,25 +198,5 @@ extension TanyaAIMessageTableView {
                 - scrollView.adjustedContentInset.bottom
             return scrollView.contentSize.height - visibleBottom < 80
         }
-
-        private func makeUpdateState(
-            messages: [TanyaAIMessageItemViewModel],
-            showsTypingRow: Bool,
-            showsSuggestions: Bool
-        ) -> UpdateState {
-            let identifiersChanged = self.messages.map(\.id) != messages.map(\.id)
-            let nextRows = messages.count + (showsTypingRow ? 1 : 0)
-            let rowsChanged = identifiersChanged || rowCount != nextRows
-            return UpdateState(
-                rowsChanged: rowsChanged,
-                requiresBottomAlignment: rowsChanged
-                    || self.showsSuggestions != showsSuggestions
-            )
-        }
     }
-}
-
-private struct UpdateState {
-    let rowsChanged: Bool
-    let requiresBottomAlignment: Bool
 }
