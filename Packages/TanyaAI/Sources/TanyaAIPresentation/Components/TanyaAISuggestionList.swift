@@ -28,7 +28,10 @@ struct TanyaAISuggestionList: View {
                 .accessibilityIdentifier("suggestion.\(suggestion.id)")
             }
         }
-        .frame(maxWidth: 340, alignment: .leading)
+        .frame(maxWidth: 310, alignment: .leading)
+        // Without the second frame the 310-wide box is centred in the row and
+        // the prompts sit indented from every bubble above them.
+        .frame(maxWidth: .infinity, alignment: .leading)
         .accessibilityElement(children: .contain)
         .accessibilityIdentifier("suggestions.list")
     }

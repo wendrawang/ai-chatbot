@@ -17,7 +17,7 @@ struct TanyaAIActionBubble: View {
             header
             links
         }
-        .frame(maxWidth: 340, alignment: .leading)
+        .frame(maxWidth: 310, alignment: .leading)
         .accessibilityElement(children: .contain)
         .accessibilityIdentifier("actions.card")
     }

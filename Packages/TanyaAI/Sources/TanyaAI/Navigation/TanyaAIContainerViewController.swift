@@ -3,6 +3,9 @@ import UIKit
 
 final class TanyaAIContainerViewController: UIViewController {
     private let featureNavigationController = UINavigationController()
+    /// Held, not just assigned: `transitioningDelegate` is weak, and a
+    /// released delegate silently restores the sheet animation.
+    private let pushTransition = TanyaAIPushTransition()
     private var coordinator: TanyaAICoordinator?
     private let dependencyContainer: TanyaAIDependencyContainer
     private let actionHandler: (TanyaAIAction) -> Void
@@ -15,6 +18,7 @@ final class TanyaAIContainerViewController: UIViewController {
         self.actionHandler = actionHandler
         super.init(nibName: nil, bundle: nil)
         modalPresentationStyle = .fullScreen
+        transitioningDelegate = pushTransition
     }
 
     @available(*, unavailable)

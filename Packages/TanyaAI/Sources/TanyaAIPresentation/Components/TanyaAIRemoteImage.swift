@@ -35,6 +35,9 @@ final class TanyaAIImageCache {
 /// when the image lands. Every state - loading, loaded, failed - occupies the
 /// same space.
 ///
+/// Square-cornered on purpose: whatever places it decides its shape, so a
+/// bubble can clip it to its own corners without two roundings fighting.
+///
 /// ## Fetched with `URLSession.shared`
 ///
 /// Deliberately plain, and worth a decision in a bank: a host that pins
@@ -60,7 +63,6 @@ struct TanyaAIRemoteImage: View {
             .aspectRatio(aspectRatio, contentMode: .fit)
             .overlay(content)
             .clipped()
-            .cornerRadius(12)
             .onAppear(perform: load)
     }
 
