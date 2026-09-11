@@ -3,19 +3,25 @@ import TanyaAIDesignSystem
 import TanyaAIDomain
 
 struct TanyaAIMessageTableRow: View {
-    let message: TanyaAIMessageItemViewModel?
+    let kind: TanyaAIMessageRowKind
     let theme: TanyaAITheme
     let handlers: TanyaAIMessageRowHandlers
 
     var body: some View {
         Group {
-            if let message = message {
+            switch kind {
+            case .message(let message):
                 TanyaAIMessageRowView(
                     viewModel: message,
                     handlers: handlers
                 )
-            } else {
+            case .typing:
                 TanyaAITypingIndicatorView()
+            case .suggestions(let suggestions):
+                TanyaAISuggestionList(
+                    suggestions: suggestions,
+                    onSelect: handlers.onSuggestion
+                )
             }
         }
         .padding(.horizontal, 16)

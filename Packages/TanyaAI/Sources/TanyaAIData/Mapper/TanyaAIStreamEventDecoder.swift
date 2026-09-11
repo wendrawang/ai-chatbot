@@ -25,6 +25,8 @@ final class TanyaAIStreamEventDecoder {
         json: Data
     ) throws -> TanyaAIStreamEvent? {
         switch name {
+        case "content.image":
+            return try decodeImage(json)
         case "content.information":
             return try decodeInformation(json)
         case "content.chart":
@@ -112,6 +114,24 @@ final class TanyaAIStreamEventDecoder {
         return .content(
             messageIdentifier: payload.messageIdentifier,
             content: .information(content)
+        )
+    }
+
+    private func decodeImage(_ data: Data) throws -> TanyaAIStreamEvent {
+        let payload = try decoder.decode(TanyaAIImageDTO.self, from: data)
+        // An unusable url degrades to the caption alone rather than throwing:
+        // the sentence is the message, and losing the whole bubble over a
+        // broken link would lose more than the picture.
+        let image = TanyaAIImagePayload(
+            imageURL: URL(string: payload.imageURL),
+            caption: payload.caption,
+            aspectRatio: payload.aspectRatio
+                ?? TanyaAIImagePayload.defaultAspectRatio,
+            accessibilityText: payload.accessibilityText
+        )
+        return .content(
+            messageIdentifier: payload.messageIdentifier,
+            content: .image(image)
         )
     }
 

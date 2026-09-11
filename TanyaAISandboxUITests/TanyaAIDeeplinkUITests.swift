@@ -14,6 +14,9 @@ final class TanyaAIDeeplinkUITests: XCTestCase {
     func testActionReturnsToDashboardBeforeOpeningTheDestination() {
         openTanyaAIFromLegacyDetail()
 
+        // The card itself, before it is used: hand-off links are the one
+        // bubble no other screenshot test reaches.
+        capture(name: "deeplink-actions-card")
         tap("action.open-transfer")
 
         assertDestination(

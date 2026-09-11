@@ -17,6 +17,23 @@ vendor. Paket tidak pernah meng-import vendor. Tidak ada lagi transport SSE.
 Host memakai `TanyaAIHost` + modifier `.tanyaAIHost(_:)`; itu seluruh
 permukaan integrasinya.
 
+## Bubble
+
+Delapan tipe konten plus fallback. Yang perlu diingat soal tampilannya:
+
+- **Prompt saran ada di dalam percakapan**, sebagai baris terakhir — bukan
+  strip di atas keyboard. Lingkarannya afordans, bukan state: sekali tap
+  langsung terkirim.
+- **Balasan memakai bubble outline**, tanpa atribusi "TANYA AI" di atasnya.
+  Hanya giliran nasabah yang punya bobot warna.
+- **Deeplink tampil sebagai tautan bergaris bawah**, bukan tombol terisi.
+  Kedua bobot `style` tetap berwarna aksen — yang abu-abu terbaca seperti
+  tombol mati padahal aksinya tersedia.
+- **`content.image` mengambil gambar lewat `URLSession.shared`.** Di bank ini
+  keputusan, bukan detail: host yang melakukan pinning mem-pin session-nya
+  sendiri, dan ini bukan session itu. Kirim `aspectRatio` — tanpa itu tinggi
+  baris berubah saat gambar mendarat.
+
 ## Perintah
 
 | Perintah | Untuk |

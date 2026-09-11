@@ -58,6 +58,11 @@ final class TanyaAISandboxScreenshotTests: XCTestCase {
         XCTAssertFalse(confirmButton.exists)
     }
 
+    /// The prompts used to sit on a strip below the table, and this checked
+    /// that the strip started where the table ended. They are rows in the
+    /// conversation now, so the guarantee is expressed where it moved to: the
+    /// last reply, then the prompts under it, both inside the table and both
+    /// reachable. The property is the same one - nothing covers anything.
     func testSuggestionsDoNotCoverLatestBubble() {
         let messageTable = application.tables["chat.messageTable"]
         XCTAssertTrue(messageTable.waitForExistence(timeout: 10))
@@ -76,13 +81,17 @@ final class TanyaAISandboxScreenshotTests: XCTestCase {
             waitUntilHittable(latestBubble),
             "Bubble: \(latestBubble.frame), table: \(messageTable.frame)"
         )
-        XCTAssertLessThanOrEqual(
-            latestBubble.frame.maxY,
-            messageTable.frame.maxY + 1
+        XCTAssertTrue(
+            waitUntilHittable(suggestion),
+            "Prompt: \(suggestion.frame), table: \(messageTable.frame)"
         )
         XCTAssertLessThanOrEqual(
-            messageTable.frame.maxY,
+            latestBubble.frame.maxY,
             suggestion.frame.minY + 1
+        )
+        XCTAssertLessThanOrEqual(
+            suggestion.frame.maxY,
+            messageTable.frame.maxY + 1
         )
     }
 
@@ -114,6 +123,10 @@ final class TanyaAISandboxScreenshotTests: XCTestCase {
 
     private var scenarios: [ScreenshotScenario] {
         [
+            ScreenshotScenario(
+                "Jalani misinya, dapatkan Bonus Bunga Tabungan hingga 5,25% p.a.",
+                "image-promo"
+            ),
             ScreenshotScenario("Confirm currency conversion", "confirmation-currency"),
             ScreenshotScenario("Conversion complete", "receipt-success"),
             ScreenshotScenario("Confirm time deposit", "confirmation-deposit"),

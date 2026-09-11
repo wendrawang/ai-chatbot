@@ -38,6 +38,7 @@ Required unless marked optional. `expiresAt` is ISO 8601.
 
 | Event | Fields |
 | --- | --- |
+| `content.image` | `imageURL`, `caption`, `aspectRatio?` (number), `accessibilityText?` |
 | `content.information` | `title?`, `text`, `items[]` of `{label, value}` |
 | `content.status` | `title`, `detail`, `level` |
 | `content.actions` | `title?`, `detail?`, `actions[]` of `{title, style?, action:{identifier, deeplink}}` |
@@ -56,6 +57,17 @@ Allowlisted values - anything else falls back to the first entry:
 | `financial-list.style` | `paidBills`, `incoming`, `holdings` |
 | `financial-list.rows[].tone` | `neutral`, `positive` |
 | `actions[].style` | `primary`, `secondary` |
+
+### `content.image`
+
+`aspectRatio` is width divided by height. Send it. It reserves the row's
+height before the picture is downloaded, and without it the conversation grows
+under the customer's eyes when the image lands - the app falls back to 16:9,
+which is a guess that will usually be wrong by a little.
+
+An `imageURL` the app cannot parse is not an error: the bubble shows the
+caption alone. The sentence is the message, and losing the whole bubble over a
+broken link would lose more than the picture.
 | `approval.kind` | `transfer`, `currencyConversion`, `timeDeposit`, `savingsPlan`, `generic` |
 
 Runnable examples of every one of these are in

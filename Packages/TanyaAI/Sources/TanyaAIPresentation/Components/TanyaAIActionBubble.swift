@@ -1,19 +1,22 @@
 import SwiftUI
 import TanyaAIDomain
 
+/// The hand-off links a reply offers - "Lihat Produk Sekarang", "Connect
+/// dengan Agent".
+///
+/// Links rather than filled buttons, and no card around them. The sentence
+/// that explains the hand-off arrives as its own reply bubble, so wrapping
+/// these in a second card would box an explanation that is already boxed.
 struct TanyaAIActionBubble: View {
     let payload: TanyaAIActionPayload
     let onAction: (TanyaAIAction) -> Void
     @Environment(\.tanyaAITheme) private var theme
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 12) {
+        VStack(alignment: .leading, spacing: 8) {
             header
-            buttons
+            links
         }
-        .padding(16)
-        .background(Color(theme.colors.surface))
-        .cornerRadius(18)
         .frame(maxWidth: 340, alignment: .leading)
         .accessibilityElement(children: .contain)
         .accessibilityIdentifier("actions.card")
@@ -34,22 +37,24 @@ struct TanyaAIActionBubble: View {
                         .foregroundColor(Color(theme.colors.secondaryText))
                 }
             }
+            .fixedSize(horizontal: false, vertical: true)
+            .padding(.bottom, 4)
         }
     }
 
-    private var buttons: some View {
-        VStack(spacing: 8) {
+    private var links: some View {
+        VStack(alignment: .leading, spacing: 8) {
             ForEach(payload.buttons) { button in
                 Button {
                     onAction(button.action)
                 } label: {
-                    Text(button.title)
-                        .font(Font(theme.fonts.button))
-                        .frame(maxWidth: .infinity, minHeight: 44)
+                    label(for: button)
                 }
-                .foregroundColor(foregroundColor(for: button.style))
-                .background(backgroundColor(for: button.style))
-                .cornerRadius(12)
+                // Both weights stay in the accent colour. Greying the
+                // secondary one made an available hand-off read as disabled,
+                // which is a worse lie than the two looking similar.
+                .foregroundColor(Color(theme.colors.accent))
+                .background(TanyaAIOutlinedBackground())
                 .accessibilityIdentifier(
                     "action.\(button.action.identifier)"
                 )
@@ -57,21 +62,21 @@ struct TanyaAIActionBubble: View {
         }
     }
 
-    private func foregroundColor(
-        for style: TanyaAIActionButton.Style
-    ) -> Color {
-        switch style {
-        case .primary: return Color(theme.colors.userBubbleText)
-        case .secondary: return Color(theme.colors.primaryText)
-        }
+    private func label(for button: TanyaAIActionButton) -> some View {
+        text(for: button)
+            .font(Font(theme.fonts.button))
+            .padding(.horizontal, 16)
+            .frame(minHeight: 44)
+            .fixedSize(horizontal: false, vertical: true)
     }
 
-    private func backgroundColor(
-        for style: TanyaAIActionButton.Style
-    ) -> Color {
-        switch style {
-        case .primary: return Color(theme.colors.accent)
-        case .secondary: return Color(theme.colors.background)
+    /// Underlined only for the primary weight. `Style` carries no behaviour,
+    /// so this is the whole of the difference between the two.
+    private func text(for button: TanyaAIActionButton) -> Text {
+        let base = Text(button.title)
+        switch button.style {
+        case .primary: return base.underline()
+        case .secondary: return base
         }
     }
 }

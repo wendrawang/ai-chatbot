@@ -16,6 +16,14 @@ struct TanyaAIInformationDTO: Decodable {
     let items: [TanyaAIKeyValueDTO]
 }
 
+struct TanyaAIImageDTO: Decodable {
+    let messageIdentifier: String
+    let imageURL: String
+    let caption: String
+    let aspectRatio: Double?
+    let accessibilityText: String?
+}
+
 struct TanyaAIKeyValueDTO: Decodable {
     let label: String
     let value: String

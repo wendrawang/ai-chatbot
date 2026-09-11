@@ -47,8 +47,7 @@ extension TanyaAIMessageTableView {
             }
             if previous.isRestoring, state.isRestoring == false {
                 parkAtBottom()
-            } else if rowsChanged
-                || previous.showsSuggestions != state.showsSuggestions {
+            } else if rowsChanged {
                 scheduleScrollToBottom(animated: false)
             }
         }
@@ -70,7 +69,10 @@ extension TanyaAIMessageTableView {
             ) as? TanyaAIHostingTableViewCell else {
                 return UITableViewCell()
             }
-            cell.configure(rootView: rowView(at: indexPath.row))
+            guard let kind = state.kind(at: indexPath.row) else {
+                return cell
+            }
+            cell.configure(rootView: rowView(for: kind))
             return cell
         }
 
@@ -92,12 +94,11 @@ extension TanyaAIMessageTableView {
             followsLatestMessage = isNearBottom(scrollView)
         }
 
-        private func rowView(at index: Int) -> TanyaAIMessageTableRow {
-            let message = index < state.messages.count
-                ? state.messages[index]
-                : nil
-            return TanyaAIMessageTableRow(
-                message: message,
+        private func rowView(
+            for kind: TanyaAIMessageRowKind
+        ) -> TanyaAIMessageTableRow {
+            TanyaAIMessageTableRow(
+                kind: kind,
                 theme: theme,
                 handlers: handlers
             )

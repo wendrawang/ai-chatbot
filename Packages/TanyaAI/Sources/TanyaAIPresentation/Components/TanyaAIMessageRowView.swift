@@ -28,6 +28,8 @@ struct TanyaAIMessageRowView: View {
                 text: text,
                 isUser: viewModel.role == .user
             )
+        case .image(let payload):
+            TanyaAIImageBubble(payload: payload)
         case .information(let payload):
             TanyaAIInformationBubble(payload: payload)
         case .chart(let payload):

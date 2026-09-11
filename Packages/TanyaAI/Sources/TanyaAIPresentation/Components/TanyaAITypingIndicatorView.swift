@@ -16,20 +16,17 @@ struct TanyaAITypingIndicatorView: View {
     private let dotCount = 3
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 6) {
-            TanyaAIAssistantHeader()
-            dots
-        }
-        .frame(maxWidth: .infinity, alignment: .leading)
-        .accessibilityElement(children: .ignore)
-        .accessibility(label: Text("Tanya AI is responding"))
-        .onAppear {
-            // Starting the loop in the same pass the view appears leaves the
-            // dots static: the animation modifier is not installed yet.
-            DispatchQueue.main.async {
-                isAnimating = true
+        dots
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .accessibilityElement(children: .ignore)
+            .accessibility(label: Text("Tanya AI is responding"))
+            .onAppear {
+                // Starting the loop in the same pass the view appears leaves
+                // the dots static: the animation modifier is not installed yet.
+                DispatchQueue.main.async {
+                    isAnimating = true
+                }
             }
-        }
     }
 
     private var dots: some View {
@@ -49,7 +46,6 @@ struct TanyaAITypingIndicatorView: View {
         }
         .padding(.horizontal, 16)
         .padding(.vertical, 14)
-        .background(Color(theme.colors.assistantBubble))
-        .cornerRadius(18)
+        .background(TanyaAIOutlinedBackground())
     }
 }

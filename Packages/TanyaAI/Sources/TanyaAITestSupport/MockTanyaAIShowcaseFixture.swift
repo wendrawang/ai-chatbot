@@ -24,6 +24,7 @@ enum MockTanyaAIShowcaseFixture {
                 ]
             )
         ]
+        events.append(imageEvent(identifier))
         events.append(
             contentsOf: MockTanyaAIConfirmationFixture.showcaseEvents(identifier)
         )
@@ -40,6 +41,28 @@ enum MockTanyaAIShowcaseFixture {
             )
         )
         return events
+    }
+
+    /// The one fixture that reaches the network.
+    ///
+    /// An image bubble cannot be demonstrated without an image, and the
+    /// package ships no assets of its own. A simulator with no route still
+    /// lays the row out at its reserved height and keeps the caption, which
+    /// is what the screenshot test anchors on.
+    private static func imageEvent(
+        _ identifier: String
+    ) -> TanyaAIChatSessionEvent {
+        event(
+            "content.image",
+            [
+                "messageIdentifier": "image-\(identifier)",
+                "imageURL": "https://picsum.photos/seed/tanyaai/920/575",
+                "caption": "Jalani misinya, dapatkan Bonus Bunga Tabungan "
+                    + "hingga 5,25% p.a.",
+                "aspectRatio": 1.6,
+                "accessibilityText": "Sample promo artwork"
+            ]
+        )
     }
 
     private static func statusEvents(

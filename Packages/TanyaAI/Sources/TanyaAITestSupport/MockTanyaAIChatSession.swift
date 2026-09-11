@@ -84,7 +84,7 @@ public extension MockTanyaAIChatSession {
     ///
     /// Same fixtures the demo app uses, so a host can see every bubble type
     /// before a real SDK is wired in.
-    public static func sandbox(
+    static func sandbox(
         stepDelay: TimeInterval = 0.05
     ) -> MockTanyaAIChatSession {
         MockTanyaAIChatSession(stepDelay: stepDelay) { text in

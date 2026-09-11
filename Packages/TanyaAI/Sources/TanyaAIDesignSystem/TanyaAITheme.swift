@@ -27,7 +27,7 @@ public extension TanyaAITheme {
             accent: UIColor(red: 0.58, green: 0.04, blue: 0.12, alpha: 1),
             userBubble: UIColor(red: 0.51, green: 0.04, blue: 0.12, alpha: 1),
             userBubbleText: .white,
-            assistantBubble: .secondarySystemBackground,
+            assistantBubble: .systemBackground,
             assistantBubbleText: .label,
             divider: .separator,
             chartTrack: .tertiarySystemFill,

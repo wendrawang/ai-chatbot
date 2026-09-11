@@ -15,7 +15,6 @@ public struct TanyaAIChatView: View {
             separator
             conversation
             errorBanner
-            suggestionStrip
             separator
             TanyaAIChatInputView(viewModel: viewModel)
         }
@@ -76,16 +75,6 @@ public struct TanyaAIChatView: View {
                 .frame(maxWidth: .infinity, alignment: .leading)
                 .padding(.horizontal, 16)
                 .padding(.vertical, 8)
-        }
-    }
-
-    @ViewBuilder
-    private var suggestionStrip: some View {
-        if viewModel.showsSuggestions {
-            TanyaAISuggestionStrip(
-                suggestions: viewModel.suggestions,
-                onSelect: viewModel.sendSuggestion
-            )
         }
     }
 
