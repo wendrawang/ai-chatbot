@@ -10,16 +10,24 @@ import SwiftUI
 /// attribution above it. Two filled colours facing each other made every
 /// exchange look like two shouting sides; the outline lets the customer's own
 /// turns be the only thing with weight.
-struct TanyaAITextBubble: View {
+public struct TanyaAITextBubble: View {
     let text: String
     let isUser: Bool
     @Environment(\.tanyaAITheme) private var theme
 
     /// Matches the outlined rows used by suggestions and hand-off links, so
     /// the whole conversation shares one corner.
-    static let cornerRadius: CGFloat = 12
+    public static let cornerRadius: CGFloat = 12
 
-    var body: some View {
+    public init(
+        text: String,
+        isUser: Bool
+    ) {
+        self.text = text
+        self.isUser = isUser
+    }
+
+    public var body: some View {
         bubble
             .frame(
                 maxWidth: 310,
@@ -57,22 +65,5 @@ struct TanyaAITextBubble: View {
                 ? theme.colors.userBubbleText
                 : theme.colors.assistantBubbleText
         )
-    }
-}
-
-/// The outlined shape a reply, a suggestion and a hand-off link all sit in.
-///
-/// One place, so the three never drift apart: they appear next to each other
-/// in the same conversation.
-struct TanyaAIOutlinedBackground: View {
-    @Environment(\.tanyaAITheme) private var theme
-
-    var body: some View {
-        RoundedRectangle(cornerRadius: TanyaAITextBubble.cornerRadius)
-            .fill(Color(theme.colors.assistantBubble))
-            .overlay(
-                RoundedRectangle(cornerRadius: TanyaAITextBubble.cornerRadius)
-                    .stroke(Color(theme.colors.divider), lineWidth: 1)
-            )
     }
 }

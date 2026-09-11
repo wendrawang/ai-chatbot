@@ -1,14 +1,26 @@
 import SwiftUI
 import TanyaAIDomain
 
-struct TanyaAIApprovalBubble: View {
+public struct TanyaAIApprovalBubble: View {
     let payload: TanyaAIApprovalPayload
     let onEdit: () -> Void
     let onCancel: () -> Void
     let onApprove: () -> Void
     @Environment(\.tanyaAITheme) private var theme
 
-    var body: some View {
+    public init(
+        payload: TanyaAIApprovalPayload,
+        onEdit: @escaping () -> Void,
+        onCancel: @escaping () -> Void,
+        onApprove: @escaping () -> Void
+    ) {
+        self.payload = payload
+        self.onEdit = onEdit
+        self.onCancel = onCancel
+        self.onApprove = onApprove
+    }
+
+    public var body: some View {
         VStack(alignment: .leading, spacing: 0) {
             header
             cardDivider

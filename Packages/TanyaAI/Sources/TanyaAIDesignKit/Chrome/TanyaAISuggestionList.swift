@@ -8,12 +8,20 @@ import SwiftUI
 ///
 /// The circle is an affordance, not a state. One tap sends - nothing is held
 /// selected, and there is no separate confirm step - so it never shows filled.
-struct TanyaAISuggestionList: View {
+public struct TanyaAISuggestionList: View {
     let suggestions: [TanyaAISuggestion]
     let onSelect: (TanyaAISuggestion) -> Void
     @Environment(\.tanyaAITheme) private var theme
 
-    var body: some View {
+    public init(
+        suggestions: [TanyaAISuggestion],
+        onSelect: @escaping (TanyaAISuggestion) -> Void
+    ) {
+        self.suggestions = suggestions
+        self.onSelect = onSelect
+    }
+
+    public var body: some View {
         VStack(alignment: .leading, spacing: 8) {
             ForEach(suggestions) { suggestion in
                 Button {

@@ -1,11 +1,15 @@
 import SwiftUI
 import TanyaAIDomain
 
-struct TanyaAIPortfolioBubble: View {
+public struct TanyaAIPortfolioBubble: View {
     let payload: TanyaAIPortfolioPayload
     @Environment(\.tanyaAITheme) private var theme
 
-    var body: some View {
+    public init(payload: TanyaAIPortfolioPayload) {
+        self.payload = payload
+    }
+
+    public var body: some View {
         VStack(alignment: .leading, spacing: 13) {
             header
             Text(payload.totalValue)

@@ -1,4 +1,5 @@
 import SwiftUI
+import TanyaAIDesignKit
 
 public struct TanyaAIHistoryView: View {
     @ObservedObject private var viewModel: TanyaAIHistoryViewModel

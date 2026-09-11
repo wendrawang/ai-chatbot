@@ -1,11 +1,15 @@
 import SwiftUI
 import TanyaAIDomain
 
-struct TanyaAIStatusBubble: View {
+public struct TanyaAIStatusBubble: View {
     let payload: TanyaAIStatusPayload
     @Environment(\.tanyaAITheme) private var theme
 
-    var body: some View {
+    public init(payload: TanyaAIStatusPayload) {
+        self.payload = payload
+    }
+
+    public var body: some View {
         HStack(alignment: .top, spacing: 10) {
             Image(systemName: iconName)
                 .foregroundColor(accentColor)

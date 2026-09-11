@@ -1,4 +1,4 @@
-extension TanyaAISuggestion {
+public extension TanyaAISuggestion {
     static var sandboxDefaults: [TanyaAISuggestion] {
         [
             TanyaAISuggestion(

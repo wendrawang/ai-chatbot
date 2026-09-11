@@ -9,13 +9,17 @@ import TanyaAIDomain
 /// instead of a photo sitting in a box. How the height divides between them is
 /// the artwork's business - `aspectRatio` sets the picture, the caption takes
 /// what it needs underneath.
-struct TanyaAIImageBubble: View {
+public struct TanyaAIImageBubble: View {
     let payload: TanyaAIImagePayload
     @Environment(\.tanyaAITheme) private var theme
 
     private var cornerRadius: CGFloat { TanyaAITextBubble.cornerRadius }
 
-    var body: some View {
+    public init(payload: TanyaAIImagePayload) {
+        self.payload = payload
+    }
+
+    public var body: some View {
         VStack(alignment: .leading, spacing: 0) {
             picture
             caption

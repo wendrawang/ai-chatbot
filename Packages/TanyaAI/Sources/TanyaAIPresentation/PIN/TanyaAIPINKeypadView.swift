@@ -1,4 +1,5 @@
 import SwiftUI
+import TanyaAIDesignKit
 
 struct TanyaAIPINKeypadView: View {
     let onDigit: (Int) -> Void

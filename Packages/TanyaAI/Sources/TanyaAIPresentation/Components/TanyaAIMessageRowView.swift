@@ -1,4 +1,5 @@
 import SwiftUI
+import TanyaAIDesignKit
 import TanyaAIDomain
 
 struct TanyaAIMessageRowView: View {

@@ -7,10 +7,12 @@ import SwiftUI
 /// underneath at its real size, so when this goes away the restored
 /// conversation is drawn in one piece, already at its latest message - a list
 /// swapped in afterwards would start from a zero frame instead.
-struct TanyaAIRestoringView: View {
+public struct TanyaAIRestoringView: View {
     @Environment(\.tanyaAITheme) private var theme
 
-    var body: some View {
+    public init() {}
+
+    public var body: some View {
         VStack(spacing: 12) {
             ProgressView()
             Text("Loading your conversation")

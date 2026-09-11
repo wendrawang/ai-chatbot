@@ -1,3 +1,4 @@
+import TanyaAIDesignKit
 import TanyaAIDomain
 
 /// The callbacks a message row can raise, carried as one value.

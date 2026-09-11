@@ -1,11 +1,15 @@
 import SwiftUI
 import TanyaAIDomain
 
-struct TanyaAIFinancialListBubble: View {
+public struct TanyaAIFinancialListBubble: View {
     let payload: TanyaAIFinancialListPayload
     @Environment(\.tanyaAITheme) private var theme
 
-    var body: some View {
+    public init(payload: TanyaAIFinancialListPayload) {
+        self.payload = payload
+    }
+
+    public var body: some View {
         VStack(alignment: .leading, spacing: 0) {
             header
             cardDivider

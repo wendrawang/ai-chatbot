@@ -1,5 +1,5 @@
 import XCTest
-@testable import TanyaAIPresentation
+@testable import TanyaAIDesignKit
 
 /// The wire format is a closed tag set, so these tests pin both what it
 /// supports and what it refuses to do.

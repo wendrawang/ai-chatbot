@@ -9,13 +9,15 @@ import SwiftUI
 /// The animation is scoped to `isAnimating`. The unscoped `animation(_:)`
 /// would animate every change in this subtree - including the layout the row
 /// gets when the table first places it - which reads as a stray slide.
-struct TanyaAITypingIndicatorView: View {
+public struct TanyaAITypingIndicatorView: View {
     @Environment(\.tanyaAITheme) private var theme
     @State private var isAnimating = false
 
     private let dotCount = 3
 
-    var body: some View {
+    public init() {}
+
+    public var body: some View {
         dots
             .frame(maxWidth: .infinity, alignment: .leading)
             .accessibilityElement(children: .ignore)

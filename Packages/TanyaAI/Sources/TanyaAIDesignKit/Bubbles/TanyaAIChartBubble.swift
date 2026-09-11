@@ -1,11 +1,15 @@
 import SwiftUI
 import TanyaAIDomain
 
-struct TanyaAIChartBubble: View {
+public struct TanyaAIChartBubble: View {
     let payload: TanyaAIChartPayload
     @Environment(\.tanyaAITheme) private var theme
 
-    var body: some View {
+    public init(payload: TanyaAIChartPayload) {
+        self.payload = payload
+    }
+
+    public var body: some View {
         VStack(alignment: .leading, spacing: 13) {
             header
             total

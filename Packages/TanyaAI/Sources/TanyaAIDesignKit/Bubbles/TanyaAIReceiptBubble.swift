@@ -1,11 +1,15 @@
 import SwiftUI
 import TanyaAIDomain
 
-struct TanyaAIReceiptBubble: View {
+public struct TanyaAIReceiptBubble: View {
     let payload: TanyaAIReceiptPayload
     @Environment(\.tanyaAITheme) private var theme
 
-    var body: some View {
+    public init(payload: TanyaAIReceiptPayload) {
+        self.payload = payload
+    }
+
+    public var body: some View {
         VStack(spacing: 16) {
             successHeader
             summary

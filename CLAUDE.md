@@ -15,7 +15,15 @@ Backend dijangkau lewat **satu seam**: `TanyaAIChatSession` — berbentuk sesi
 vendor. Paket tidak pernah meng-import vendor. Tidak ada lagi transport SSE.
 
 Host memakai `TanyaAIHost` + modifier `.tanyaAIHost(_:)`; itu seluruh
-permukaan integrasinya.
+permukaan integrasinya. Fitur **dipresentasikan, bukan di-push** — itu yang
+menjauhkannya dari stack navigasi host. Geraknya saja yang meniru push, lewat
+transisi kustom.
+
+**Bubble tinggal di target sendiri: `TanyaAIDesignKit`.** Komponen yang
+menggambar ada di sana dan tidak tahu apa-apa soal view model; `TanyaAIMessageRowView`
+tetap di `TanyaAIPresentation` karena tugasnya memetakan view model ke
+komponen. `TanyaAIDesignKit` dan `TanyaAIDomain` keduanya produk, karena API
+komponennya dibangun di atas tipe payload.
 
 ## Bubble
 

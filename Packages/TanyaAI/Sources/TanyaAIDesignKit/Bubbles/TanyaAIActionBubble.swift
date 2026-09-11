@@ -7,12 +7,20 @@ import TanyaAIDomain
 /// Links rather than filled buttons, and no card around them. The sentence
 /// that explains the hand-off arrives as its own reply bubble, so wrapping
 /// these in a second card would box an explanation that is already boxed.
-struct TanyaAIActionBubble: View {
+public struct TanyaAIActionBubble: View {
     let payload: TanyaAIActionPayload
     let onAction: (TanyaAIAction) -> Void
     @Environment(\.tanyaAITheme) private var theme
 
-    var body: some View {
+    public init(
+        payload: TanyaAIActionPayload,
+        onAction: @escaping (TanyaAIAction) -> Void
+    ) {
+        self.payload = payload
+        self.onAction = onAction
+    }
+
+    public var body: some View {
         VStack(alignment: .leading, spacing: 8) {
             header
             links

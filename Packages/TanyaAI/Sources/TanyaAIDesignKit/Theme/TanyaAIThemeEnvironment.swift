@@ -5,7 +5,9 @@ private struct TanyaAIThemeKey: EnvironmentKey {
     static let defaultValue = TanyaAITheme.sandbox
 }
 
-extension EnvironmentValues {
+public extension EnvironmentValues {
+    /// Public because the screens that read it now live in another module
+    /// from the components that draw with it.
     var tanyaAITheme: TanyaAITheme {
         get { self[TanyaAIThemeKey.self] }
         set { self[TanyaAIThemeKey.self] = newValue }

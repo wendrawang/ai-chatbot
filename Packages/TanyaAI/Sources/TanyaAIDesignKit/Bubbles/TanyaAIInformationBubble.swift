@@ -1,11 +1,15 @@
 import SwiftUI
 import TanyaAIDomain
 
-struct TanyaAIInformationBubble: View {
+public struct TanyaAIInformationBubble: View {
     let payload: TanyaAIInformationPayload
     @Environment(\.tanyaAITheme) private var theme
 
-    var body: some View {
+    public init(payload: TanyaAIInformationPayload) {
+        self.payload = payload
+    }
+
+    public var body: some View {
         VStack(alignment: .leading, spacing: 12) {
             if let title = payload.title {
                 Text(title)

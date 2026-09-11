@@ -13,6 +13,17 @@ let package = Package(
             name: "TanyaAIDesignSystem",
             targets: ["TanyaAIDesignSystem"]
         ),
+        // The bubbles themselves, so a revamp continues from them rather
+        // than starting over. Its API is built on the payload types, which
+        // is why TanyaAIDomain is a product alongside it.
+        .library(
+            name: "TanyaAIDesignKit",
+            targets: ["TanyaAIDesignKit"]
+        ),
+        .library(
+            name: "TanyaAIDomain",
+            targets: ["TanyaAIDomain"]
+        ),
         .library(
             name: "TanyaAITestSupport",
             targets: ["TanyaAITestSupport"]
@@ -33,9 +44,17 @@ let package = Package(
             ]
         ),
         .target(
+            name: "TanyaAIDesignKit",
+            dependencies: [
+                "TanyaAIDesignSystem",
+                "TanyaAIDomain"
+            ]
+        ),
+        .target(
             name: "TanyaAIPresentation",
             dependencies: [
                 "TanyaAIContracts",
+                "TanyaAIDesignKit",
                 "TanyaAIDesignSystem",
                 "TanyaAIDomain"
             ]
@@ -44,6 +63,7 @@ let package = Package(
             name: "TanyaAI",
             dependencies: [
                 "TanyaAIContracts",
+                "TanyaAIDesignKit",
                 "TanyaAIDesignSystem",
                 "TanyaAIDomain",
                 "TanyaAIData",
@@ -70,8 +90,16 @@ let package = Package(
             ]
         ),
         .testTarget(
+            name: "TanyaAIDesignKitTests",
+            dependencies: [
+                "TanyaAIDesignKit",
+                "TanyaAIDomain"
+            ]
+        ),
+        .testTarget(
             name: "TanyaAIPresentationTests",
             dependencies: [
+                "TanyaAIDesignKit",
                 "TanyaAIPresentation",
                 "TanyaAIDomain",
                 "TanyaAITestSupport"
