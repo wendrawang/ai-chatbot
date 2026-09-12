@@ -1,5 +1,4 @@
 import SwiftUI
-import TanyaAIDomain
 
 public struct TanyaAIStatusBubble: View {
     let payload: TanyaAIStatusPayload
@@ -14,7 +13,7 @@ public struct TanyaAIStatusBubble: View {
             Image(systemName: iconName)
                 .foregroundColor(accentColor)
 
-            VStack(alignment: .leading, spacing: 4) {
+            VStack(alignment: .leading, spacing: DesignKitMetrics.Spacing.tight) {
                 Text(payload.title)
                     .font(Font(theme.fonts.headline))
                 Text(payload.detail)
@@ -22,9 +21,9 @@ public struct TanyaAIStatusBubble: View {
                     .foregroundColor(Color(theme.colors.secondaryText))
             }
         }
-        .padding(16)
+        .padding(DesignKitMetrics.Spacing.wide)
         .background(Color(theme.colors.surface))
-        .cornerRadius(16)
+        .cornerRadius(DesignKitMetrics.Radius.notice)
         .frame(maxWidth: 340, alignment: .leading)
     }
 

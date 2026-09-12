@@ -1,5 +1,5 @@
+import DesignKit
 import TanyaAIContracts
-import TanyaAIDesignSystem
 
 /// What the host injects into one feature graph.
 ///

@@ -32,11 +32,11 @@ public struct TanyaAITypingIndicatorView: View {
     }
 
     private var dots: some View {
-        HStack(spacing: 6) {
+        HStack(spacing: DesignKitMetrics.Spacing.snug) {
             ForEach(0..<dotCount, id: \.self) { index in
                 Circle()
                     .fill(Color(theme.colors.secondaryText))
-                    .frame(width: 8, height: 8)
+                    .frame(width: DesignKitMetrics.Size.dot, height: DesignKitMetrics.Size.dot)
                     .opacity(isAnimating ? 1 : 0.3)
                     .animation(
                         Animation.easeInOut(duration: 0.6)
@@ -46,8 +46,8 @@ public struct TanyaAITypingIndicatorView: View {
                     )
             }
         }
-        .padding(.horizontal, 16)
-        .padding(.vertical, 14)
+        .padding(.horizontal, DesignKitMetrics.Spacing.wide)
+        .padding(.vertical, DesignKitMetrics.Spacing.roomy)
         .background(TanyaAIOutlinedBackground())
     }
 }

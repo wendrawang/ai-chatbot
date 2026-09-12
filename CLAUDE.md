@@ -19,11 +19,27 @@ permukaan integrasinya. Fitur **dipresentasikan, bukan di-push** — itu yang
 menjauhkannya dari stack navigasi host. Geraknya saja yang meniru push, lewat
 transisi kustom.
 
-**Bubble tinggal di target sendiri: `TanyaAIDesignKit`.** Komponen yang
-menggambar ada di sana dan tidak tahu apa-apa soal view model; `TanyaAIMessageRowView`
-tetap di `TanyaAIPresentation` karena tugasnya memetakan view model ke
-komponen. `TanyaAIDesignKit` dan `TanyaAIDomain` keduanya produk, karena API
-komponennya dibangun di atas tipe payload.
+**Design system ada di paket terpisah: `Packages/DesignKit`.** Bukan target
+di dalam `Packages/TanyaAI`, tapi package sendiri, supaya kelak bisa diangkat
+keluar untuk fitur lain. Ketergantungannya satu arah: TanyaAI → DesignKit,
+tidak pernah sebaliknya.
+
+Karena itu **tipe payload ikut pindah ke DesignKit**. Kalau payload tetap di
+`TanyaAIDomain`, DesignKit harus bergantung balik ke TanyaAI dan SwiftPM
+menolak siklusnya. `TanyaAIMessageRowView` tetap di `TanyaAIPresentation`:
+tugasnya memetakan view model ke komponen, jadi ia jahitannya.
+
+Isi DesignKit disusun atomic design:
+
+| Folder | Isi |
+| --- | --- |
+| `Tokens/` | `DesignKitMetrics` (jarak, radius, ukuran) + tema warna/font |
+| `Models/` | payload yang digambar komponen |
+| `Atoms/` | outline, remote image, rich text, parser markup, segmented bar |
+| `Molecules/` | bubble teks/gambar/status/informasi, baris prompt, link, legenda |
+| `Organisms/` | approval, chart, portfolio, list, receipt, daftar prompt, kartu link |
+
+**Angka tampilan ambil dari `DesignKitMetrics`, jangan ketik langsung.**
 
 ## Bubble
 
@@ -39,6 +55,9 @@ Delapan tipe konten plus fallback. Yang perlu diingat soal tampilannya:
   biasa sebelumnya. `content.actions` tidak lagi punya `title`/`detail`.
   Kedua bobot `style` tetap berwarna aksen — yang abu-abu terbaca seperti
   tombol mati padahal aksinya tersedia.
+- **Ada tiga radius: 12, 16, 18.** Itu drift dari sebelum review desain,
+  bukan keputusan — dinamai `Radius.bubble`/`notice`/`card` supaya kelihatan.
+  Menyeragamkannya mengubah tampilan lima bubble, jadi itu keputusan desain.
 - **`content.image` mengambil gambar lewat `URLSession.shared`.** Di bank ini
   keputusan, bukan detail: host yang melakukan pinning mem-pin session-nya
   sendiri, dan ini bukan session itu. Kirim `aspectRatio` — tanpa itu tinggi
@@ -57,6 +76,10 @@ Delapan tipe konten plus fallback. Yang perlu diingat soal tampilannya:
 
 - **Maksimal 250 baris per file, 120 karakter per baris.** Kalau kepanjangan,
   pecah lewat extension — jangan padatkan baris.
+- **SwiftLint dan `verify.sh` menyapu seluruh `Packages/`**, bukan satu paket
+  per nama. Paket baru ikut terjaring sejak hari pertama — tapi test-nya perlu
+  langkah `xcodebuild` sendiri di `verify.sh`, karena scheme paket fitur tidak
+  membawa test paket dependensinya.
 - **Jangan edit `.pbxproj` manual.** Tambah/hapus file sumber aplikasi lalu
   jalankan `generate_project.rb`. Script itu mengacak UUID, jadi diff-nya
   selalu besar walau tidak ada file yang berubah.

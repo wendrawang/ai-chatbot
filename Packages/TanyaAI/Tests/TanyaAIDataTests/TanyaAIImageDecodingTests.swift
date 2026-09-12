@@ -1,3 +1,4 @@
+import DesignKit
 import Foundation
 import TanyaAIDomain
 import XCTest

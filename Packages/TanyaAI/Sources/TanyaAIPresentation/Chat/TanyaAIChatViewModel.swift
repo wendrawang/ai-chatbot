@@ -1,7 +1,7 @@
 import Combine
+import DesignKit
 import Foundation
 import TanyaAIContracts
-import TanyaAIDesignKit
 import TanyaAIDomain
 
 public final class TanyaAIChatViewModel: ObservableObject {

@@ -1,3 +1,5 @@
+import DesignKit
+
 public enum TanyaAIStreamEvent: Equatable {
     case responseStarted(messageIdentifier: String)
     case textDelta(messageIdentifier: String, text: String)

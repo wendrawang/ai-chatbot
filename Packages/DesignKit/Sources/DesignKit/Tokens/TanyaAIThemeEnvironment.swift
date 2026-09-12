@@ -1,5 +1,5 @@
+import DesignKit
 import SwiftUI
-import TanyaAIDesignSystem
 
 private struct TanyaAIThemeKey: EnvironmentKey {
     static let defaultValue = TanyaAITheme.sandbox

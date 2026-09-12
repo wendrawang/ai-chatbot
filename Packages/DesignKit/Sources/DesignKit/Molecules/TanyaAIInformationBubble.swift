@@ -1,5 +1,4 @@
 import SwiftUI
-import TanyaAIDomain
 
 public struct TanyaAIInformationBubble: View {
     let payload: TanyaAIInformationPayload
@@ -10,7 +9,7 @@ public struct TanyaAIInformationBubble: View {
     }
 
     public var body: some View {
-        VStack(alignment: .leading, spacing: 12) {
+        VStack(alignment: .leading, spacing: DesignKitMetrics.Spacing.regular) {
             if let title = payload.title {
                 Text(title)
                     .font(Font(theme.fonts.headline))
@@ -20,9 +19,9 @@ public struct TanyaAIInformationBubble: View {
                 blockView(payload.blocks[index])
             }
         }
-        .padding(16)
+        .padding(DesignKitMetrics.Spacing.wide)
         .background(Color(theme.colors.surface))
-        .cornerRadius(16)
+        .cornerRadius(DesignKitMetrics.Radius.notice)
         .frame(maxWidth: 340, alignment: .leading)
         .accessibilityIdentifier("information.card")
     }
@@ -48,7 +47,7 @@ public struct TanyaAIInformationBubble: View {
     }
 
     private func keyValueList(_ items: [TanyaAIKeyValue]) -> some View {
-        VStack(spacing: 8) {
+        VStack(spacing: DesignKitMetrics.Spacing.compact) {
             ForEach(items.indices, id: \.self) { index in
                 HStack(alignment: .firstTextBaseline) {
                     Text(items[index].label)
@@ -63,7 +62,7 @@ public struct TanyaAIInformationBubble: View {
     }
 
     private func bulletList(_ items: [String]) -> some View {
-        VStack(alignment: .leading, spacing: 6) {
+        VStack(alignment: .leading, spacing: DesignKitMetrics.Spacing.snug) {
             ForEach(items.indices, id: \.self) { index in
                 Text("• \(items[index])")
                     .font(Font(theme.fonts.subheadline))

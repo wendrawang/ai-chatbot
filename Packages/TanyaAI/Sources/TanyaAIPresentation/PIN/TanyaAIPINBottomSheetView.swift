@@ -1,5 +1,5 @@
+import DesignKit
 import SwiftUI
-import TanyaAIDesignKit
 
 public struct TanyaAIPINBottomSheetView: View {
     @ObservedObject private var viewModel: TanyaAIPINViewModel

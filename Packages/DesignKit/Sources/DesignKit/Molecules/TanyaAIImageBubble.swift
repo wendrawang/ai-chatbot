@@ -1,5 +1,4 @@
 import SwiftUI
-import TanyaAIDomain
 
 /// A picture and the line of copy that goes with it - a promo, mostly - as
 /// one bubble.
@@ -13,7 +12,7 @@ public struct TanyaAIImageBubble: View {
     let payload: TanyaAIImagePayload
     @Environment(\.tanyaAITheme) private var theme
 
-    private var cornerRadius: CGFloat { TanyaAITextBubble.cornerRadius }
+    private var cornerRadius: CGFloat { DesignKitMetrics.Radius.bubble }
 
     public init(payload: TanyaAIImagePayload) {
         self.payload = payload
@@ -30,9 +29,9 @@ public struct TanyaAIImageBubble: View {
         .clipShape(RoundedRectangle(cornerRadius: cornerRadius))
         .overlay(
             RoundedRectangle(cornerRadius: cornerRadius)
-                .stroke(Color(theme.colors.divider), lineWidth: 1)
+                .stroke(Color(theme.colors.divider), lineWidth: DesignKitMetrics.Stroke.hairline)
         )
-        .frame(maxWidth: 310, alignment: .leading)
+        .frame(maxWidth: DesignKitMetrics.Size.bubbleMaximumWidth, alignment: .leading)
         .accessibilityElement(children: .combine)
         .accessibilityIdentifier("image.card")
     }
@@ -55,12 +54,12 @@ public struct TanyaAIImageBubble: View {
         Text(payload.caption)
             .font(Font(theme.fonts.headline))
             .foregroundColor(Color(theme.colors.primaryText))
-            .lineSpacing(4)
+            .lineSpacing(DesignKitMetrics.Text.captionLineSpacing)
             // Without this a long caption is truncated to one line instead of
             // wrapping: the row has no height to give it yet.
             .fixedSize(horizontal: false, vertical: true)
             .frame(maxWidth: .infinity, alignment: .leading)
-            .padding(.horizontal, 16)
-            .padding(.vertical, 14)
+            .padding(.horizontal, DesignKitMetrics.Spacing.wide)
+            .padding(.vertical, DesignKitMetrics.Spacing.roomy)
     }
 }

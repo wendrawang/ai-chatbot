@@ -1,5 +1,5 @@
+import DesignKit
 import Foundation
-import TanyaAIDesignKit
 import TanyaAIDomain
 
 /// Reading the conversation, and the values it is built from.

@@ -1,5 +1,4 @@
 import SwiftUI
-import TanyaAIDomain
 
 public struct TanyaAIFinancialListBubble: View {
     let payload: TanyaAIFinancialListPayload
@@ -18,7 +17,7 @@ public struct TanyaAIFinancialListBubble: View {
             footnote
         }
         .background(Color(theme.colors.surface))
-        .cornerRadius(18)
+        .cornerRadius(DesignKitMetrics.Radius.card)
         .frame(maxWidth: 340, alignment: .leading)
         .accessibilityElement(children: .contain)
         .accessibilityIdentifier(
@@ -36,20 +35,20 @@ public struct TanyaAIFinancialListBubble: View {
                 .font(Font(theme.fonts.headline))
                 .foregroundColor(Color(theme.colors.primaryText))
         }
-        .padding(16)
+        .padding(DesignKitMetrics.Spacing.wide)
     }
 
     private var rows: some View {
-        VStack(spacing: 14) {
+        VStack(spacing: DesignKitMetrics.Spacing.roomy) {
             ForEach(payload.rows.indices, id: \.self) { index in
                 row(payload.rows[index])
             }
         }
-        .padding(16)
+        .padding(DesignKitMetrics.Spacing.wide)
     }
 
     private func row(_ item: TanyaAIFinancialListRow) -> some View {
-        HStack(alignment: .firstTextBaseline, spacing: 12) {
+        HStack(alignment: .firstTextBaseline, spacing: DesignKitMetrics.Spacing.regular) {
             VStack(alignment: .leading, spacing: 3) {
                 Text(item.title)
                     .font(Font(theme.fonts.subheadline))
@@ -77,7 +76,7 @@ public struct TanyaAIFinancialListBubble: View {
     @ViewBuilder
     private var total: some View {
         if let label = payload.totalLabel, let value = payload.totalValue {
-            VStack(spacing: 12) {
+            VStack(spacing: DesignKitMetrics.Spacing.regular) {
                 cardDivider
                 HStack(alignment: .firstTextBaseline) {
                     Text(label)
@@ -88,7 +87,7 @@ public struct TanyaAIFinancialListBubble: View {
                     }
                 }
                 .font(Font(theme.fonts.subheadline))
-                .padding(.horizontal, 16)
+                .padding(.horizontal, DesignKitMetrics.Spacing.wide)
             }
         }
     }
@@ -99,7 +98,7 @@ public struct TanyaAIFinancialListBubble: View {
             Text(footnote)
                 .font(Font(theme.fonts.footnote))
                 .foregroundColor(Color(theme.colors.secondaryText))
-                .padding(16)
+                .padding(DesignKitMetrics.Spacing.wide)
         }
     }
 

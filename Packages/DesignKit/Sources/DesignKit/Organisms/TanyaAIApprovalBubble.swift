@@ -1,5 +1,4 @@
 import SwiftUI
-import TanyaAIDomain
 
 public struct TanyaAIApprovalBubble: View {
     let payload: TanyaAIApprovalPayload
@@ -30,7 +29,7 @@ public struct TanyaAIApprovalBubble: View {
             actions
         }
         .background(Color(theme.colors.surface))
-        .cornerRadius(18)
+        .cornerRadius(DesignKitMetrics.Radius.card)
         .frame(maxWidth: 340, alignment: .leading)
         .accessibilityElement(children: .contain)
         .accessibilityIdentifier(
@@ -48,13 +47,13 @@ public struct TanyaAIApprovalBubble: View {
                 .font(Font(theme.fonts.headline))
                 .foregroundColor(Color(theme.colors.primaryText))
         }
-        .padding(16)
+        .padding(DesignKitMetrics.Spacing.wide)
     }
 
     private var summary: some View {
-        VStack(spacing: 12) {
+        VStack(spacing: DesignKitMetrics.Spacing.regular) {
             ForEach(payload.summary.indices, id: \.self) { index in
-                HStack(alignment: .firstTextBaseline, spacing: 12) {
+                HStack(alignment: .firstTextBaseline, spacing: DesignKitMetrics.Spacing.regular) {
                     Text(payload.summary[index].label)
                         .foregroundColor(Color(theme.colors.secondaryText))
                     Spacer(minLength: 8)
@@ -65,7 +64,7 @@ public struct TanyaAIApprovalBubble: View {
                 .font(Font(theme.fonts.subheadline))
             }
         }
-        .padding(16)
+        .padding(DesignKitMetrics.Spacing.wide)
     }
 
     @ViewBuilder
@@ -74,7 +73,7 @@ public struct TanyaAIApprovalBubble: View {
             Text(notice)
                 .font(Font(theme.fonts.footnote))
                 .foregroundColor(Color(theme.colors.secondaryText))
-                .padding(.horizontal, 16)
+                .padding(.horizontal, DesignKitMetrics.Spacing.wide)
                 .padding(.bottom, 12)
         }
     }
@@ -85,7 +84,7 @@ public struct TanyaAIApprovalBubble: View {
             Text(statusText)
                 .font(Font(theme.fonts.footnote))
                 .foregroundColor(statusColor)
-                .padding(.horizontal, 16)
+                .padding(.horizontal, DesignKitMetrics.Spacing.wide)
                 .padding(.bottom, 12)
         }
     }
@@ -93,22 +92,25 @@ public struct TanyaAIApprovalBubble: View {
     @ViewBuilder
     private var actions: some View {
         if payload.state == .awaitingApproval {
-            HStack(spacing: 8) {
+            HStack(spacing: DesignKitMetrics.Spacing.compact) {
                 actionButton("Edit", action: onEdit)
                 actionButton("Cancel", action: onCancel)
                 Button(action: onApprove) {
                     Text("Confirm")
                         .font(Font(theme.fonts.button))
-                        .frame(maxWidth: .infinity, minHeight: 44)
+                        .frame(
+                    maxWidth: .infinity,
+                    minHeight: DesignKitMetrics.Size.minimumTapTarget
+                )
                 }
                 .foregroundColor(Color(theme.colors.userBubbleText))
                 .background(Color(theme.colors.accent))
-                .cornerRadius(12)
+                .cornerRadius(DesignKitMetrics.Radius.bubble)
                 .accessibilityIdentifier(
                     "approval.open.\(payload.kind.rawValue)"
                 )
             }
-            .padding(12)
+            .padding(DesignKitMetrics.Spacing.regular)
         }
     }
 
@@ -119,11 +121,14 @@ public struct TanyaAIApprovalBubble: View {
         Button(action: action) {
             Text(title)
                 .font(Font(theme.fonts.button))
-                .frame(maxWidth: .infinity, minHeight: 44)
+                .frame(
+                    maxWidth: .infinity,
+                    minHeight: DesignKitMetrics.Size.minimumTapTarget
+                )
         }
         .foregroundColor(Color(theme.colors.primaryText))
         .background(Color(theme.colors.background))
-        .cornerRadius(12)
+        .cornerRadius(DesignKitMetrics.Radius.bubble)
     }
 
     private var cardDivider: some View {

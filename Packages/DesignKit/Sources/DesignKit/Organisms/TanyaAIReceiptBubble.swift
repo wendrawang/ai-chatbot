@@ -1,5 +1,4 @@
 import SwiftUI
-import TanyaAIDomain
 
 public struct TanyaAIReceiptBubble: View {
     let payload: TanyaAIReceiptPayload
@@ -15,9 +14,9 @@ public struct TanyaAIReceiptBubble: View {
             summary
             footnote
         }
-        .padding(18)
+        .padding(DesignKitMetrics.Spacing.card)
         .background(Color(theme.colors.surface))
-        .cornerRadius(18)
+        .cornerRadius(DesignKitMetrics.Radius.card)
         .frame(maxWidth: 340, alignment: .leading)
         .accessibilityElement(children: .contain)
         .accessibilityIdentifier("receipt.success")
@@ -43,12 +42,12 @@ public struct TanyaAIReceiptBubble: View {
     }
 
     private var summary: some View {
-        VStack(spacing: 12) {
+        VStack(spacing: DesignKitMetrics.Spacing.regular) {
             Rectangle()
                 .fill(Color(theme.colors.divider))
                 .frame(height: 0.5)
             ForEach(payload.summary.indices, id: \.self) { index in
-                HStack(alignment: .firstTextBaseline, spacing: 12) {
+                HStack(alignment: .firstTextBaseline, spacing: DesignKitMetrics.Spacing.regular) {
                     Text(payload.summary[index].label)
                         .foregroundColor(Color(theme.colors.secondaryText))
                     Spacer(minLength: 8)

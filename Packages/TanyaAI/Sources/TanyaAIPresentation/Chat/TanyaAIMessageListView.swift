@@ -1,5 +1,5 @@
+import DesignKit
 import SwiftUI
-import TanyaAIDesignKit
 
 struct TanyaAIMessageListView: View {
     @ObservedObject var viewModel: TanyaAIChatViewModel

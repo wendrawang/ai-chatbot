@@ -1,5 +1,4 @@
 import SwiftUI
-import TanyaAIDomain
 
 public struct TanyaAIPortfolioBubble: View {
     let payload: TanyaAIPortfolioPayload
@@ -21,9 +20,9 @@ public struct TanyaAIPortfolioBubble: View {
             TanyaAIChartLegendView(series: payload.allocations)
             footnote
         }
-        .padding(16)
+        .padding(DesignKitMetrics.Spacing.wide)
         .background(Color(theme.colors.surface))
-        .cornerRadius(18)
+        .cornerRadius(DesignKitMetrics.Radius.card)
         .frame(maxWidth: 340, alignment: .leading)
         .accessibilityElement(children: .contain)
         .accessibilityIdentifier("portfolio.summary")

@@ -1,14 +1,17 @@
+# Packages/ rather than one package by name, so a package added later is
+# linted the day it appears.
 included:
   - TanyaAISandboxApp
   - TanyaAISandboxUITests
-  - Packages/TanyaAI/Sources
-  - Packages/TanyaAI/Tests
+  - Packages
 
 excluded:
   - .build
   - DerivedData
   - Packages/TanyaAI/.build
   - Packages/TanyaAI/.swiftpm
+  - Packages/DesignKit/.build
+  - Packages/DesignKit/.swiftpm
 
 file_length:
   warning: 250

@@ -1,7 +1,6 @@
 import Combine
+import DesignKit
 import SwiftUI
-import TanyaAIDesignKit
-import TanyaAIDesignSystem
 import TanyaAIDomain
 import UIKit
 

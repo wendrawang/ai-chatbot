@@ -1,5 +1,4 @@
-import TanyaAIDesignKit
-import TanyaAIDesignSystem
+import DesignKit
 import TanyaAIDomain
 import UIKit
 import XCTest

@@ -1,5 +1,5 @@
+import DesignKit
 import SwiftUI
-import TanyaAIDesignSystem
 import TanyaAIPresentation
 import UIKit
 

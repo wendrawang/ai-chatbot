@@ -1,7 +1,7 @@
 import Combine
+import DesignKit
 import Foundation
 import TanyaAIContracts
-import TanyaAIDesignSystem
 import UIKit
 
 /// The whole of the host's integration surface.

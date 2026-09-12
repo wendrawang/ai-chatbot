@@ -10,31 +10,23 @@ let package = Package(
     products: [
         .library(name: "TanyaAI", targets: ["TanyaAI"]),
         .library(
-            name: "TanyaAIDesignSystem",
-            targets: ["TanyaAIDesignSystem"]
-        ),
-        // The bubbles themselves, so a revamp continues from them rather
-        // than starting over. Its API is built on the payload types, which
-        // is why TanyaAIDomain is a product alongside it.
-        .library(
-            name: "TanyaAIDesignKit",
-            targets: ["TanyaAIDesignKit"]
-        ),
-        .library(
-            name: "TanyaAIDomain",
-            targets: ["TanyaAIDomain"]
-        ),
-        .library(
             name: "TanyaAITestSupport",
             targets: ["TanyaAITestSupport"]
         )
     ],
+    dependencies: [
+        // The design system is its own package, so it can be lifted out for
+        // another feature. The dependency only ever runs this way.
+        .package(path: "../DesignKit")
+    ],
     targets: [
         .target(name: "TanyaAIContracts"),
-        .target(name: "TanyaAIDesignSystem"),
         .target(
             name: "TanyaAIDomain",
-            dependencies: ["TanyaAIContracts"]
+            dependencies: [
+                "TanyaAIContracts",
+                .product(name: "DesignKit", package: "DesignKit")
+            ]
         ),
         .target(
             name: "TanyaAIData",
@@ -44,30 +36,21 @@ let package = Package(
             ]
         ),
         .target(
-            name: "TanyaAIDesignKit",
-            dependencies: [
-                "TanyaAIDesignSystem",
-                "TanyaAIDomain"
-            ]
-        ),
-        .target(
             name: "TanyaAIPresentation",
             dependencies: [
                 "TanyaAIContracts",
-                "TanyaAIDesignKit",
-                "TanyaAIDesignSystem",
-                "TanyaAIDomain"
+                "TanyaAIDomain",
+                .product(name: "DesignKit", package: "DesignKit")
             ]
         ),
         .target(
             name: "TanyaAI",
             dependencies: [
                 "TanyaAIContracts",
-                "TanyaAIDesignKit",
-                "TanyaAIDesignSystem",
                 "TanyaAIDomain",
                 "TanyaAIData",
-                "TanyaAIPresentation"
+                "TanyaAIPresentation",
+                .product(name: "DesignKit", package: "DesignKit")
             ]
         ),
         .target(
@@ -90,19 +73,12 @@ let package = Package(
             ]
         ),
         .testTarget(
-            name: "TanyaAIDesignKitTests",
-            dependencies: [
-                "TanyaAIDesignKit",
-                "TanyaAIDomain"
-            ]
-        ),
-        .testTarget(
             name: "TanyaAIPresentationTests",
             dependencies: [
-                "TanyaAIDesignKit",
                 "TanyaAIPresentation",
                 "TanyaAIDomain",
-                "TanyaAITestSupport"
+                "TanyaAITestSupport",
+                .product(name: "DesignKit", package: "DesignKit")
             ]
         ),
         .testTarget(

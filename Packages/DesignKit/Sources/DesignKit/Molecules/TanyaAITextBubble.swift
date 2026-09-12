@@ -15,10 +15,6 @@ public struct TanyaAITextBubble: View {
     let isUser: Bool
     @Environment(\.tanyaAITheme) private var theme
 
-    /// Matches the outlined rows used by suggestions and hand-off links, so
-    /// the whole conversation shares one corner.
-    public static let cornerRadius: CGFloat = 12
-
     public init(
         text: String,
         isUser: Bool
@@ -30,7 +26,7 @@ public struct TanyaAITextBubble: View {
     public var body: some View {
         bubble
             .frame(
-                maxWidth: 310,
+                maxWidth: DesignKitMetrics.Size.bubbleMaximumWidth,
                 alignment: isUser ? .trailing : .leading
             )
     }
@@ -41,8 +37,8 @@ public struct TanyaAITextBubble: View {
             font: Font(theme.fonts.body),
             color: textColor
         )
-        .padding(.horizontal, 16)
-        .padding(.vertical, 12)
+        .padding(.horizontal, DesignKitMetrics.Spacing.wide)
+        .padding(.vertical, DesignKitMetrics.Spacing.regular)
         .background(background)
         .accessibility(
             label: Text(text.isEmpty ? "Tanya AI is responding" : text)
@@ -52,7 +48,7 @@ public struct TanyaAITextBubble: View {
     @ViewBuilder
     private var background: some View {
         if isUser {
-            RoundedRectangle(cornerRadius: Self.cornerRadius)
+            RoundedRectangle(cornerRadius: DesignKitMetrics.Radius.bubble)
                 .fill(Color(theme.colors.userBubble))
         } else {
             TanyaAIOutlinedBackground()

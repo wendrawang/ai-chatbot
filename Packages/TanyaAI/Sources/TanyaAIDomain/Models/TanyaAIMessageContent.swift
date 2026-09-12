@@ -1,3 +1,5 @@
+import DesignKit
+
 public enum TanyaAIMessageContent: Equatable {
     case text(String)
     case image(TanyaAIImagePayload)

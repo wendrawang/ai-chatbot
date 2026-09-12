@@ -1,5 +1,4 @@
 import SwiftUI
-import TanyaAIDomain
 
 public struct TanyaAIChartBubble: View {
     let payload: TanyaAIChartPayload
@@ -17,9 +16,9 @@ public struct TanyaAIChartBubble: View {
             TanyaAIChartLegendView(series: payload.series)
             footnote
         }
-        .padding(16)
+        .padding(DesignKitMetrics.Spacing.wide)
         .background(Color(theme.colors.surface))
-        .cornerRadius(18)
+        .cornerRadius(DesignKitMetrics.Radius.card)
         .frame(maxWidth: 340, alignment: .leading)
         .accessibilityElement(children: .contain)
         .accessibilityIdentifier(
@@ -41,7 +40,7 @@ public struct TanyaAIChartBubble: View {
     @ViewBuilder
     private var total: some View {
         if let totalValue = payload.totalValue {
-            VStack(alignment: .leading, spacing: 4) {
+            VStack(alignment: .leading, spacing: DesignKitMetrics.Spacing.tight) {
                 Text(totalValue)
                     .font(Font(theme.fonts.amount))
                 subtitle

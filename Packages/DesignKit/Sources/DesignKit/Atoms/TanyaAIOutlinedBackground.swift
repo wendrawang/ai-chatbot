@@ -8,11 +8,11 @@ struct TanyaAIOutlinedBackground: View {
     @Environment(\.tanyaAITheme) private var theme
 
     var body: some View {
-        RoundedRectangle(cornerRadius: TanyaAITextBubble.cornerRadius)
+        RoundedRectangle(cornerRadius: DesignKitMetrics.Radius.bubble)
             .fill(Color(theme.colors.assistantBubble))
             .overlay(
-                RoundedRectangle(cornerRadius: TanyaAITextBubble.cornerRadius)
-                    .stroke(Color(theme.colors.divider), lineWidth: 1)
+                RoundedRectangle(cornerRadius: DesignKitMetrics.Radius.bubble)
+                    .stroke(Color(theme.colors.divider), lineWidth: DesignKitMetrics.Stroke.hairline)
             )
     }
 }

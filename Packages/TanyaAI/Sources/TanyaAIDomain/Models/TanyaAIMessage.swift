@@ -1,3 +1,4 @@
+import DesignKit
 import Foundation
 
 public struct TanyaAIMessage: Identifiable, Equatable {

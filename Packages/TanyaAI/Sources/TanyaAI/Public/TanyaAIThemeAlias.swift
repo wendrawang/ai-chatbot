@@ -1,5 +1,5 @@
-import TanyaAIDesignSystem
+import DesignKit
 
-public typealias TanyaAITheme = TanyaAIDesignSystem.TanyaAITheme
-public typealias TanyaAIColors = TanyaAIDesignSystem.TanyaAIColors
-public typealias TanyaAIFonts = TanyaAIDesignSystem.TanyaAIFonts
+public typealias TanyaAITheme = DesignKit.TanyaAITheme
+public typealias TanyaAIColors = DesignKit.TanyaAIColors
+public typealias TanyaAIFonts = DesignKit.TanyaAIFonts

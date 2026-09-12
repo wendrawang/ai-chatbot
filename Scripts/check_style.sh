@@ -11,10 +11,11 @@ MAXIMUM_LINES=250
 DEVELOPER_DIR="${DEVELOPER_DIR:-/Applications/Xcode.app/Contents/Developer}"
 export DEVELOPER_DIR
 
+# Every package under Packages/, so a new one is covered the day it appears
+# rather than the day someone notices it was not.
 find "$PROJECT_ROOT/TanyaAISandboxApp" \
   "$PROJECT_ROOT/TanyaAISandboxUITests" \
-  "$PROJECT_ROOT/Packages/TanyaAI/Sources" \
-  "$PROJECT_ROOT/Packages/TanyaAI/Tests" \
+  "$PROJECT_ROOT/Packages" \
   -name '*.swift' -print0 | while IFS= read -r -d '' source_file; do
     line_count="$(wc -l < "$source_file" | tr -d ' ')"
     if [ "$line_count" -gt "$MAXIMUM_LINES" ]; then

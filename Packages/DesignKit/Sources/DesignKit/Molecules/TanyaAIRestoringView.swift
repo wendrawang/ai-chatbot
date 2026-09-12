@@ -13,7 +13,7 @@ public struct TanyaAIRestoringView: View {
     public init() {}
 
     public var body: some View {
-        VStack(spacing: 12) {
+        VStack(spacing: DesignKitMetrics.Spacing.regular) {
             ProgressView()
             Text("Loading your conversation")
                 .font(Font(theme.fonts.footnote))
