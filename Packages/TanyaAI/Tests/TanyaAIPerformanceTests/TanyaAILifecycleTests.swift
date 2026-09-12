@@ -60,8 +60,8 @@ final class TanyaAILifecycleTests: XCTestCase {
         XCTAssertNil(weakController)
     }
 
-    private func makeApproval() -> TanyaAIApprovalPayload {
-        TanyaAIApprovalPayload(
+    private func makeApproval() -> ApprovalPayload {
+        ApprovalPayload(
             approvalIdentifier: "approval-fixture",
             transactionIdentifier: "transaction-fixture",
             challengeIdentifier: "challenge-fixture",

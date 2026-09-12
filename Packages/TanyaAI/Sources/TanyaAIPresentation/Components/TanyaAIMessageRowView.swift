@@ -25,36 +25,36 @@ struct TanyaAIMessageRowView: View {
     private var content: some View {
         switch viewModel.content {
         case .text(let text):
-            TanyaAITextBubble(
+            TextBubble(
                 text: text,
                 isUser: viewModel.role == .user
             )
         case .image(let payload):
-            TanyaAIImageBubble(payload: payload)
+            ImageBubble(payload: payload)
         case .information(let payload):
-            TanyaAIInformationBubble(payload: payload)
+            InformationBubble(payload: payload)
         case .chart(let payload):
-            TanyaAIChartBubble(payload: payload)
+            ChartBubble(payload: payload)
         case .portfolio(let payload):
-            TanyaAIPortfolioBubble(payload: payload)
+            PortfolioBubble(payload: payload)
         case .financialList(let payload):
-            TanyaAIFinancialListBubble(payload: payload)
+            FinancialListBubble(payload: payload)
         case .approval(let payload):
-            TanyaAIApprovalBubble(
+            ApprovalBubble(
                 payload: payload,
                 onEdit: { handlers.onApprovalEdit(payload) },
                 onCancel: { handlers.onApprovalCancel(payload) },
                 onApprove: { handlers.onApproval(payload) }
             )
         case .receipt(let payload):
-            TanyaAIReceiptBubble(payload: payload)
+            ReceiptBubble(payload: payload)
         case .status(let payload):
-            TanyaAIStatusBubble(payload: payload)
+            StatusBubble(payload: payload)
         case .actions(let payload):
-            TanyaAIActionBubble(payload: payload, onAction: handlers.onAction)
+            ActionBubble(payload: payload, onAction: handlers.onAction)
         case .unsupported(let message):
-            TanyaAIStatusBubble(
-                payload: TanyaAIStatusPayload(
+            StatusBubble(
+                payload: StatusPayload(
                     title: "Update required",
                     detail: message,
                     level: .warning

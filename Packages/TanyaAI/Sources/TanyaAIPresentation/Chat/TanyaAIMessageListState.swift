@@ -12,7 +12,7 @@ struct TanyaAIMessageListState {
     let showsTypingRow: Bool
     /// Empty unless a reply is offering prompts. They render as the last row,
     /// so they sit under the question they answer.
-    let suggestions: [TanyaAISuggestion]
+    let suggestions: [Suggestion]
 
     static let empty = TanyaAIMessageListState(
         messages: [],
@@ -59,5 +59,5 @@ struct TanyaAIMessageListState {
 enum TanyaAIMessageRowKind {
     case message(TanyaAIMessageItemViewModel)
     case typing
-    case suggestions([TanyaAISuggestion])
+    case suggestions([Suggestion])
 }

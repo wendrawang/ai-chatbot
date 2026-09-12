@@ -127,8 +127,8 @@ final class TanyaAIPINViewModelTests: XCTestCase {
         )
     }
 
-    private func makeApproval() -> TanyaAIApprovalPayload {
-        TanyaAIApprovalPayload(
+    private func makeApproval() -> ApprovalPayload {
+        ApprovalPayload(
             approvalIdentifier: "approval-demo",
             transactionIdentifier: "transaction-demo",
             challengeIdentifier: "challenge-demo",

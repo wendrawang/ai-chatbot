@@ -4,7 +4,7 @@ import TanyaAIDomain
 
 public struct TanyaAIChatView: View {
     @ObservedObject private var viewModel: TanyaAIChatViewModel
-    @Environment(\.tanyaAITheme) private var theme
+    @Environment(\.theme) private var theme
 
     public init(viewModel: TanyaAIChatViewModel) {
         self.viewModel = viewModel
@@ -29,7 +29,7 @@ public struct TanyaAIChatView: View {
         ZStack {
             TanyaAIMessageListView(viewModel: viewModel)
             if viewModel.isRestoring {
-                TanyaAIRestoringView()
+                RestoringView()
             }
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)

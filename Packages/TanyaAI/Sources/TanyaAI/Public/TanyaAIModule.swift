@@ -16,7 +16,7 @@ public enum TanyaAIModule {
     public static func makeViewController(
         configuration: TanyaAIConfiguration = TanyaAIConfiguration(),
         dependencies: TanyaAIDependencies,
-        onAction: @escaping (TanyaAIAction) -> Void = { _ in }
+        onAction: @escaping (Action) -> Void = { _ in }
     ) -> UIViewController {
         let dependencyContainer = TanyaAIDependencyContainer(
             configuration: configuration,

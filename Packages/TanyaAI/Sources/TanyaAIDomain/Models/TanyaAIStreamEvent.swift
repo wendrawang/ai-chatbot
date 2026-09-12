@@ -9,7 +9,7 @@ public enum TanyaAIStreamEvent: Equatable {
 
     /// A hand-off the channel itself asked for, rather than a button on a
     /// card. Only a session transport raises this.
-    case hostAction(TanyaAIAction)
+    case hostAction(Action)
 
     /// The agent or bot is composing. Only a session transport raises this.
     case typing(Bool)

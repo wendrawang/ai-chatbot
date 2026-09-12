@@ -3,7 +3,7 @@ import SwiftUI
 
 public struct TanyaAIHistoryView: View {
     @ObservedObject private var viewModel: TanyaAIHistoryViewModel
-    @Environment(\.tanyaAITheme) private var theme
+    @Environment(\.theme) private var theme
 
     public init(viewModel: TanyaAIHistoryViewModel) {
         self.viewModel = viewModel

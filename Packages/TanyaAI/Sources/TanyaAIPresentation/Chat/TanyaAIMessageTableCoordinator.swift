@@ -15,7 +15,7 @@ extension TanyaAIMessageTableView {
         private var state = TanyaAIMessageListState.empty
         private var followsLatestMessage = true
         private var scrollRequestIdentifier = 0
-        private var theme = TanyaAITheme.sandbox
+        private var theme = Theme.sandbox
         private var handlers = TanyaAIMessageRowHandlers.inert
         private var subscriptions: [String: AnyCancellable] = [:]
 
@@ -28,7 +28,7 @@ extension TanyaAIMessageTableView {
 
         func update(
             _ state: TanyaAIMessageListState,
-            theme: TanyaAITheme,
+            theme: Theme,
             handlers: TanyaAIMessageRowHandlers
         ) {
             let previous = self.state

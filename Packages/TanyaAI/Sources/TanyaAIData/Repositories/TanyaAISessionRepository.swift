@@ -131,7 +131,7 @@ public final class TanyaAISessionRepository: TanyaAIRepository {
         case .hostAction(let identifier, let deeplink):
             emit(
                 .hostAction(
-                    TanyaAIAction(identifier: identifier, deeplink: deeplink)
+                    Action(identifier: identifier, deeplink: deeplink)
                 )
             )
         default:

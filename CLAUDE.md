@@ -33,13 +33,19 @@ Isi DesignKit disusun atomic design:
 
 | Folder | Isi |
 | --- | --- |
-| `Tokens/` | `DesignKitMetrics` (jarak, radius, ukuran) + tema warna/font |
-| `Models/` | payload yang digambar komponen |
-| `Atoms/` | outline, remote image, rich text, parser markup, segmented bar |
-| `Molecules/` | bubble teks/gambar/status/informasi, baris prompt, link, legenda |
-| `Organisms/` | approval, chart, portfolio, list, receipt, daftar prompt, kartu link |
+| `Tokens/` | `DesignKitMetrics`, `Theme`, `Colors`, `Fonts`, `ThemeEnvironment` |
+| `Models/` | `ApprovalPayload`, `ChartPayload`, `Action`, `Suggestion`, dst |
+| `Atoms/` | `OutlinedBackground`, `RemoteImage`, `RichText`, `Markup`, `SegmentedBarView` |
+| `Molecules/` | `TextBubble`, `ImageBubble`, `SuggestionRow`, `ActionLink`, `TypingIndicatorView`, … |
+| `Organisms/` | `ApprovalBubble`, `ChartBubble`, `ReceiptBubble`, `SuggestionList`, `ActionBubble`, … |
 
 **Angka tampilan ambil dari `DesignKitMetrics`, jangan ketik langsung.**
+
+**Tidak boleh ada kata "Tanya" di dalam DesignKit** — nama tipe, nama file,
+maupun teks. Ia harus bisa dipakai fitur lain tanpa terasa pinjaman. Host
+tetap menulis `TanyaAITheme`, `TanyaAIAction`, dan seterusnya lewat alias di
+`Sources/TanyaAI/Public/`, jadi perpindahan tipe antar paket tidak pernah
+menyentuh kode aplikasi.
 
 ## Bubble
 

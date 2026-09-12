@@ -8,7 +8,7 @@ import SwiftUI
 /// customer reaches for never moves.
 struct TanyaAIChatInputView: View {
     @ObservedObject var viewModel: TanyaAIChatViewModel
-    @Environment(\.tanyaAITheme) private var theme
+    @Environment(\.theme) private var theme
 
     var body: some View {
         HStack(alignment: .bottom, spacing: 10) {

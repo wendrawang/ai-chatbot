@@ -5,7 +5,7 @@ struct TanyaAIPINKeypadView: View {
     let onDigit: (Int) -> Void
     let onDelete: () -> Void
     let isDisabled: Bool
-    @Environment(\.tanyaAITheme) private var theme
+    @Environment(\.theme) private var theme
 
     private let digitRows = [[1, 2, 3], [4, 5, 6], [7, 8, 9]]
 

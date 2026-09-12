@@ -25,7 +25,7 @@ final class TanyaAIActionFixtureTests: XCTestCase {
             )
         )
 
-        let buttons = events.compactMap { event -> [TanyaAIActionButton]? in
+        let buttons = events.compactMap { event -> [ActionButton]? in
             guard case .content(_, .actions(let payload)) = event else {
                 return nil
             }
@@ -44,7 +44,7 @@ final class TanyaAIActionFixtureTests: XCTestCase {
             )
         )
 
-        let approvals = events.compactMap { event -> TanyaAIApprovalPayload? in
+        let approvals = events.compactMap { event -> ApprovalPayload? in
             guard case .content(_, .approval(let payload)) = event else {
                 return nil
             }

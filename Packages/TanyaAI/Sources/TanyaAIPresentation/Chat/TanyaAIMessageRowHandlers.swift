@@ -7,11 +7,11 @@ import TanyaAIDomain
 /// hands them to the row - so grouping them keeps each signature short instead
 /// of repeating the same closures at every level.
 struct TanyaAIMessageRowHandlers {
-    let onApprovalEdit: (TanyaAIApprovalPayload) -> Void
-    let onApprovalCancel: (TanyaAIApprovalPayload) -> Void
-    let onApproval: (TanyaAIApprovalPayload) -> Void
-    let onAction: (TanyaAIAction) -> Void
-    let onSuggestion: (TanyaAISuggestion) -> Void
+    let onApprovalEdit: (ApprovalPayload) -> Void
+    let onApprovalCancel: (ApprovalPayload) -> Void
+    let onApproval: (ApprovalPayload) -> Void
+    let onAction: (Action) -> Void
+    let onSuggestion: (Suggestion) -> Void
 
     /// Placeholder for the coordinator's stored property, before the first
     /// `update` delivers the real handlers.

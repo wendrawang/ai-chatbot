@@ -27,7 +27,7 @@ final class TanyaAIChatUseCaseFixture: TanyaAIChatUseCaseProtocol {
 
     func appendStatusMessages(count: Int) {
         for index in 0..<count {
-            let payload = TanyaAIStatusPayload(
+            let payload = StatusPayload(
                 title: "Status \(index)",
                 detail: "Sanitized performance fixture",
                 level: .neutral

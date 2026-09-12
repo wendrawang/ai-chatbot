@@ -6,11 +6,11 @@ import UIKit
 final class TanyaAIPINSheetViewController: UIViewController {
     private let hostingController: UIHostingController<AnyView>
 
-    init(viewModel: TanyaAIPINViewModel, theme: TanyaAITheme) {
+    init(viewModel: TanyaAIPINViewModel, theme: Theme) {
         hostingController = UIHostingController(
             rootView: AnyView(
                 TanyaAIPINBottomSheetView(viewModel: viewModel)
-                    .tanyaAITheme(theme)
+                    .theme(theme)
             )
         )
         super.init(nibName: nil, bundle: nil)

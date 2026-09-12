@@ -46,7 +46,7 @@ final class TanyaAIChatViewModelTests: XCTestCase {
         let useCase = TanyaAIChatUseCaseStub()
         let viewModel = TanyaAIChatViewModel(useCase: useCase)
         let approval = makeApproval()
-        var receivedApproval: TanyaAIApprovalPayload?
+        var receivedApproval: ApprovalPayload?
         viewModel.onOutput = { output in
             if case .requestApproval(let payload) = output {
                 receivedApproval = payload
@@ -92,18 +92,18 @@ final class TanyaAIChatViewModelTests: XCTestCase {
     func testEveryConfirmationKindProducesApprovalOutput() {
         let useCase = TanyaAIChatUseCaseStub()
         let viewModel = TanyaAIChatViewModel(useCase: useCase)
-        var receivedKinds: [TanyaAIApprovalPayload.Kind] = []
+        var receivedKinds: [ApprovalPayload.Kind] = []
         viewModel.onOutput = { output in
             if case .requestApproval(let payload) = output {
                 receivedKinds.append(payload.kind)
             }
         }
 
-        TanyaAIApprovalPayload.Kind.allCasesForTests.forEach { kind in
+        ApprovalPayload.Kind.allCasesForTests.forEach { kind in
             viewModel.approve(makeApproval(kind: kind))
         }
 
-        XCTAssertEqual(receivedKinds, TanyaAIApprovalPayload.Kind.allCasesForTests)
+        XCTAssertEqual(receivedKinds, ApprovalPayload.Kind.allCasesForTests)
     }
 
     func testApprovalStateUpdatesExistingMessage() {
@@ -132,9 +132,9 @@ final class TanyaAIChatViewModelTests: XCTestCase {
     }
 
     private func makeApproval(
-        kind: TanyaAIApprovalPayload.Kind = .generic
-    ) -> TanyaAIApprovalPayload {
-        TanyaAIApprovalPayload(
+        kind: ApprovalPayload.Kind = .generic
+    ) -> ApprovalPayload {
+        ApprovalPayload(
             approvalIdentifier: "approval-demo",
             transactionIdentifier: "transaction-demo",
             challengeIdentifier: "challenge-demo",
@@ -147,7 +147,7 @@ final class TanyaAIChatViewModelTests: XCTestCase {
     }
 }
 
-private extension TanyaAIApprovalPayload.Kind {
+private extension ApprovalPayload.Kind {
     static let allCasesForTests: [Self] = [
         .currencyConversion,
         .timeDeposit,

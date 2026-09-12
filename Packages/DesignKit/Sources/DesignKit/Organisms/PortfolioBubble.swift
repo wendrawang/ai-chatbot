@@ -1,0 +1,50 @@
+import SwiftUI
+
+public struct PortfolioBubble: View {
+    let payload: PortfolioPayload
+    @Environment(\.theme) private var theme
+
+    public init(payload: PortfolioPayload) {
+        self.payload = payload
+    }
+
+    public var body: some View {
+        VStack(alignment: .leading, spacing: 13) {
+            header
+            Text(payload.totalValue)
+                .font(Font(theme.fonts.amount))
+            Text(payload.performanceText)
+                .font(Font(theme.fonts.headline))
+                .foregroundColor(Color(theme.colors.success))
+            SegmentedBarView(series: payload.allocations)
+            ChartLegendView(series: payload.allocations)
+            footnote
+        }
+        .padding(DesignKitMetrics.Spacing.wide)
+        .background(Color(theme.colors.surface))
+        .cornerRadius(DesignKitMetrics.Radius.card)
+        .frame(maxWidth: 340, alignment: .leading)
+        .accessibilityElement(children: .contain)
+        .accessibilityIdentifier("portfolio.summary")
+    }
+
+    private var header: some View {
+        HStack(spacing: 10) {
+            Image(systemName: "chart.bar")
+                .font(Font(theme.fonts.headline))
+                .foregroundColor(Color(theme.colors.accent))
+                .frame(width: 24)
+            Text(payload.title)
+                .font(Font(theme.fonts.headline))
+        }
+    }
+
+    @ViewBuilder
+    private var footnote: some View {
+        if let footnote = payload.footnote {
+            Text(footnote)
+                .font(Font(theme.fonts.footnote))
+                .foregroundColor(Color(theme.colors.secondaryText))
+        }
+    }
+}

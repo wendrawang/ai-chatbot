@@ -4,7 +4,7 @@ import TanyaAIDomain
 
 struct TanyaAIMessageTableRow: View {
     let kind: TanyaAIMessageRowKind
-    let theme: TanyaAITheme
+    let theme: Theme
     let handlers: TanyaAIMessageRowHandlers
 
     var body: some View {
@@ -16,9 +16,9 @@ struct TanyaAIMessageTableRow: View {
                     handlers: handlers
                 )
             case .typing:
-                TanyaAITypingIndicatorView()
+                TypingIndicatorView()
             case .suggestions(let suggestions):
-                TanyaAISuggestionList(
+                SuggestionList(
                     suggestions: suggestions,
                     onSelect: handlers.onSuggestion
                 )
@@ -26,6 +26,6 @@ struct TanyaAIMessageTableRow: View {
         }
         .padding(.horizontal, 16)
         .padding(.vertical, 6)
-        .tanyaAITheme(theme)
+        .theme(theme)
     }
 }

@@ -16,7 +16,7 @@ public extension TanyaAIChatViewModel {
     /// confirmation without a hand-off arrives anyway - a bot sending
     /// something this app cannot complete - it is refused in the open, not
     /// with a button that quietly does nothing.
-    func approve(_ payload: TanyaAIApprovalPayload) {
+    func approve(_ payload: ApprovalPayload) {
         guard payload.state == .awaitingApproval else {
             return
         }
@@ -32,18 +32,18 @@ public extension TanyaAIChatViewModel {
     }
 
     /// A button on an action card. Reports the deeplink and nothing else.
-    func perform(_ action: TanyaAIAction) {
+    func perform(_ action: Action) {
         onOutput?(.performAction(action))
     }
 
     /// Edit on an approval bubble: seeds the input so the customer can restate
     /// the request in chat.
-    func editApproval(_ payload: TanyaAIApprovalPayload) {
+    func editApproval(_ payload: ApprovalPayload) {
         inputText = "Change \(payload.title.lowercased()): "
     }
 
     /// Cancel on an approval bubble. Local state only: nothing is sent.
-    func cancelApproval(_ payload: TanyaAIApprovalPayload) {
+    func cancelApproval(_ payload: ApprovalPayload) {
         updateApproval(
             identifier: payload.approvalIdentifier,
             state: .cancelled
@@ -55,7 +55,7 @@ public extension TanyaAIChatViewModel {
     /// progresses.
     func updateApproval(
         identifier: String,
-        state: TanyaAIApprovalPayload.State
+        state: ApprovalPayload.State
     ) {
         guard let message = approvalMessage(identifier: identifier),
               case .approval(var payload) = message.content,

@@ -43,7 +43,7 @@ final class TanyaAIImageDecodingTests: XCTestCase {
 
         XCTAssertEqual(
             payload.aspectRatio,
-            TanyaAIImagePayload.defaultAspectRatio
+            ImagePayload.defaultAspectRatio
         )
     }
 
@@ -55,11 +55,11 @@ final class TanyaAIImageDecodingTests: XCTestCase {
 
         XCTAssertEqual(
             zero.aspectRatio,
-            TanyaAIImagePayload.defaultAspectRatio
+            ImagePayload.defaultAspectRatio
         )
         XCTAssertEqual(
             negative.aspectRatio,
-            TanyaAIImagePayload.defaultAspectRatio
+            ImagePayload.defaultAspectRatio
         )
     }
 
@@ -74,7 +74,7 @@ final class TanyaAIImageDecodingTests: XCTestCase {
 
     private func decodeImage(
         _ overrides: [String: Any?]
-    ) throws -> TanyaAIImagePayload {
+    ) throws -> ImagePayload {
         var fields: [String: Any] = [
             "messageIdentifier": "img-1",
             "imageURL": "https://example.com/promo.png",

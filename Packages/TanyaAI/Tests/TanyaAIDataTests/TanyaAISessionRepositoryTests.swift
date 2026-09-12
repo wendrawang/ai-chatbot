@@ -90,7 +90,7 @@ final class TanyaAISessionRepositoryTests: XCTestCase {
             .structuredPayload(name: "content.actions", json: actionCardJSON)
         )
 
-        let buttons = events.compactMap { event -> [TanyaAIActionButton]? in
+        let buttons = events.compactMap { event -> [ActionButton]? in
             guard case .content(_, .actions(let payload)) = event else {
                 return nil
             }
@@ -147,7 +147,7 @@ final class TanyaAISessionRepositoryTests: XCTestCase {
             )
         )
 
-        let actions = events.compactMap { event -> TanyaAIAction? in
+        let actions = events.compactMap { event -> Action? in
             guard case .hostAction(let action) = event else {
                 return nil
             }

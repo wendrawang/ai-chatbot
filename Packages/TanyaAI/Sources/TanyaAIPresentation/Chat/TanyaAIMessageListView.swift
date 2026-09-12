@@ -3,7 +3,7 @@ import SwiftUI
 
 struct TanyaAIMessageListView: View {
     @ObservedObject var viewModel: TanyaAIChatViewModel
-    @Environment(\.tanyaAITheme) private var theme
+    @Environment(\.theme) private var theme
 
     var body: some View {
         TanyaAIMessageTableView(

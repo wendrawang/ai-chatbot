@@ -6,7 +6,7 @@ import CoreGraphics
 /// place instead of hunting for the same number in fourteen files - and so
 /// the numbers can be read as a system rather than guessed at individually.
 ///
-/// Colours and type are not here: those arrive as a `TanyaAITheme`, which the
+/// Colours and type are not here: those arrive as a `Theme`, which the
 /// host supplies so a bank's own palette wins. These are the values that stay
 /// the same whoever is using it.
 public enum DesignKitMetrics {

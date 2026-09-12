@@ -96,7 +96,7 @@ final class TanyaAIChatBehaviorTests: XCTestCase {
         let viewModel = TanyaAIChatViewModel(useCase: useCase)
         viewModel.sendMessage("Show status")
         useCase.send(.responseStarted(messageIdentifier: "assistant"))
-        let status = TanyaAIStatusPayload(
+        let status = StatusPayload(
             title: "Completed",
             detail: "Sanitized result",
             level: .success
@@ -112,8 +112,8 @@ final class TanyaAIChatBehaviorTests: XCTestCase {
         XCTAssertEqual(viewModel.messages.last?.content, .status(status))
     }
 
-    private func makeApproval() -> TanyaAIApprovalPayload {
-        TanyaAIApprovalPayload(
+    private func makeApproval() -> ApprovalPayload {
+        ApprovalPayload(
             approvalIdentifier: "approval-demo",
             transactionIdentifier: "transaction-demo",
             challengeIdentifier: "challenge-demo",

@@ -9,11 +9,11 @@ final class TanyaAIContainerViewController: UIViewController {
     private let pushTransition = TanyaAIPushTransition()
     private var coordinator: TanyaAICoordinator?
     private let dependencyContainer: TanyaAIDependencyContainer
-    private let actionHandler: (TanyaAIAction) -> Void
+    private let actionHandler: (Action) -> Void
 
     init(
         dependencyContainer: TanyaAIDependencyContainer,
-        actionHandler: @escaping (TanyaAIAction) -> Void = { _ in }
+        actionHandler: @escaping (Action) -> Void = { _ in }
     ) {
         self.dependencyContainer = dependencyContainer
         self.actionHandler = actionHandler

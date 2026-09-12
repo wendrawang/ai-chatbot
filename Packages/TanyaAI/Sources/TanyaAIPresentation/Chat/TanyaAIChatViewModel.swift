@@ -14,7 +14,7 @@ public final class TanyaAIChatViewModel: ObservableObject {
     /// stays empty meanwhile, so a greeting is never shown and then replaced.
     @Published public private(set) var isRestoring = true
     @Published public private(set) var errorMessage: String?
-    @Published public private(set) var suggestions: [TanyaAISuggestion]
+    @Published public private(set) var suggestions: [Suggestion]
     @Published public var inputText = ""
 
     public var onOutput: ((TanyaAIChatOutput) -> Void)?
@@ -43,7 +43,7 @@ public final class TanyaAIChatViewModel: ObservableObject {
         self.useCase = useCase
         self.authorizesInFeature = authorizesInFeature
         messages = []
-        suggestions = TanyaAISuggestion.sandboxDefaults
+        suggestions = Suggestion.sandboxDefaults
         // A reply nobody asked for still belongs on screen. Without this the
         // channel delivers it and the graph drops it on the floor.
         useCase.observeUnsolicitedEvents { [weak self] event in
@@ -70,7 +70,7 @@ public final class TanyaAIChatViewModel: ObservableObject {
         startRequest(message)
     }
 
-    public func sendSuggestion(_ suggestion: TanyaAISuggestion) {
+    public func sendSuggestion(_ suggestion: Suggestion) {
         suggestions = []
         sendMessage(suggestion.prompt)
     }

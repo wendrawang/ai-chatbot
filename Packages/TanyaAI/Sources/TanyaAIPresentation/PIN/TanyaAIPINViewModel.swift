@@ -9,14 +9,14 @@ public final class TanyaAIPINViewModel: ObservableObject {
     @Published public private(set) var isSubmitting = false
     @Published public private(set) var errorMessage: String?
 
-    public let approval: TanyaAIApprovalPayload
+    public let approval: ApprovalPayload
     public var onOutput: ((TanyaAIPINOutput) -> Void)?
 
     private let authorizationService: TanyaAIAuthorizationService
     private var activeRequest: TanyaAICancellable?
 
     public init(
-        approval: TanyaAIApprovalPayload,
+        approval: ApprovalPayload,
         authorizationService: TanyaAIAuthorizationService
     ) {
         self.approval = approval

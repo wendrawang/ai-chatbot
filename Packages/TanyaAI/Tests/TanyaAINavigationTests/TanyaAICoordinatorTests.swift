@@ -53,13 +53,13 @@ final class TanyaAICoordinatorTests: XCTestCase {
 
     func testActionReachesTheHostWithoutNavigatingOrOpeningAnything() {
         let navigationController = UINavigationController()
-        var received: [TanyaAIAction] = []
+        var received: [Action] = []
         let coordinator = makeCoordinator(
             navigationController: navigationController,
             onAction: { received.append($0) }
         )
         coordinator.start()
-        let action = TanyaAIAction(
+        let action = Action(
             identifier: "open-transfer",
             deeplink: "ocbcid://mobile?type=transfer"
         )
@@ -75,18 +75,18 @@ final class TanyaAICoordinatorTests: XCTestCase {
     /// existing screen owns the authorization instead.
     func testApprovalHandoffReportsTheDeeplinkInsteadOfPresentingPIN() {
         let navigationController = UINavigationController()
-        var received: [TanyaAIAction] = []
+        var received: [Action] = []
         let coordinator = makeCoordinator(
             navigationController: navigationController,
             onAction: { received.append($0) }
         )
         coordinator.start()
-        let handoff = TanyaAIAction(
+        let handoff = Action(
             identifier: "handoff-transfer",
             deeplink: "ocbcid://mobile?type=transfer"
         )
         var approval = makeApproval(.transfer)
-        approval = TanyaAIApprovalPayload(
+        approval = ApprovalPayload(
             approvalIdentifier: approval.approvalIdentifier,
             transactionIdentifier: approval.transactionIdentifier,
             challengeIdentifier: approval.challengeIdentifier,
@@ -106,7 +106,7 @@ final class TanyaAICoordinatorTests: XCTestCase {
 
     private func makeCoordinator(
         navigationController: UINavigationController,
-        onAction: @escaping (TanyaAIAction) -> Void = { _ in }
+        onAction: @escaping (Action) -> Void = { _ in }
     ) -> TanyaAICoordinator {
         let dependencies = TanyaAIDependencies(
             chatSession: MockTanyaAIChatSession.sandbox(),
@@ -126,9 +126,9 @@ final class TanyaAICoordinatorTests: XCTestCase {
     }
 
     private func makeApproval(
-        _ kind: TanyaAIApprovalPayload.Kind
-    ) -> TanyaAIApprovalPayload {
-        TanyaAIApprovalPayload(
+        _ kind: ApprovalPayload.Kind
+    ) -> ApprovalPayload {
+        ApprovalPayload(
             approvalIdentifier: "\(kind.rawValue)-approval",
             transactionIdentifier: "demo-transaction",
             challengeIdentifier: "demo-challenge",
@@ -140,7 +140,7 @@ final class TanyaAICoordinatorTests: XCTestCase {
         )
     }
 
-    private var confirmationKinds: [TanyaAIApprovalPayload.Kind] {
+    private var confirmationKinds: [ApprovalPayload.Kind] {
         [.currencyConversion, .timeDeposit, .transfer, .savingsPlan]
     }
 }

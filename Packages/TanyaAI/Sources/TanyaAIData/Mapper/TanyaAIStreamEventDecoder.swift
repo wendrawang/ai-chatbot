@@ -104,11 +104,11 @@ final class TanyaAIStreamEventDecoder {
 
     private func decodeInformation(_ data: Data) throws -> TanyaAIStreamEvent {
         let payload = try decoder.decode(TanyaAIInformationDTO.self, from: data)
-        var blocks: [TanyaAIInformationBlock] = [.text(payload.text)]
+        var blocks: [InformationBlock] = [.text(payload.text)]
         if !payload.items.isEmpty {
             blocks.append(.keyValue(payload.items.map(makeKeyValue)))
         }
-        let content = TanyaAIInformationPayload(
+        let content = InformationPayload(
             title: payload.title,
             blocks: blocks
         )
@@ -123,11 +123,11 @@ final class TanyaAIStreamEventDecoder {
         // An unusable url degrades to the caption alone rather than throwing:
         // the sentence is the message, and losing the whole bubble over a
         // broken link would lose more than the picture.
-        let image = TanyaAIImagePayload(
+        let image = ImagePayload(
             imageURL: URL(string: payload.imageURL),
             caption: payload.caption,
             aspectRatio: payload.aspectRatio
-                ?? TanyaAIImagePayload.defaultAspectRatio,
+                ?? ImagePayload.defaultAspectRatio,
             accessibilityText: payload.accessibilityText
         )
         return .content(
@@ -138,10 +138,10 @@ final class TanyaAIStreamEventDecoder {
 
     private func decodeChart(_ data: Data) throws -> TanyaAIStreamEvent {
         let payload = try decoder.decode(TanyaAIChartDTO.self, from: data)
-        let chartType = TanyaAIChartPayload.ChartType(
+        let chartType = ChartPayload.ChartType(
             rawValue: payload.chartType
         ) ?? .bar
-        let chart = TanyaAIChartPayload(
+        let chart = ChartPayload(
             title: payload.title,
             subtitle: payload.subtitle,
             totalValue: payload.totalValue,
@@ -157,7 +157,7 @@ final class TanyaAIStreamEventDecoder {
 
     private func decodePortfolio(_ data: Data) throws -> TanyaAIStreamEvent {
         let payload = try decoder.decode(TanyaAIPortfolioDTO.self, from: data)
-        let portfolio = TanyaAIPortfolioPayload(
+        let portfolio = PortfolioPayload(
             title: payload.title,
             totalValue: payload.totalValue,
             performanceText: payload.performanceText,
@@ -172,11 +172,11 @@ final class TanyaAIStreamEventDecoder {
 
     private func decodeApproval(_ data: Data) throws -> TanyaAIStreamEvent {
         let payload = try decoder.decode(TanyaAIApprovalDTO.self, from: data)
-        let approval = TanyaAIApprovalPayload(
+        let approval = ApprovalPayload(
             approvalIdentifier: payload.approvalIdentifier,
             transactionIdentifier: payload.transactionIdentifier,
             challengeIdentifier: payload.challengeIdentifier,
-            kind: TanyaAIApprovalPayload.Kind(
+            kind: ApprovalPayload.Kind(
                 rawValue: payload.kind ?? "generic"
             ) ?? .generic,
             title: payload.title,
@@ -194,8 +194,8 @@ final class TanyaAIStreamEventDecoder {
 
     private func decodeStatus(_ data: Data) throws -> TanyaAIStreamEvent {
         let payload = try decoder.decode(TanyaAIStatusDTO.self, from: data)
-        let level = TanyaAIStatusPayload.Level(rawValue: payload.level) ?? .neutral
-        let status = TanyaAIStatusPayload(
+        let level = StatusPayload.Level(rawValue: payload.level) ?? .neutral
+        let status = StatusPayload(
             title: payload.title,
             detail: payload.detail,
             level: level
@@ -211,14 +211,14 @@ final class TanyaAIStreamEventDecoder {
         return .responseCompleted(messageIdentifier: payload.messageIdentifier)
     }
 
-    private func makeKeyValue(_ item: TanyaAIKeyValueDTO) -> TanyaAIKeyValue {
-        TanyaAIKeyValue(label: item.label, value: item.value)
+    private func makeKeyValue(_ item: TanyaAIKeyValueDTO) -> KeyValue {
+        KeyValue(label: item.label, value: item.value)
     }
 
     private func makeChartSeries(
         _ item: TanyaAIChartSeriesDTO
-    ) -> TanyaAIChartSeries {
-        TanyaAIChartSeries(
+    ) -> ChartSeries {
+        ChartSeries(
             label: item.label,
             value: item.value,
             formattedValue: item.formattedValue

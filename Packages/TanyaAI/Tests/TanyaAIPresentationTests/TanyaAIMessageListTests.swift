@@ -94,7 +94,7 @@ final class TanyaAIMessageListTests: XCTestCase {
             isRestoring: false,
             showsTypingRow: true,
             suggestions: [
-                TanyaAISuggestion(
+                Suggestion(
                     identifier: "s1",
                     title: "Dining",
                     prompt: "Promo dining"
@@ -125,7 +125,7 @@ final class TanyaAIMessageListTests: XCTestCase {
             isRestoring: false,
             showsTypingRow: false,
             suggestions: titles.map { title in
-                TanyaAISuggestion(
+                Suggestion(
                     identifier: title,
                     title: title,
                     prompt: title

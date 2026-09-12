@@ -32,7 +32,7 @@ import UIKit
 /// `MainCoordinator()` deep inside a root screen has no initializer to thread
 /// anything through, and that is the common shape.
 public final class TanyaAIHost: ObservableObject {
-    private let theme: TanyaAITheme
+    private let theme: Theme
     private let authorizationService: TanyaAIAuthorizationService?
     private let deeplinkScheme: String
     private let deeplinkHost: String?
@@ -65,7 +65,7 @@ public final class TanyaAIHost: ObservableObject {
     ///     `scene(_:openURLContexts:)` calls. It is invoked only after the
     ///     feature has finished dismissing.
     public init(
-        theme: TanyaAITheme,
+        theme: Theme,
         authorizationService: TanyaAIAuthorizationService? = nil,
         deeplinkScheme: String,
         deeplinkHost: String? = nil,
@@ -125,7 +125,7 @@ public final class TanyaAIHost: ObservableObject {
     /// dashboard, so it has to wait until the feature is gone - and waiting is
     /// the dismissal completion, never a timer. A push that starts while a
     /// modal is still animating away is dropped without an error.
-    private func handle(_ action: TanyaAIAction) {
+    private func handle(_ action: Action) {
         guard let url = accepted(action.deeplink) else {
             return
         }

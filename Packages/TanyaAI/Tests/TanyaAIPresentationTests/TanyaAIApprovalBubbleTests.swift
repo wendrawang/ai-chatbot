@@ -152,7 +152,7 @@ final class TanyaAIApprovalBubbleTests: XCTestCase {
             useCase: useCase,
             authorizesInFeature: false
         )
-        var actions: [TanyaAIAction] = []
+        var actions: [Action] = []
         viewModel.onOutput = { output in
             if case .performAction(let action) = output {
                 actions.append(action)
@@ -165,8 +165,8 @@ final class TanyaAIApprovalBubbleTests: XCTestCase {
         XCTAssertEqual(actions.first?.deeplink, "ocbcid://mobile?type=transfer")
     }
 
-    private func makeHandoffApproval() -> TanyaAIApprovalPayload {
-        TanyaAIApprovalPayload(
+    private func makeHandoffApproval() -> ApprovalPayload {
+        ApprovalPayload(
             approvalIdentifier: "approval-handoff",
             transactionIdentifier: "transaction-demo",
             challengeIdentifier: "challenge-demo",
@@ -174,7 +174,7 @@ final class TanyaAIApprovalBubbleTests: XCTestCase {
             title: "Approve demo",
             summary: [],
             expiresAt: Date().addingTimeInterval(300),
-            handoff: TanyaAIAction(
+            handoff: Action(
                 identifier: "handoff-transfer",
                 deeplink: "ocbcid://mobile?type=transfer"
             ),
@@ -191,7 +191,7 @@ final class TanyaAIApprovalBubbleTests: XCTestCase {
 
     private func approvalPayloads(
         in viewModel: TanyaAIChatViewModel
-    ) -> [TanyaAIApprovalPayload] {
+    ) -> [ApprovalPayload] {
         viewModel.messages.compactMap { message in
             guard case .approval(let payload) = message.content else {
                 return nil
@@ -211,8 +211,8 @@ final class TanyaAIApprovalBubbleTests: XCTestCase {
         }
     }
 
-    private func makeApproval() -> TanyaAIApprovalPayload {
-        TanyaAIApprovalPayload(
+    private func makeApproval() -> ApprovalPayload {
+        ApprovalPayload(
             approvalIdentifier: "approval-demo",
             transactionIdentifier: "transaction-demo",
             challengeIdentifier: "challenge-demo",

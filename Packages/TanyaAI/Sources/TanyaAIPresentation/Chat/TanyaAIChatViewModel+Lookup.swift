@@ -27,8 +27,8 @@ extension TanyaAIChatViewModel {
 
     func makeSuggestion(
         _ payload: TanyaAISuggestionPayload
-    ) -> TanyaAISuggestion {
-        TanyaAISuggestion(
+    ) -> Suggestion {
+        Suggestion(
             identifier: payload.identifier,
             title: payload.title,
             prompt: payload.prompt

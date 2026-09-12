@@ -14,12 +14,12 @@ public struct TanyaAIDependencies {
     /// an approval with no `handoff`. A host whose confirmations all hand off
     /// to its existing flows never needs one, and passes nil.
     public let authorizationService: TanyaAIAuthorizationService?
-    public let theme: TanyaAITheme
+    public let theme: Theme
 
     public init(
         chatSession: TanyaAIChatSession,
         authorizationService: TanyaAIAuthorizationService? = nil,
-        theme: TanyaAITheme
+        theme: Theme
     ) {
         self.chatSession = chatSession
         self.authorizationService = authorizationService
