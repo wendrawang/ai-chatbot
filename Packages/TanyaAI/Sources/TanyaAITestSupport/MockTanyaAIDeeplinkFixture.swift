@@ -27,8 +27,6 @@ enum MockTanyaAIDeeplinkFixture {
             ),
             MockTanyaAIActionFixture.actionsEvent(
                 identifier: identifier,
-                title: "Continue in the app",
-                detail: "These open the existing screens.",
                 buttons: buttons
             ),
             handoffApprovalEvent(identifier),

@@ -48,19 +48,15 @@ public struct TanyaAIActionButton: Equatable, Identifiable {
     }
 }
 
-/// A card whose only content is a set of hand-off buttons.
+/// A set of hand-off links.
+///
+/// No heading of its own. Whatever explains the hand-off arrives as an
+/// ordinary reply before it, so a title here would say the same thing twice -
+/// and a field the UI never draws is a promise the contract does not keep.
 public struct TanyaAIActionPayload: Equatable {
-    public let title: String?
-    public let detail: String?
     public let buttons: [TanyaAIActionButton]
 
-    public init(
-        title: String?,
-        detail: String?,
-        buttons: [TanyaAIActionButton]
-    ) {
-        self.title = title
-        self.detail = detail
+    public init(buttons: [TanyaAIActionButton]) {
         self.buttons = buttons
     }
 }

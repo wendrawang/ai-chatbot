@@ -63,8 +63,6 @@ image() {
 actions() {
   send "content.actions" "Lanjutkan di aplikasi" '{
     "messageIdentifier": "act-1",
-    "title": "Lanjutkan di aplikasi",
-    "detail": "Membuka layar yang sudah ada",
     "actions": [
       { "title": "Buka transfer", "style": "primary",
         "action": { "identifier": "open-transfer",

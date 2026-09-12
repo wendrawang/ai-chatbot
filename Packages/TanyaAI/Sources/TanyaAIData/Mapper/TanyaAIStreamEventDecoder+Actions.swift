@@ -22,13 +22,7 @@ extension TanyaAIStreamEventDecoder {
 
         return .content(
             messageIdentifier: payload.messageIdentifier,
-            content: .actions(
-                TanyaAIActionPayload(
-                    title: payload.title,
-                    detail: payload.detail,
-                    buttons: buttons
-                )
-            )
+            content: .actions(TanyaAIActionPayload(buttons: buttons))
         )
     }
 

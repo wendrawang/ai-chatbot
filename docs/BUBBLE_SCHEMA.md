@@ -41,7 +41,7 @@ Required unless marked optional. `expiresAt` is ISO 8601.
 | `content.image` | `imageURL`, `caption`, `aspectRatio?` (number), `accessibilityText?` |
 | `content.information` | `title?`, `text`, `items[]` of `{label, value}` |
 | `content.status` | `title`, `detail`, `level` |
-| `content.actions` | `title?`, `detail?`, `actions[]` of `{title, style?, action:{identifier, deeplink}}` |
+| `content.actions` | `actions[]` of `{title, style?, action:{identifier, deeplink}}` |
 | `content.approval` | `approvalIdentifier`, `transactionIdentifier`, `challengeIdentifier`, `kind?`, `title`, `summary[]` of `{label, value}`, `notice?`, `expiresAt`, `handoff?:{identifier, deeplink}` |
 | `content.receipt` | `title`, `detail`, `summary[]` of `{label, value}`, `footnote?` |
 | `content.chart` | `title`, `subtitle?`, `totalValue?`, `chartType`, `series[]` of `{label, value (number), formattedValue}`, `footnote?` |
@@ -57,6 +57,12 @@ Allowlisted values - anything else falls back to the first entry:
 | `financial-list.style` | `paidBills`, `incoming`, `holdings` |
 | `financial-list.rows[].tone` | `neutral`, `positive` |
 | `actions[].style` | `primary`, `secondary` |
+
+### `content.actions`
+
+Links only - no heading. Whatever explains the hand-off is sent as an ordinary
+text message before it, the way the design shows it. `title` and `detail` are
+no longer read; sending them is harmless but draws nothing.
 
 ### `content.image`
 

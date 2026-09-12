@@ -7,6 +7,10 @@ final class TanyaAIActionDecodingTests: XCTestCase {
     private let decoder = TanyaAIStreamEventDecoder()
 
     /// The two-button card the assertions below read.
+    ///
+    /// It still carries `title` and `detail`, which the card no longer has.
+    /// That is the point: a backend that kept sending them must keep
+    /// decoding, so removing the heading cannot break a bot mid-flight.
     private var actionCardPayload: [String: Any] {
         [
             "messageIdentifier": "actions-message",
@@ -39,7 +43,6 @@ final class TanyaAIActionDecodingTests: XCTestCase {
             return XCTFail("Expected action content")
         }
         XCTAssertEqual(identifier, "actions-message")
-        XCTAssertEqual(payload.title, "Continue in the app")
         XCTAssertEqual(payload.buttons.count, 2)
         XCTAssertEqual(payload.buttons[0].style, .primary)
         XCTAssertEqual(

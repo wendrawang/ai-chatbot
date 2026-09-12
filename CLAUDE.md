@@ -34,7 +34,9 @@ Delapan tipe konten plus fallback. Yang perlu diingat soal tampilannya:
   langsung terkirim.
 - **Balasan memakai bubble outline**, tanpa atribusi "TANYA AI" di atasnya.
   Hanya giliran nasabah yang punya bobot warna.
-- **Deeplink tampil sebagai tautan bergaris bawah**, bukan tombol terisi.
+- **Deeplink tampil sebagai tautan bergaris bawah**, bukan tombol terisi,
+  dan **tanpa judul di atasnya** — penjelasannya dikirim sebagai pesan teks
+  biasa sebelumnya. `content.actions` tidak lagi punya `title`/`detail`.
   Kedua bobot `style` tetap berwarna aksen — yang abu-abu terbaca seperti
   tombol mati padahal aksinya tersedia.
 - **`content.image` mengambil gambar lewat `URLSession.shared`.** Di bank ini

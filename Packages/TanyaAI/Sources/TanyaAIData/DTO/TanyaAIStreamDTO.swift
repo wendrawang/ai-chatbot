@@ -67,8 +67,6 @@ struct TanyaAIActionButtonDTO: Decodable {
 
 struct TanyaAIActionsDTO: Decodable {
     let messageIdentifier: String
-    let title: String?
-    let detail: String?
     let actions: [TanyaAIActionButtonDTO]
 }
 

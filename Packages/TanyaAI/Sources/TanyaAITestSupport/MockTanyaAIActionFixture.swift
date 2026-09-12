@@ -61,8 +61,6 @@ public enum MockTanyaAIActionFixture {
     public static func actionCardEvents(
         identifier: String = "demo",
         message: String = "Your existing screens can take over from here.",
-        title: String? = "Continue in the app",
-        detail: String? = nil,
         buttons: [Button]
     ) -> [TanyaAIChatSessionEvent] {
         let messageIdentifier = "action-text-\(identifier)"
@@ -75,7 +73,7 @@ public enum MockTanyaAIActionFixture {
                     "text": message
                 ]
             ),
-            actionsEvent(identifier: identifier, title: title, detail: detail, buttons: buttons)
+            actionsEvent(identifier: identifier, buttons: buttons)
         ]
         events.append(
             event("response.completed", ["messageIdentifier": messageIdentifier])
@@ -133,11 +131,9 @@ public enum MockTanyaAIActionFixture {
 
     static func actionsEvent(
         identifier: String,
-        title: String?,
-        detail: String?,
         buttons: [Button]
     ) -> TanyaAIChatSessionEvent {
-        var payload: [String: Any] = [
+        let payload: [String: Any] = [
             "messageIdentifier": "action-card-\(identifier)",
             "actions": buttons.map { button in
                 [
@@ -150,12 +146,6 @@ public enum MockTanyaAIActionFixture {
                 ]
             }
         ]
-        if let title {
-            payload["title"] = title
-        }
-        if let detail {
-            payload["detail"] = detail
-        }
         return event("content.actions", payload)
     }
 
