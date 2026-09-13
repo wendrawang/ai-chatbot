@@ -10,7 +10,7 @@ string** - not an object.
 {
   "message_type": "MESG",
   "user_id": "<bot>",
-  "message": "text shown if the app is too old to know this type",
+  "message": "plain-text body - see below for when it is read",
   "custom_type": "content.actions",
   "data": "{\"messageIdentifier\":\"act-1\", ...}"
 }
@@ -24,6 +24,13 @@ Three rules follow from that shape:
   per bubble.
 - **A message with no `custom_type` is a text bubble**, taking `message` as
   its content.
+
+`message` is *not* the fallback for a card this app is too old to draw. That
+fallback is `fallbackText`, inside `data`. On a typed card `message` is never
+rendered - neither live nor when history is read back, both of which take the
+card from `data`. It still earns its place: Sendbird uses it for push previews
+and its dashboard, and it is what any other client shows. Write it as if
+nobody had the app.
 
 A message whose `custom_type` does not begin with `content.` is treated as
 plain text.
@@ -57,6 +64,18 @@ Allowlisted values - anything else falls back to the first entry:
 | `financial-list.style` | `paidBills`, `incoming`, `holdings` |
 | `financial-list.rows[].tone` | `neutral`, `positive` |
 | `actions[].style` | `primary`, `secondary` |
+
+### Any `content.*` this app does not know
+
+Decoded as the unsupported bubble, reading one optional field from `data`:
+
+| Field | Purpose |
+| --- | --- |
+| `fallbackText` | The sentence shown in the placeholder. Omitted, the app says "requires a newer app version". |
+
+This is what the `content.` prefix buys. A name outside the prefix that the
+app does not know is dropped without trace; inside it, the turn still leaves
+something on screen.
 
 ### `content.actions`
 
