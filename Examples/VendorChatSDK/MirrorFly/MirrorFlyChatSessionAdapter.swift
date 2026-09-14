@@ -23,7 +23,7 @@ final class MirrorFlyChatSessionAdapter: NSObject, TanyaAIChatSession {
     var onEvent: ((TanyaAIChatSessionEvent) -> Void)?
 
     /// How many past messages a reopened conversation shows.
-    static let historyLimit = 50
+    static let historyLimit = 100
 
     private let botJID: String
     private let currentUserJID: String

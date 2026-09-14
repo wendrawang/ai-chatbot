@@ -13,12 +13,20 @@ import TanyaAIDomain
 /// - a session delivers messages nobody asked for, which are forwarded to the
 ///   unsolicited observer rather than to the turn in flight.
 public final class TanyaAISessionRepository: TanyaAIRepository {
+    /// How much of a reopened conversation reaches the screen.
+    ///
+    /// Enforced here rather than trusted to each adapter: a vendor that
+    /// returns its whole archive would otherwise put thousands of rows into
+    /// one table, and the adapter is the layer most likely to be written by
+    /// someone who has never seen this file.
+    static let historyLimit = 100
+
     private let session: TanyaAIChatSession
-    private let decoder = TanyaAIStreamEventDecoder()
-    private let lock = NSLock()
+    let decoder = TanyaAIStreamEventDecoder()
+    let lock = NSLock()
     private var activeTurn: Turn?
     private var unsolicitedObserver: ((TanyaAIStreamEvent) -> Void)?
-    private var hasReportedHistory = false
+    var hasReportedHistory = false
     private var context: TanyaAIContext?
 
     public init(
@@ -127,7 +135,13 @@ public final class TanyaAISessionRepository: TanyaAIRepository {
             lock.lock()
             hasReportedHistory = true
             lock.unlock()
-            emit(.history(messages.map(makeHistoryMessage)))
+            emit(
+                .history(
+                    messages
+                        .suffix(Self.historyLimit)
+                        .map(makeHistoryMessage)
+                )
+            )
         case .hostAction(let identifier, let deeplink):
             emit(
                 .hostAction(
@@ -139,48 +153,6 @@ public final class TanyaAISessionRepository: TanyaAIRepository {
         }
     }
 
-    private func reportEmptyHistoryIfNeeded() {
-        lock.lock()
-        let needed = !hasReportedHistory
-        hasReportedHistory = true
-        lock.unlock()
-        guard needed else {
-            return
-        }
-        emit(.history([]))
-    }
-
-    /// A past message becomes the same content a live one would, so history
-    /// and new replies render through one path.
-    ///
-    /// A card that no longer decodes degrades to the unsupported bubble
-    /// rather than dropping the message out of the conversation.
-    private func makeHistoryMessage(
-        _ message: TanyaAIChatSessionMessage
-    ) -> TanyaAIMessage {
-        TanyaAIMessage(
-            identifier: message.identifier,
-            role: message.author == .customer ? .user : .assistant,
-            content: historyContent(message)
-        )
-    }
-
-    private func historyContent(
-        _ message: TanyaAIChatSessionMessage
-    ) -> TanyaAIMessageContent {
-        guard let name = message.structuredName,
-              let json = message.structuredJSON else {
-            return .text(message.text)
-        }
-        guard let event = try? decoder.decode(name: name, json: json),
-              case .content(_, let content) = event else {
-            return .unsupported("This content requires a newer app version.")
-        }
-        return content
-    }
-
-    /// A malformed card must not tear down the channel: it degrades to the
-    /// unsupported fallback.
     private func emitStructured(name: String, json: Data) {
         do {
             guard let event = try decoder.decode(name: name, json: json) else {
@@ -199,7 +171,7 @@ public final class TanyaAISessionRepository: TanyaAIRepository {
         }
     }
 
-    private func emit(_ event: TanyaAIStreamEvent) {
+    func emit(_ event: TanyaAIStreamEvent) {
         lock.lock()
         let turn = activeTurn
         let observer = unsolicitedObserver

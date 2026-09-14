@@ -221,6 +221,8 @@ instead of several bubbles. The wire format is a closed set of bracket tags:
 | Tag | Renders |
 | --- | --- |
 | `[bold]wen[/bold]` | Bold |
+| `[italic]wen[/italic]` | Italic |
+| `[underline]wen[/underline]` | Underlined |
 | `[strike]wen[/strike]` | Struck through |
 | `[color]wen\|25C36B[/color]` | Text in `#25C36B` |
 

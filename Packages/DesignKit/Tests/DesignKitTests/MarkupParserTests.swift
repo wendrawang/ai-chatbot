@@ -11,6 +11,32 @@ final class MarkupParserTests: XCTestCase {
         XCTAssertEqual(runs.map(\.style.isBold), [false, true, false])
     }
 
+    func testItalicTagIsItalicised() {
+        let runs = MarkupParser.runs(from: "[italic]wen[/italic]")
+
+        XCTAssertEqual(runs.count, 1)
+        XCTAssertTrue(runs[0].style.isItalic)
+    }
+
+    func testUnderlineTagIsUnderlined() {
+        let runs = MarkupParser.runs(from: "[underline]wen[/underline]")
+
+        XCTAssertEqual(runs.count, 1)
+        XCTAssertTrue(runs[0].style.isUnderlined)
+    }
+
+    /// The four weights stack rather than replace one another, so a phrase can
+    /// be bold and underlined at once.
+    func testStylesNest() {
+        let runs = MarkupParser.runs(
+            from: "[bold][underline]wen[/underline][/bold]"
+        )
+
+        XCTAssertEqual(runs.count, 1)
+        XCTAssertTrue(runs[0].style.isBold)
+        XCTAssertTrue(runs[0].style.isUnderlined)
+    }
+
     func testStrikeTagIsStruckThrough() {
         let runs = MarkupParser.runs(from: "[strike]wen[/strike]")
 
@@ -44,9 +70,14 @@ final class MarkupParserTests: XCTestCase {
 
     /// A backend that ships a tag before the app supports it should degrade to
     /// plain text, not show markup to the customer.
+    /// The example has to be a tag the set does not contain, so it changes
+    /// whenever the set grows - it was `[underline]` until underline became
+    /// real. The property it pins does not change: a backend shipping a style
+    /// this version has never heard of degrades to plain text rather than
+    /// showing raw markup to the customer.
     func testUnknownTagIsDroppedButItsTextSurvives() {
         let runs = MarkupParser.runs(
-            from: "[underline]wen[/underline] ok"
+            from: "[blink]wen[/blink] ok"
         )
 
         XCTAssertEqual(runs.map(\.text), ["wen", " ok"])

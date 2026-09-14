@@ -10,7 +10,7 @@ import imi_dolphin_livechat_ios
 extension ThreeDolphinsChatSessionAdapter {
     /// How many past messages a reopened conversation shows. No paging: the
     /// customer sees where they left off, not the whole archive.
-    static let historyLimit = 50
+    static let historyLimit = 100
 
     func loadHistory(completion: @escaping () -> Void) {
         Connector.shared.fetchConversations(botId: botId) {

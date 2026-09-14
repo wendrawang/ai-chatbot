@@ -7,15 +7,23 @@ import Foundation
 /// and a closed set means a response can only reach the styles listed here.
 ///
 ///     [bold]wen[/bold]
+///     [italic]wen[/italic]
+///     [underline]wen[/underline]
 ///     [strike]wen[/strike]
 ///     [color]wen|25C36B[/color]
 struct MarkupStyle: Equatable {
     var isBold = false
+    var isItalic = false
+    var isUnderlined = false
     var isStruckThrough = false
     var colorHex: String?
 
     var isPlain: Bool {
-        isBold == false && isStruckThrough == false && colorHex == nil
+        isBold == false
+            && isItalic == false
+            && isUnderlined == false
+            && isStruckThrough == false
+            && colorHex == nil
     }
 }
 
@@ -27,6 +35,8 @@ struct MarkupRun: Equatable {
 
 enum MarkupTag: String {
     case bold
+    case italic
+    case underline
     case strike
     case color
 }
@@ -145,6 +155,10 @@ enum MarkupParser {
             switch tag {
             case .bold:
                 return runs.map { apply($0) { $0.isBold = true } }
+            case .italic:
+                return runs.map { apply($0) { $0.isItalic = true } }
+            case .underline:
+                return runs.map { apply($0) { $0.isUnderlined = true } }
             case .strike:
                 return runs.map { apply($0) { $0.isStruckThrough = true } }
             case .color:

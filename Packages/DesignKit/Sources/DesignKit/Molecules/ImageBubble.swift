@@ -50,7 +50,16 @@ public struct ImageBubble: View {
         }
     }
 
+    /// Hidden when empty, padding and all. An image that needs no words
+    /// should not carry a blank strip under it.
+    @ViewBuilder
     private var caption: some View {
+        if payload.caption.isEmpty == false {
+            captionText
+        }
+    }
+
+    private var captionText: some View {
         Text(payload.caption)
             .font(Font(theme.fonts.headline))
             .foregroundColor(Color(theme.colors.primaryText))

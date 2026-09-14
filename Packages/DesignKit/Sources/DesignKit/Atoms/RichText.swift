@@ -36,6 +36,12 @@ struct RichText: View {
         if run.style.isBold {
             fragment = fragment.bold()
         }
+        if run.style.isItalic {
+            fragment = fragment.italic()
+        }
+        if run.style.isUnderlined {
+            fragment = fragment.underline()
+        }
         if run.style.isStruckThrough {
             fragment = fragment.strikethrough()
         }
