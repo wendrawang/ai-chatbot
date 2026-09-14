@@ -15,6 +15,8 @@ public final class TanyaAIChatViewModel: ObservableObject {
     @Published public private(set) var isRestoring = true
     @Published public private(set) var errorMessage: String?
     @Published public private(set) var suggestions: [Suggestion]
+    /// The question the prompts answer, when the reply sent one.
+    @Published public private(set) var suggestionsTitle: String?
     @Published public var inputText = ""
 
     public var onOutput: ((TanyaAIChatOutput) -> Void)?
@@ -64,6 +66,7 @@ public final class TanyaAIChatViewModel: ObservableObject {
         inputText = ""
         errorMessage = nil
         suggestions = []
+        suggestionsTitle = nil
         isRestoring = false
         isGenerating = true
         appendUserMessage(message)
@@ -72,6 +75,7 @@ public final class TanyaAIChatViewModel: ObservableObject {
 
     public func sendSuggestion(_ suggestion: Suggestion) {
         suggestions = []
+        suggestionsTitle = nil
         sendMessage(suggestion.prompt)
     }
 
@@ -172,7 +176,8 @@ public final class TanyaAIChatViewModel: ObservableObject {
             )
         case .content(let messageIdentifier, let content):
             appendContent(identifier: messageIdentifier, content: content)
-        case .suggestions(let payloads):
+        case .suggestions(let title, let payloads):
+            suggestionsTitle = title
             suggestions = payloads.map(makeSuggestion)
         case .responseCompleted:
             textDeltaBuffer.flushAll()

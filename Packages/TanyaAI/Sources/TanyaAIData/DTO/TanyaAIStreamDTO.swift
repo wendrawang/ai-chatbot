@@ -111,6 +111,7 @@ struct TanyaAIReceiptDTO: Decodable {
 }
 
 struct TanyaAISuggestionsDTO: Decodable {
+    let title: String?
     let suggestions: [TanyaAISuggestionDTO]
 }
 

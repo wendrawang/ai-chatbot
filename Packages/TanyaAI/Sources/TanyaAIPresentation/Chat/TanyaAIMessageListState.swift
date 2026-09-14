@@ -13,12 +13,15 @@ struct TanyaAIMessageListState {
     /// Empty unless a reply is offering prompts. They render as the last row,
     /// so they sit under the question they answer.
     let suggestions: [Suggestion]
+    /// The question those prompts answer, when the reply sent one.
+    let suggestionsTitle: String?
 
     static let empty = TanyaAIMessageListState(
         messages: [],
         isRestoring: false,
         showsTypingRow: false,
-        suggestions: []
+        suggestions: [],
+        suggestionsTitle: nil
     )
 
     var showsSuggestionRow: Bool {
@@ -43,7 +46,7 @@ struct TanyaAIMessageListState {
         guard showsSuggestionRow, index == rowCount - 1 else {
             return nil
         }
-        return .suggestions(suggestions)
+        return .suggestions(title: suggestionsTitle, items: suggestions)
     }
 
     /// Whether the rows themselves differ, as opposed to a message changing
@@ -59,5 +62,5 @@ struct TanyaAIMessageListState {
 enum TanyaAIMessageRowKind {
     case message(TanyaAIMessageItemViewModel)
     case typing
-    case suggestions([Suggestion])
+    case suggestions(title: String?, items: [Suggestion])
 }

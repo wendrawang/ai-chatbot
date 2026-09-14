@@ -13,7 +13,8 @@ struct TanyaAIMessageListView: View {
                 showsTypingRow: viewModel.showsTypingRow,
                 suggestions: viewModel.showsSuggestions
                     ? viewModel.suggestions
-                    : []
+                    : [],
+                suggestionsTitle: viewModel.suggestionsTitle
             ),
             theme: theme,
             handlers: TanyaAIMessageRowHandlers(

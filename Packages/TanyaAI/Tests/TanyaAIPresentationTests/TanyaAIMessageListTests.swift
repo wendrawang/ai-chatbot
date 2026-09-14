@@ -51,7 +51,8 @@ final class TanyaAIMessageListTests: XCTestCase {
             messages: [],
             isRestoring: false,
             showsTypingRow: true,
-            suggestions: []
+            suggestions: [],
+            suggestionsTitle: nil
         )
 
         XCTAssertEqual(state.rowCount, 1)
@@ -66,7 +67,8 @@ final class TanyaAIMessageListTests: XCTestCase {
             messages: first.messages,
             isRestoring: false,
             showsTypingRow: false,
-            suggestions: []
+            suggestions: [],
+            suggestionsTitle: nil
         )
 
         XCTAssertFalse(same.rowsDiffer(from: first))
@@ -99,7 +101,8 @@ final class TanyaAIMessageListTests: XCTestCase {
                     title: "Dining",
                     prompt: "Promo dining"
                 )
-            ]
+            ],
+            suggestionsTitle: "Kategori apa yang diinginkan"
         )
 
         XCTAssertEqual(state.rowCount, 3)
@@ -109,9 +112,11 @@ final class TanyaAIMessageListTests: XCTestCase {
         guard case .typing = state.kind(at: 1) else {
             return XCTFail("row 1 should be the waiting row")
         }
-        guard case .suggestions(let offered) = state.kind(at: 2) else {
+        guard case .suggestions(let heading, let offered) = state.kind(at: 2)
+        else {
             return XCTFail("row 2 should be the prompts")
         }
+        XCTAssertEqual(heading, "Kategori apa yang diinginkan")
         XCTAssertEqual(offered.map(\.title), ["Dining"])
         XCTAssertNil(state.kind(at: 3))
     }
@@ -130,7 +135,8 @@ final class TanyaAIMessageListTests: XCTestCase {
                     title: title,
                     prompt: title
                 )
-            }
+            },
+            suggestionsTitle: nil
         )
     }
 
@@ -139,7 +145,8 @@ final class TanyaAIMessageListTests: XCTestCase {
             messages: [],
             isRestoring: true,
             showsTypingRow: false,
-            suggestions: []
+            suggestions: [],
+            suggestionsTitle: nil
         )
     }
 
@@ -157,7 +164,8 @@ final class TanyaAIMessageListTests: XCTestCase {
             messages: messages,
             isRestoring: false,
             showsTypingRow: false,
-            suggestions: []
+            suggestions: [],
+            suggestionsTitle: nil
         )
     }
 

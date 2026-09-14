@@ -51,7 +51,7 @@ extension TanyaAIStreamEventDecoder {
                 prompt: $0.prompt
             )
         }
-        return .suggestions(suggestions)
+        return .suggestions(title: payload.title, items: suggestions)
     }
 
     private func makeFinancialRow(

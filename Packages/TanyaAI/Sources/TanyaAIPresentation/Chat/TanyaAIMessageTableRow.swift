@@ -17,8 +17,9 @@ struct TanyaAIMessageTableRow: View {
                 )
             case .typing:
                 TypingIndicatorView()
-            case .suggestions(let suggestions):
+            case .suggestions(let title, let suggestions):
                 SuggestionList(
+                    title: title,
                     suggestions: suggestions,
                     onSelect: handlers.onSuggestion
                 )

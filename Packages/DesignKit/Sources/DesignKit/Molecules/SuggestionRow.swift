@@ -23,7 +23,8 @@ public struct SuggestionRow: View {
         } label: {
             content
         }
-        .background(OutlinedBackground())
+        // No outline of its own: the list it sits in is the bubble, and a
+        // border here would draw a box inside a box.
         .accessibility(
             label: Text("Suggested question: \(suggestion.title)")
         )
@@ -47,8 +48,10 @@ public struct SuggestionRow: View {
                 .fixedSize(horizontal: false, vertical: true)
                 .frame(maxWidth: .infinity, alignment: .leading)
         }
-        .padding(.horizontal, DesignKitMetrics.Spacing.wide)
-        .padding(.vertical, DesignKitMetrics.Spacing.regular)
-        .frame(minHeight: DesignKitMetrics.Size.minimumTapTarget)
+        .frame(
+            maxWidth: .infinity,
+            minHeight: DesignKitMetrics.Size.minimumTapTarget,
+            alignment: .leading
+        )
     }
 }

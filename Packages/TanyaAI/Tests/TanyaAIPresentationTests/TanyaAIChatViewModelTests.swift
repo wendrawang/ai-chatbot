@@ -75,7 +75,7 @@ final class TanyaAIChatViewModelTests: XCTestCase {
         viewModel.sendMessage("Show spending")
 
         useCase.send(
-            .suggestions([
+            .suggestions(title: "Pilih satu", items: [
                 TanyaAISuggestionPayload(
                     identifier: "next-question",
                     title: "Next question",
