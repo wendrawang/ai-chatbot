@@ -18,9 +18,15 @@ struct TanyaAIMessageListView: View {
             ),
             theme: theme,
             handlers: TanyaAIMessageRowHandlers(
-                onApprovalEdit: viewModel.editApproval,
-                onApprovalCancel: viewModel.cancelApproval,
-                onApproval: viewModel.approve,
+                approval: .init(
+                    onEdit: viewModel.editApproval,
+                    onCancel: viewModel.cancelApproval,
+                    onApprove: viewModel.approve
+                ),
+                choices: .init(
+                    onToggle: viewModel.toggleChoice,
+                    onSubmit: viewModel.submitChoices
+                ),
                 onAction: viewModel.perform,
                 onSuggestion: viewModel.sendSuggestion
             )

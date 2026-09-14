@@ -42,9 +42,15 @@ struct TanyaAIMessageRowView: View {
         case .approval(let payload):
             ApprovalBubble(
                 payload: payload,
-                onEdit: { handlers.onApprovalEdit(payload) },
-                onCancel: { handlers.onApprovalCancel(payload) },
-                onApprove: { handlers.onApproval(payload) }
+                onEdit: { handlers.approval.onEdit(payload) },
+                onCancel: { handlers.approval.onCancel(payload) },
+                onApprove: { handlers.approval.onApprove(payload) }
+            )
+        case .choices(let payload):
+            ChoicesBubble(
+                payload: payload,
+                onToggle: { handlers.choices.onToggle(payload, $0) },
+                onSubmit: { handlers.choices.onSubmit(payload) }
             )
         case .receipt(let payload):
             ReceiptBubble(payload: payload)

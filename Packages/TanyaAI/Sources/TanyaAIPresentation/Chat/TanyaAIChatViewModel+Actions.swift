@@ -31,6 +31,37 @@ public extension TanyaAIChatViewModel {
         onOutput?(.requestApproval(payload))
     }
 
+    /// A chip on a choices bubble.
+    ///
+    /// Local state only: nothing reaches the bot until submit. That is the
+    /// entire point of the bubble - a customer may change their mind, and a
+    /// half-formed answer should never become a turn.
+    func toggleChoice(_ payload: ChoicesPayload, _ identifier: String) {
+        guard payload.isSubmitted == false,
+              let message = choicesMessage(identifier: payload.identifier),
+              case .choices(let current) = message.content,
+              current.isSubmitted == false else {
+            return
+        }
+        message.update(content: .choices(current.toggling(identifier)))
+    }
+
+    /// Submit on a choices bubble. Sends the answer and settles the card.
+    ///
+    /// The card stays on screen, disabled. The conversation is the record of
+    /// what was asked and what was answered, so removing the question once it
+    /// has been answered would erase half of that.
+    func submitChoices(_ payload: ChoicesPayload) {
+        guard let message = choicesMessage(identifier: payload.identifier),
+              case .choices(var current) = message.content,
+              current.canSubmit else {
+            return
+        }
+        current.isSubmitted = true
+        message.update(content: .choices(current))
+        sendMessage(current.answerPrompt)
+    }
+
     /// A button on an action card. Reports the deeplink and nothing else.
     func perform(_ action: Action) {
         onOutput?(.performAction(action))

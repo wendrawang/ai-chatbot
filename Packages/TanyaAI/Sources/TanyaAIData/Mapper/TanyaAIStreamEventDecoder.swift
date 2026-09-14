@@ -21,15 +21,45 @@ final class TanyaAIStreamEventDecoder {
     /// Bubble payloads. Returns `nil` for any other event name, including a
     /// `content.*` this version does not know - `decodeLifecycle` sends that
     /// on to `decodeUnknown`, which degrades it to an unsupported bubble.
+    ///
+    /// Split in two because one switch over every card is one branch past
+    /// what the linter allows, and because the halves are genuinely different
+    /// kinds of thing: what a conversation shows, and what money looks like.
     private func decodeContent(
+        name: String,
+        json: Data
+    ) throws -> TanyaAIStreamEvent? {
+        if let event = try decodeConversationContent(name: name, json: json) {
+            return event
+        }
+        return try decodeFinancialContent(name: name, json: json)
+    }
+
+    private func decodeConversationContent(
         name: String,
         json: Data
     ) throws -> TanyaAIStreamEvent? {
         switch name {
         case "content.image":
             return try decodeImage(json)
+        case "content.choices":
+            return try decodeChoices(json)
         case "content.information":
             return try decodeInformation(json)
+        case "content.status":
+            return try decodeStatus(json)
+        case "content.actions":
+            return try decodeActions(json)
+        default:
+            return nil
+        }
+    }
+
+    private func decodeFinancialContent(
+        name: String,
+        json: Data
+    ) throws -> TanyaAIStreamEvent? {
+        switch name {
         case "content.chart":
             return try decodeChart(json)
         case "content.portfolio":
@@ -40,10 +70,6 @@ final class TanyaAIStreamEventDecoder {
             return try decodeApproval(json)
         case "content.receipt":
             return try decodeReceipt(json)
-        case "content.actions":
-            return try decodeActions(json)
-        case "content.status":
-            return try decodeStatus(json)
         default:
             return nil
         }
@@ -115,24 +141,6 @@ final class TanyaAIStreamEventDecoder {
         return .content(
             messageIdentifier: payload.messageIdentifier,
             content: .information(content)
-        )
-    }
-
-    private func decodeImage(_ data: Data) throws -> TanyaAIStreamEvent {
-        let payload = try decoder.decode(TanyaAIImageDTO.self, from: data)
-        // An unusable url degrades to the caption alone rather than throwing:
-        // the sentence is the message, and losing the whole bubble over a
-        // broken link would lose more than the picture.
-        let image = ImagePayload(
-            imageURL: URL(string: payload.imageURL),
-            caption: payload.caption,
-            aspectRatio: payload.aspectRatio
-                ?? ImagePayload.defaultAspectRatio,
-            accessibilityText: payload.accessibilityText
-        )
-        return .content(
-            messageIdentifier: payload.messageIdentifier,
-            content: .image(image)
         )
     }
 

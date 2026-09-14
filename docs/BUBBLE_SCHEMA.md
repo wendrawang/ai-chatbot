@@ -46,6 +46,7 @@ Required unless marked optional. `expiresAt` is ISO 8601.
 | Event | Fields |
 | --- | --- |
 | `content.image` | `imageURL`, `caption`, `aspectRatio?` (number), `accessibilityText?` |
+| `content.choices` | `title?`, `choices[]` of `{identifier, title, prompt?}`, `allowsMultipleSelection?`, `submitTitle?` |
 | `content.information` | `title?`, `text`, `items[]` of `{label, value}` |
 | `content.status` | `title`, `detail`, `level` |
 | `content.actions` | `actions[]` of `{title, style?, action:{identifier, deeplink}}` |
@@ -76,6 +77,24 @@ Decoded as the unsupported bubble, reading one optional field from `data`:
 This is what the `content.` prefix buys. A name outside the prefix that the
 app does not know is dropped without trace; inside it, the turn still leaves
 something on screen.
+
+### `content.choices`
+
+A question answered by picking and confirming. What separates it from
+`response.suggestions` is the submit button, not the number of choices: a
+single-select question that still waits for confirmation belongs here, and a
+multi-select one that sent on every tap would be unusable.
+
+| Field | Purpose |
+| --- | --- |
+| `choices[].prompt` | What is sent when this choice is part of the answer. Omitted, the chip's own `title` is sent. |
+| `allowsMultipleSelection` | Default true. False makes each tap replace the selection. |
+| `submitTitle` | Default "Submit". |
+
+The answer is the selected prompts joined with ", ", in the order the choices
+were offered rather than the order they were tapped. A submitted card stays on
+screen and stops accepting input: the conversation is the record of what was
+asked as well as what was answered.
 
 ### `content.actions`
 
@@ -247,10 +266,15 @@ mistake to make. If that matters, restrict the palette server-side.
 
 ## Dynamic suggestions
 
-Suggestions use the event name `response.suggestions`:
+Suggestions use the event name `response.suggestions`. `title` is optional -
+it is the question the prompts answer, drawn above them in the same bubble,
+and a reply offering follow-ups that need no heading simply omits it. One tap
+sends; for a question that should wait for confirmation use
+`content.choices`.
 
 ```json
 {
+  "title": "Kategori apa yang diinginkan",
   "suggestions": [
     {
       "identifier": "incoming",

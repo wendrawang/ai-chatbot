@@ -25,6 +25,20 @@ extension TanyaAIChatViewModel {
         }
     }
 
+    /// The newest bubble carrying this choices identifier, for the same
+    /// reason as `approvalMessage`: a repeated question makes a second card,
+    /// and taps belong to the one in front of the customer.
+    func choicesMessage(
+        identifier: String
+    ) -> TanyaAIMessageItemViewModel? {
+        messages.last { message in
+            guard case .choices(let payload) = message.content else {
+                return false
+            }
+            return payload.identifier == identifier
+        }
+    }
+
     func makeSuggestion(
         _ payload: TanyaAISuggestionPayload
     ) -> Suggestion {
