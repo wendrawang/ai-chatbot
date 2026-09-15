@@ -39,6 +39,17 @@ extension TanyaAIChatViewModel {
         }
     }
 
+    func liveAgentMessage(
+        identifier: String
+    ) -> TanyaAIMessageItemViewModel? {
+        messages.last { message in
+            guard case .liveAgent(let payload) = message.content else {
+                return false
+            }
+            return payload.identifier == identifier
+        }
+    }
+
     func makeSuggestion(
         _ payload: TanyaAISuggestionPayload
     ) -> Suggestion {

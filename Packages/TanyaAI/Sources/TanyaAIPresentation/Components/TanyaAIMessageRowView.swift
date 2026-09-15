@@ -46,6 +46,12 @@ struct TanyaAIMessageRowView: View {
                 onCancel: { handlers.approval.onCancel(payload) },
                 onApprove: { handlers.approval.onApprove(payload) }
             )
+        case .liveAgent(let payload):
+            LiveAgentBubble(
+                payload: payload,
+                onContinue: handlers.onAction,
+                onCancel: { handlers.onDeclineLiveAgent(payload) }
+            )
         case .choices(let payload):
             ChoicesBubble(
                 payload: payload,

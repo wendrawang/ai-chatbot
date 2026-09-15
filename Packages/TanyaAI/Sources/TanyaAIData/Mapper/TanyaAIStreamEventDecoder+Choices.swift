@@ -5,6 +5,27 @@ import TanyaAIDomain
 /// The two cards a customer looks at rather than reads: a question with
 /// chips to answer it, and a picture with its caption.
 extension TanyaAIStreamEventDecoder {
+    /// The offer to hand the conversation to a person.
+    ///
+    /// It ends in the same deeplink a hand-off link would, so the action is
+    /// decoded by the same mapper - what differs is that this one asks first.
+    func decodeLiveAgent(_ data: Data) throws -> TanyaAIStreamEvent {
+        let payload = try decoder.decode(TanyaAILiveAgentDTO.self, from: data)
+        return .content(
+            messageIdentifier: payload.messageIdentifier,
+            content: .liveAgent(
+                LiveAgentPayload(
+                    identifier: payload.messageIdentifier,
+                    title: payload.title,
+                    detail: payload.detail,
+                    continueTitle: payload.continueTitle ?? "Continue",
+                    cancelTitle: payload.cancelTitle ?? "Cancel",
+                    action: makeAction(payload.action)
+                )
+            )
+        )
+    }
+
     func decodeChoices(_ data: Data) throws -> TanyaAIStreamEvent {
         let payload = try decoder.decode(TanyaAIChoicesDTO.self, from: data)
         let choices = payload.choices.map {

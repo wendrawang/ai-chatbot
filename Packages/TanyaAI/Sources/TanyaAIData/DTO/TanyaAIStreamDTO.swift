@@ -24,6 +24,15 @@ struct TanyaAIImageDTO: Decodable {
     let accessibilityText: String?
 }
 
+struct TanyaAILiveAgentDTO: Decodable {
+    let messageIdentifier: String
+    let title: String
+    let detail: String?
+    let continueTitle: String?
+    let cancelTitle: String?
+    let action: TanyaAIActionDTO
+}
+
 struct TanyaAIChoicesDTO: Decodable {
     let messageIdentifier: String
     let title: String?

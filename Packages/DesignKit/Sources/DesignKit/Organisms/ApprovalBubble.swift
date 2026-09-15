@@ -99,9 +99,10 @@ public struct ApprovalBubble: View {
                     Text("Confirm")
                         .font(Font(theme.fonts.button))
                         .frame(
-                    maxWidth: .infinity,
-                    minHeight: DesignKitMetrics.Size.minimumTapTarget
-                )
+                            maxWidth: .infinity,
+                            minHeight: DesignKitMetrics.Size
+                                .minimumTapTarget
+                        )
                 }
                 .foregroundColor(Color(theme.colors.userBubbleText))
                 .background(Color(theme.colors.accent))

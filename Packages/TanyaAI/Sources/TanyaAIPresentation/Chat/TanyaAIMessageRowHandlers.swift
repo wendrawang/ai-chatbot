@@ -39,6 +39,9 @@ struct TanyaAIMessageRowHandlers {
     let choices: Choices
     let onAction: (Action) -> Void
     let onSuggestion: (Suggestion) -> Void
+    /// Declining a live-agent offer. Accepting it is `onAction`, because it
+    /// is the same hand-off any deeplink takes.
+    let onDeclineLiveAgent: (LiveAgentPayload) -> Void
 
     /// Placeholder for the coordinator's stored property, before the first
     /// `update` delivers the real handlers.
@@ -46,6 +49,7 @@ struct TanyaAIMessageRowHandlers {
         approval: .inert,
         choices: .inert,
         onAction: { _ in },
-        onSuggestion: { _ in }
+        onSuggestion: { _ in },
+        onDeclineLiveAgent: { _ in }
     )
 }

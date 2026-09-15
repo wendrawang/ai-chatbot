@@ -32,6 +32,7 @@ enum MockTanyaAIShowcaseFixture {
             contentsOf: MockTanyaAIInsightFixture.showcaseEvents(identifier)
         )
         events.append(choicesEvent(identifier))
+        events.append(liveAgentEvent(identifier))
         events.append(contentsOf: statusEvents(identifier))
         events.append(unsupportedEvent(identifier))
         events.append(event("response.suggestions", suggestionsPayload))
@@ -62,6 +63,25 @@ enum MockTanyaAIShowcaseFixture {
                     + "hingga 5,25% p.a.",
                 "aspectRatio": 1.6,
                 "accessibilityText": "Sample promo artwork"
+            ]
+        )
+    }
+
+    private static func liveAgentEvent(
+        _ identifier: String
+    ) -> TanyaAIChatSessionEvent {
+        event(
+            "content.live-agent",
+            [
+                "messageIdentifier": "agent-\(identifier)",
+                "title": "Anda akan diarahkan ke agen kami",
+                "detail": "Agen A siap membantu Anda.",
+                "continueTitle": "Lanjut",
+                "cancelTitle": "Batal",
+                "action": [
+                    "identifier": "open-live-agent",
+                    "deeplink": "tanyaai-sandbox://deeplink?type=live-agent"
+                ]
             ]
         )
     }

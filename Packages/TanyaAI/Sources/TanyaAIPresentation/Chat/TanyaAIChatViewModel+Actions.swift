@@ -62,6 +62,22 @@ public extension TanyaAIChatViewModel {
         sendMessage(current.answerPrompt)
     }
 
+    /// Declining a live-agent offer. Local state only: nothing is sent, and
+    /// the card stays on screen showing that it was declined.
+    ///
+    /// Accepting is not here. It goes through `perform` like any other
+    /// hand-off, and deliberately does not settle the card: a customer who
+    /// comes back may want to connect again.
+    func declineLiveAgent(_ payload: LiveAgentPayload) {
+        guard let message = liveAgentMessage(identifier: payload.identifier),
+              case .liveAgent(var current) = message.content,
+              current.isDeclined == false else {
+            return
+        }
+        current.isDeclined = true
+        message.update(content: .liveAgent(current))
+    }
+
     /// A button on an action card. Reports the deeplink and nothing else.
     func perform(_ action: Action) {
         onOutput?(.performAction(action))

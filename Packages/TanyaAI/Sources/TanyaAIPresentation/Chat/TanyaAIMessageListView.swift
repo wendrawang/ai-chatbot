@@ -28,7 +28,8 @@ struct TanyaAIMessageListView: View {
                     onSubmit: viewModel.submitChoices
                 ),
                 onAction: viewModel.perform,
-                onSuggestion: viewModel.sendSuggestion
+                onSuggestion: viewModel.sendSuggestion,
+                onDeclineLiveAgent: viewModel.declineLiveAgent
             )
         )
     }

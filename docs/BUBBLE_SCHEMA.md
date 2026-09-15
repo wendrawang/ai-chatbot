@@ -211,6 +211,34 @@ message before it. `title` and `detail` are no longer read.
 An empty `actions[]` degrades to the update-required bubble: a card nobody can
 act on is worse than an honest placeholder.
 
+## Live agent
+
+`custom_type: content.live-agent`
+
+The offer to hand the conversation to a person. It ends in the same deeplink a
+hand-off link would; the difference is that it asks first, because a customer
+escalated without being asked loses the thread they were following.
+
+```json
+{
+  "messageIdentifier": "agent-1",
+  "title": "Anda akan diarahkan ke agen kami",
+  "detail": "Agen A siap membantu Anda.",
+  "continueTitle": "Lanjut",
+  "cancelTitle": "Batal",
+  "action": {
+    "identifier": "open-live-agent",
+    "deeplink": "ocbcid://mobile?type=live-agent"
+  }
+}
+```
+
+`continueTitle` and `cancelTitle` default to "Continue" and "Cancel".
+
+**Continue leaves the card open; Cancel settles it.** Declining is a final
+answer, but a customer returning from the agent screen may want to connect
+again, and repeating the hand-off costs nothing.
+
 ## Approval
 
 `custom_type: content.approval`
