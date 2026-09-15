@@ -46,6 +46,8 @@ struct TanyaAIMessageRowView: View {
                 onCancel: { handlers.approval.onCancel(payload) },
                 onApprove: { handlers.approval.onApprove(payload) }
             )
+        case .html(let payload):
+            HTMLBubble(payload: payload)
         case .liveAgent(let payload):
             LiveAgentBubble(
                 payload: payload,

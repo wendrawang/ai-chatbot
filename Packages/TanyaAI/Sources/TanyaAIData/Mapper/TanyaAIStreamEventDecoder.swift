@@ -46,6 +46,8 @@ final class TanyaAIStreamEventDecoder {
             return try decodeChoices(json)
         case "content.live-agent":
             return try decodeLiveAgent(json)
+        case "content.html":
+            return try decodeHTML(json)
         case "content.information":
             return try decodeInformation(json)
         case "content.status":

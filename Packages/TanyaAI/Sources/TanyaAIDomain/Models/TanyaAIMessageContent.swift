@@ -5,6 +5,7 @@ public enum TanyaAIMessageContent: Equatable {
     case image(ImagePayload)
     case choices(ChoicesPayload)
     case liveAgent(LiveAgentPayload)
+    case html(HTMLPayload)
     case information(InformationPayload)
     case chart(ChartPayload)
     case portfolio(PortfolioPayload)

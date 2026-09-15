@@ -1,10 +1,26 @@
 import DesignKit
+import CoreGraphics
 import Foundation
 import TanyaAIDomain
 
 /// The two cards a customer looks at rather than reads: a question with
 /// chips to answer it, and a picture with its caption.
 extension TanyaAIStreamEventDecoder {
+    func decodeHTML(_ data: Data) throws -> TanyaAIStreamEvent {
+        let payload = try decoder.decode(TanyaAIHTMLDTO.self, from: data)
+        return .content(
+            messageIdentifier: payload.messageIdentifier,
+            content: .html(
+                HTMLPayload(
+                    identifier: payload.messageIdentifier,
+                    html: payload.html,
+                    declaredHeight: payload.height.map { CGFloat($0) },
+                    accessibilityText: payload.accessibilityText
+                )
+            )
+        )
+    }
+
     /// The offer to hand the conversation to a person.
     ///
     /// It ends in the same deeplink a hand-off link would, so the action is

@@ -49,7 +49,7 @@ menyentuh kode aplikasi.
 
 ## Bubble
 
-Delapan tipe konten plus fallback. Yang perlu diingat soal tampilannya:
+Sebelas tipe konten plus fallback. Yang perlu diingat soal tampilannya:
 
 - **Prompt saran ada di dalam percakapan**, sebagai baris terakhir — bukan
   strip di atas keyboard. Lingkarannya afordans, bukan state: sekali tap
@@ -64,6 +64,14 @@ Delapan tipe konten plus fallback. Yang perlu diingat soal tampilannya:
 - **Ada tiga radius: 12, 16, 18.** Itu drift dari sebelum review desain,
   bukan keputusan — dinamai `Radius.bubble`/`notice`/`card` supaya kelihatan.
   Menyeragamkannya mengubah tampilan lima bubble, jadi itu keputusan desain.
+- **`content.html` statis, JavaScript mati, navigasi ditolak, tanpa base
+  URL.** Chart tetap `content.chart` — ia ikut tema, ikut Dynamic Type, dan
+  bisa dibaca VoiceOver; tidak satu pun bertahan di dalam web view. Kirim
+  `height`, atau baris tumbuh setelah fragmen dirender.
+- **Choices vs suggestion: pembedanya tombol konfirmasi, bukan jumlah
+  pilihan.** Suggestion sekali tap langsung kirim; choices menunggu submit.
+- **Shortcut bukan protokol.** Host yang inquiry lalu mengoper daftarnya lewat
+  `TanyaAIConfiguration` — sebuah nilai, bukan layanan.
 - **`content.image` mengambil gambar lewat `URLSession.shared`.** Di bank ini
   keputusan, bukan detail: host yang melakukan pinning mem-pin session-nya
   sendiri, dan ini bukan session itu. Kirim `aspectRatio` — tanpa itu tinggi

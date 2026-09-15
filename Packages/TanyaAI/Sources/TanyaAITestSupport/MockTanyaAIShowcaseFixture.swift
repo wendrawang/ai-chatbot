@@ -24,7 +24,25 @@ enum MockTanyaAIShowcaseFixture {
                 ]
             )
         ]
-        events.append(imageEvent(identifier))
+        events.append(contentsOf: bubbleEvents(identifier))
+        events.append(event("response.suggestions", suggestionsPayload))
+        events.append(
+            event(
+                "response.completed",
+                ["messageIdentifier": messageIdentifier]
+            )
+        )
+        return events
+    }
+
+    /// Every bubble, in the order the conversation shows them.
+    ///
+    /// The screenshot test walks this order by scrolling forward only, so
+    /// moving one of these moves where its scenario has to be listed.
+    private static func bubbleEvents(
+        _ identifier: String
+    ) -> [TanyaAIChatSessionEvent] {
+        var events = [imageEvent(identifier)]
         events.append(
             contentsOf: MockTanyaAIConfirmationFixture.showcaseEvents(identifier)
         )
@@ -33,15 +51,9 @@ enum MockTanyaAIShowcaseFixture {
         )
         events.append(choicesEvent(identifier))
         events.append(liveAgentEvent(identifier))
+        events.append(htmlEvent(identifier))
         events.append(contentsOf: statusEvents(identifier))
         events.append(unsupportedEvent(identifier))
-        events.append(event("response.suggestions", suggestionsPayload))
-        events.append(
-            event(
-                "response.completed",
-                ["messageIdentifier": messageIdentifier]
-            )
-        )
         return events
     }
 
@@ -63,6 +75,28 @@ enum MockTanyaAIShowcaseFixture {
                     + "hingga 5,25% p.a.",
                 "aspectRatio": 1.6,
                 "accessibilityText": "Sample promo artwork"
+            ]
+        )
+    }
+
+    /// Static HTML, which is what the bubble is for: a small table that
+    /// would be fussy to describe as a card.
+    private static func htmlEvent(
+        _ identifier: String
+    ) -> TanyaAIChatSessionEvent {
+        event(
+            "content.html",
+            [
+                "messageIdentifier": "html-\(identifier)",
+                "html": """
+                <table>
+                  <tr><th>Tenor</th><th>Imbalan</th></tr>
+                  <tr><td>2 tahun</td><td>6,40% p.a.</td></tr>
+                  <tr><td>5 tahun</td><td>6,90% p.a.</td></tr>
+                </table>
+                """,
+                "height": 120,
+                "accessibilityText": "Tabel tenor dan imbalan"
             ]
         )
     }

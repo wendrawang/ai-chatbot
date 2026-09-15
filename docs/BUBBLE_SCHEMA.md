@@ -211,6 +211,39 @@ message before it. `title` and `detail` are no longer read.
 An empty `actions[]` degrades to the update-required bubble: a card nobody can
 act on is worse than an honest placeholder.
 
+## HTML
+
+`custom_type: content.html`
+
+For a result that reads better as a table than as a card.
+
+```json
+{
+  "messageIdentifier": "html-1",
+  "html": "<table><tr><th>Tenor</th><th>Imbalan</th></tr></table>",
+  "height": 120,
+  "accessibilityText": "Tabel tenor dan imbalan"
+}
+```
+
+**Static only.** JavaScript is disabled, navigation is refused, and the
+fragment loads with no base URL, so a relative reference resolves nowhere.
+Anything that needs to run will not run.
+
+**Charts belong in `content.chart`.** It follows the theme, scales with
+Dynamic Type and can be read aloud - none of which survive inside a web view.
+
+**Send `height`.** The row is given it before the fragment renders. Without
+one the app assumes 180pt and corrects after measuring, which moves the
+conversation under whoever is reading it.
+
+**Send `accessibilityText`.** Without it the bubble is announced as a web
+area, which tells a customer using VoiceOver nothing.
+
+The fragment inherits the host theme's text colour, divider colour and body
+font size, so it does not become a white rectangle in a dark conversation.
+Anything else is up to the HTML.
+
 ## Live agent
 
 `custom_type: content.live-agent`
