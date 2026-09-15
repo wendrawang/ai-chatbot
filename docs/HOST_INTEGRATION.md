@@ -242,6 +242,36 @@ controller presents it.
 
 ---
 
+## Optional: shortcuts above the keyboard
+
+Ways in, fetched by the host before the chat opens and passed straight in.
+There is no protocol for them - they are a value, not a service.
+
+```swift
+TanyaAIHost(
+    theme: TanyaAIAppearance.theme,
+    deeplinkScheme: "ocbcid",
+    shortcuts: try await api.tanyaAIShortcuts().map {
+        TanyaAISuggestion(
+            identifier: $0.id,
+            title: $0.label,
+            prompt: $0.prompt
+        )
+    },
+    makeSession: { ... },
+    onDeeplink: onDeeplink
+)
+```
+
+They stay put after one is used, and hide while a reply is arriving - tapping
+one then would do nothing, and a control that ignores a tap is worse than one
+that is not there.
+
+Not the same as the prompts a reply offers. Those come from the bot, answer
+the question just asked, and disappear once answered.
+
+---
+
 ## Deeplinks
 
 When the customer taps a hand-off link, the feature **closes first, then**

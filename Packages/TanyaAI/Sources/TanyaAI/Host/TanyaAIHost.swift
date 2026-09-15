@@ -37,6 +37,7 @@ public final class TanyaAIHost: ObservableObject {
     private let deeplinkScheme: String
     private let deeplinkHost: String?
     private let initialPrompt: String?
+    private let shortcuts: [Suggestion]
     private let makeSession: () -> TanyaAIChatSession
     private let onDeeplink: (URL) -> Void
 
@@ -70,6 +71,7 @@ public final class TanyaAIHost: ObservableObject {
         deeplinkScheme: String,
         deeplinkHost: String? = nil,
         initialPrompt: String? = nil,
+        shortcuts: [Suggestion] = [],
         makeSession: @escaping () -> TanyaAIChatSession,
         onDeeplink: @escaping (URL) -> Void
     ) {
@@ -78,6 +80,7 @@ public final class TanyaAIHost: ObservableObject {
         self.deeplinkScheme = deeplinkScheme
         self.deeplinkHost = deeplinkHost
         self.initialPrompt = initialPrompt
+        self.shortcuts = shortcuts
         self.makeSession = makeSession
         self.onDeeplink = onDeeplink
     }
@@ -91,7 +94,10 @@ public final class TanyaAIHost: ObservableObject {
             return
         }
         let controller = TanyaAIModule.makeViewController(
-            configuration: TanyaAIConfiguration(initialPrompt: initialPrompt),
+            configuration: TanyaAIConfiguration(
+                initialPrompt: initialPrompt,
+                shortcuts: shortcuts
+            ),
             dependencies: TanyaAIDependencies(
                 chatSession: makeSession(),
                 authorizationService: authorizationService,

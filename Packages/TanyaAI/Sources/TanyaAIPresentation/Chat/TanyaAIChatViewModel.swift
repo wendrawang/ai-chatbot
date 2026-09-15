@@ -38,12 +38,18 @@ public final class TanyaAIChatViewModel: ObservableObject {
     /// confirmation without a hand-off can be completed in the chat.
     let authorizesInFeature: Bool
 
+    /// Ways in, supplied by the host and unchanged by use. Unlike the prompts
+    /// a reply offers, these answer no question and so never go away.
+    public let shortcuts: [Suggestion]
+
     public init(
         useCase: TanyaAIChatUseCaseProtocol,
-        authorizesInFeature: Bool = true
+        authorizesInFeature: Bool = true,
+        shortcuts: [Suggestion] = []
     ) {
         self.useCase = useCase
         self.authorizesInFeature = authorizesInFeature
+        self.shortcuts = shortcuts
         messages = []
         suggestions = Suggestion.sandboxDefaults
         // A reply nobody asked for still belongs on screen. Without this the
@@ -82,6 +88,19 @@ public final class TanyaAIChatViewModel: ObservableObject {
     public func sendMessage(_ text: String) {
         inputText = text
         sendCurrentMessage()
+    }
+
+    /// Hidden while a reply is arriving. Tapping one then would do nothing -
+    /// a turn is already open - and a control that ignores a tap is worse
+    /// than one that is not there.
+    public var showsShortcuts: Bool {
+        shortcuts.isEmpty == false && !isGenerating && !isRestoring
+    }
+
+    /// Sends a shortcut. The list itself does not change: it is a way in, not
+    /// an answer to anything.
+    public func sendShortcut(_ shortcut: Suggestion) {
+        sendMessage(shortcut.prompt)
     }
 
     public var showsSuggestions: Bool {
@@ -207,41 +226,4 @@ public final class TanyaAIChatViewModel: ObservableObject {
     func appendMessage(_ message: TanyaAIMessageItemViewModel) {
         messages.append(message)
     }
-
-    private func appendUserMessage(_ text: String) {
-        let message = TanyaAIMessage(
-            identifier: UUID().uuidString,
-            role: .user,
-            content: .text(text)
-        )
-        appendMessage(TanyaAIMessageItemViewModel(message: message))
-    }
-
-    private func appendAssistantPlaceholder(identifier: String) {
-        let target = resolvedIdentifier(for: identifier)
-        if let existing = message(identifier: target),
-           isSettledApproval(existing.content) == false {
-            return
-        }
-        appendContent(identifier: identifier, content: .text(""))
-    }
-
-    private func appendTextDeltaNow(identifier: String, text: String) {
-        // Text may not overwrite a settled confirmation either: routing
-        // through `appendContent` gives the delta a fresh bubble.
-        let target = resolvedIdentifier(for: identifier)
-        guard let message = message(identifier: target),
-              isSettledApproval(message.content) == false else {
-            appendContent(identifier: identifier, content: .text(text))
-            return
-        }
-        let existingText: String
-        if case .text(let value) = message.content {
-            existingText = value
-        } else {
-            existingText = ""
-        }
-        message.update(content: .text(existingText + text))
-    }
-
 }

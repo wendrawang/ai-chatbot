@@ -23,7 +23,8 @@ final class TanyaAIDependencyContainer {
         let useCase = TanyaAIChatUseCase(repository: repository)
         return TanyaAIChatViewModel(
             useCase: useCase,
-            authorizesInFeature: dependencies.authorizationService != nil
+            authorizesInFeature: dependencies.authorizationService != nil,
+            shortcuts: configuration.shortcuts
         )
     }
 

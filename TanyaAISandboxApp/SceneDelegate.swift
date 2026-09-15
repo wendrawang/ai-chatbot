@@ -50,7 +50,8 @@ final class SceneDelegate: UIResponder, UIWindowSceneDelegate {
         if launchMode.isStandaloneFeature {
             return TanyaAIModule.makeViewController(
                 configuration: TanyaAIConfiguration(
-                    initialPrompt: launchMode.initialPrompt
+                    initialPrompt: launchMode.initialPrompt,
+                    shortcuts: SandboxTanyaAIFactory.shortcuts
                 ),
                 dependencies: dependencies
             )
@@ -68,7 +69,8 @@ final class SceneDelegate: UIResponder, UIWindowSceneDelegate {
         let gateway = TanyaAIPresentationGateway(
             dependencies: dependencies,
             configuration: TanyaAIConfiguration(
-                initialPrompt: launchMode.initialPrompt
+                initialPrompt: launchMode.initialPrompt,
+                shortcuts: SandboxTanyaAIFactory.shortcuts
             )
         )
         let router = makeDeeplinkRouter(gateway: gateway)

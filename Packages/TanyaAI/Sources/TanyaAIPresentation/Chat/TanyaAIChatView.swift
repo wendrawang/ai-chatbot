@@ -16,6 +16,7 @@ public struct TanyaAIChatView: View {
             separator
             conversation
             errorBanner
+            shortcutStrip
             separator
             TanyaAIChatInputView(viewModel: viewModel)
         }
@@ -76,6 +77,16 @@ public struct TanyaAIChatView: View {
                 .frame(maxWidth: .infinity, alignment: .leading)
                 .padding(.horizontal, 16)
                 .padding(.vertical, 8)
+        }
+    }
+
+    @ViewBuilder
+    private var shortcutStrip: some View {
+        if viewModel.showsShortcuts {
+            ShortcutStrip(
+                shortcuts: viewModel.shortcuts,
+                onSelect: viewModel.sendShortcut
+            )
         }
     }
 
