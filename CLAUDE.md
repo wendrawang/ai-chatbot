@@ -78,6 +78,13 @@ Delapan tipe konten plus fallback. Yang perlu diingat soal tampilannya:
 | `./Scripts/generate_project.rb` | Regenerasi `.pbxproj` |
 | `./Scripts/run_sandbox.sh [--showcase\|--deeplink]` | Jalankan sandbox |
 
+## Dokumen
+
+| Berkas | Isi |
+| --- | --- |
+| `docs/BUBBLE_SCHEMA.md` | JSON tiap bubble, minimal sampai lengkap |
+| `docs/HOST_INTEGRATION.md` | Enam langkah memasang fitur di host app |
+
 ## Aturan yang mengikat
 
 - **Maksimal 250 baris per file, 120 karakter per baris.** Kalau kepanjangan,
