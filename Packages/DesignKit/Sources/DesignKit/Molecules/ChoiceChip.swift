@@ -3,9 +3,12 @@ import UIKit
 
 /// One choice in a `ChoicesBubble`.
 ///
-/// The tick's space is reserved whether or not it is showing. A chip that grew
-/// on selection would repack the rows under the customer's finger, and the
-/// choice they meant to tap next would have moved.
+/// The tick appears only when selected, so a chip is as wide as its words.
+/// Reserving the tick's width in every chip was tried first, to stop rows
+/// repacking under the customer's finger - but 20pt per chip was enough to
+/// keep any two from sharing a row, which turned a flowing grid into a single
+/// column and lost the shape the design is built on. Repacking is the smaller
+/// cost of the two.
 public struct ChoiceChip: View {
     let choice: ChoicesPayload.Choice
     let isSelected: Bool
@@ -13,7 +16,7 @@ public struct ChoiceChip: View {
     let onTap: () -> Void
     @Environment(\.theme) private var theme
 
-    /// The tick and the gap after it, reserved in every chip.
+    /// The tick and the gap after it, counted only when it is showing.
     static let indicatorWidth: CGFloat = 20
 
     public init(
@@ -29,24 +32,28 @@ public struct ChoiceChip: View {
     }
 
     /// How wide this chip wants to be, so rows can be packed before anything
-    /// is drawn. Measured with the same font the label uses.
+    /// is drawn. Measured with the same font the label uses, and with the tick
+    /// counted only when this chip is showing one.
     static func width(
         of choice: ChoicesPayload.Choice,
+        isSelected: Bool,
         font: UIFont
     ) -> CGFloat {
         let text = (choice.title as NSString).size(
             withAttributes: [.font: font]
         ).width
-        return text
-            + indicatorWidth
-            + DesignKitMetrics.Spacing.compact
-            + DesignKitMetrics.Spacing.wide * 2
+        let tick = isSelected
+            ? indicatorWidth + DesignKitMetrics.Spacing.compact
+            : 0
+        return text + tick + DesignKitMetrics.Spacing.wide * 2
     }
 
     public var body: some View {
         Button(action: onTap) {
             HStack(spacing: DesignKitMetrics.Spacing.compact) {
-                tick
+                if isSelected {
+                    tick
+                }
                 Text(choice.title)
                     .font(Font(theme.fonts.body))
                     .lineLimit(1)
@@ -68,7 +75,6 @@ public struct ChoiceChip: View {
         Image(systemName: "checkmark")
             .font(.system(size: 12, weight: .bold))
             .frame(width: Self.indicatorWidth)
-            .opacity(isSelected ? 1 : 0)
     }
 
     private var background: some View {

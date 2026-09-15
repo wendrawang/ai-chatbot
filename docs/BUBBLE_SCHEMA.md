@@ -168,6 +168,9 @@ The answer is the selected prompts joined with `", "`, **in the order they
 were offered** rather than tapped. A submitted card stays on screen and stops
 accepting input.
 
+Chips wrap to as many rows as they need, and a selected one grows to fit its
+tick - so keep labels short if the rows should stay stable as they are picked.
+
 **Choices or suggestions?** The submit button, not the number of choices. Use
 `content.choices` whenever the customer should be able to change their mind;
 use `response.suggestions` when one tap should send.

@@ -57,7 +57,11 @@ public struct ChoicesBubble: View {
         let width = DesignKitMetrics.Size.bubbleMaximumWidth
             - DesignKitMetrics.Spacing.wide * 2
         let widths = payload.choices.map {
-            ChoiceChip.width(of: $0, font: theme.fonts.body)
+            ChoiceChip.width(
+                of: $0,
+                isSelected: payload.selected.contains($0.identifier),
+                font: theme.fonts.body
+            )
         }
         let rows = ChipLayout.rows(
             widths: widths,

@@ -31,6 +31,7 @@ enum MockTanyaAIShowcaseFixture {
         events.append(
             contentsOf: MockTanyaAIInsightFixture.showcaseEvents(identifier)
         )
+        events.append(choicesEvent(identifier))
         events.append(contentsOf: statusEvents(identifier))
         events.append(unsupportedEvent(identifier))
         events.append(event("response.suggestions", suggestionsPayload))
@@ -63,6 +64,35 @@ enum MockTanyaAIShowcaseFixture {
                 "accessibilityText": "Sample promo artwork"
             ]
         )
+    }
+
+    /// A question answered by picking and confirming, so the showcase shows
+    /// the one bubble that holds state of its own.
+    private static func choicesEvent(
+        _ identifier: String
+    ) -> TanyaAIChatSessionEvent {
+        event(
+            "content.choices",
+            [
+                "messageIdentifier": "choices-\(identifier)",
+                "title": "Kategori apa yang diinginkan",
+                "choices": [
+                    choice("dining", "Dining", "Promo dining"),
+                    choice("travel", "Hotel & Travel", "Promo hotel"),
+                    choice("grocery", "Grocery", "Promo grocery"),
+                    choice("fuel", "Bahan bakar", "Promo bahan bakar")
+                ],
+                "submitTitle": "Kirim"
+            ]
+        )
+    }
+
+    private static func choice(
+        _ identifier: String,
+        _ title: String,
+        _ prompt: String
+    ) -> [String: String] {
+        ["identifier": identifier, "title": title, "prompt": prompt]
     }
 
     private static func statusEvents(

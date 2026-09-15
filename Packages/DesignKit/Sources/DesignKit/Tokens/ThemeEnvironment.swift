@@ -1,4 +1,3 @@
-import DesignKit
 import SwiftUI
 
 private struct ThemeKey: EnvironmentKey {

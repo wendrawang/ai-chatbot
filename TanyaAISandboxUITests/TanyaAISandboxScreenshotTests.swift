@@ -138,6 +138,12 @@ final class TanyaAISandboxScreenshotTests: XCTestCase {
             ScreenshotScenario("Spending · month to date", "spending-chart"),
             ScreenshotScenario("Bills paid · July", "paid-bills-list"),
             ScreenshotScenario("Incoming · last 30 days", "incoming-funds-list"),
+            // Order matters: `reveal` only scrolls forward, so a scenario
+            // listed before the bubble it names can never be found again.
+            ScreenshotScenario(
+                "Kategori apa yang diinginkan",
+                "choices-card"
+            ),
             ScreenshotScenario("A neutral system update.", "status-neutral"),
             ScreenshotScenario("The sample request completed.", "status-success"),
             ScreenshotScenario("Review this demo warning.", "status-warning"),
