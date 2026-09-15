@@ -35,6 +35,12 @@ struct HTMLWebView: UIViewRepresentable {
         webView.scrollView.bounces = false
         webView.isOpaque = false
         webView.backgroundColor = .clear
+        // The fragment's own tree is hidden from assistive technology, and
+        // the bubble announces `accessibilityText` instead. Reading raw
+        // table markup aloud helps nobody, and leaving the tree exposed also
+        // slows every accessibility query in the conversation - enough to
+        // push the screenshot test past its budget when this was added.
+        webView.accessibilityElementsHidden = true
         context.coordinator.observe(webView)
         return webView
     }

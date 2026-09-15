@@ -144,6 +144,10 @@ final class TanyaAISandboxScreenshotTests: XCTestCase {
                 "Kategori apa yang diinginkan",
                 "choices-card"
             ),
+            ScreenshotScenario(
+                "Anda akan diarahkan ke agen kami",
+                "live-agent-card"
+            ),
             ScreenshotScenario("A neutral system update.", "status-neutral"),
             ScreenshotScenario("The sample request completed.", "status-success"),
             ScreenshotScenario("Review this demo warning.", "status-warning"),
