@@ -107,7 +107,8 @@ button carries an `https` link the host rejects.
 ### Reply formatting
 
 Reply text may carry inline styling through a closed set of bracket tags -
-`[bold]`, `[strike]`, and `[color]text|RRGGBB[/color]` - so a labelled list
+`[bold]`, `[italic]`, `[underline]`, `[strike]`, and
+`[color]text|RRGGBB[/color]` - so a labelled list
 stays inside one bubble. Markdown is deliberately not used: asterisks are
 ordinary characters in banking copy, and a closed tag set means a response
 cannot introduce links, images, or headings. Contract, including how partial
@@ -119,7 +120,7 @@ tags behave mid-stream, in [`docs/BUBBLE_SCHEMA.md`](docs/BUBBLE_SCHEMA.md).
 | --- | --- |
 | `TanyaAIContracts` | Narrow interfaces implemented by the host |
 | `TanyaAIDomain` | Models, repository protocol, and use cases |
-| `TanyaAIDesignSystem` | Host-injected colors and fonts |
+| `DesignKit` (separate package) | Host-injected tokens, payloads, and reusable UI components |
 | `TanyaAIData` | Session repository, DTO decoding, and event mapping |
 | `TanyaAIPresentation` | SwiftUI views and ViewModels |
 | `TanyaAI` | Public composition root and UIKit navigation |
@@ -148,6 +149,11 @@ This avoids both extremes:
 | Content | Purpose | Shared variation |
 | --- | --- | --- |
 | `text` | Incoming and outgoing chat text | User/assistant styling |
+| `image` | Image with an optional caption | Declared aspect ratio |
+| `html` | Static formatted result | JavaScript disabled; navigation restricted to the app's initial load |
+| `actions` | Host-owned deeplink hand-off | Underlined action links |
+| `liveAgent` | Offer to continue with a person | Accept hands off; decline settles the card |
+| `choices` | Pick options, then explicitly submit | Single or multiple selection |
 | `information` | Safe generic text and key-value information | Allowlisted blocks |
 | `chart` | Standalone data visualization | `bar`, `line`, `donut`, `progress` |
 | `portfolio` | Portfolio total, performance, allocation, disclaimer | Reuses chart primitives |
@@ -443,7 +449,7 @@ submission, cancellation, and deallocation.
 | --- | --- |
 | `TanyaAIModule.makeViewController` | Creates one isolated feature graph and entry controller |
 | `TanyaAIHost` | One object the host creates: presentation plus deeplink hand-off |
-| `TanyaAIConfiguration.init` | Supplies an optional initial prompt |
+| `TanyaAIConfiguration.init` | Supplies an optional initial prompt and host-provided shortcuts |
 | `TanyaAIDependencies.init` | Injects chat session, theme, and optional authorization |
 | `TanyaAIChatSession` | The host's adapter over a vendor chat SDK |
 | `TanyaAIAuthorizationService.authorize` | Delegates secure approval to the host |
@@ -456,7 +462,8 @@ ViewModels, decoders, and the internal coordinator are implementation details.
 ### 1. Add the local package
 
 In Xcode, use **File → Add Package Dependencies → Add Local** and select
-`Packages/TanyaAI`. Link the `TanyaAI` product. The sandbox also links
+`Packages/TanyaAI`, keeping `Packages/DesignKit` beside it because TanyaAI
+depends on that sibling package. Link the `TanyaAI` product. The sandbox also links
 `TanyaAITestSupport`, but a host application must not ship that product.
 
 ### 2. Adapt your chat SDK
@@ -634,10 +641,12 @@ payload instead of adding another optional property to a generic object.
 Add a small value type under:
 
 ```text
-Sources/TanyaAIDomain/Models
+Packages/DesignKit/Sources/DesignKit/Models
 ```
 
-Domain models contain meaning, not layout coordinates or networking details.
+Shared bubble payloads live in DesignKit so its renderers do not depend back
+on TanyaAI. Feature-only message and stream models stay in TanyaAIDomain.
+Models contain meaning, not layout coordinates or networking details.
 
 ### 4. Add DTO and mapper support
 
@@ -854,7 +863,8 @@ The following are not allowed in this package:
 - constructing or configuring ViewModels, use cases, or services in `body`;
 - a singleton router, singleton feature graph, or hidden global presenter;
 - `AnyView` as a general dynamic bubble renderer;
-- arbitrary backend-driven layout, HTML, JavaScript, coordinates, or colors;
+- executable HTML or JavaScript; HTML is limited to the static `content.html` bubble;
+- arbitrary backend-driven native layout, coordinates, or colors;
 - arbitrary action names or URLs executed directly from a response;
 - raw PIN in messages, prompts, logs, analytics, storage, or clipboard;
 - certificates, tokens, secrets, absolute production hosts, or customer data;

@@ -226,9 +226,11 @@ For a result that reads better as a table than as a card.
 }
 ```
 
-**Static only.** JavaScript is disabled, navigation is refused, and the
-fragment loads with no base URL, so a relative reference resolves nowhere.
-Anything that needs to run will not run.
+**Static only.** JavaScript is disabled. Only the initial main-frame load
+requested by the app is allowed; links, forms, automatic redirects (including
+meta refresh), and iframe navigation are refused. The fragment loads with no
+base URL. This navigation policy does not block absolute image or stylesheet
+URLs; HTML must not rely on the host's authenticated networking for resources.
 
 **Charts belong in `content.chart`.** It follows the theme, scales with
 Dynamic Type and can be read aloud - none of which survive inside a web view.
@@ -237,8 +239,9 @@ Dynamic Type and can be read aloud - none of which survive inside a web view.
 one the app assumes 180pt and corrects after measuring, which moves the
 conversation under whoever is reading it.
 
-**Send `accessibilityText`.** Without it the bubble is announced as a web
-area, which tells a customer using VoiceOver nothing.
+**Send `accessibilityText`.** The fragment's accessibility tree is hidden;
+VoiceOver reads this description instead. Without it the bubble only announces
+"Formatted result".
 
 The fragment inherits the host theme's text colour, divider colour and body
 font size, so it does not become a white rectangle in a dark conversation.

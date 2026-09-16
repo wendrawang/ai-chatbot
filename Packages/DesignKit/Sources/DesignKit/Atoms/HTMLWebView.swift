@@ -50,8 +50,7 @@ struct HTMLWebView: UIViewRepresentable {
         guard context.coordinator.loadedDocument != document else {
             return
         }
-        context.coordinator.loadedDocument = document
-        webView.loadHTMLString(document, baseURL: nil)
+        context.coordinator.load(document, in: webView)
     }
 
     static func dismantleUIView(_ webView: WKWebView, coordinator: Coordinator) {
@@ -91,13 +90,20 @@ struct HTMLWebView: UIViewRepresentable {
     }
 
     final class Coordinator: NSObject, WKNavigationDelegate {
-        var loadedDocument: String?
+        private(set) var loadedDocument: String?
+        private var awaitingInitialNavigation = false
         private let onHeightChange: (CGFloat) -> Void
         private var observation: NSKeyValueObservation?
 
         init(onHeightChange: @escaping (CGFloat) -> Void) {
             self.onHeightChange = onHeightChange
             super.init()
+        }
+
+        func load(_ document: String, in webView: WKWebView) {
+            loadedDocument = document
+            awaitingInitialNavigation = true
+            webView.loadHTMLString(document, baseURL: nil)
         }
 
         /// Watches the rendered height instead of asking for it, because
@@ -124,11 +130,17 @@ struct HTMLWebView: UIViewRepresentable {
             decidePolicyFor navigationAction: WKNavigationAction,
             decisionHandler: @escaping (WKNavigationActionPolicy) -> Void
         ) {
-            // `.other` is the initial `loadHTMLString`. Everything else - a
-            // link, a redirect, a form - is the fragment trying to leave.
-            decisionHandler(
-                navigationAction.navigationType == .other ? .allow : .cancel
-            )
+            // `.other` also includes automatic redirects and frame loads.
+            // Only the main-frame about:blank load armed by the host may pass.
+            guard awaitingInitialNavigation,
+                  navigationAction.navigationType == .other,
+                  navigationAction.targetFrame?.isMainFrame == true,
+                  navigationAction.request.url?.absoluteString == "about:blank" else {
+                decisionHandler(.cancel)
+                return
+            }
+            awaitingInitialNavigation = false
+            decisionHandler(.allow)
         }
     }
 }

@@ -164,15 +164,23 @@ final class TanyaAISandboxScreenshotTests: XCTestCase {
         in table: XCUIElement
     ) {
         let element = application.staticTexts[anchorText]
-        for _ in 0..<36 where element.isHittable == false {
+        for _ in 0..<36 where isVisible(element, in: table) == false {
             scrollForward(table)
         }
         XCTAssertTrue(
-            element.isHittable,
+            isVisible(element, in: table),
             "Could not reveal screenshot scenario: \(anchorText)"
         )
         alignNearTop(element, in: table)
         RunLoop.current.run(until: Date().addingTimeInterval(0.2))
+    }
+
+    // Offscreen static text can have no activation point. Screenshots need
+    // visible bounds, not a tappable accessibility activation point.
+    private func isVisible(_ element: XCUIElement, in table: XCUIElement) -> Bool {
+        guard element.exists else { return false }
+        let frame = element.frame
+        return !frame.isEmpty && table.frame.intersection(application.frame).contains(frame)
     }
 
     private func alignNearTop(
