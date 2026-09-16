@@ -1,6 +1,6 @@
 import UIKit
 
-public struct Theme {
+public struct Theme: Equatable {
     public let colors: Colors
     public let fonts: Fonts
 

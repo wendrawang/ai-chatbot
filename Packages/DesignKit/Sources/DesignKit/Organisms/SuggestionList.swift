@@ -62,7 +62,7 @@ public struct SuggestionList: View {
             alignment: .leading,
             spacing: DesignKitMetrics.Spacing.compact
         ) {
-            ForEach(suggestions) { suggestion in
+            ForEach(suggestions, id: \.identifier) { suggestion in
                 SuggestionRow(suggestion: suggestion, onSelect: onSelect)
             }
         }

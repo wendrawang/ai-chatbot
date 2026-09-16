@@ -9,7 +9,7 @@ import Foundation
 struct TanyaAIMessageListState {
     let messages: [TanyaAIMessageItemViewModel]
     let isRestoring: Bool
-    let showsTypingRow: Bool
+    let isTypingRowVisible: Bool
     /// Empty unless a reply is offering prompts. They render as the last row,
     /// so they sit under the question they answer.
     let suggestions: [Suggestion]
@@ -19,31 +19,32 @@ struct TanyaAIMessageListState {
     static let empty = TanyaAIMessageListState(
         messages: [],
         isRestoring: false,
-        showsTypingRow: false,
+        isTypingRowVisible: false,
         suggestions: [],
         suggestionsTitle: nil
     )
 
-    var showsSuggestionRow: Bool {
+    var isSuggestionRowVisible: Bool {
         suggestions.isEmpty == false
     }
 
     var rowCount: Int {
         messages.count
-            + (showsTypingRow ? 1 : 0)
-            + (showsSuggestionRow ? 1 : 0)
+            + (isTypingRowVisible ? 1 : 0)
+            + (isSuggestionRowVisible ? 1 : 0)
     }
 
     /// What each row shows. Messages first, then the waiting row, then the
     /// prompts - the order rows are counted in.
     func kind(at index: Int) -> TanyaAIMessageRowKind? {
+        guard index >= 0 else { return nil }
         if index < messages.count {
             return .message(messages[index])
         }
-        if showsTypingRow, index == messages.count {
+        if isTypingRowVisible, index == messages.count {
             return .typing
         }
-        guard showsSuggestionRow, index == rowCount - 1 else {
+        guard isSuggestionRowVisible, index == rowCount - 1 else {
             return nil
         }
         return .suggestions(title: suggestionsTitle, items: suggestions)
@@ -52,9 +53,10 @@ struct TanyaAIMessageListState {
     /// Whether the rows themselves differ, as opposed to a message changing
     /// its own contents - which the row observes for itself.
     func rowsDiffer(from other: TanyaAIMessageListState) -> Bool {
-        rowCount != other.rowCount
-            || messages.map(\.id) != other.messages.map(\.id)
-            || suggestions.map(\.id) != other.suggestions.map(\.id)
+        isTypingRowVisible != other.isTypingRowVisible
+            || !messages.elementsEqual(other.messages, by: { $0 === $1 })
+            || suggestions != other.suggestions
+            || suggestionsTitle != other.suggestionsTitle
     }
 }
 

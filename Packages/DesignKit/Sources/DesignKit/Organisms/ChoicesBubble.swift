@@ -101,7 +101,7 @@ public struct ChoicesBubble: View {
                     minHeight: DesignKitMetrics.Size.minimumTapTarget
                 )
         }
-        .disabled(payload.canSubmit == false)
+        .disabled(payload.isSubmittable == false)
         .foregroundColor(Color(theme.colors.userBubbleText))
         .background(
             RoundedRectangle(cornerRadius: DesignKitMetrics.Radius.bubble)
@@ -109,7 +109,7 @@ public struct ChoicesBubble: View {
                 // Dimmed rather than hidden: a button that disappears until
                 // something is picked leaves the customer unsure there is a
                 // next step at all.
-                .opacity(payload.canSubmit ? 1 : 0.35)
+                .opacity(payload.isSubmittable ? 1 : 0.35)
         )
         .accessibilityIdentifier("choices.submit")
     }

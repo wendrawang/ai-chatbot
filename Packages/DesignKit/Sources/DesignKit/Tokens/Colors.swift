@@ -1,6 +1,6 @@
 import UIKit
 
-public struct Colors {
+public struct Colors: Equatable {
     public let background: UIColor
     public let surface: UIColor
     public let primaryText: UIColor

@@ -71,10 +71,10 @@ final class TanyaAIPINViewModelTests: XCTestCase {
 
     func testCancelClearsPINAndProducesOutput() {
         let viewModel = makeViewModel()
-        var didCancel = false
+        var isCancelled = false
         viewModel.onOutput = { output in
             if case .cancel = output {
-                didCancel = true
+                isCancelled = true
             }
         }
         viewModel.appendDigit(1)
@@ -84,7 +84,7 @@ final class TanyaAIPINViewModelTests: XCTestCase {
 
         XCTAssertTrue(viewModel.pin.isEmpty)
         XCTAssertNil(viewModel.errorMessage)
-        XCTAssertTrue(didCancel)
+        XCTAssertTrue(isCancelled)
     }
 
     func testInputIsLockedDuringSubmission() {

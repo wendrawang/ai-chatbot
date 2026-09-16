@@ -37,7 +37,7 @@ final class ChoicesTests: XCTestCase {
     }
 
     func testMultipleSelectionAccumulates() {
-        let payload = makePayload(allowsMultipleSelection: true)
+        let payload = makePayload(isMultipleSelectionAllowed: true)
             .toggling("dining")
             .toggling("hotel")
 
@@ -45,7 +45,7 @@ final class ChoicesTests: XCTestCase {
     }
 
     func testSingleSelectionReplaces() {
-        let payload = makePayload(allowsMultipleSelection: false)
+        let payload = makePayload(isMultipleSelectionAllowed: false)
             .toggling("dining")
             .toggling("hotel")
 
@@ -53,7 +53,7 @@ final class ChoicesTests: XCTestCase {
     }
 
     func testTappingTheSameChipTwiceClearsIt() {
-        let payload = makePayload(allowsMultipleSelection: true)
+        let payload = makePayload(isMultipleSelectionAllowed: true)
             .toggling("dining")
             .toggling("dining")
 
@@ -63,7 +63,7 @@ final class ChoicesTests: XCTestCase {
     /// The answer reads in the order the choices were offered, not the order
     /// they happened to be tapped.
     func testAnswerFollowsTheOfferedOrder() {
-        let payload = makePayload(allowsMultipleSelection: true)
+        let payload = makePayload(isMultipleSelectionAllowed: true)
             .toggling("hotel")
             .toggling("dining")
 
@@ -71,8 +71,8 @@ final class ChoicesTests: XCTestCase {
     }
 
     func testNothingPickedCannotBeSubmitted() {
-        XCTAssertFalse(makePayload().canSubmit)
-        XCTAssertTrue(makePayload().toggling("dining").canSubmit)
+        XCTAssertFalse(makePayload().isSubmittable)
+        XCTAssertTrue(makePayload().toggling("dining").isSubmittable)
     }
 
     /// A settled card is a record, not a control.
@@ -80,11 +80,11 @@ final class ChoicesTests: XCTestCase {
         var payload = makePayload().toggling("dining")
         payload.isSubmitted = true
 
-        XCTAssertFalse(payload.canSubmit)
+        XCTAssertFalse(payload.isSubmittable)
     }
 
     private func makePayload(
-        allowsMultipleSelection: Bool = true
+        isMultipleSelectionAllowed: Bool = true
     ) -> ChoicesPayload {
         ChoicesPayload(
             identifier: "q1",
@@ -101,7 +101,7 @@ final class ChoicesTests: XCTestCase {
                     prompt: "Promo hotel"
                 )
             ],
-            allowsMultipleSelection: allowsMultipleSelection
+            isMultipleSelectionAllowed: isMultipleSelectionAllowed
         )
     }
 }

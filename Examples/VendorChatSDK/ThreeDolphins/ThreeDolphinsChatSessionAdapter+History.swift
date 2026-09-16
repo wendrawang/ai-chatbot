@@ -13,8 +13,7 @@ extension ThreeDolphinsChatSessionAdapter {
     static let historyLimit = 100
 
     func loadHistory(completion: @escaping () -> Void) {
-        Connector.shared.fetchConversations(botId: botId) {
-            [weak self] conversations, _ in
+        Connector.shared.fetchConversations(botId: botId) { [weak self] conversations, _ in
             // CHECK: the key naming a conversation. `id` is the guess;
             // `conversationId` and `sessionId` are equally likely.
             guard let self,

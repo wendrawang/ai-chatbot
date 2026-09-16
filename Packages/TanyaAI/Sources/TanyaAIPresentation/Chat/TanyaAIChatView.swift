@@ -82,7 +82,7 @@ public struct TanyaAIChatView: View {
 
     @ViewBuilder
     private var shortcutStrip: some View {
-        if viewModel.showsShortcuts {
+        if viewModel.isShortcutRowVisible {
             ShortcutStrip(
                 shortcuts: viewModel.shortcuts,
                 onSelect: viewModel.sendShortcut

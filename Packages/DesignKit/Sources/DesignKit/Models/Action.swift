@@ -24,7 +24,7 @@ public struct Action: Equatable {
 }
 
 /// One button on an action card.
-public struct ActionButton: Equatable, Identifiable {
+public struct ActionButton: Equatable {
     /// Visual weight only. It carries no behaviour and no permission.
     public enum Style: String, Equatable {
         case primary
@@ -35,7 +35,7 @@ public struct ActionButton: Equatable, Identifiable {
     public let style: Style
     public let action: Action
 
-    public var id: String { action.identifier }
+    public var identifier: String { action.identifier }
 
     public init(
         title: String,

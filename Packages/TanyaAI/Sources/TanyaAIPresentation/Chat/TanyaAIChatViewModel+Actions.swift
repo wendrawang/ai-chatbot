@@ -24,7 +24,7 @@ public extension TanyaAIChatViewModel {
             onOutput?(.performAction(handoff))
             return
         }
-        guard authorizesInFeature else {
+        guard isAuthorizationEnabled else {
             reportUnauthorizableApproval()
             return
         }
@@ -54,7 +54,7 @@ public extension TanyaAIChatViewModel {
     func submitChoices(_ payload: ChoicesPayload) {
         guard let message = choicesMessage(identifier: payload.identifier),
               case .choices(var current) = message.content,
-              current.canSubmit else {
+              current.isSubmittable else {
             return
         }
         current.isSubmitted = true

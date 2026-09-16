@@ -99,7 +99,8 @@ final class TanyaAIApprovalBubbleTests: XCTestCase {
         useCase.send(
             .textDelta(messageIdentifier: "approval-card", text: "Baik, ")
         )
-        useCase.send(.responseCompleted(messageIdentifier: "approval-card"))
+        // Flush one batch while the request is still open.
+        viewModel.textDeltaBuffer.flushAll()
         useCase.send(
             .textDelta(messageIdentifier: "approval-card", text: "dibatalkan.")
         )
@@ -114,11 +115,11 @@ final class TanyaAIApprovalBubbleTests: XCTestCase {
     /// Opens a turn, which is what registers the event handler.
     private func makeViewModel(
         useCase: UseCaseStub,
-        authorizesInFeature: Bool = true
+        isAuthorizationEnabled: Bool = true
     ) -> TanyaAIChatViewModel {
         let viewModel = TanyaAIChatViewModel(
             useCase: useCase,
-            authorizesInFeature: authorizesInFeature
+            isAuthorizationEnabled: isAuthorizationEnabled
         )
         viewModel.inputText = "konfirmasi"
         viewModel.sendCurrentMessage()
@@ -132,7 +133,7 @@ final class TanyaAIApprovalBubbleTests: XCTestCase {
         let useCase = UseCaseStub()
         let viewModel = makeViewModel(
             useCase: useCase,
-            authorizesInFeature: false
+            isAuthorizationEnabled: false
         )
         var outputs: [TanyaAIChatOutput] = []
         viewModel.onOutput = { outputs.append($0) }
@@ -150,7 +151,7 @@ final class TanyaAIApprovalBubbleTests: XCTestCase {
         let useCase = UseCaseStub()
         let viewModel = makeViewModel(
             useCase: useCase,
-            authorizesInFeature: false
+            isAuthorizationEnabled: false
         )
         var actions: [Action] = []
         viewModel.onOutput = { output in

@@ -9,10 +9,10 @@ import TanyaAIDomain
 extension TanyaAISessionRepository {
     func reportEmptyHistoryIfNeeded() {
         lock.lock()
-        let needed = !hasReportedHistory
-        hasReportedHistory = true
+        let isHistoryNeeded = !isHistoryReported
+        isHistoryReported = true
         lock.unlock()
-        guard needed else {
+        guard isHistoryNeeded else {
             return
         }
         emit(.history([]))

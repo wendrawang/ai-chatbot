@@ -1,6 +1,6 @@
 import UIKit
 
-public struct Fonts {
+public struct Fonts: Equatable {
     public let title: UIFont
     public let headline: UIFont
     public let body: UIFont

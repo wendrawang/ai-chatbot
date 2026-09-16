@@ -40,12 +40,7 @@ struct TanyaAIMessageRowView: View {
         case .financialList(let payload):
             FinancialListBubble(payload: payload)
         case .approval(let payload):
-            ApprovalBubble(
-                payload: payload,
-                onEdit: { handlers.approval.onEdit(payload) },
-                onCancel: { handlers.approval.onCancel(payload) },
-                onApprove: { handlers.approval.onApprove(payload) }
-            )
+            approval(payload)
         case .html(let payload):
             HTMLBubble(payload: payload)
         case .liveAgent(let payload):
@@ -75,5 +70,14 @@ struct TanyaAIMessageRowView: View {
                 )
             )
         }
+    }
+
+    private func approval(_ payload: ApprovalPayload) -> some View {
+        ApprovalBubble(
+            payload: payload,
+            onEdit: { handlers.approval.onEdit(payload) },
+            onCancel: { handlers.approval.onCancel(payload) },
+            onApprove: { handlers.approval.onApprove(payload) }
+        )
     }
 }

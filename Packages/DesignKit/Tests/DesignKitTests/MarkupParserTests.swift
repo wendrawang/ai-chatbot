@@ -4,6 +4,18 @@ import XCTest
 /// The wire format is a closed tag set, so these tests pin both what it
 /// supports and what it refuses to do.
 final class MarkupParserTests: XCTestCase {
+    func testManyUnclosedBracketsRemainLiteral() {
+        let source = String(repeating: "[ordinary ", count: 5_000)
+
+        XCTAssertEqual(MarkupParser.runs(from: source).map(\.text).joined(), source)
+    }
+
+    func testLongBracketedTextIsNotMistakenForATag() {
+        let source = "[averylongordinaryword] hello"
+
+        XCTAssertEqual(MarkupParser.runs(from: source).map(\.text).joined(), source)
+    }
+
     func testBoldTagStylesOnlyItsOwnText() {
         let runs = MarkupParser.runs(from: "saya [bold]wen[/bold] ganteng")
 

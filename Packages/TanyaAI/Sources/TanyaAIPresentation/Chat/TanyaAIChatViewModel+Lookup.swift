@@ -7,7 +7,7 @@ import TanyaAIDomain
 /// Split out so the ViewModel proper holds only what changes state.
 extension TanyaAIChatViewModel {
     func message(identifier: String) -> TanyaAIMessageItemViewModel? {
-        messages.first { $0.id == identifier }
+        messages.first { $0.identifier == identifier }
     }
 
     /// The newest bubble carrying this approval identifier.

@@ -15,6 +15,7 @@ final class ImageCache {
 
     private init() {
         storage.countLimit = 40
+        storage.totalCostLimit = 32 * 1_024 * 1_024
     }
 
     func image(for url: URL?) -> UIImage? {
@@ -25,7 +26,12 @@ final class ImageCache {
     }
 
     func store(_ image: UIImage, for url: URL) {
-        storage.setObject(image, forKey: url as NSURL)
+        guard let bitmap = image.cgImage else { return }
+        storage.setObject(
+            image,
+            forKey: url as NSURL,
+            cost: bitmap.bytesPerRow * bitmap.height
+        )
     }
 }
 
@@ -63,7 +69,7 @@ struct RemoteImage: View {
             .aspectRatio(aspectRatio, contentMode: .fit)
             .overlay(content)
             .clipped()
-            .onAppear(perform: load)
+            .task(id: url) { await load() }
     }
 
     @ViewBuilder
@@ -77,23 +83,13 @@ struct RemoteImage: View {
         }
     }
 
-    private func load() {
-        guard image == nil, let url = url else {
-            return
-        }
-        URLSession.shared.dataTask(with: url) { data, _, _ in
-            guard let data = data,
-                  let loaded = UIImage(data: data) else {
-                // Left as the placeholder on purpose. The caption under the
-                // picture already carries the message; an error badge here
-                // would draw attention to the less important half.
-                return
-            }
-            ImageCache.shared.store(loaded, for: url)
-            DispatchQueue.main.async {
-                image = loaded
-            }
-        }.resume()
+    @MainActor
+    private func load() async {
+        image = ImageCache.shared.image(for: url)
+        guard image == nil, let url else { return }
+        let loaded = await ImageLoader.image(from: url)
+        guard !Task.isCancelled else { return }
+        image = loaded
     }
 }
 

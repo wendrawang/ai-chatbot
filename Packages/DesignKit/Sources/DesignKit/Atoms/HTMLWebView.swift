@@ -54,6 +54,8 @@ struct HTMLWebView: UIViewRepresentable {
     }
 
     static func dismantleUIView(_ webView: WKWebView, coordinator: Coordinator) {
+        webView.stopLoading()
+        webView.navigationDelegate = nil
         coordinator.stopObserving()
     }
 
@@ -91,7 +93,7 @@ struct HTMLWebView: UIViewRepresentable {
 
     final class Coordinator: NSObject, WKNavigationDelegate {
         private(set) var loadedDocument: String?
-        private var awaitingInitialNavigation = false
+        private var isInitialNavigationPending = false
         private let onHeightChange: (CGFloat) -> Void
         private var observation: NSKeyValueObservation?
 
@@ -102,7 +104,7 @@ struct HTMLWebView: UIViewRepresentable {
 
         func load(_ document: String, in webView: WKWebView) {
             loadedDocument = document
-            awaitingInitialNavigation = true
+            isInitialNavigationPending = true
             webView.loadHTMLString(document, baseURL: nil)
         }
 
@@ -132,14 +134,14 @@ struct HTMLWebView: UIViewRepresentable {
         ) {
             // `.other` also includes automatic redirects and frame loads.
             // Only the main-frame about:blank load armed by the host may pass.
-            guard awaitingInitialNavigation,
+            guard isInitialNavigationPending,
                   navigationAction.navigationType == .other,
                   navigationAction.targetFrame?.isMainFrame == true,
                   navigationAction.request.url?.absoluteString == "about:blank" else {
                 decisionHandler(.cancel)
                 return
             }
-            awaitingInitialNavigation = false
+            isInitialNavigationPending = false
             decisionHandler(.allow)
         }
     }

@@ -19,14 +19,15 @@ public final class TanyaAISessionRepository: TanyaAIRepository {
     /// returns its whole archive would otherwise put thousands of rows into
     /// one table, and the adapter is the layer most likely to be written by
     /// someone who has never seen this file.
-    static let historyLimit = 100
+    static let historyLimit = TanyaAIMessage.historyLimit
 
     private let session: TanyaAIChatSession
     let decoder = TanyaAIStreamEventDecoder()
     let lock = NSLock()
     private var activeTurn: Turn?
     private var unsolicitedObserver: ((TanyaAIStreamEvent) -> Void)?
-    var hasReportedHistory = false
+    private var isSessionStarted = false
+    var isHistoryReported = false
     private var context: TanyaAIContext?
 
     public init(
@@ -38,11 +39,6 @@ public final class TanyaAISessionRepository: TanyaAIRepository {
         session.onEvent = { [weak self] event in
             self?.handle(event)
         }
-        // Opened here, not on the first message. The channel has to be
-        // listening before anyone speaks: a bot that greets first, an agent
-        // reaching out, or a reopened conversation all arrive unprompted, and
-        // connecting lazily would drop every one of them.
-        session.connect()
     }
 
     deinit {
@@ -69,6 +65,7 @@ public final class TanyaAISessionRepository: TanyaAIRepository {
         let context = self.context
         lock.unlock()
 
+        connectIfNeeded()
         session.send(
             text: text,
             context: context,
@@ -93,6 +90,18 @@ public final class TanyaAISessionRepository: TanyaAIRepository {
         lock.lock()
         unsolicitedObserver = onEvent
         lock.unlock()
+        // The observer must exist before connect can synchronously emit history.
+        connectIfNeeded()
+    }
+
+    private func connectIfNeeded() {
+        lock.lock()
+        let isConnectionNeeded = !isSessionStarted
+        isSessionStarted = true
+        lock.unlock()
+        if isConnectionNeeded {
+            session.connect()
+        }
     }
 
     // MARK: - Session events
@@ -133,7 +142,7 @@ public final class TanyaAISessionRepository: TanyaAIRepository {
             emit(.typing(isTyping))
         case .history(let messages):
             lock.lock()
-            hasReportedHistory = true
+            isHistoryReported = true
             lock.unlock()
             emit(
                 .history(

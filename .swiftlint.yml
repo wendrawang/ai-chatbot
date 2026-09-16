@@ -4,10 +4,13 @@ included:
   - TanyaAISandboxApp
   - TanyaAISandboxUITests
   - Packages
+  - Examples
+  - Scripts
 
 excluded:
   - .build
   - DerivedData
+  - Packages/DesignKit/Sources/DesignKit/Tokens/Generated
   - Packages/TanyaAI/.build
   - Packages/TanyaAI/.swiftpm
   - Packages/DesignKit/.build
@@ -16,23 +19,28 @@ excluded:
 file_length:
   warning: 250
   error: 250
-  ignore_comment_only_lines: true
+  ignore_comment_only_lines: false
 
 function_body_length:
-  warning: 40
-  error: 60
+  warning: 50
+  error: 50
 
 identifier_name:
   min_length:
     warning: 3
     error: 3
   max_length:
-    warning: 40
-    error: 40
-  excluded:
-    - id
+    warning: 35
+    error: 35
 
 type_name:
   max_length:
     warning: 40
     error: 40
+
+custom_rules:
+  boolean_prefix:
+    name: "Boolean prefix"
+    regex: '\b(?!is[A-Z])\w+\s*:\s*Bool\b|\b(?:let|var)\s+(?!is[A-Z])\w+\s*=\s*(?:true|false)\b'
+    message: "Boolean variables must start with is."
+    severity: error

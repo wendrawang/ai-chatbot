@@ -1,5 +1,5 @@
-public struct Suggestion: Identifiable, Equatable {
-    public let id: String
+public struct Suggestion: Equatable {
+    public let identifier: String
     public let title: String
     public let prompt: String
 
@@ -8,7 +8,7 @@ public struct Suggestion: Identifiable, Equatable {
         title: String,
         prompt: String
     ) {
-        id = identifier
+        self.identifier = identifier
         self.title = title
         self.prompt = prompt
     }

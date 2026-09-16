@@ -10,7 +10,7 @@ public struct TanyaAIHistoryView: View {
     }
 
     public var body: some View {
-        List(viewModel.items) { item in
+        List(viewModel.items, id: \.identifier) { item in
             VStack(alignment: .leading, spacing: 4) {
                 Text(item.title)
                     .font(Font(theme.fonts.headline))

@@ -917,3 +917,6 @@ Examples:
 - [`docs/BUBBLE_SCHEMA.md`](docs/BUBBLE_SCHEMA.md)
 - [`docs/INTEGRATION.md`](docs/INTEGRATION.md)
 - [`docs/PERFORMANCE.md`](docs/PERFORMANCE.md)
+
+Panduan tema Default/Premier/Private, override per halaman, dan registrasi font:
+[DesignKit themes](docs/DESIGNKIT_THEMES.md).

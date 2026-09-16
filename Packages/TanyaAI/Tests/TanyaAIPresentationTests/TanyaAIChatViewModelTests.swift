@@ -66,7 +66,7 @@ final class TanyaAIChatViewModelTests: XCTestCase {
         viewModel.sendSuggestion(suggestion)
 
         XCTAssertEqual(useCase.receivedText, suggestion.prompt)
-        XCTAssertFalse(viewModel.showsSuggestions)
+        XCTAssertFalse(viewModel.isSuggestionRowVisible)
     }
 
     func testBackendSuggestionsReplaceInitialSuggestions() {
@@ -85,7 +85,7 @@ final class TanyaAIChatViewModelTests: XCTestCase {
         )
         useCase.send(.responseCompleted(messageIdentifier: "assistant-1"))
 
-        XCTAssertTrue(viewModel.showsSuggestions)
+        XCTAssertTrue(viewModel.isSuggestionRowVisible)
         XCTAssertEqual(viewModel.suggestions.map(\.title), ["Next question"])
     }
 

@@ -29,7 +29,7 @@ final class ThreeDolphinsChatSessionAdapter: NSObject, TanyaAIChatSession {
     /// The reply being streamed. 3Dolphins delivers a token at a time, so a
     /// turn is open from the first chunk until the SDK says it is done.
     private var streamingIdentifier: String?
-    private var hasReportedConnection = false
+    private var isConnectionReported = false
 
     /// - Parameters:
     ///   - profile: who is chatting. Built by the host from the signed-in
@@ -65,12 +65,18 @@ final class ThreeDolphinsChatSessionAdapter: NSObject, TanyaAIChatSession {
     }
 
     func disconnect() {
+        // A disconnected session must stop receiving events before deinit.
+        // swiftlint:disable:next notification_center_detachment
         NotificationCenter.default.removeObserver(self)
         // This ends the conversation, not the app's credentials: the token
         // from `setupConnection` survives for the next presentation.
         Connector.shared.endActiveSession()
         streamingIdentifier = nil
-        hasReportedConnection = false
+        isConnectionReported = false
+    }
+
+    deinit {
+        NotificationCenter.default.removeObserver(self)
     }
 
     // MARK: - Socket state
@@ -103,10 +109,10 @@ final class ThreeDolphinsChatSessionAdapter: NSObject, TanyaAIChatSession {
     /// Reconnects raise status 2 again; the guard keeps the screen from being
     /// rebuilt underneath the customer each time the socket blinks.
     private func reportConnected() {
-        guard hasReportedConnection == false else {
+        guard isConnectionReported == false else {
             return
         }
-        hasReportedConnection = true
+        isConnectionReported = true
         loadHistory { [weak self] in
             self?.onEvent?(.connected)
         }

@@ -50,7 +50,7 @@ final class TanyaAIMessageListTests: XCTestCase {
         let state = TanyaAIMessageListState(
             messages: [],
             isRestoring: false,
-            showsTypingRow: true,
+            isTypingRowVisible: true,
             suggestions: [],
             suggestionsTitle: nil
         )
@@ -66,7 +66,7 @@ final class TanyaAIMessageListTests: XCTestCase {
         let same = TanyaAIMessageListState(
             messages: first.messages,
             isRestoring: false,
-            showsTypingRow: false,
+            isTypingRowVisible: false,
             suggestions: [],
             suggestionsTitle: nil
         )
@@ -94,7 +94,7 @@ final class TanyaAIMessageListTests: XCTestCase {
         let state = TanyaAIMessageListState(
             messages: restored(messageCount: 1).messages,
             isRestoring: false,
-            showsTypingRow: true,
+            isTypingRowVisible: true,
             suggestions: [
                 Suggestion(
                     identifier: "s1",
@@ -128,7 +128,7 @@ final class TanyaAIMessageListTests: XCTestCase {
         TanyaAIMessageListState(
             messages: state.messages,
             isRestoring: false,
-            showsTypingRow: false,
+            isTypingRowVisible: false,
             suggestions: titles.map { title in
                 Suggestion(
                     identifier: title,
@@ -144,7 +144,7 @@ final class TanyaAIMessageListTests: XCTestCase {
         TanyaAIMessageListState(
             messages: [],
             isRestoring: true,
-            showsTypingRow: false,
+            isTypingRowVisible: false,
             suggestions: [],
             suggestionsTitle: nil
         )
@@ -163,7 +163,7 @@ final class TanyaAIMessageListTests: XCTestCase {
         return TanyaAIMessageListState(
             messages: messages,
             isRestoring: false,
-            showsTypingRow: false,
+            isTypingRowVisible: false,
             suggestions: [],
             suggestionsTitle: nil
         )

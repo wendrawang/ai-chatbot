@@ -14,17 +14,17 @@ public enum DesignKitMetrics {
     /// so two values next to each other read as deliberately different.
     public enum Spacing {
         /// 4 - between a label and the value directly under it.
-        public static let tight: CGFloat = 4
+        public static let tight: CGFloat = FigmaSize.spacingSmall
         /// 6 - rows of a stack that belong to one another.
         public static let snug: CGFloat = 6
         /// 8 - between sibling rows: prompts, links.
-        public static let compact: CGFloat = 8
+        public static let compact: CGFloat = FigmaSize.spacingMedium
         /// 12 - a bubble's vertical padding, and the gap inside a row.
         public static let regular: CGFloat = 12
         /// 14 - a caption's breathing room under artwork.
         public static let roomy: CGFloat = 14
         /// 16 - a bubble's horizontal padding, and the conversation's margin.
-        public static let wide: CGFloat = 16
+        public static let wide: CGFloat = FigmaSize.spacingLarge
         /// 18 - the large cards' own padding, matching their corner.
         public static let card: CGFloat = 18
     }
@@ -48,7 +48,7 @@ public enum DesignKitMetrics {
     /// How thick a drawn edge is.
     public enum Stroke {
         /// 1 - the outline around a reply, a prompt, a link.
-        public static let hairline: CGFloat = 1
+        public static let hairline: CGFloat = FigmaSize.weightOutline
         /// 1.5 - the prompt's circle, which has to hold its own against text.
         public static let indicator: CGFloat = 1.5
     }

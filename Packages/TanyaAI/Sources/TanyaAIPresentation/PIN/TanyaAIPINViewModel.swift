@@ -23,7 +23,7 @@ public final class TanyaAIPINViewModel: ObservableObject {
         self.authorizationService = authorizationService
     }
 
-    public var canSubmit: Bool {
+    public var isSubmittable: Bool {
         pin.count == 6 && pin.allSatisfy { $0.isNumber } && !isSubmitting
     }
 
@@ -47,7 +47,7 @@ public final class TanyaAIPINViewModel: ObservableObject {
     }
 
     public func submit() {
-        guard canSubmit else {
+        guard isSubmittable else {
             errorMessage = "Enter a 6-digit PIN."
             return
         }
@@ -64,15 +64,20 @@ public final class TanyaAIPINViewModel: ObservableObject {
             challengeIdentifier: approval.challengeIdentifier,
             expiresAt: approval.expiresAt
         )
-        activeRequest = authorizationService.authorize(
+        let task = authorizationService.authorize(
             request: request,
             pin: submittedPIN,
             completion: { [weak self] result in
-                self?.performOnMain {
+                self?.performOnMain { [weak self] in
                     self?.handle(result)
                 }
             }
         )
+        if isSubmitting {
+            activeRequest = task
+        } else {
+            task.cancel()
+        }
     }
 
     public func cancel() {

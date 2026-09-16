@@ -44,8 +44,13 @@ struct TanyaAIChoicesDTO: Decodable {
     let messageIdentifier: String
     let title: String?
     let choices: [TanyaAIChoiceDTO]
-    let allowsMultipleSelection: Bool?
+    let isMultipleSelectionAllowed: Bool?
     let submitTitle: String?
+
+    private enum CodingKeys: String, CodingKey {
+        case messageIdentifier, title, choices, submitTitle
+        case isMultipleSelectionAllowed = "allowsMultipleSelection"
+    }
 }
 
 struct TanyaAIChoiceDTO: Decodable {

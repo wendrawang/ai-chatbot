@@ -18,7 +18,7 @@ let package = Package(
         .library(name: "DesignKit", targets: ["DesignKit"])
     ],
     targets: [
-        .target(name: "DesignKit"),
+        .target(name: "DesignKit", resources: [.copy("Resources/Fonts")]),
         .testTarget(
             name: "DesignKitTests",
             dependencies: ["DesignKit"]

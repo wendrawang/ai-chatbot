@@ -31,12 +31,12 @@ final class TanyaAICoordinator: NSObject {
         show(.chat, animated: false)
     }
 
-    func show(_ route: TanyaAIRoute, animated: Bool = true) {
+    func show(_ route: TanyaAIRoute, animated isAnimated: Bool = true) {
         switch route {
         case .chat:
             showChat()
         case .history:
-            showHistory(animated: animated)
+            showHistory(animated: isAnimated)
         case .approval(let payload):
             showApproval(payload)
         }
@@ -60,7 +60,7 @@ final class TanyaAICoordinator: NSObject {
         dependencyContainer.startInitialPrompt(on: viewModel)
     }
 
-    private func showHistory(animated: Bool) {
+    private func showHistory(animated isAnimated: Bool) {
         let viewModel = dependencyContainer.makeHistoryViewModel()
         let controller = UIHostingController(
             rootView: TanyaAIHistoryView(viewModel: viewModel)
@@ -68,7 +68,7 @@ final class TanyaAICoordinator: NSObject {
         )
         navigationController.pushViewController(
             controller,
-            animated: animated
+            animated: isAnimated
         )
     }
 
@@ -156,9 +156,9 @@ extension TanyaAICoordinator: UINavigationControllerDelegate {
     func navigationController(
         _ navigationController: UINavigationController,
         willShow viewController: UIViewController,
-        animated: Bool
+        animated isAnimated: Bool
     ) {
-        let showsChat = viewController === chatController
-        navigationController.setNavigationBarHidden(showsChat, animated: animated)
+        let isChatVisible = viewController === chatController
+        navigationController.setNavigationBarHidden(isChatVisible, animated: isAnimated)
     }
 }

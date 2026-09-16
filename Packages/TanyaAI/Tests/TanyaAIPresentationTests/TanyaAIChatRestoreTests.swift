@@ -18,7 +18,7 @@ final class TanyaAIChatRestoreTests: XCTestCase {
             TanyaAIMessage(identifier: "2", role: .assistant, content: .text("Hai"))
         ]))
 
-        XCTAssertEqual(viewModel.messages.map(\.id), ["1", "2"])
+        XCTAssertEqual(viewModel.messages.map(\.identifier), ["1", "2"])
     }
 
     /// The greeting waits for the channel to say what it held. Showing it
@@ -44,12 +44,12 @@ final class TanyaAIChatRestoreTests: XCTestCase {
         let viewModel = TanyaAIChatViewModel(useCase: useCase)
 
         XCTAssertTrue(viewModel.isRestoring)
-        XCTAssertFalse(viewModel.showsTypingRow)
-        XCTAssertFalse(viewModel.showsSuggestions)
+        XCTAssertFalse(viewModel.isTypingRowVisible)
+        XCTAssertFalse(viewModel.isSuggestionRowVisible)
 
         useCase.sendUnsolicited(.history([]))
 
-        XCTAssertTrue(viewModel.showsSuggestions)
+        XCTAssertTrue(viewModel.isSuggestionRowVisible)
     }
 
     /// Typing before the channel answers wins. History is older than what

@@ -21,6 +21,8 @@ final class TanyaAIFrameRateTests: XCTestCase {
         let harness = makeHarness(messageCount: 120)
         let tableView = findTableView(in: harness.controller.view)
         XCTAssertNotNil(tableView)
+        // 120 incoming messages exercise eviction; only 100 plus typing remain.
+        XCTAssertEqual(tableView?.numberOfRows(inSection: 0), 101)
         XCTAssertEqual(
             tableView?.separatorStyle,
             UITableViewCell.SeparatorStyle.none

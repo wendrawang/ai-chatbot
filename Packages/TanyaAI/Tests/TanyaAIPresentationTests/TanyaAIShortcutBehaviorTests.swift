@@ -30,11 +30,11 @@ final class TanyaAIShortcutBehaviorTests: XCTestCase {
             shortcuts: shortcuts
         )
         useCase.sendUnsolicited(.history([]))
-        XCTAssertTrue(viewModel.showsShortcuts)
+        XCTAssertTrue(viewModel.isShortcutRowVisible)
 
         viewModel.sendShortcut(shortcuts[0])
 
-        XCTAssertFalse(viewModel.showsShortcuts)
+        XCTAssertFalse(viewModel.isShortcutRowVisible)
     }
 
     func testNoShortcutsMeansNoStrip() {
@@ -42,7 +42,7 @@ final class TanyaAIShortcutBehaviorTests: XCTestCase {
         let viewModel = TanyaAIChatViewModel(useCase: useCase)
         useCase.sendUnsolicited(.history([]))
 
-        XCTAssertFalse(viewModel.showsShortcuts)
+        XCTAssertFalse(viewModel.isShortcutRowVisible)
     }
 
     private var shortcuts: [Suggestion] {

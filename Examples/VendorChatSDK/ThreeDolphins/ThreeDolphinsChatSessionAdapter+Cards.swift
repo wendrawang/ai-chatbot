@@ -20,7 +20,7 @@ extension ThreeDolphinsChatSessionAdapter {
     /// A live message carrying one of the package's typed cards.
     ///
     /// Returns nil today for every message, because nothing is known to carry
-    /// the payload. It is written out rather than left as a `TODO` so the
+    /// the payload. It is written out rather than left as a placeholder so the
     /// shape of the answer is already decided: a name and its `data` object,
     /// passed through untouched.
     func structuredPayload(

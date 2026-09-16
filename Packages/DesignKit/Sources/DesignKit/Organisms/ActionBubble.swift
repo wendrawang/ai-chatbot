@@ -22,7 +22,7 @@ public struct ActionBubble: View {
             alignment: .leading,
             spacing: DesignKitMetrics.Spacing.compact
         ) {
-            ForEach(payload.buttons) { button in
+            ForEach(payload.buttons, id: \.identifier) { button in
                 ActionLink(button: button, onTap: onAction)
             }
         }

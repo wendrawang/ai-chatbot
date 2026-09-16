@@ -1,14 +1,17 @@
 import DesignKit
 import Foundation
 
-public struct TanyaAIMessage: Identifiable, Equatable {
+public struct TanyaAIMessage: Equatable {
+    /// Bounds both restored history and messages retained during a live chat.
+    public static let historyLimit = 100
+
     public enum Role: Equatable {
         case user
         case assistant
         case system
     }
 
-    public let id: String
+    public let identifier: String
     public let role: Role
     public var content: TanyaAIMessageContent
 
@@ -17,7 +20,7 @@ public struct TanyaAIMessage: Identifiable, Equatable {
         role: Role,
         content: TanyaAIMessageContent
     ) {
-        id = identifier
+        self.identifier = identifier
         self.role = role
         self.content = content
     }

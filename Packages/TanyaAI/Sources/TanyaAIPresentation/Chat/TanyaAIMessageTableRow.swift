@@ -15,6 +15,7 @@ struct TanyaAIMessageTableRow: View {
                     viewModel: message,
                     handlers: handlers
                 )
+                .id(message.identifier)
             case .typing:
                 TypingIndicatorView()
             case .suggestions(let title, let suggestions):

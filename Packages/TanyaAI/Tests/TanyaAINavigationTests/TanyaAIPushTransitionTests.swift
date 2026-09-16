@@ -54,11 +54,11 @@ final class TanyaAIPushTransitionTests: XCTestCase {
         // The completion runs when the animation does; drain the loop so it
         // has, rather than asserting on a state that has not happened yet.
         let deadline = Date().addingTimeInterval(2)
-        while context.completed == nil, Date() < deadline {
+        while context.isCompleted == nil, Date() < deadline {
             RunLoop.current.run(until: Date().addingTimeInterval(0.05))
         }
 
-        XCTAssertEqual(context.completed, true)
+        XCTAssertEqual(context.isCompleted, true)
         XCTAssertEqual(leaving.view.transform, .identity)
         XCTAssertEqual(arriving.view.transform, .identity)
     }
@@ -68,7 +68,7 @@ final class TanyaAIPushTransitionTests: XCTestCase {
 private final class TanyaAITransitionContextSpy:
     NSObject, UIViewControllerContextTransitioning {
     let containerView: UIView
-    private(set) var completed: Bool?
+    private(set) var isCompleted: Bool?
     private let leaving: UIViewController
     private let arriving: UIViewController
 
@@ -89,12 +89,14 @@ private final class TanyaAITransitionContextSpy:
         key == .from ? leaving : arriving
     }
 
-    func completeTransition(_ didComplete: Bool) {
-        completed = didComplete
+    func completeTransition(_ isCompleted: Bool) {
+        self.isCompleted = isCompleted
     }
 
     let isAnimated = true
     let isInteractive = false
+    // Required spelling from UIViewControllerContextTransitioning.
+    // swiftlint:disable:next boolean_prefix
     let transitionWasCancelled = false
     let presentationStyle = UIModalPresentationStyle.fullScreen
     let targetTransform = CGAffineTransform.identity

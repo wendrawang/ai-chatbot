@@ -10,8 +10,8 @@ struct TanyaAIMessageListView: View {
             state: TanyaAIMessageListState(
                 messages: viewModel.messages,
                 isRestoring: viewModel.isRestoring,
-                showsTypingRow: viewModel.showsTypingRow,
-                suggestions: viewModel.showsSuggestions
+                isTypingRowVisible: viewModel.isTypingRowVisible,
+                suggestions: viewModel.isSuggestionRowVisible
                     ? viewModel.suggestions
                     : [],
                 suggestionsTitle: viewModel.suggestionsTitle

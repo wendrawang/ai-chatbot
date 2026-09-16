@@ -22,7 +22,7 @@ final class TanyaAISessionHistoryTests: XCTestCase {
             return XCTFail("Expected a history event")
         }
         XCTAssertEqual(restored.map(\.role), [.user, .assistant])
-        XCTAssertEqual(restored.map(\.id), ["1", "2"])
+        XCTAssertEqual(restored.map(\.identifier), ["1", "2"])
         withExtendedLifetime(repository) {}
     }
 
@@ -47,8 +47,8 @@ final class TanyaAISessionHistoryTests: XCTestCase {
             return XCTFail("Expected a history event")
         }
         XCTAssertEqual(restored.count, 100)
-        XCTAssertEqual(restored.first?.id, "m-50")
-        XCTAssertEqual(restored.last?.id, "m-149")
+        XCTAssertEqual(restored.first?.identifier, "m-50")
+        XCTAssertEqual(restored.last?.identifier, "m-149")
         withExtendedLifetime(repository) {}
     }
 

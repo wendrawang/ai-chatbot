@@ -95,8 +95,14 @@ Sebelas tipe konten plus fallback. Yang perlu diingat soal tampilannya:
 
 ## Aturan yang mengikat
 
-- **Maksimal 250 baris per file, 120 karakter per baris.** Kalau kepanjangan,
+- **Nama variable 3–35 karakter; semua boolean berawalan `is`.**
+  Nama wajib dari protocol SDK boleh dipertahankan dengan pengecualian lokal.
+- **Maksimal 50 baris fisik per method (termasuk signature dan brace).**
+- **Jangan edit isi `Tokens/Generated`; ganti hanya dengan export engine.**
+  Snapshot/dummy saat ini dicatat di `docs/DESIGNKIT_THEMES.md`.
+- **Maksimal 250 baris per file kode, 120 karakter per baris.** Kalau kepanjangan,
   pecah lewat extension — jangan padatkan baris.
+- **SwiftLint wajib; `check_style.sh` memeriksa baris method fisik dengan SwiftParser bawaan Xcode.**
 - **SwiftLint dan `verify.sh` menyapu seluruh `Packages/`**, bukan satu paket
   per nama. Paket baru ikut terjaring sejak hari pertama — tapi test-nya perlu
   langkah `xcodebuild` sendiri di `verify.sh`, karena scheme paket fitur tidak

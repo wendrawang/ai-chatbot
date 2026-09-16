@@ -28,7 +28,7 @@ public struct SuggestionRow: View {
         .accessibility(
             label: Text("Suggested question: \(suggestion.title)")
         )
-        .accessibilityIdentifier("suggestion.\(suggestion.id)")
+        .accessibilityIdentifier("suggestion.\(suggestion.identifier)")
     }
 
     private var content: some View {

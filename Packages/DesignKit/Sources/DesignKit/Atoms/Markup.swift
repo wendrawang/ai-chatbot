@@ -113,7 +113,7 @@ enum MarkupParser {
         if name.hasPrefix("/") {
             name = name.dropFirst()
         }
-        return name.count <= 12
+        return name.prefix(13).count <= 12
             && name.allSatisfy { $0.isLowercase && $0.isLetter }
     }
 
@@ -213,7 +213,9 @@ enum MarkupParser {
         let end: String.Index
 
         init?(source: String, from start: String.Index) {
-            guard let closingBracket = source[start...].firstIndex(of: "]")
+            // A tag has at most 12 letters plus brackets and an optional '/'.
+            // Never rescan the whole remaining message for each literal '['.
+            guard let closingBracket = source[start...].prefix(15).firstIndex(of: "]")
             else {
                 return nil
             }

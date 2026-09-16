@@ -5,12 +5,13 @@ struct SegmentedBarView: View {
     @Environment(\.theme) private var theme
 
     var body: some View {
-        GeometryReader { proxy in
+        let total = series.reduce(0) { $0 + max(0, $1.value) }
+        return GeometryReader { proxy in
             HStack(spacing: 1) {
                 ForEach(series.indices, id: \.self) { index in
                     Rectangle()
                         .fill(segmentColor(index))
-                        .frame(width: segmentWidth(index, proxy: proxy))
+                        .frame(width: segmentWidth(index, total: total, width: proxy.size.width))
                 }
             }
             .clipShape(Capsule())
@@ -20,13 +21,13 @@ struct SegmentedBarView: View {
 
     private func segmentWidth(
         _ index: Int,
-        proxy: GeometryProxy
+        total: Double,
+        width: CGFloat
     ) -> CGFloat {
-        let total = series.reduce(0) { $0 + max(0, $1.value) }
         guard total > 0 else {
             return 0
         }
-        let available = proxy.size.width - CGFloat(max(0, series.count - 1))
+        let available = max(0, width - CGFloat(max(0, series.count - 1)))
         return available * CGFloat(max(0, series[index].value) / total)
     }
 

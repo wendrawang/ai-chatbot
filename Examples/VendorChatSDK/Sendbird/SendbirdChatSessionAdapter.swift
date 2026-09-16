@@ -64,7 +64,7 @@ final class SendbirdChatSessionAdapter: NSObject, TanyaAIChatSession {
         isOpeningChannel = true
         lock.unlock()
 
-        GroupChannel.getChannel(url: existingChannelURL) { [weak self] channel, error in
+        GroupChannel.getChannel(url: existingChannelURL) { [weak self] channel, _ in
             guard let channel else {
                 // A stored channel that no longer exists must not dead-end the
                 // customer: fall back to a new conversation.
@@ -81,16 +81,16 @@ final class SendbirdChatSessionAdapter: NSObject, TanyaAIChatSession {
     func send(text: String, context: TanyaAIContext?, requestIdentifier: String) {
         lock.lock()
         let channel = self.channel
-        var startsChannel = false
+        var isChannelStartNeeded = false
         if channel == nil {
             queuedMessages.append(text)
-            startsChannel = !isOpeningChannel
+            isChannelStartNeeded = !isOpeningChannel
             isOpeningChannel = true
         }
         lock.unlock()
 
         guard let channel else {
-            if startsChannel {
+            if isChannelStartNeeded {
                 createChannel()
             }
             return

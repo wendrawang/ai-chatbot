@@ -22,14 +22,14 @@ public struct ShortcutStrip: View {
     public var body: some View {
         ScrollView(.horizontal, showsIndicators: false) {
             HStack(spacing: DesignKitMetrics.Spacing.compact) {
-                ForEach(shortcuts) { shortcut in
+                ForEach(shortcuts, id: \.identifier) { shortcut in
                     Button(
                         action: { onSelect(shortcut) },
                         label: { label(shortcut) }
                     )
                     .foregroundColor(Color(theme.colors.accent))
                     .background(pill)
-                    .accessibilityIdentifier("shortcut.\(shortcut.id)")
+                    .accessibilityIdentifier("shortcut.\(shortcut.identifier)")
                     .accessibility(
                         label: Text("Shortcut: \(shortcut.title)")
                     )
