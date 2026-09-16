@@ -1,5 +1,5 @@
 {
-  "event": "content.choices",
+  "event": "choices",
   "data": {
     "messageIdentifier": "q-1",
     "title": "Kategori apa yang diinginkan",

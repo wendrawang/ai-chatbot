@@ -116,7 +116,7 @@ public extension MockTanyaAIChatSession {
                 deeplink: deeplink
             ) {
                 events.append(
-                    .structuredPayload(name: "content.actions", json: json)
+                    .structuredPayload(name: "actions", json: json)
                 )
             }
             events.append(

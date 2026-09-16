@@ -3,7 +3,7 @@
 Kembali ke [kontrak event](../BUBBLE_SCHEMA.md). JSON di bawah adalah **payload `data`**, bukan envelope
 vendor.
 
-## `content.image`
+## `image`
 
 Wajib: `messageIdentifier`, `imageURL`, `caption`. `caption: ""` menyembunyikan caption. `aspectRatio` adalah
 lebar ÷ tinggi; default 16:9. Rasio tetap selama download; gambar dipotong sesuai rasio ini. URL yang gagal
@@ -21,7 +21,7 @@ dimuat menampilkan placeholder. `accessibilityText` opsional.
 
 [File JSON lengkap](../../Examples/BubbleResponses/image.json).
 
-## `content.choices`
+## `choices`
 
 Wajib: `messageIdentifier`, `choices`; setiap pilihan wajib `identifier` dan `title`. `prompt` default ke
 `title`. `allowsMultipleSelection` default `true`; nama key JSON ini tetap meskipun property Swift memakai
@@ -51,7 +51,7 @@ Setelah submit, pilihan terkunci.
 
 [File JSON lengkap](../../Examples/BubbleResponses/choices.json).
 
-## `content.actions`
+## `actions`
 
 Wajib: `messageIdentifier`, `actions`; setiap tombol memiliki `title` dan `action` (`identifier`, `deeplink`).
 `style` opsional: `primary` (default, underline) atau `secondary`. Daftar kosong menjadi bubble unsupported.
@@ -74,11 +74,11 @@ Tidak ada heading; kirim penjelasan sebagai pesan teks terpisah. Host memvalidas
 
 [File JSON lengkap](../../Examples/BubbleResponses/actions.json).
 
-## `content.html`
+## `html`
 
 Wajib: `messageIdentifier`, `html`. Kirim `height` dalam point dan `accessibilityText`. Tanpa tinggi, default
 180 lalu diukur ulang. Hanya HTML statis: JavaScript, link, form, redirect, dan iframe diblokir. Resource
-absolut seperti gambar masih dapat dimuat. Chart sebaiknya memakai `content.chart`.
+absolut seperti gambar masih dapat dimuat. Chart sebaiknya memakai `chart`.
 
 ```json
 {
@@ -91,7 +91,7 @@ absolut seperti gambar masih dapat dimuat. Chart sebaiknya memakai `content.char
 
 [File JSON lengkap](../../Examples/BubbleResponses/html.json).
 
-## `content.live-agent`
+## `live_agent`
 
 Wajib: `messageIdentifier`, `title`, `action` (`identifier`, `deeplink`). `detail` opsional. Label tombol
 default Continue/Cancel. Lanjut meneruskan deeplink; batal menandai kartu selesai tanpa mengirim pesan.

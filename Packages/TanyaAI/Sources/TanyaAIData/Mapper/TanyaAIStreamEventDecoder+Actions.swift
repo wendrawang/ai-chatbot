@@ -3,7 +3,7 @@ import Foundation
 import TanyaAIDomain
 
 extension TanyaAIStreamEventDecoder {
-    /// Decodes a `content.actions` event into an action card.
+    /// Decodes a `actions` event into an action card.
     ///
     /// An empty button list is not an empty card: it degrades to the same
     /// unsupported fallback as an unknown content type, so a malformed

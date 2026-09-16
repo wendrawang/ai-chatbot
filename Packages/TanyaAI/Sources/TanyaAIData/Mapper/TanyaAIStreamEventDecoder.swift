@@ -1,5 +1,6 @@
 import DesignKit
 import Foundation
+import TanyaAIContracts
 import TanyaAIDomain
 
 final class TanyaAIStreamEventDecoder {
@@ -12,21 +13,22 @@ final class TanyaAIStreamEventDecoder {
     }
 
     func decode(name: String, json: Data) throws -> TanyaAIStreamEvent? {
-        if let content = try decodeContent(name: name, json: json) {
+        guard let event = TanyaAIEventName(wireName: name) else {
+            return try decodeUnknown(name: name, json: json)
+        }
+        if let content = try decodeContent(name: event, json: json) {
             return content
         }
-        return try decodeLifecycle(name: name, json: json)
+        return try decodeLifecycle(name: event, json: json)
     }
 
-    /// Bubble payloads. Returns `nil` for any other event name, including a
-    /// `content.*` this version does not know - `decodeLifecycle` sends that
-    /// on to `decodeUnknown`, which degrades it to an unsupported bubble.
+    /// Known cards decode here; unknown flat names use the unsupported fallback.
     ///
     /// Split in two because one switch over every card is one branch past
     /// what the linter allows, and because the halves are genuinely different
     /// kinds of thing: what a conversation shows, and what money looks like.
     private func decodeContent(
-        name: String,
+        name: TanyaAIEventName,
         json: Data
     ) throws -> TanyaAIStreamEvent? {
         if let event = try decodeConversationContent(name: name, json: json) {
@@ -36,23 +38,23 @@ final class TanyaAIStreamEventDecoder {
     }
 
     private func decodeConversationContent(
-        name: String,
+        name: TanyaAIEventName,
         json: Data
     ) throws -> TanyaAIStreamEvent? {
         switch name {
-        case "content.image":
+        case .image:
             return try decodeImage(json)
-        case "content.choices":
+        case .choices:
             return try decodeChoices(json)
-        case "content.live-agent":
+        case .liveAgent:
             return try decodeLiveAgent(json)
-        case "content.html":
+        case .html:
             return try decodeHTML(json)
-        case "content.information":
+        case .information:
             return try decodeInformation(json)
-        case "content.status":
+        case .status:
             return try decodeStatus(json)
-        case "content.actions":
+        case .actions:
             return try decodeActions(json)
         default:
             return nil
@@ -60,19 +62,19 @@ final class TanyaAIStreamEventDecoder {
     }
 
     private func decodeFinancialContent(
-        name: String,
+        name: TanyaAIEventName,
         json: Data
     ) throws -> TanyaAIStreamEvent? {
         switch name {
-        case "content.chart":
+        case .chart:
             return try decodeChart(json)
-        case "content.portfolio":
+        case .portfolio:
             return try decodePortfolio(json)
-        case "content.financial-list":
+        case .financialList:
             return try decodeFinancialList(json)
-        case "content.approval":
+        case .approval:
             return try decodeApproval(json)
-        case "content.receipt":
+        case .receipt:
             return try decodeReceipt(json)
         default:
             return nil
@@ -81,22 +83,22 @@ final class TanyaAIStreamEventDecoder {
 
     /// Everything that frames a response rather than filling it.
     private func decodeLifecycle(
-        name: String,
+        name: TanyaAIEventName,
         json: Data
     ) throws -> TanyaAIStreamEvent? {
         switch name {
-        case "response.started":
+        case .responseStarted:
             return try decodeStarted(json)
-        case "text.delta":
+        case .textDelta:
             return try decodeText(json)
-        case "response.suggestions":
+        case .suggestions:
             return try decodeSuggestions(json)
-        case "response.completed":
+        case .responseCompleted:
             return try decodeCompleted(json)
-        case "heartbeat":
+        case .heartbeat:
             return .heartbeat
         default:
-            return try decodeUnknown(name: name, json: json)
+            return nil
         }
     }
 
@@ -104,7 +106,7 @@ final class TanyaAIStreamEventDecoder {
         name: String,
         json: Data
     ) throws -> TanyaAIStreamEvent? {
-        guard name.hasPrefix("content.") else {
+        guard TanyaAIEventName.isContentName(name) else {
             return nil
         }
         let payload = try decoder.decode(

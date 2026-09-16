@@ -1,5 +1,5 @@
 {
-  "event": "text.delta",
+  "event": "text_delta",
   "data": {
     "messageIdentifier": "text-1",
     "text": "Saldo Anda [bold]IDR 12.500.000[/bold]."

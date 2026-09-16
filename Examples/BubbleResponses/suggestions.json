@@ -1,5 +1,5 @@
 {
-  "event": "response.suggestions",
+  "event": "suggestions",
   "data": {
     "title": "Kategori apa yang diinginkan",
     "suggestions": [

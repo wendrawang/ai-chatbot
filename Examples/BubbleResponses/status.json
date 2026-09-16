@@ -1,5 +1,5 @@
 {
-  "event": "content.status",
+  "event": "status",
   "data": {
     "messageIdentifier": "st-1",
     "title": "Selesai",

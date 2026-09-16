@@ -1,5 +1,5 @@
 {
-  "event": "content.portfolio",
+  "event": "portfolio",
   "data": {
     "messageIdentifier": "prt-1",
     "title": "Portofolio Anda",

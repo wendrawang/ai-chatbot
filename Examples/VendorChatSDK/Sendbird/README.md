@@ -47,10 +47,13 @@ alih-alih membuat nasabah buntu.
 Bubble bertipe (approval, chart, actions) **hanya muncul kalau bot
 mengirimkannya**. Bot harus menaruh JSON skema paket ini ke pesan Sendbird:
 
-- `customType` = nama event, misalnya `content.approval` atau `content.actions`
-- `data` = objek `data` milik event itu
+- `customType` = nama event, misalnya `approval` atau `actions`
+- `data` = objek payload yang diserialisasi menjadi string JSON
 
-Tanpa itu, semua balasan turun jadi teks biasa. Skemanya ada di
+Jika customType kosong, balasan dibaca sebagai teks biasa. Nama baru tanpa titik
+yang belum dikenal diperlakukan sebagai kartu unsupported. Nama lama bertitik
+tetap dapat dibaca dari history. Lifecycle dan suggestions dipetakan melalui
+`TanyaAIChatSessionEvent.fromWire(name:json:)`. Skemanya ada di
 [`docs/BUBBLE_SCHEMA.md`](../../../docs/BUBBLE_SCHEMA.md).
 
 `requestIdentifier` juga tidak dikirim: Sendbird tidak akan
@@ -90,8 +93,7 @@ SendbirdChat.disconnect { session.clear() }
 ```
 
 **3. Saat chat dibuka** — tidak ada yang Anda panggil. Composition membuat
-adapter baru per presentasi, dan paket yang memanggil `connect()` (malas, saat
-pesan pertama dikirim) serta `disconnect()` (saat graph dilepas).
+adapter baru per presentasi, dan paket yang memanggil `connect()` (saat observer fitur dipasang) serta `disconnect()` (saat graph dilepas).
 
 Ketiganya sudah jadi kode di folder ini:
 

@@ -1,5 +1,5 @@
 {
-  "event": "content.image",
+  "event": "image",
   "data": {
     "messageIdentifier": "img-1",
     "imageURL": "https://cdn.example.com/promo.png",

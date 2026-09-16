@@ -3,7 +3,7 @@
 Kembali ke [kontrak event](../BUBBLE_SCHEMA.md). JSON di bawah adalah **payload `data`**, bukan envelope
 vendor.
 
-## `content.approval`
+## `approval`
 
 Wajib: semua field pada contoh kecuali `kind`, `notice`, dan `handoff` (tidak ditampilkan). `expiresAt`
 ISO8601 harus berasal dari expiry challenge backend; tanggal 2099 hanya dummy. Tanpa `handoff`, konfirmasi
@@ -34,7 +34,7 @@ tanpa PIN chat. `kind`: `generic` (default), `transfer`, `currencyConversion`, `
 
 [File JSON lengkap](../../Examples/BubbleResponses/approval.json).
 
-## `content.receipt`
+## `receipt`
 
 Wajib: `messageIdentifier`, `title`, `detail`, `summary`. `footnote` opsional. Ini hanya tampilan bukti; bukan
 perintah melakukan transaksi.
@@ -56,7 +56,7 @@ perintah melakukan transaksi.
 
 [File JSON lengkap](../../Examples/BubbleResponses/receipt.json).
 
-## `content.chart`
+## `chart`
 
 Wajib: `messageIdentifier`, `title`, `chartType`, `series`. Setiap series wajib `label`, `value` numerik, dan
 `formattedValue` untuk tampilan. `chartType` menerima bar/line/donut/progress; renderer saat ini menggambar
@@ -86,7 +86,7 @@ bar bersegmen untuk semuanya. Nilai enum tidak dikenal menjadi bar; field yang h
 
 [File JSON lengkap](../../Examples/BubbleResponses/chart.json).
 
-## `content.portfolio`
+## `portfolio`
 
 Wajib: `messageIdentifier`, `title`, `totalValue`, `performanceText`, `allocations`. Setiap allocation memakai
 bentuk series chart. `footnote` opsional.
@@ -109,7 +109,7 @@ bentuk series chart. `footnote` opsional.
 
 [File JSON lengkap](../../Examples/BubbleResponses/portfolio.json).
 
-## `content.financial-list`
+## `financial_list`
 
 Wajib: `messageIdentifier`, `title`, `style`, `rows`. Style: paidBills/incoming/holdings. Setiap row wajib
 `title`, `value`; subtitle/detail/tone opsional. Tone: neutral (default), positive. `totalLabel`,

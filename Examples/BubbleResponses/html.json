@@ -1,5 +1,5 @@
 {
-  "event": "content.html",
+  "event": "html",
   "data": {
     "messageIdentifier": "html-1",
     "html": "<table><tr><th>Tenor</th><th>Imbalan</th></tr></table>",

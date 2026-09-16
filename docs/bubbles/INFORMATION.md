@@ -3,7 +3,7 @@
 Kembali ke [kontrak event](../BUBBLE_SCHEMA.md). JSON di bawah adalah **payload `data`**, bukan envelope
 vendor.
 
-## `content.status`
+## `status`
 
 Keempat field wajib, termasuk `detail` dan `level`. Level: `neutral`, `success`, `warning`, `error`; nilai
 tidak dikenal menjadi neutral.
@@ -19,7 +19,7 @@ tidak dikenal menjadi neutral.
 
 [File JSON lengkap](../../Examples/BubbleResponses/status.json).
 
-## `content.information`
+## `information`
 
 Wajib: `messageIdentifier`, `text`, `items`. `title` opsional. Tetap kirim `items: []` jika tidak ada baris
 label/value.
@@ -40,7 +40,7 @@ label/value.
 
 [File JSON lengkap](../../Examples/BubbleResponses/information.json).
 
-## `response.suggestions`
+## `suggestions`
 
 Wajib: `suggestions`; tiap item wajib identifier/title/prompt. `title` opsional. Satu tap langsung mengirim
 prompt; berbeda dengan choices yang menunggu submit. Tidak memakai `messageIdentifier` karena ini state saran,
@@ -61,9 +61,9 @@ bukan pesan dalam riwayat.
 
 [File JSON lengkap](../../Examples/BubbleResponses/suggestions.json).
 
-## `content.future`
+## `future_card`
 
-Untuk nama `content.*` yang belum didukung. `messageIdentifier` wajib; fallbackText opsional. Payload rusak
+Untuk nama baru tanpa titik yang belum didukung, misalnya `future_card`. `messageIdentifier` wajib; fallbackText opsional. Payload rusak
 untuk bubble yang dikenal menampilkan pesan unsupported bawaan, bukan fallbackText ini.
 
 ```json

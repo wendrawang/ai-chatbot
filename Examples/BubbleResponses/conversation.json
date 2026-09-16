@@ -1,19 +1,19 @@
 [
   {
-    "event": "response.started",
+    "event": "response_started",
     "data": {
       "messageIdentifier": "text-1"
     }
   },
   {
-    "event": "text.delta",
+    "event": "text_delta",
     "data": {
       "messageIdentifier": "text-1",
       "text": "Saldo Anda [bold]IDR 12.500.000[/bold]."
     }
   },
   {
-    "event": "content.status",
+    "event": "status",
     "data": {
       "messageIdentifier": "st-1",
       "title": "Selesai",
@@ -22,7 +22,7 @@
     }
   },
   {
-    "event": "response.suggestions",
+    "event": "suggestions",
     "data": {
       "title": "Kategori apa yang diinginkan",
       "suggestions": [
@@ -35,7 +35,7 @@
     }
   },
   {
-    "event": "response.completed",
+    "event": "response_completed",
     "data": {
       "messageIdentifier": "text-1"
     }

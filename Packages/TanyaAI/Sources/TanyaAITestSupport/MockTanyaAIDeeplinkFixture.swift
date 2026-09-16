@@ -15,11 +15,11 @@ enum MockTanyaAIDeeplinkFixture {
         let messageIdentifier = "deeplink-text-\(identifier)"
         return [
             event(
-                "response.started",
+                "response_started",
                 ["messageIdentifier": messageIdentifier]
             ),
             event(
-                "text.delta",
+                "text_delta",
                 [
                     "messageIdentifier": messageIdentifier,
                     "text": "Your existing screens can take over from here."
@@ -31,7 +31,7 @@ enum MockTanyaAIDeeplinkFixture {
             ),
             handoffApprovalEvent(identifier),
             event(
-                "response.completed",
+                "response_completed",
                 ["messageIdentifier": messageIdentifier]
             )
         ]
@@ -66,7 +66,7 @@ enum MockTanyaAIDeeplinkFixture {
         _ identifier: String
     ) -> TanyaAIChatSessionEvent {
         event(
-            "content.approval",
+            "approval",
             [
                 "messageIdentifier": "deeplink-approval-\(identifier)",
                 "approvalIdentifier": "approval-handoff-\(identifier)",

@@ -229,14 +229,14 @@ Typed cards and suggestions travel as `.structuredPayload(name:json:)`, where
 `name` is the event name and `json` its payload:
 
 ```text
-name: response.suggestions
+name: suggestions
 json: {"suggestions":[]}
 
-name: content.approval
+name: approval
 json: {"messageIdentifier":"message-001", ...}
 ```
 
-`response.suggestions` is response-driven. Suggestions may be returned after
+`suggestions` is response-driven. Suggestions may be returned after
 every response, may change by context, or may be omitted. The ViewModel clears
 stale suggestions while a new response is generating and replaces them only
 when the backend emits a new suggestion event.
@@ -246,7 +246,7 @@ when the backend emits a new suggestion event.
 Use information for non-transactional text and key-value facts.
 
 ```text
-event: content.information
+event: information
 data: {
   "messageIdentifier": "information-001",
   "title": "Sample transfer limit",
@@ -264,7 +264,7 @@ The backend chooses only an allowlisted chart type and supplies data. The app
 owns colors, fonts, dimensions, accessibility labels, and animation.
 
 ```text
-event: content.chart
+event: chart
 data: {
   "messageIdentifier": "chart-001",
   "title": "Spending · month to date",
@@ -288,7 +288,7 @@ HTML, JavaScript, and executable UI definitions are not accepted.
 ### Portfolio JSON
 
 ```text
-event: content.portfolio
+event: portfolio
 data: {
   "messageIdentifier": "portfolio-001",
   "title": "Portfolio summary",
@@ -308,7 +308,7 @@ data: {
 ### Financial-list JSON
 
 ```text
-event: content.financial-list
+event: financial_list
 data: {
   "messageIdentifier": "list-001",
   "title": "Incoming · last 30 days",
@@ -332,7 +332,7 @@ data: {
 ### Approval JSON
 
 ```text
-event: content.approval
+event: approval
 data: {
   "messageIdentifier": "approval-message-001",
   "approvalIdentifier": "approval-001",
@@ -356,7 +356,7 @@ output to the internal coordinator, which lazily presents the PIN sheet.
 ### Receipt JSON
 
 ```text
-event: content.receipt
+event: receipt
 data: {
   "messageIdentifier": "receipt-001",
   "title": "Conversion complete",
@@ -372,7 +372,7 @@ data: {
 ### Status JSON
 
 ```text
-event: content.status
+event: status
 data: {
   "messageIdentifier": "status-001",
   "title": "Completed",
@@ -384,7 +384,7 @@ data: {
 ### Suggestion JSON
 
 ```text
-event: response.suggestions
+event: suggestions
 data: {
   "suggestions": [
     {
@@ -398,11 +398,11 @@ data: {
 
 ### Forward-compatible fallback
 
-An unknown `content.*` event is rendered safely when it provides the common
+An unknown flat event name is rendered safely when it provides the common
 identifier and optional fallback text:
 
 ```text
-event: content.future-card
+event: future_card
 data: {
   "messageIdentifier": "future-001",
   "fallbackText": "Update the app to view this card."
@@ -863,7 +863,7 @@ The following are not allowed in this package:
 - constructing or configuring ViewModels, use cases, or services in `body`;
 - a singleton router, singleton feature graph, or hidden global presenter;
 - `AnyView` as a general dynamic bubble renderer;
-- executable HTML or JavaScript; HTML is limited to the static `content.html` bubble;
+- executable HTML or JavaScript; HTML is limited to the static `html` bubble;
 - arbitrary backend-driven native layout, coordinates, or colors;
 - arbitrary action names or URLs executed directly from a response;
 - raw PIN in messages, prompts, logs, analytics, storage, or clipboard;

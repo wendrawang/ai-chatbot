@@ -46,8 +46,12 @@ extension SendbirdChatSessionAdapter {
         let identifier = String(message.messageId)
         let text = (message as? UserMessage)?.message ?? ""
 
+        if let name = message.customType, !name.isEmpty,
+           !TanyaAIEventName.isContentName(name) {
+            return nil
+        }
         if let name = message.customType,
-           name.hasPrefix("content."),
+           TanyaAIEventName.isContentName(name),
            let json = message.data.data(using: .utf8),
            json.isEmpty == false {
             return TanyaAIChatSessionMessage(

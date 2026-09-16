@@ -1,5 +1,5 @@
 {
-  "event": "content.information",
+  "event": "information",
   "data": {
     "messageIdentifier": "inf-1",
     "title": "Limit transfer",

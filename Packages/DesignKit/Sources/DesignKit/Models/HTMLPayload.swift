@@ -5,7 +5,7 @@ import Foundation
 /// table than to describe as a card.
 ///
 /// Static is the whole contract. JavaScript is disabled when this is drawn, so
-/// anything that needs to run will not - use `content.chart` for charts, which
+/// anything that needs to run will not - use `chart` for charts, which
 /// follows the theme, scales with Dynamic Type and can be read aloud.
 public struct HTMLPayload: Equatable {
     public let identifier: String

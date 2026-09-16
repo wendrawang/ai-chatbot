@@ -6,11 +6,11 @@ enum MockTanyaAIShowcaseFixture {
         let messageIdentifier = "showcase-text-\(identifier)"
         var events = [
             event(
-                "response.started",
+                "response_started",
                 ["messageIdentifier": messageIdentifier]
             ),
             event(
-                "text.delta",
+                "text_delta",
                 [
                     "messageIdentifier": messageIdentifier,
                     "text": "Here are the sanitized financial bubble "
@@ -25,10 +25,10 @@ enum MockTanyaAIShowcaseFixture {
             )
         ]
         events.append(contentsOf: bubbleEvents(identifier))
-        events.append(event("response.suggestions", suggestionsPayload))
+        events.append(event("suggestions", suggestionsPayload))
         events.append(
             event(
-                "response.completed",
+                "response_completed",
                 ["messageIdentifier": messageIdentifier]
             )
         )
@@ -67,7 +67,7 @@ enum MockTanyaAIShowcaseFixture {
         _ identifier: String
     ) -> TanyaAIChatSessionEvent {
         event(
-            "content.image",
+            "image",
             [
                 "messageIdentifier": "image-\(identifier)",
                 "imageURL": "https://picsum.photos/seed/tanyaai/920/575",
@@ -85,7 +85,7 @@ enum MockTanyaAIShowcaseFixture {
         _ identifier: String
     ) -> TanyaAIChatSessionEvent {
         event(
-            "content.html",
+            "html",
             [
                 "messageIdentifier": "html-\(identifier)",
                 "html": """
@@ -105,7 +105,7 @@ enum MockTanyaAIShowcaseFixture {
         _ identifier: String
     ) -> TanyaAIChatSessionEvent {
         event(
-            "content.live-agent",
+            "live_agent",
             [
                 "messageIdentifier": "agent-\(identifier)",
                 "title": "Anda akan diarahkan ke agen kami",
@@ -126,7 +126,7 @@ enum MockTanyaAIShowcaseFixture {
         _ identifier: String
     ) -> TanyaAIChatSessionEvent {
         event(
-            "content.choices",
+            "choices",
             [
                 "messageIdentifier": "choices-\(identifier)",
                 "title": "Kategori apa yang diinginkan",
@@ -160,7 +160,7 @@ enum MockTanyaAIShowcaseFixture {
         ]
         return states.enumerated().map { index, state in
             event(
-                "content.status",
+                "status",
                 [
                     "messageIdentifier": "status-\(index)-\(identifier)",
                     "title": state.1,
@@ -183,7 +183,7 @@ enum MockTanyaAIShowcaseFixture {
         _ identifier: String
     ) -> TanyaAIChatSessionEvent {
         event(
-            "content.future-card",
+            "future_card",
             [
                 "messageIdentifier": "unsupported-\(identifier)",
                 "fallbackText": "Update the app to view this sample card."

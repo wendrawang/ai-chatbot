@@ -1,5 +1,5 @@
 {
-  "event": "content.future",
+  "event": "future_card",
   "data": {
     "messageIdentifier": "future-1",
     "fallbackText": "Perbarui aplikasi untuk melihat kartu ini."

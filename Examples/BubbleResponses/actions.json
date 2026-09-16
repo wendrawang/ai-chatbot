@@ -1,5 +1,5 @@
 {
-  "event": "content.actions",
+  "event": "actions",
   "data": {
     "messageIdentifier": "act-1",
     "actions": [

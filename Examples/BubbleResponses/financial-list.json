@@ -1,5 +1,5 @@
 {
-  "event": "content.financial-list",
+  "event": "financial_list",
   "data": {
     "messageIdentifier": "lst-1",
     "title": "Dana masuk 30 hari terakhir",

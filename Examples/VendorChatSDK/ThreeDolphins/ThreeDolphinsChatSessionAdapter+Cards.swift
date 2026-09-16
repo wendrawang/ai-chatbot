@@ -14,9 +14,6 @@ import imi_dolphin_livechat_ios
 /// undocumented, never used in any example, and may well be outbound-only
 /// profile enrichment rather than a general envelope. See the README.
 extension ThreeDolphinsChatSessionAdapter {
-    /// Event names the package renders, as sent by the bot.
-    static let cardNamePrefix = "content."
-
     /// A live message carrying one of the package's typed cards.
     ///
     /// Returns nil today for every message, because nothing is known to carry
@@ -67,7 +64,7 @@ extension ThreeDolphinsChatSessionAdapter {
               let object = try? JSONSerialization.jsonObject(with: json)
                 as? [String: Any],
               let name = object["event"] as? String,
-              name.hasPrefix(Self.cardNamePrefix),
+              TanyaAIEventName.isContentName(name),
               let data = object["data"],
               let payload = try? JSONSerialization.data(withJSONObject: data)
         else {

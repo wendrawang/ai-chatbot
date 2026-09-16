@@ -1,5 +1,5 @@
 {
-  "event": "content.approval",
+  "event": "approval",
   "data": {
     "messageIdentifier": "apv-1",
     "approvalIdentifier": "apv-1",

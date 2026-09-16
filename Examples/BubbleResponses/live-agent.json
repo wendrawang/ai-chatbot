@@ -1,5 +1,5 @@
 {
-  "event": "content.live-agent",
+  "event": "live_agent",
   "data": {
     "messageIdentifier": "agent-1",
     "title": "Anda akan diarahkan ke agen kami",
