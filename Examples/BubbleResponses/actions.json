@@ -1,0 +1,15 @@
+{
+  "event": "content.actions",
+  "data": {
+    "messageIdentifier": "act-1",
+    "actions": [
+      {
+        "title": "Lihat Produk Sekarang",
+        "action": {
+          "identifier": "open-product",
+          "deeplink": "ocbcid://mobile?type=product"
+        }
+      }
+    ]
+  }
+}

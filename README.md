@@ -920,3 +920,7 @@ Examples:
 
 Panduan tema Default/Premier/Private, override per halaman, dan registrasi font:
 [DesignKit themes](docs/DESIGNKIT_THEMES.md).
+
+Mulai integrasi host dengan [panduan langkah demi langkah](docs/HOST_INTEGRATION.md),
+atau jalankan `./Scripts/run_sandbox.sh --showcase` untuk review bubble.
+[Kontrak JSON](docs/BUBBLE_SCHEMA.md) dilengkapi [file contoh per bubble](Examples/BubbleResponses/).

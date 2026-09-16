@@ -1,0 +1,10 @@
+{
+  "event": "content.image",
+  "data": {
+    "messageIdentifier": "img-1",
+    "imageURL": "https://cdn.example.com/promo.png",
+    "caption": "Bonus bunga hingga 5,25% p.a.",
+    "aspectRatio": 1.6,
+    "accessibilityText": "Amplop merah berisi koin"
+  }
+}

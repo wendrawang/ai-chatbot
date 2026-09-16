@@ -1,0 +1,16 @@
+{
+  "event": "content.portfolio",
+  "data": {
+    "messageIdentifier": "prt-1",
+    "title": "Portofolio Anda",
+    "totalValue": "IDR 128.400.000",
+    "performanceText": "+4,2% sejak awal tahun",
+    "allocations": [
+      {
+        "label": "Reksa dana",
+        "value": 60,
+        "formattedValue": "60%"
+      }
+    ]
+  }
+}

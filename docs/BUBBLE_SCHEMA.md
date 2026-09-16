@@ -1,510 +1,153 @@
-# Bubble schema
+# JSON untuk menghasilkan bubble
 
-What the bot sends, and which bubble it becomes.
+Package menerima **nama event + payload JSON** melalui `TanyaAIChatSession`.
+Backend tidak mengirim nama SwiftUI view. Nama event memilih bubble; payload
+mengisi teks, nilai, pilihan, atau tombolnya.
 
-Read the envelope once, then the one section for the bubble you are sending.
-Every section shows the smallest payload that works, then what each optional
-field adds.
+## Contoh paling sederhana: status
 
-## The envelope
+```json
+{
+  "event": "content.status",
+  "data": {
+    "messageIdentifier": "status-1",
+    "title": "Selesai",
+    "detail": "Permintaan Anda sudah diproses.",
+    "level": "success"
+  }
+}
+```
 
-A bubble is one chat message. The payload rides in a field the vendor sets
-aside for application data; on Sendbird that is `custom_type` + `data`:
+`event` + `data` adalah **envelope contoh yang netral terhadap vendor**, bukan
+endpoint atau format yang otomatis diparse package. Adapter host mengambil nama
+`event` dan mengubah **objek data saja** menjadi `Data`, lalu meneruskannya:
+
+```swift
+let payload = Data("""
+{
+  "messageIdentifier": "status-1",
+  "title": "Selesai",
+  "detail": "Sudah diproses.",
+  "level": "success"
+}
+""".utf8)
+onEvent?(.structuredPayload(name: "content.status", json: payload))
+onEvent?(.messageCompleted(messageIdentifier: "status-1"))
+```
+
+Jangan meneruskan seluruh envelope sebagai `json:`. Package membutuhkan field
+`messageIdentifier` langsung di root payload, bukan di dalam `data` lagi.
+
+## Pilih bubble
+
+Setiap tautan berisi payload lengkap, field wajib, dan perilakunya.
+
+| Tampilan | Event | Referensi |
+| --- | --- | --- |
+| Teks | `text.delta` | Contoh streaming di bawah |
+| Gambar + caption | `content.image` | [Gambar](bubbles/CONTENT.md#contentimage) |
+| Pilihan + submit | `content.choices` | [Choices](bubbles/CONTENT.md#contentchoices) |
+| Tombol deeplink | `content.actions` | [Actions](bubbles/CONTENT.md#contentactions) |
+| HTML statis | `content.html` | [HTML](bubbles/CONTENT.md#contenthtml) |
+| Penawaran agen | `content.live-agent` | [Live agent](bubbles/CONTENT.md#contentlive-agent) |
+| Konfirmasi + PIN/hand-off | `content.approval` | [Approval](bubbles/FINANCIAL.md#contentapproval) |
+| Bukti transaksi | `content.receipt` | [Receipt](bubbles/FINANCIAL.md#contentreceipt) |
+| Chart | `content.chart` | [Chart](bubbles/FINANCIAL.md#contentchart) |
+| Portfolio | `content.portfolio` | [Portfolio](bubbles/FINANCIAL.md#contentportfolio) |
+| Daftar keuangan | `content.financial-list` | [Financial list](bubbles/FINANCIAL.md#contentfinancial-list) |
+| Status proses | `content.status` | [Status](bubbles/INFORMATION.md#contentstatus) |
+| Teks + label/value | `content.information` | [Information](bubbles/INFORMATION.md#contentinformation) |
+| Saran, satu tap langsung kirim | `response.suggestions` | [Suggestions](bubbles/INFORMATION.md#responsesuggestions) |
+| Jenis belum dikenal | `content.*` | [Fallback](bubbles/INFORMATION.md#contentfuture) |
+
+File siap dibaca backend tersedia di [Examples/BubbleResponses](../Examples/BubbleResponses/).
+[conversation.json](../Examples/BubbleResponses/conversation.json) berisi contoh
+satu balasan lengkap: mulai → teks → status → suggestions → selesai. Array tersebut
+adalah fixture; adapter harus meneruskan event satu per satu sesuai urutan.
+
+## Teks dan streaming
+
+```json
+[
+  {"event":"response.started","data":{"messageIdentifier":"text-1"}},
+  {"event":"text.delta","data":{"messageIdentifier":"text-1","text":"Saldo Anda "}},
+  {"event":"text.delta","data":{"messageIdentifier":"text-1","text":"[bold]IDR 12.500.000[/bold]."}},
+  {"event":"response.completed","data":{"messageIdentifier":"text-1"}}
+]
+```
+
+Identifier yang sama membuat delta bergabung pada satu bubble. Untuk bubble baru,
+gunakan identifier baru. Konten dengan identifier sama memperbarui bubble tersebut;
+ada pengecualian untuk approval yang sudah selesai agar catatannya tidak ditimpa.
+
+Adapter harus memetakan event lifecycle ke enum session yang tepat:
+
+| Event backend | Emit dari adapter |
+| --- | --- |
+| `response.started` | `.messageStarted(messageIdentifier: ...)` |
+| `text.delta` | `.messageDelta(messageIdentifier: ..., text: ...)` |
+| `response.completed` | `.messageCompleted(messageIdentifier: ...)` |
+| `content.*` | `.structuredPayload(name: ..., json: payloadData)` |
+| `response.suggestions` | `.structuredPayload(name: "response.suggestions", json: payloadData)` |
+| `heartbeat` | `.structuredPayload(name: "heartbeat", json: Data("{}".utf8))` |
+
+Khusus completion, gunakan `.messageCompleted`, bukan sekadar structured payload
+bernama `response.completed`, agar repository ikut menutup request aktif.
+Kirim suggestions sebelum completion untuk satu balasan terurut. Jika SDK mengirim
+pesan utuh, satu `.messageDelta` cukup. Jangan mengirim ulang seluruh teks sebagai
+delta karena akan terduplikasi. Error transport dikirim sebagai `.failed(error)`.
+
+Styling teks memakai tag berikut, bukan Markdown:
+
+| Tag | Hasil |
+| --- | --- |
+| `[bold]teks[/bold]` | Tebal |
+| `[italic]teks[/italic]` | Miring |
+| `[underline]teks[/underline]` | Garis bawah |
+| `[strike]teks[/strike]` | Coret |
+| `[color]teks\|25C36B[/color]` | Warna hex |
+
+Tag dapat bersarang. Tag tidak dikenal dibuang, teksnya dipertahankan.
+
+## Kalau memakai Sendbird
+
+Contoh adapter Sendbird memakai `custom_type` untuk nama bubble dan `data` berupa
+**string JSON**, sesuai bentuk field yang dibaca adapter:
 
 ```json
 {
   "message_type": "MESG",
   "user_id": "bot-user-id",
   "custom_type": "content.status",
-  "message": "Transfer selesai",
-  "data": "{\"messageIdentifier\":\"st-1\",\"title\":\"Selesai\"}"
+  "message": "Permintaan selesai",
+  "data": "{\"messageIdentifier\":\"status-1\",\"title\":\"Selesai\",\"detail\":\"Sudah diproses.\",\"level\":\"success\"}"
 }
 ```
 
-| Field | Purpose |
-| --- | --- |
-| `custom_type` | The event name. This is what picks the bubble. |
-| `data` | The payload, **as a JSON string**, not an object. |
-| `message` | Plain text. Never drawn on a typed bubble - see below. |
-
-Three rules that hold everywhere:
-
-- **No `custom_type` means a text bubble**, taking `message` as its content.
-- **`messageIdentifier` is the bubble's identity**, not the message's. Reuse
-  one and the second bubble overwrites the first.
-- **`message` is not a fallback.** On a typed bubble it is never drawn, live
-  or in history. It is what the vendor dashboard, push previews and other
-  clients show, so write it as if nobody had the app.
-
-## Why every name starts with `content.`
-
-The prefix does three jobs, and dropping it breaks all three.
-
-**It tells the adapter what to do.** Anything under `content.` is passed
-through untouched as a payload; anything else is read as plain text. Adding an
-eleventh bubble needs no app release for the adapter to route it.
-
-**It turns "app too old" into something visible.** An unknown name *inside*
-the prefix becomes the update-required bubble. An unknown name *outside* it is
-dropped without trace. In a banking conversation a silent gap is worse than a
-placeholder - the customer cannot tell a reply went missing.
-
-**It separates the two families.** `content.*` fills a reply;
-`response.started`, `text.delta`, `response.completed`, `response.suggestions`
-and `heartbeat` frame one.
-
----
-
-# Bubbles
-
-## Text
-
-No `custom_type`. The content is `message`.
-
-```json
-{ "message": "Saldo Anda IDR 12.500.000." }
-```
-
-Inline styling uses a closed tag set, never Markdown - asterisks are ordinary
-characters in banking copy:
-
-| Tag | Result |
-| --- | --- |
-| `[bold]wen[/bold]` | Bold |
-| `[italic]wen[/italic]` | Italic |
-| `[underline]wen[/underline]` | Underlined |
-| `[strike]wen[/strike]` | Struck through |
-| `[color]wen\|25C36B[/color]` | Text in `#25C36B` |
-
-Tags nest, so `[bold][underline]x[/underline][/bold]` is both. A tag this app
-does not know is dropped and its text kept.
-
-## Image
-
-`custom_type: content.image`
-
-**Minimal**
-
-```json
-{
-  "messageIdentifier": "img-1",
-  "imageURL": "https://cdn.example.com/promo.png",
-  "caption": "Bonus bunga hingga 5,25% p.a."
-}
-```
-
-**With everything**
-
-```json
-{
-  "messageIdentifier": "img-1",
-  "imageURL": "https://cdn.example.com/promo.png",
-  "caption": "Bonus bunga hingga 5,25% p.a.",
-  "aspectRatio": 1.6,
-  "accessibilityText": "Amplop merah berisi koin"
-}
-```
-
-| Field | What it adds |
-| --- | --- |
-| `aspectRatio` | Width ÷ height. |
-| `accessibilityText` | What the picture shows, for VoiceOver. |
-
-**Send `aspectRatio`.** It reserves the row's height before the download
-lands. Without it the app assumes 16:9, and the conversation jumps when the
-picture arrives and the row grows.
-
-Omitting `accessibilityText` hides the picture from VoiceOver and lets the
-caption speak for both, which is right when the picture only decorates.
-
-**Permutations**
-
-- No caption: send `"caption": ""`. The caption and its padding disappear
-  together and the picture stands alone.
-- Broken `imageURL`: the caption shows by itself. The sentence is the message;
-  the picture only illustrates it.
-
-## Choices
-
-`custom_type: content.choices`
-
-A question answered by picking and confirming.
-
-**Minimal**
-
-```json
-{
-  "messageIdentifier": "q-1",
-  "choices": [
-    { "identifier": "dining", "title": "Dining" },
-    { "identifier": "travel", "title": "Hotel & Travel" }
-  ]
-}
-```
-
-**With everything**
-
-```json
-{
-  "messageIdentifier": "q-1",
-  "title": "Kategori apa yang diinginkan",
-  "choices": [
-    { "identifier": "dining", "title": "Dining", "prompt": "Promo dining" },
-    { "identifier": "travel", "title": "Hotel", "prompt": "Promo hotel" }
-  ],
-  "allowsMultipleSelection": false,
-  "submitTitle": "Kirim"
-}
-```
-
-| Field | Default | What it adds |
-| --- | --- | --- |
-| `title` | none | The question, drawn above the chips. |
-| `choices[].prompt` | the chip's `title` | What is sent when picked, when the label and the bot's phrasing differ. |
-| `allowsMultipleSelection` | `true` | `false` makes each tap replace the selection. |
-| `submitTitle` | `"Submit"` | The button's label. |
-
-The answer is the selected prompts joined with `", "`, **in the order they
-were offered** rather than tapped. A submitted card stays on screen and stops
-accepting input.
-
-Chips wrap to as many rows as they need, and a selected one grows to fit its
-tick - so keep labels short if the rows should stay stable as they are picked.
-
-**Choices or suggestions?** The submit button, not the number of choices. Use
-`content.choices` whenever the customer should be able to change their mind;
-use `response.suggestions` when one tap should send.
-
-## Hand-off links
-
-`custom_type: content.actions`
-
-**Minimal**
-
-```json
-{
-  "messageIdentifier": "act-1",
-  "actions": [
-    {
-      "title": "Lihat Produk Sekarang",
-      "action": {
-        "identifier": "open-product",
-        "deeplink": "ocbcid://mobile?type=product"
-      }
-    }
-  ]
-}
-```
-
-| Field | Default | What it adds |
-| --- | --- | --- |
-| `actions[].style` | `primary` | Underlined; `secondary` is not. Weight only — no behaviour, no permission. |
-| `action.identifier` | required | Stable id for accessibility and analytics. **Not a destination.** |
-
-An unparseable `deeplink` still reaches the host, which rejects it. It never
-disappears while decoding: only the host knows which schemes the app owns.
-| `action.deeplink` | required | The destination, passed to the host untouched. |
-
-**No heading.** Whatever explains the hand-off is sent as an ordinary text
-message before it. `title` and `detail` are no longer read.
-
-An empty `actions[]` degrades to the update-required bubble: a card nobody can
-act on is worse than an honest placeholder.
-
-## HTML
-
-`custom_type: content.html`
-
-For a result that reads better as a table than as a card.
-
-```json
-{
-  "messageIdentifier": "html-1",
-  "html": "<table><tr><th>Tenor</th><th>Imbalan</th></tr></table>",
-  "height": 120,
-  "accessibilityText": "Tabel tenor dan imbalan"
-}
-```
-
-**Static only.** JavaScript is disabled. Only the initial main-frame load
-requested by the app is allowed; links, forms, automatic redirects (including
-meta refresh), and iframe navigation are refused. The fragment loads with no
-base URL. This navigation policy does not block absolute image or stylesheet
-URLs; HTML must not rely on the host's authenticated networking for resources.
-
-**Charts belong in `content.chart`.** It follows the theme, scales with
-Dynamic Type and can be read aloud - none of which survive inside a web view.
-
-**Send `height`.** The row is given it before the fragment renders. Without
-one the app assumes 180pt and corrects after measuring, which moves the
-conversation under whoever is reading it.
-
-**Send `accessibilityText`.** The fragment's accessibility tree is hidden;
-VoiceOver reads this description instead. Without it the bubble only announces
-"Formatted result".
-
-The fragment inherits the host theme's text colour, divider colour and body
-font size, so it does not become a white rectangle in a dark conversation.
-Anything else is up to the HTML.
-
-## Live agent
-
-`custom_type: content.live-agent`
-
-The offer to hand the conversation to a person. It ends in the same deeplink a
-hand-off link would; the difference is that it asks first, because a customer
-escalated without being asked loses the thread they were following.
-
-```json
-{
-  "messageIdentifier": "agent-1",
-  "title": "Anda akan diarahkan ke agen kami",
-  "detail": "Agen A siap membantu Anda.",
-  "continueTitle": "Lanjut",
-  "cancelTitle": "Batal",
-  "action": {
-    "identifier": "open-live-agent",
-    "deeplink": "ocbcid://mobile?type=live-agent"
-  }
-}
-```
-
-`continueTitle` and `cancelTitle` default to "Continue" and "Cancel".
-
-**Continue leaves the card open; Cancel settles it.** Declining is a final
-answer, but a customer returning from the agent screen may want to connect
-again, and repeating the hand-off costs nothing.
-
-## Approval
-
-`custom_type: content.approval`
-
-The summary a customer checks before confirming. Confirm opens the PIN sheet.
-
-**Minimal**
-
-```json
-{
-  "messageIdentifier": "apv-1",
-  "approvalIdentifier": "apv-1",
-  "transactionIdentifier": "trx-99",
-  "challengeIdentifier": "chg-99",
-  "title": "Konfirmasi transfer Anda",
-  "summary": [
-    { "label": "Ke", "value": "Sample Beneficiary" },
-    { "label": "Jumlah", "value": "IDR 1.250.000" }
-  ],
-  "expiresAt": "2026-09-20T09:00:00Z"
-}
-```
-
-| Field | Default | What it adds |
-| --- | --- | --- |
-| `kind` | `generic` | Icon and wording: `transfer`, `currencyConversion`, `timeDeposit`, `savingsPlan`. |
-| `notice` | none | The caveat line under the summary. |
-| `handoff` | none | **Changes the flow** — see below. |
-
-With `handoff`, Confirm hands off to a host screen and the in-feature PIN
-sheet never opens. Without it, Confirm opens the sheet and the host's
-authorization service runs.
-
-`transactionIdentifier` and `challengeIdentifier` are passed to the host's
-authorization service untouched. The package never reads them.
-
-`expiresAt` is ISO8601. Other formats fail to decode.
-
-## Status
-
-`custom_type: content.status`
-
-```json
-{
-  "messageIdentifier": "st-1",
-  "title": "Selesai",
-  "detail": "Permintaan Anda sudah diproses.",
-  "level": "success"
-}
-```
-
-`level`: `neutral`, `success`, `warning`, `error`. Anything else → `neutral`.
-
-## Information
-
-`custom_type: content.information`
-
-```json
-{
-  "messageIdentifier": "inf-1",
-  "title": "Limit transfer",
-  "text": "Limit harian Anda saat ini.",
-  "items": [
-    { "label": "Sesama bank", "value": "IDR 100.000.000" }
-  ]
-}
-```
-
-`title` is optional; `items` may be empty, leaving only `text`.
-
-## Receipt
-
-`custom_type: content.receipt`
-
-```json
-{
-  "messageIdentifier": "rcp-1",
-  "title": "Transfer berhasil",
-  "detail": "Dana sudah diteruskan.",
-  "summary": [
-    { "label": "Nomor referensi", "value": "TRX-99812" }
-  ],
-  "footnote": "Simpan nomor referensi ini."
-}
-```
-
-`footnote` is optional.
-
-## Chart
-
-`custom_type: content.chart`
-
-```json
-{
-  "messageIdentifier": "cht-1",
-  "title": "Pengeluaran bulan ini",
-  "chartType": "bar",
-  "series": [
-    { "label": "Makan", "value": 2500000, "formattedValue": "IDR 2,5jt" }
-  ]
-}
-```
-
-| Field | Default | What it adds |
-| --- | --- | --- |
-| `chartType` | `bar` | `bar`, `line`, `donut`, `progress`. |
-| `subtitle`, `totalValue`, `footnote` | none | Context above and below. |
-
-**`value` and `formattedValue` are both required and both used.** `value` is a
-number and drives the geometry; `formattedValue` is the text drawn. Two fields
-because the app must not format currency itself - the backend knows the locale,
-the rounding and the bank's conventions.
-
-## Portfolio
-
-`custom_type: content.portfolio`
-
-Same series shape as the chart, with a headline figure.
-
-```json
-{
-  "messageIdentifier": "prt-1",
-  "title": "Portofolio Anda",
-  "totalValue": "IDR 128.400.000",
-  "performanceText": "+4,2% sejak awal tahun",
-  "allocations": [
-    { "label": "Reksa dana", "value": 60, "formattedValue": "60%" }
-  ]
-}
-```
-
-## Financial list
-
-`custom_type: content.financial-list`
-
-```json
-{
-  "messageIdentifier": "lst-1",
-  "title": "Dana masuk 30 hari terakhir",
-  "style": "incoming",
-  "rows": [
-    {
-      "title": "Gaji",
-      "subtitle": "02 Jul",
-      "value": "IDR 12.000.000",
-      "tone": "positive"
-    }
-  ],
-  "totalLabel": "Total",
-  "totalValue": "IDR 12.000.000"
-}
-```
-
-| Field | Values |
-| --- | --- |
-| `style` | `paidBills`, `incoming`, `holdings` |
-| `rows[].tone` | `neutral`, `positive` |
-
-`totalLabel`, `totalValue` and `totalCaption` are a set - send them together
-or not at all. `rows[].subtitle` and `rows[].detail` are optional.
-
-## Anything this app does not know
-
-Any `content.*` name the app has never heard of.
-
-```json
-{
-  "messageIdentifier": "future-1",
-  "fallbackText": "Perbarui aplikasi untuk melihat kartu ini."
-}
-```
-
-`fallbackText` is optional; omitted, the app supplies its own sentence. This
-is what the `content.` prefix buys.
-
----
-
-# Framing a reply
-
-These are not bubbles. They open, fill and close a turn.
-
-| Event | Payload | When |
-| --- | --- | --- |
-| `response.started` | `{ "messageIdentifier": "..." }` | A reply is coming. |
-| `text.delta` | `{ "messageIdentifier": "...", "text": "..." }` | A chunk of it. Repeatable. |
-| `response.completed` | `{ "messageIdentifier": "..." }` | **Required.** |
-| `response.suggestions` | see below | Prompts offered with the reply. |
-| `heartbeat` | `{}` | Keeps a quiet connection alive. |
-
-Without `response.completed` the typing indicator never stops and the send
-button stays as Stop. It is the single most common way a bot breaks the
-screen.
-
-## Suggestions
-
-One tap sends. For a question that should wait for confirmation, use
-`content.choices` instead.
-
-```json
-{
-  "title": "Kategori apa yang diinginkan",
-  "suggestions": [
-    {
-      "identifier": "incoming",
-      "title": "Dana masuk",
-      "prompt": "Tampilkan dana masuk"
-    }
-  ]
-}
-```
-
-`title` is optional - it is the question the prompts answer, drawn above them
-in the same bubble. A reply offering follow-ups that need no heading omits it.
-
----
-
-# Rules that hold everywhere
-
-**An unknown enum value falls back; it never fails.** A strange `chartType`
-becomes `bar`, a strange `level` becomes `neutral`, a strange `style` becomes
-`primary`. Same reason as the `content.` prefix: a backend newer than the app
-must still produce something readable rather than a hole in the conversation.
-
-**A malformed payload degrades to the update-required bubble.** It never tears
-down the channel.
-
-**History replays the same payloads.** Whatever carries a bubble live has to
-survive into the history response, or a reopened conversation loses every card
-it ever showed. The newest 100 messages are kept.
-
-**Never send a PIN, a token, a full account number, or anything the customer
-cannot already see on their screen.** This payload leaves the device and is
-stored by whoever runs the bot.
+Ini contoh body pesan, bukan endpoint lengkap untuk mengirim ke vendor. Backend
+sebaiknya memakai serializer JSON untuk mengisi `data`, bukan menyusun escape
+secara manual. `message` berguna untuk dashboard/notifikasi; pada typed bubble,
+aplikasi merender `data` dan tidak memakai `message` sebagai fallback.
+
+Adapter contoh saat ini hanya meneruskan `custom_type` berawalan `content.` dan
+mengakhiri turn setelah setiap pesan utuh. Teks biasa dipetakan menjadi satu delta
+lalu completion. **`response.suggestions` dan streaming multi-event memerlukan
+mapping tambahan pada adapter Sendbird**; jangan menganggap tabel lifecycle di
+atas otomatis berlaku pada adapter tersebut. Format inbound typed card 3Dolphins
+belum terverifikasi; pakai mock dahulu untuk review semua bubble.
+
+## Aturan payload agar stabil dan ringan
+
+- Gunakan identifier stabil dan unik untuk bubble yang berbeda.
+- Field wajib harus ada. Array kosong boleh pada kontrak yang mengizinkannya;
+  optional dapat dihilangkan. Enum tidak dikenal memiliki fallback, tetapi field
+  wajib yang hilang tetap gagal decode.
+- Payload rusak menjadi bubble unsupported; `content.*` baru dapat membawa
+  `fallbackText`. Event di luar nama yang dikenal dan prefix content diabaikan.
+- Kirim URL gambar, bukan base64. Sertakan aspectRatio yang benar. Hindari HTML
+  untuk tampilan yang sudah memiliki bubble native.
+- Nilai numerik chart menentukan proporsi; `formattedValue` menentukan label.
+- Pertahankan typed payload di history agar kartu dapat dipulihkan. Package
+  mempertahankan 100 pesan terbaru, tetapi host tetap perlu membatasi ukuran
+  payload dari backend sesuai kebutuhan produknya.
+- Payload approval berisi challenge/expiry, bukan PIN atau token autentikasi.

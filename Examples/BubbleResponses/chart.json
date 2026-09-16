@@ -1,0 +1,21 @@
+{
+  "event": "content.chart",
+  "data": {
+    "messageIdentifier": "cht-1",
+    "title": "Pengeluaran bulan ini",
+    "chartType": "bar",
+    "series": [
+      {
+        "label": "Makan",
+        "value": 2500000,
+        "formattedValue": "IDR 2,5jt"
+      },
+      {
+        "label": "Transport",
+        "value": 1500000,
+        "formattedValue": "IDR 1,5jt"
+      }
+    ],
+    "totalValue": "IDR 4.000.000"
+  }
+}

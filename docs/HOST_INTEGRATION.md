@@ -1,328 +1,181 @@
-# Integrating Tanya AI into a host app
+# Memasang TanyaAI di host app
 
-Six steps. The first four can be done before any chat backend exists - step 3
-ships a mock that answers on its own, so the whole screen can be built and
-reviewed while the vendor question is still open.
+Mulai dari dummy untuk memeriksa bubble. Setelah UI sesuai, ganti pembuat session
+ke adapter backend; komponen bubble tidak perlu diubah.
 
-The feature is **presented, never pushed**. It is its own view controller and
-never enters the host's navigation stack, which is what keeps it clear of a
-`NavigationView` that drops pushes started during a pop. Only the animation
-imitates a push.
+## 1. Tambahkan package
 
----
+Pertahankan posisi kedua folder:
 
-## 1. Add the packages
-
-Two local packages. `TanyaAI` is the feature; `DesignKit` is the design system
-it draws with, kept separate so it can be reused by something else later.
-
-```
+```text
 Packages/
-  DesignKit/     ← Package.swift
-  TanyaAI/       ← Package.swift, depends on ../DesignKit
+  DesignKit/Package.swift
+  TanyaAI/Package.swift
 ```
 
-In Xcode: **File → Add Package Dependencies → Add Local**, choose
-`Packages/TanyaAI`. DesignKit comes with it.
+Di Xcode, tambahkan local package `Packages/TanyaAI` dan `Packages/DesignKit`.
+Hubungkan product berikut ke target yang sesuai:
 
-Link two products into the app target:
-
-| Product | Configuration |
+| Target | Product |
 | --- | --- |
-| `TanyaAI` | All |
-| `TanyaAITestSupport` | **Debug only** |
+| Host produksi | `TanyaAI`, `DesignKit` |
+| Target demo/Debug | `TanyaAI`, `DesignKit`, `TanyaAITestSupport` |
 
-`TanyaAITestSupport` contains fabricated answers, including confirmation
-cards. Shipping it puts a code path in production that can draw an invented
-transfer approval. Keep it out of Release and guard its imports with
-`#if DEBUG`.
+Paling sederhana memakai target demo terpisah. `#if DEBUG` menjaga pemakaian
+source dummy, tetapi **tidak otomatis menghapus linkage package dari Release**.
+Pastikan target Release tidak menghubungkan `TanyaAITestSupport`.
 
----
+## 2. Jalankan dummy di host SwiftUI
 
-## 2. Build a theme
+Salin dua file yang sudah tersedia ke target demo:
 
-Everything drawn takes its colours and type from here, so the feature looks
-like your app rather than like a sandbox.
+- [DemoTanyaAIComposition.swift](../Examples/Demo/DemoTanyaAIComposition.swift)
+- [DemoTanyaAIScreen.swift](../Examples/Demo/DemoTanyaAIScreen.swift)
 
-```swift
-import TanyaAI
-import UIKit
-
-enum TanyaAIAppearance {
-    static var theme: TanyaAITheme {
-        TanyaAITheme(colors: colors, fonts: fonts)
-    }
-
-    private static var colors: TanyaAIColors {
-        TanyaAIColors(
-            background: .systemBackground,
-            surface: .secondarySystemBackground,
-            primaryText: .label,
-            secondaryText: .secondaryLabel,
-            accent: .ocbcRed,
-            userBubble: .ocbcRed,
-            userBubbleText: .white,
-            // The reply bubble is outlined, so this is its fill - usually the
-            // background colour, with `divider` drawing the edge.
-            assistantBubble: .systemBackground,
-            assistantBubbleText: .label,
-            divider: .separator,
-            chartTrack: .tertiarySystemFill,
-            chartColors: [.ocbcRed, .systemOrange, .systemBlue, .systemGreen],
-            success: .systemGreen,
-            warning: .systemOrange,
-            error: .systemRed,
-            overlay: UIColor.black.withAlphaComponent(0.45)
-        )
-    }
-
-    private static var fonts: TanyaAIFonts {
-        TanyaAIFonts(
-            title: .preferredFont(forTextStyle: .title1),
-            headline: .preferredFont(forTextStyle: .headline),
-            body: .preferredFont(forTextStyle: .body),
-            subheadline: .preferredFont(forTextStyle: .subheadline),
-            footnote: .preferredFont(forTextStyle: .footnote),
-            caption: .preferredFont(forTextStyle: .caption1),
-            amount: .preferredFont(forTextStyle: .title2),
-            button: .preferredFont(forTextStyle: .headline)
-        )
-    }
-}
-```
-
-Use `UIFontMetrics`-scaled fonts, as above, so Dynamic Type keeps working.
-
----
-
-## 3. Provide a session
-
-`TanyaAIChatSession` is the only seam to a backend. Four members:
-
-```swift
-public protocol TanyaAIChatSession: AnyObject {
-    var onEvent: ((TanyaAIChatSessionEvent) -> Void)? { get set }
-    func connect()
-    func send(text: String, context: TanyaAIContext?, requestIdentifier: String)
-    func disconnect()
-}
-```
-
-### Start with the mock
-
-Nothing else in this guide depends on a real backend.
+Lalu gunakan pada menu developer atau halaman percobaan:
 
 ```swift
 #if DEBUG
-import TanyaAITestSupport
+DemoTanyaAIScreen { url in
+    print("Demo hand-off:", url)
+}
 #endif
-
-let makeSession: () -> TanyaAIChatSession = {
-    MockTanyaAIChatSession.sandbox()
-}
 ```
 
-It answers on keywords: `showcase` draws every bubble, `transfer` opens a
-confirmation, `deeplink` offers hand-off links, `spending` a chart. Anything
-else returns a portfolio.
+Tap **Lihat semua bubble**. Chat otomatis mengirim `showcase` dan menampilkan
+fixture. Callback di atas hanya mencetak URL; sambungkan ke router host jika ingin
+menguji halaman tujuan. Fixture memakai `ocbcid://mobile`; filter demo sudah cocok.
 
-### Then the vendor
+Tidak ada backend chat yang perlu dinyalakan. Gambar remote tetap membutuhkan
+internet; jika gagal, bubble menampilkan placeholder. PIN dummy yang diterima:
+**123456**. PIN lain menguji tampilan error. Tidak ada transaksi sungguhan.
 
-Reference adapters live in `Examples/VendorChatSDK/`. Whichever you write, the
-rules are the same:
-
-- **Emit `.connected` last**, after history has been read. It means "the
-  conversation is settled". Sent first, a greeting appears and history then
-  replaces it, which is the flicker this ordering exists to prevent.
-- **Always close a turn** with `.messageCompleted`. Without it the typing
-  indicator spins forever and the send button stays as Stop.
-- **`makeSession` must return a new instance per presentation.** The feature
-  takes ownership of `onEvent` and closes the session on dismissal, so a
-  shared instance is dead by the second presentation.
-
----
-
-## 4. Authorize a PIN
-
-Only needed if confirmations are completed inside the chat. Skip it and any
-confirmation without a `handoff` is refused in the open rather than showing a
-button that quietly does nothing.
+Ingin menulis wiring sendiri? Ini contoh lengkap pengganti dua file tersebut:
 
 ```swift
-final class TanyaAIAuthorization: TanyaAIAuthorizationService {
-    @discardableResult
-    func authorize(
-        request: TanyaAIAuthorizationRequest,
-        pin: String,
-        completion: @escaping (Result<TanyaAIAuthorizationResult, Error>) -> Void
-    ) -> TanyaAICancellable {
-        let task = api.authorize(
-            transactionId: request.transactionIdentifier,
-            challengeId: request.challengeIdentifier,
-            pin: pin
-        ) { result in
-            completion(result.map {
-                TanyaAIAuthorizationResult(
-                    transactionIdentifier: request.transactionIdentifier,
-                    status: $0.isPending ? .processing : .completed
-                )
-            })
-        }
-        return task
-    }
-}
-```
-
-The package collects the PIN, hands it to you, and keeps nothing. **Do not
-log it, persist it, or copy it anywhere** - including crash reporters and
-analytics.
-
----
-
-## 5. Compose the host
-
-One host per signed-in session. Build it where your session-scoped
-dependencies live, not inside a view.
-
-```swift
+#if DEBUG
+import SwiftUI
 import TanyaAI
+import TanyaAITestSupport
 
-final class TanyaAIComposition {
-    private let authorization = TanyaAIAuthorization()
-
-    func makeHost(onDeeplink: @escaping (URL) -> Void) -> TanyaAIHost {
-        TanyaAIHost(
-            theme: TanyaAIAppearance.theme,
-            authorizationService: authorization,
-            deeplinkScheme: "ocbcid",
-            deeplinkHost: "mobile",
-            makeSession: { MockTanyaAIChatSession.sandbox() },
-            onDeeplink: onDeeplink
-        )
-    }
-}
-```
-
-`deeplinkScheme` and `deeplinkHost` are a filter, not a router. A deeplink
-that does not match is dropped before it reaches you, so a bot cannot ask the
-app to open something outside its own scheme.
-
----
-
-## 6. Attach and present
-
-`TanyaAIHost` is an `ObservableObject`, so it can be held in a view and
-injected downward.
-
-```swift
-struct RootScreen: View {
-    @StateObject private var tanyaAI = TanyaAIComposition()
-        .makeHost { url in AppRouter.shared.open(url) }
+struct ChatDemoPage: View {
+    @StateObject private var host = TanyaAIHost(
+        theme: .sandbox,
+        authorizationService: MockTanyaAIAuthorizationService(),
+        deeplinkScheme: "ocbcid",
+        deeplinkHost: "mobile",
+        initialPrompt: "showcase",
+        makeSession: { MockTanyaAIChatSession.sandbox() },
+        onDeeplink: { url in print("Demo hand-off:", url) }
+    )
 
     var body: some View {
-        NavigationView {
-            List {
-                Button("Tanya AI") { tanyaAI.present() }
-            }
-        }
-        .tanyaAIHost(tanyaAI)
+        Button("Buka TanyaAI") { host.present() }
+            .tanyaAIHost(host)
     }
 }
+#endif
 ```
 
-`.tanyaAIHost(_:)` places an invisible, zero-sized controller in the hierarchy
-for the feature to be presented from. Apply it **once**, on the screen that
-owns the host — not on every screen that opens it.
+`.tanyaAIHost(host)` dipasang sekali pada root yang memiliki host. `present()`
+baru bekerja setelah root tampil. Fitur dipresentasikan sebagai controller sendiri,
+bukan di-push ke NavigationView host. `@StateObject` mempertahankan identitas host;
+jangan membuat instance baru pada setiap evaluasi `body`.
 
-### Where to put it in a NavigationView app
+## 3. Cek bubble tertentu
 
-Apply it to the screen that owns the host, inside the `NavigationView`. The
-feature does not join the stack, so the anchor's position only decides which
-controller presents it.
+Hapus `initialPrompt: "showcase"` jika ingin mengetik manual.
 
----
-
-## Optional: shortcuts above the keyboard
-
-Ways in, fetched by the host before the chat opens and passed straight in.
-There is no protocol for them - they are a value, not a service.
-
-```swift
-TanyaAIHost(
-    theme: TanyaAIAppearance.theme,
-    deeplinkScheme: "ocbcid",
-    shortcuts: try await api.tanyaAIShortcuts().map {
-        TanyaAISuggestion(
-            identifier: $0.id,
-            title: $0.label,
-            prompt: $0.prompt
-        )
-    },
-    makeSession: { ... },
-    onDeeplink: onDeeplink
-)
-```
-
-They stay put after one is used, and hide while a reply is arriving - tapping
-one then would do nothing, and a control that ignores a tap is worse than one
-that is not there.
-
-Not the same as the prompts a reply offers. Those come from the bot, answer
-the question just asked, and disappear once answered.
-
----
-
-## Deeplinks
-
-When the customer taps a hand-off link, the feature **closes first, then**
-calls `onDeeplink`. That order matters: a destination opened while the modal
-is still animating away is lost silently.
-
-Your `onDeeplink` receives a `URL` that already passed the scheme and host
-filter. Validate the rest - path, parameters, entitlements - as you would for
-any incoming link.
-
----
-
-## Optional: tell the bot where the chat was opened from
-
-```swift
-tanyaAI.present()
-// Opening from a transfer screen, so the bot does not ask what the
-// screen already knows:
-let context = TanyaAIContext(
-    screen: "transfer.form",
-    parameters: ["currency": "IDR"],
-    summary: "Membahas: Transfer"
-)
-```
-
-`summary` is shown to the customer so what the bot was told is never hidden
-from them. It stays on the device; only `screen` and `parameters` are sent.
-
-**Send the least that makes the answer better.** This payload leaves the
-device and is stored by whoever runs the bot: no PIN, no token, no full
-account number, nothing the customer cannot already see.
-
----
-
-## Before shipping
-
-- [ ] `TanyaAITestSupport` is not linked in Release
-- [ ] `makeSession` returns a **new** instance each time
-- [ ] The bot always sends `response.completed`
-- [ ] PIN is never logged, persisted or sent to analytics
-- [ ] `onDeeplink` validates beyond the scheme filter
-- [ ] Dynamic Type checked at the largest accessibility size
-- [ ] Dark mode checked - the theme supplies both
-
----
-
-## Where things live
-
-| I want to… | Look at |
+| Ketik persis | Respons dummy |
 | --- | --- |
-| Know what JSON draws a bubble | `docs/BUBBLE_SCHEMA.md` |
-| See every bubble running | `./Scripts/run_sandbox.sh --showcase` |
-| Copy an adapter | `Examples/VendorChatSDK/` |
-| Change a colour or spacing | `Packages/DesignKit/Sources/DesignKit/Tokens/` |
+| `showcase` | Koleksi bubble untuk review |
+| `transfer` | Approval transfer dan alur PIN |
+| `currency` / `conversion` | Approval konversi mata uang |
+| `deposit` | Approval deposito |
+| `saving` | Approval tabungan berjangka |
+| `spending` | Chart pengeluaran |
+| `incoming` | Daftar dana masuk |
+| `bill` | Daftar tagihan |
+| `limit` | Informasi limit |
+| `deeplink` | Link menuju halaman host |
+| Teks lainnya | Portfolio |
+
+Keyword fixture memakai pencarian substring berbahasa Inggris; gunakan kata di
+tabel agar hasilnya pasti. `showcase` mencakup gambar, choices, HTML, live agent,
+dan suggestion. Gunakan [JSON bubble](BUBBLE_SCHEMA.md) untuk payload buatan sendiri.
+
+Tanpa host app, jalankan aplikasi sandbox dari root repository:
+
+```sh
+./Scripts/run_sandbox.sh --showcase
+```
+
+## 4. Gunakan tema dan font host
+
+Lakukan sekali saat setup pada main actor, sebelum membuat host:
+
+```swift
+import DesignKit
+
+try DesignKitFont.registerFonts()
+let manager = ThemeManager(fonts: .branded(), selected: .premier)
+let selectedTheme = manager.theme
+let defaultTheme = manager.resolve(isDefaultForced: true)
+```
+
+Masukkan `selectedTheme` atau `defaultTheme` ke parameter `theme:` pada
+`TanyaAIHost`, atau `DemoTanyaAIScreen(theme: selectedTheme, onDeeplink: handler)`.
+Tangani error registrasi font di setup aplikasi.
+
+`TanyaAIHost` menyimpan snapshot theme saat dibuat. Perubahan manager tidak
+mengubah chat UIKit yang sudah terbuka. Buat host dengan snapshot terbaru ketika
+mengganti konfigurasi tema, lalu attach host tersebut sebelum presentasi berikutnya.
+Untuk komponen SwiftUI langsung, `.theme(manager)` mengikuti perubahan secara live;
+`.theme(manager, isDefaultForced: true)` mengunci satu subtree ke default.
+
+Premier/Private masih dummy; Default dan size berupa transkripsi foto, bukan export
+resmi engine. Ganti dengan export asli sebelum menggunakan palette produksi.
+Lihat [panduan DesignKit](DESIGNKIT_THEMES.md) untuk mapping dan font tambahan.
+
+## 5. Ganti dummy dengan session backend
+
+Pertahankan view host. Ganti `makeSession` menjadi closure yang membuat adapter
+`TanyaAIChatSession` baru setiap chat dibuka. `TanyaAIHost` menerima:
+
+| Parameter | Isi |
+| --- | --- |
+| `theme` | Snapshot `Theme` |
+| `authorizationService` | Service PIN host; boleh nil jika semua approval memakai hand-off |
+| `deeplinkScheme`, `deeplinkHost` | Scheme/host URL yang boleh diteruskan |
+| `initialPrompt` | Pesan pertama otomatis; nil untuk tanpa pesan otomatis |
+| `shortcuts` | `[TanyaAISuggestion]` dari host, ditampilkan di atas input |
+| `makeSession` | Factory session baru per presentasi |
+| `onDeeplink` | Router host, dipanggil sesudah chat selesai ditutup |
+
+Contoh implementasi berada di [Examples/HostIntegration](../Examples/HostIntegration/)
+dan [Examples/VendorChatSDK](../Examples/VendorChatSDK/). Adapter vendor adalah
+referensi integrasi; cocokkan dengan versi SDK yang dipasang di host.
+
+Tanggung jawab adapter:
+
+1. `connect()`: baca history, emit `.history(...)`, lalu `.connected`.
+   Session tanpa history dapat langsung emit `.connected`.
+2. `send(...)`: kirim pertanyaan pengguna ke backend.
+3. Respons backend: terjemahkan menjadi event package seperti panduan JSON.
+4. Akhiri turn dengan `.messageCompleted(...)`, atau `.failed(error)` bila gagal.
+5. `disconnect()`: bersihkan callback/delegate milik fitur, bukan koneksi global SDK.
+
+Tanggung jawab authorization service: terima challenge dan PIN, panggil API host,
+lalu kembalikan status transaksi. Jangan gunakan mock authorization di produksi.
+PIN tidak boleh dicatat atau disimpan. Jika service nil dan approval tidak memiliki
+`handoff`, konfirmasi akan ditolak dengan pesan, bukan dianggap berhasil.
+
+Host tetap memvalidasi parameter dan hak akses deeplink sesudah filter scheme/host.
+Untuk UIKit murni, lihat [contoh presentasi UIKit](HOST_UIKIT.md).
+
+## Kenapa wiring ini tetap ringan?
+
+Satu host yang dipertahankan, satu session per presentasi, dan satu kali registrasi
+font. Gunakan renderer package; tidak perlu membuat ulang ViewModel, parser JSON,
+cache gambar, atau UITableView di host. Riwayat dan transcript aktif dibatasi 100
+pesan. Gambar di-downsample dan update streaming digabung sebelum layout.

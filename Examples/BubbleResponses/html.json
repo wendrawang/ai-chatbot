@@ -1,0 +1,9 @@
+{
+  "event": "content.html",
+  "data": {
+    "messageIdentifier": "html-1",
+    "html": "<table><tr><th>Tenor</th><th>Imbalan</th></tr></table>",
+    "height": 120,
+    "accessibilityText": "Tabel tenor dan imbalan"
+  }
+}

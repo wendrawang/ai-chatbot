@@ -1,0 +1,14 @@
+{
+  "event": "content.information",
+  "data": {
+    "messageIdentifier": "inf-1",
+    "title": "Limit transfer",
+    "text": "Limit harian Anda saat ini.",
+    "items": [
+      {
+        "label": "Sesama bank",
+        "value": "IDR 100.000.000"
+      }
+    ]
+  }
+}

@@ -1,0 +1,19 @@
+{
+  "event": "content.financial-list",
+  "data": {
+    "messageIdentifier": "lst-1",
+    "title": "Dana masuk 30 hari terakhir",
+    "style": "incoming",
+    "rows": [
+      {
+        "title": "Gaji",
+        "subtitle": "02 Jul",
+        "value": "IDR 12.000.000",
+        "tone": "positive"
+      }
+    ],
+    "totalLabel": "Total",
+    "totalValue": "IDR 12.000.000",
+    "totalCaption": "Seluruh dana masuk"
+  }
+}

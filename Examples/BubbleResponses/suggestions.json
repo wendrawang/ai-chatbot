@@ -1,0 +1,13 @@
+{
+  "event": "response.suggestions",
+  "data": {
+    "title": "Kategori apa yang diinginkan",
+    "suggestions": [
+      {
+        "identifier": "incoming",
+        "title": "Dana masuk",
+        "prompt": "Tampilkan dana masuk"
+      }
+    ]
+  }
+}

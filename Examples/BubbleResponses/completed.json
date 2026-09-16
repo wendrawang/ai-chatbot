@@ -1,0 +1,6 @@
+{
+  "event": "response.completed",
+  "data": {
+    "messageIdentifier": "text-1"
+  }
+}
