@@ -11,7 +11,7 @@ public final class TanyaAIChatViewModel: ObservableObject {
     /// rather than by a turn the customer started.
     @Published public private(set) var isAgentTyping = false
     /// True until the channel reports what it already held. The conversation
-    /// stays empty meanwhile, so a greeting is never shown and then replaced.
+    /// stays empty meanwhile, so no temporary message is shown and then replaced.
     @Published public private(set) var isRestoring = true
     @Published public private(set) var errorMessage: String?
     @Published public private(set) var suggestions: [Suggestion]
@@ -132,19 +132,13 @@ public final class TanyaAIChatViewModel: ObservableObject {
     /// Puts a reopened conversation on screen.
     ///
     /// Replaces rather than appends: a returning customer should see where
-    /// they left off. An empty batch means there is nothing to come back to,
-    /// so this is where the greeting is finally earned.
+    /// they left off. An empty batch leaves the conversation empty.
     private func restore(_ restored: [TanyaAIMessage]) {
         isRestoring = false
         // The customer may have typed before the channel answered. What they
         // sent is newer than what it holds, so replacing here would delete
         // their message, and the reply on its way to it.
         guard messages.isEmpty else {
-            return
-        }
-        guard restored.isEmpty == false else {
-            // Nothing to come back to, so this is a first conversation.
-            messages = [Self.makeWelcomeMessage()]
             return
         }
         messages = restored.suffix(TanyaAIMessage.historyLimit)

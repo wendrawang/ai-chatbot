@@ -43,47 +43,42 @@ let profile = DolphinProfile(
 ```
 
 `configure()` memanggil `setupConnection(baseUrl:clientId:clientSecret:botId:)`
-sesuai foto. Cocokkan label `clientSecret` dengan SDK yang terpasang; contoh
+sesuai source SDK pada foto terbaru. Cocokkan label `clientSecret` dengan SDK yang terpasang; contoh
 lama menggunakan ejaan berbeda. Ganti konfigurasi dummy dengan konfigurasi host.
 Jangan memanggil setup dari `View.body` atau pada setiap kirim pesan.
 
-## 3. Tentukan mapping pesan masuk
+## 3. Mapping pesan native
 
-Foto memastikan nama `notificationMessage`, tetapi belum menunjukkan isi
-`notification.object` atau `userInfo` untuk pesan. Karena itu `mapMessage`
-wajib diisi: tidak ada tebakan `DolphinMessage.id/text/isStreaming` dalam adapter.
+Source SDK pada foto menunjukkan `notificationMessage` mengirim `DolphinMessage`
+melalui `notification.object`. Jalur incoming memakai `msgDecrypted`, lalu
+menandai `isUser = false`. Mapper sekarang membaca objek itu, bukan userInfo.
 
-`ThreeDolphinsMessageMapper` menyediakan contoh **kontrak host**, bukan klaim
-format bawaan SDK. Contoh itu menerima `userInfo` dengan bentuk berikut:
+`ThreeDolphinsMessageMapper.map` menangani **pesan teks utuh**:
 
-```json
-{
-  "event": "status",
-  "data": {
-    "messageIdentifier": "status-1",
-    "title": "Selesai",
-    "detail": "Sudah diproses.",
-    "level": "success"
-  }
-}
-```
+- `message` menjadi teks bubble tanpa dekripsi ulang di host.
+- `transactionId` dipakai sebagai ID jika tersedia; fallback UUID untuk pesan tanpa ID.
+- `isUser == true` diabaikan agar echo customer tidak menjadi bubble assistant.
+- Pesan tanpa teks/whitespace diabaikan, bukan dianggap error parsing.
+- Tiga event start/delta/completed memakai ID yang sama.
 
-Jika payload SDK berbeda, ubah mapping ke `event` dan `data` di host, lalu panggil
-`ThreeDolphinsMessageMapper.events(name:payload:)`. Filter echo pesan customer
-agar pesan yang sudah ditampilkan TanyaAI tidak muncul lagi sebagai balasan bot.
-Jangan memasang mapper contoh pada produksi sebelum payload SDK dicocokkan.
+Untuk composition, gunakan `mapMessage: ThreeDolphinsMessageMapper.map`.
+Helper `events(name:payload:)` tetap tersedia untuk envelope TanyaAI eksplisit,
+misalnya fixture atau bridge host. Jangan mengasumsikan `message.event` atau
+`customVariables` berisi nama/payload bubble TanyaAI.
 
-- Teks utuh: `event` kosong, `data` berisi `messageIdentifier` dan `text`.
-- Streaming: `response_started`, `text_delta`, `response_completed` memakai ID sama.
-- `text_delta` harus berisi tambahan teks; snapshot kumulatif perlu dihitung selisihnya.
-- Bubble: nama seperti `status`, `chart`, `approval`; mapper mengakhiri bubble dengan ID payload.
-- Suggestions dan heartbeat tidak menghasilkan completion bubble.
-- Nama lengkap dan payload ada di [schema bubble](../../../docs/BUBBLE_SCHEMA.md).
+**Batas patch:** belum menangani streaming native, attachment, carousel, atau
+history secara lengkap. Foto menunjukkan SDK mengirim history lewat notifikasi
+yang sama; `isUser` membedakan pengirim, tetapi tidak membedakan history/live.
+Dengan mapper teks ini, history assistant dapat tampil sebagai pesan live dan
+history customer diabaikan. Jangan gunakan sebagai integrasi history produksi.
+Diperlukan sinyal awal/akhir history dan semantik messageType/state sebelum
+menambahkan batching history atau menggabungkan potongan streaming.
+
+Nama dan payload bubble eksplisit ada di [schema bubble](../../../docs/BUBBLE_SCHEMA.md).
 
 ## 4. Buat host
 
-Contoh berikut memakai kontrak host di langkah 3. Pada integrasi nyata,
-masukkan mapper yang membaca model SDK versi Anda.
+Contoh berikut memakai mapper teks native pada langkah 3.
 
 ```swift
 import UIKit
@@ -119,7 +114,7 @@ yang tampil sebagai pesan customer. Jangan aktifkan keduanya untuk greeting sama
 1. Host mengonfigurasi SDK dan membangun profil.
 2. TanyaAI memanggil factory `makeSession` saat presentasi; selalu instance baru.
 3. Adapter memasang observer sebelum `constructConnector(profile:)`.
-4. Status dibaca dari `notification.userInfo?["status"]` sesuai foto.
+4. Status dibaca dari `notification.object` sesuai source SDK pada foto terbaru.
 5. Connected (2) menghasilkan `.connected`; greeting opsional dikirim sekali.
 6. `send(...)` memanggil `onSendMessage(messages:)`.
 7. `disconnect()` melepas observer sebelum `endActiveSession()`.
@@ -134,7 +129,7 @@ observer background sendiri. Pemanggilan connect/disconnect berulang dijaga.
 
 ## Batas yang eksplisit
 
-- Mapper notifikasi produksi masih membutuhkan model/payload SDK asli.
+- Mapper teks utuh memakai DolphinMessage dari foto; lifecycle streaming belum terverifikasi.
 - History tidak dipanggil karena API/key history tidak ditunjukkan dalam foto.
 - `context` dan `requestIdentifier` tidak dikirim sebagai teks. Semantik metadata
   `dataUser` dan korelasi request belum dijelaskan oleh dokumen.

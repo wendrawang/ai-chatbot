@@ -7,8 +7,7 @@ import XCTest
 /// What a reopened chat shows, and when. The screen stays empty until the
 /// channel has said what it held, so nothing is ever drawn to be replaced.
 final class TanyaAIChatRestoreTests: XCTestCase {
-    /// A reopened conversation is what the customer comes back to, in
-    /// place of the greeting they would otherwise be given.
+    /// A reopened conversation contains only messages from the channel.
     func testHistoryReplacesTheConversation() {
         let useCase = TanyaAIChatUseCaseStub()
         let viewModel = TanyaAIChatViewModel(useCase: useCase)
@@ -21,9 +20,8 @@ final class TanyaAIChatRestoreTests: XCTestCase {
         XCTAssertEqual(viewModel.messages.map(\.identifier), ["1", "2"])
     }
 
-    /// The greeting waits for the channel to say what it held. Showing it
-    /// first and swapping it for history is the blink this avoids.
-    func testGreetingWaitsUntilHistoryHasBeenReported() {
+    /// Empty history finishes loading without inserting a package greeting.
+    func testEmptyHistoryDoesNotInsertGreeting() {
         let useCase = TanyaAIChatUseCaseStub()
         let viewModel = TanyaAIChatViewModel(useCase: useCase)
 
@@ -32,7 +30,7 @@ final class TanyaAIChatRestoreTests: XCTestCase {
 
         useCase.sendUnsolicited(.history([]))
 
-        XCTAssertEqual(viewModel.messages.count, 1)
+        XCTAssertTrue(viewModel.messages.isEmpty)
         XCTAssertFalse(viewModel.isRestoring)
     }
 

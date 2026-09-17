@@ -1,20 +1,32 @@
 import Foundation
 import TanyaAI
+import imi_dolphin_livechat_ios
 
-/// An explicit HOST contract, not a documented 3Dolphins notification schema.
-/// Use only after adapting the actual SDK payload to this shape.
+/// Maps complete native text messages. Streaming and history batching need SDK lifecycle signals.
 enum ThreeDolphinsMessageMapper {
-    /// userInfo contains event: String and data: JSON object.
-    /// Empty event means a complete text message. Streaming uses explicit wire events.
+    /// SocketManager posts the decrypted DolphinMessage in notification.object.
+    /// Customer echoes and metadata-only notifications do not create assistant bubbles.
     static func map(_ notification: Notification) throws -> [TanyaAIChatSessionEvent] {
-        guard let values = notification.userInfo,
-              let name = values["event"] as? String,
-              let payload = values["data"] as? [String: Any] else {
+        guard let message = notification.object as? DolphinMessage else {
             throw ThreeDolphinsAdapterError.invalidPayload
         }
-        return try events(name: name, payload: payload)
+        guard message.isUser != true,
+              let text = message.message,
+              text.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty == false else {
+            return []
+        }
+        let identifier = message.transactionId.flatMap { value in
+            value.isEmpty ? nil : value
+        } ?? UUID().uuidString
+        return [
+            .messageStarted(messageIdentifier: identifier),
+            .messageDelta(messageIdentifier: identifier, text: text),
+            .messageCompleted(messageIdentifier: identifier)
+        ]
     }
 
+    /// Explicit TanyaAI envelopes remain available for fixtures or a host bridge.
+    /// Native message.event/customVariables are not assumed to contain this schema.
     static func events(
         name: String,
         payload: [String: Any]

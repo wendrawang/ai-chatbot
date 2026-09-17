@@ -65,7 +65,7 @@ final class ThreeDolphinsChatSessionAdapter: TanyaAIChatSession {
     }
 
     private func receiveStatus(_ notification: Notification) {
-        guard isActive, let status = notification.userInfo?["status"] as? Int else { return }
+        guard isActive, let status = notification.object as? Int else { return }
         switch status {
         case 2:
             reportConnected()

@@ -92,10 +92,11 @@ tersimpan di HostUserSession selama user login. Closure deeplink memakai weak
 capture sehingga session tidak tertahan oleh host. Login ulang untuk user lain
 harus melewati logout agar profil lama tidak terbawa.
 
-**Mapper contoh belum merupakan schema SDK yang terverifikasi.** Sesuaikan
-mapMessage dengan model notifikasi SDK terpasang. Kontrak contoh dan penjelasan
-webhook backend ada di [panduan adapter](../README.md). Setup/login/present tidak
-membutuhkan tebakan field pesan, tetapi menerima balasan nyata membutuhkan mapping ini.
+Mapper sekarang membaca DolphinMessage dari notification.object sesuai source SDK
+pada foto. Cakupannya balasan teks utuh; streaming native, history, attachment dan
+carousel belum ditangani lengkap. Lihat [panduan adapter](../README.md) sebelum
+mengaktifkan restore history atau streaming. Update package tidak menyalin file
+adapter dalam Examples ke target host secara otomatis.
 
 ## 4. Membuka TanyaAI
 
