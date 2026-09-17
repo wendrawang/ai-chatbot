@@ -9,6 +9,9 @@ menjelaskan webhook HTTP ke backend. `chatbotConversation` merupakan string
 transkrip pada contoh tersebut, bukan kontrak notifikasi SDK iOS. Jangan
 menggunakannya untuk menebak field pesan, urutan streaming, atau ID bubble.
 
+Contoh alur aplikasi lengkap tersedia di [HostApp](HostApp/README.md): AppDelegate,
+login, tombol chat, router deeplink, dan logout.
+
 ## 1. Pasang dependency dan contoh
 
 Tambahkan SDK `imi_dolphin_livechat_ios` sesuai distribusi vendor, serta produk
