@@ -19,6 +19,13 @@ final class TanyaAIHostingTableViewCell: UITableViewCell {
         fatalError("init(coder:) is not supported")
     }
 
+    /// The observed message can grow without configure being called again.
+    func invalidateHostedSize() {
+        hostingController?.view.invalidateIntrinsicContentSize()
+        hostingController?.view.setNeedsLayout()
+        contentView.setNeedsLayout()
+    }
+
     func configure(rootView: TanyaAIMessageTableRow) {
         if let hostingController = hostingController {
             hostingController.rootView = rootView

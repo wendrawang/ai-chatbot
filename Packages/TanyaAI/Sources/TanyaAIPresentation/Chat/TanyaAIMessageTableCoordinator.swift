@@ -129,8 +129,15 @@ extension TanyaAIMessageTableView {
         }
 
         private func refreshRowHeight() {
-            tableView?.beginUpdates()
-            tableView?.endUpdates()
+            guard let tableView else { return }
+            for case let cell as TanyaAIHostingTableViewCell in tableView.visibleCells {
+                cell.invalidateHostedSize()
+            }
+            UIView.performWithoutAnimation {
+                tableView.beginUpdates()
+                tableView.endUpdates()
+                tableView.layoutIfNeeded()
+            }
             guard isFollowingLatestMessage else {
                 return
             }
