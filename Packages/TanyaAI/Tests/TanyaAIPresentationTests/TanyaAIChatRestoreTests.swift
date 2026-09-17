@@ -47,7 +47,19 @@ final class TanyaAIChatRestoreTests: XCTestCase {
 
         useCase.sendUnsolicited(.history([]))
 
-        XCTAssertTrue(viewModel.isSuggestionRowVisible)
+        XCTAssertFalse(viewModel.isSuggestionRowVisible)
+    }
+
+    func testTextReplyDoesNotCreateSuggestions() {
+        let useCase = TanyaAIChatUseCaseStub()
+        let viewModel = TanyaAIChatViewModel(useCase: useCase)
+        useCase.sendUnsolicited(.history([]))
+        useCase.sendUnsolicited(.responseStarted(messageIdentifier: "reply-1"))
+        useCase.sendUnsolicited(.textDelta(messageIdentifier: "reply-1", text: "Halo"))
+        useCase.sendUnsolicited(.responseCompleted(messageIdentifier: "reply-1"))
+
+        XCTAssertTrue(viewModel.suggestions.isEmpty)
+        XCTAssertFalse(viewModel.isSuggestionRowVisible)
     }
 
     /// Typing before the channel answers wins. History is older than what

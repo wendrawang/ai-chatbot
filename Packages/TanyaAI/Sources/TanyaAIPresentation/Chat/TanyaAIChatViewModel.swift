@@ -52,7 +52,7 @@ public final class TanyaAIChatViewModel: ObservableObject {
         self.isAuthorizationEnabled = isAuthorizationEnabled
         self.shortcuts = shortcuts
         messages = []
-        suggestions = Suggestion.sandboxDefaults
+        suggestions = []
         // A reply nobody asked for still belongs on screen. Without this the
         // channel delivers it and the graph drops it on the floor.
         useCase.observeUnsolicitedEvents { [weak self] event in

@@ -61,6 +61,12 @@ final class TanyaAIChatViewModelTests: XCTestCase {
     func testSelectingSuggestionSendsItsPrompt() {
         let useCase = TanyaAIChatUseCaseStub()
         let viewModel = TanyaAIChatViewModel(useCase: useCase)
+        useCase.sendUnsolicited(.history([]))
+        useCase.sendUnsolicited(.suggestions(title: nil, items: [
+            TanyaAISuggestionPayload(
+                identifier: "next-question", title: "Next question", prompt: "Show next answer"
+            )
+        ]))
         let suggestion = viewModel.suggestions[0]
 
         viewModel.sendSuggestion(suggestion)
@@ -69,7 +75,7 @@ final class TanyaAIChatViewModelTests: XCTestCase {
         XCTAssertFalse(viewModel.isSuggestionRowVisible)
     }
 
-    func testBackendSuggestionsReplaceInitialSuggestions() {
+    func testBackendResponseShowsSuggestions() {
         let useCase = TanyaAIChatUseCaseStub()
         let viewModel = TanyaAIChatViewModel(useCase: useCase)
         viewModel.sendMessage("Show spending")
