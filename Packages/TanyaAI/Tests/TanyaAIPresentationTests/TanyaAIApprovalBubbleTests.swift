@@ -1,3 +1,4 @@
+import DesignKit
 import Foundation
 import TanyaAIContracts
 import TanyaAIDomain
@@ -98,7 +99,8 @@ final class TanyaAIApprovalBubbleTests: XCTestCase {
         useCase.send(
             .textDelta(messageIdentifier: "approval-card", text: "Baik, ")
         )
-        useCase.send(.responseCompleted(messageIdentifier: "approval-card"))
+        // Flush one batch while the request is still open.
+        viewModel.textDeltaBuffer.flushAll()
         useCase.send(
             .textDelta(messageIdentifier: "approval-card", text: "dibatalkan.")
         )
@@ -113,11 +115,11 @@ final class TanyaAIApprovalBubbleTests: XCTestCase {
     /// Opens a turn, which is what registers the event handler.
     private func makeViewModel(
         useCase: UseCaseStub,
-        authorizesInFeature: Bool = true
+        isAuthorizationEnabled: Bool = true
     ) -> TanyaAIChatViewModel {
         let viewModel = TanyaAIChatViewModel(
             useCase: useCase,
-            authorizesInFeature: authorizesInFeature
+            isAuthorizationEnabled: isAuthorizationEnabled
         )
         viewModel.inputText = "konfirmasi"
         viewModel.sendCurrentMessage()
@@ -131,7 +133,7 @@ final class TanyaAIApprovalBubbleTests: XCTestCase {
         let useCase = UseCaseStub()
         let viewModel = makeViewModel(
             useCase: useCase,
-            authorizesInFeature: false
+            isAuthorizationEnabled: false
         )
         var outputs: [TanyaAIChatOutput] = []
         viewModel.onOutput = { outputs.append($0) }
@@ -149,9 +151,9 @@ final class TanyaAIApprovalBubbleTests: XCTestCase {
         let useCase = UseCaseStub()
         let viewModel = makeViewModel(
             useCase: useCase,
-            authorizesInFeature: false
+            isAuthorizationEnabled: false
         )
-        var actions: [TanyaAIAction] = []
+        var actions: [Action] = []
         viewModel.onOutput = { output in
             if case .performAction(let action) = output {
                 actions.append(action)
@@ -164,8 +166,8 @@ final class TanyaAIApprovalBubbleTests: XCTestCase {
         XCTAssertEqual(actions.first?.deeplink, "ocbcid://mobile?type=transfer")
     }
 
-    private func makeHandoffApproval() -> TanyaAIApprovalPayload {
-        TanyaAIApprovalPayload(
+    private func makeHandoffApproval() -> ApprovalPayload {
+        ApprovalPayload(
             approvalIdentifier: "approval-handoff",
             transactionIdentifier: "transaction-demo",
             challengeIdentifier: "challenge-demo",
@@ -173,7 +175,7 @@ final class TanyaAIApprovalBubbleTests: XCTestCase {
             title: "Approve demo",
             summary: [],
             expiresAt: Date().addingTimeInterval(300),
-            handoff: TanyaAIAction(
+            handoff: Action(
                 identifier: "handoff-transfer",
                 deeplink: "ocbcid://mobile?type=transfer"
             ),
@@ -190,7 +192,7 @@ final class TanyaAIApprovalBubbleTests: XCTestCase {
 
     private func approvalPayloads(
         in viewModel: TanyaAIChatViewModel
-    ) -> [TanyaAIApprovalPayload] {
+    ) -> [ApprovalPayload] {
         viewModel.messages.compactMap { message in
             guard case .approval(let payload) = message.content else {
                 return nil
@@ -210,8 +212,8 @@ final class TanyaAIApprovalBubbleTests: XCTestCase {
         }
     }
 
-    private func makeApproval() -> TanyaAIApprovalPayload {
-        TanyaAIApprovalPayload(
+    private func makeApproval() -> ApprovalPayload {
+        ApprovalPayload(
             approvalIdentifier: "approval-demo",
             transactionIdentifier: "transaction-demo",
             challengeIdentifier: "challenge-demo",

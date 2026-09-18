@@ -1,0 +1,14 @@
+{
+  "event": "live_agent",
+  "data": {
+    "messageIdentifier": "agent-1",
+    "title": "Anda akan diarahkan ke agen kami",
+    "detail": "Agen A siap membantu Anda.",
+    "continueTitle": "Lanjut",
+    "cancelTitle": "Batal",
+    "action": {
+      "identifier": "open-live-agent",
+      "deeplink": "ocbcid://mobile?type=live-agent"
+    }
+  }
+}

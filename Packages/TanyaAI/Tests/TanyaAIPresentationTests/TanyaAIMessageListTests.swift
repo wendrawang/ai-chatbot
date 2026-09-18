@@ -1,4 +1,4 @@
-import TanyaAIDesignSystem
+import DesignKit
 import TanyaAIDomain
 import UIKit
 import XCTest
@@ -50,8 +50,9 @@ final class TanyaAIMessageListTests: XCTestCase {
         let state = TanyaAIMessageListState(
             messages: [],
             isRestoring: false,
-            showsTypingRow: true,
-            showsSuggestions: false
+            isTypingRowVisible: true,
+            suggestions: [],
+            suggestionsTitle: nil
         )
 
         XCTAssertEqual(state.rowCount, 1)
@@ -65,8 +66,9 @@ final class TanyaAIMessageListTests: XCTestCase {
         let same = TanyaAIMessageListState(
             messages: first.messages,
             isRestoring: false,
-            showsTypingRow: false,
-            showsSuggestions: true
+            isTypingRowVisible: false,
+            suggestions: [],
+            suggestionsTitle: nil
         )
 
         XCTAssertFalse(same.rowsDiffer(from: first))
@@ -74,12 +76,77 @@ final class TanyaAIMessageListTests: XCTestCase {
         XCTAssertTrue(restoring.rowsDiffer(from: first))
     }
 
+    /// Prompts are a row of their own at the end, so replacing them is a row
+    /// change even though the message count has not moved.
+    func testChangingPromptsChangesTheRows() {
+        let base = restored(messageCount: 2)
+        let offered = withPrompts(base, titles: ["Dining"])
+        let replaced = withPrompts(base, titles: ["Hotel & Travel"])
+
+        XCTAssertEqual(offered.rowCount, base.rowCount + 1)
+        XCTAssertTrue(offered.rowsDiffer(from: base))
+        XCTAssertTrue(replaced.rowsDiffer(from: offered))
+    }
+
+    /// Messages first, then the waiting row, then the prompts - the order the
+    /// rows are counted in, so the table asks for them in that order too.
+    func testRowKindsFollowMessagesThenWaitingThenPrompts() {
+        let state = TanyaAIMessageListState(
+            messages: restored(messageCount: 1).messages,
+            isRestoring: false,
+            isTypingRowVisible: true,
+            suggestions: [
+                Suggestion(
+                    identifier: "s1",
+                    title: "Dining",
+                    prompt: "Promo dining"
+                )
+            ],
+            suggestionsTitle: "Kategori apa yang diinginkan"
+        )
+
+        XCTAssertEqual(state.rowCount, 3)
+        guard case .message = state.kind(at: 0) else {
+            return XCTFail("row 0 should be the message")
+        }
+        guard case .typing = state.kind(at: 1) else {
+            return XCTFail("row 1 should be the waiting row")
+        }
+        guard case .suggestions(let heading, let offered) = state.kind(at: 2)
+        else {
+            return XCTFail("row 2 should be the prompts")
+        }
+        XCTAssertEqual(heading, "Kategori apa yang diinginkan")
+        XCTAssertEqual(offered.map(\.title), ["Dining"])
+        XCTAssertNil(state.kind(at: 3))
+    }
+
+    private func withPrompts(
+        _ state: TanyaAIMessageListState,
+        titles: [String]
+    ) -> TanyaAIMessageListState {
+        TanyaAIMessageListState(
+            messages: state.messages,
+            isRestoring: false,
+            isTypingRowVisible: false,
+            suggestions: titles.map { title in
+                Suggestion(
+                    identifier: title,
+                    title: title,
+                    prompt: title
+                )
+            },
+            suggestionsTitle: nil
+        )
+    }
+
     private var restoring: TanyaAIMessageListState {
         TanyaAIMessageListState(
             messages: [],
             isRestoring: true,
-            showsTypingRow: false,
-            showsSuggestions: false
+            isTypingRowVisible: false,
+            suggestions: [],
+            suggestionsTitle: nil
         )
     }
 
@@ -96,8 +163,9 @@ final class TanyaAIMessageListTests: XCTestCase {
         return TanyaAIMessageListState(
             messages: messages,
             isRestoring: false,
-            showsTypingRow: false,
-            showsSuggestions: false
+            isTypingRowVisible: false,
+            suggestions: [],
+            suggestionsTitle: nil
         )
     }
 

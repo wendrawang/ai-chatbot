@@ -82,7 +82,7 @@ enum MockTanyaAIInsightFixture {
     }
 
     private static let portfolioContent = (
-        name: "content.portfolio",
+        name: "portfolio",
         payload: [
             "title": "Portfolio summary",
             "totalValue": "IDR 2,451,000,000",
@@ -93,7 +93,7 @@ enum MockTanyaAIInsightFixture {
     )
 
     private static let holdingsContent = (
-        name: "content.financial-list",
+        name: "financial_list",
         payload: [
             "title": "Your mutual funds",
             "style": "holdings",
@@ -107,7 +107,7 @@ enum MockTanyaAIInsightFixture {
     )
 
     private static let spendingContent = (
-        name: "content.chart",
+        name: "chart",
         payload: [
             "title": "Spending · month to date",
             "subtitle": "46 transactions · 12% lower than last month",
@@ -119,7 +119,7 @@ enum MockTanyaAIInsightFixture {
     )
 
     private static let billsContent = (
-        name: "content.financial-list",
+        name: "financial_list",
         payload: [
             "title": "Bills paid · July",
             "style": "paidBills",
@@ -138,7 +138,7 @@ enum MockTanyaAIInsightFixture {
     )
 
     private static let incomingContent = (
-        name: "content.financial-list",
+        name: "financial_list",
         payload: [
             "title": "Incoming · last 30 days",
             "style": "incoming",
@@ -156,7 +156,7 @@ enum MockTanyaAIInsightFixture {
     )
 
     private static let informationContent = (
-        name: "content.information",
+        name: "information",
         payload: [
             "title": "Sample transfer limit",
             "text": "These values are local demo data only.",

@@ -107,7 +107,8 @@ button carries an `https` link the host rejects.
 ### Reply formatting
 
 Reply text may carry inline styling through a closed set of bracket tags -
-`[bold]`, `[strike]`, and `[color]text|RRGGBB[/color]` - so a labelled list
+`[bold]`, `[italic]`, `[underline]`, `[strike]`, and
+`[color]text|RRGGBB[/color]` - so a labelled list
 stays inside one bubble. Markdown is deliberately not used: asterisks are
 ordinary characters in banking copy, and a closed tag set means a response
 cannot introduce links, images, or headings. Contract, including how partial
@@ -119,7 +120,7 @@ tags behave mid-stream, in [`docs/BUBBLE_SCHEMA.md`](docs/BUBBLE_SCHEMA.md).
 | --- | --- |
 | `TanyaAIContracts` | Narrow interfaces implemented by the host |
 | `TanyaAIDomain` | Models, repository protocol, and use cases |
-| `TanyaAIDesignSystem` | Host-injected colors and fonts |
+| `DesignKit` (separate package) | Host-injected tokens, payloads, and reusable UI components |
 | `TanyaAIData` | Session repository, DTO decoding, and event mapping |
 | `TanyaAIPresentation` | SwiftUI views and ViewModels |
 | `TanyaAI` | Public composition root and UIKit navigation |
@@ -148,6 +149,11 @@ This avoids both extremes:
 | Content | Purpose | Shared variation |
 | --- | --- | --- |
 | `text` | Incoming and outgoing chat text | User/assistant styling |
+| `image` | Image with an optional caption | Declared aspect ratio |
+| `html` | Static formatted result | JavaScript disabled; navigation restricted to the app's initial load |
+| `actions` | Host-owned deeplink hand-off | Underlined action links |
+| `liveAgent` | Offer to continue with a person | Accept hands off; decline settles the card |
+| `choices` | Pick options, then explicitly submit | Single or multiple selection |
 | `information` | Safe generic text and key-value information | Allowlisted blocks |
 | `chart` | Standalone data visualization | `bar`, `line`, `donut`, `progress` |
 | `portfolio` | Portfolio total, performance, allocation, disclaimer | Reuses chart primitives |
@@ -223,14 +229,14 @@ Typed cards and suggestions travel as `.structuredPayload(name:json:)`, where
 `name` is the event name and `json` its payload:
 
 ```text
-name: response.suggestions
+name: suggestions
 json: {"suggestions":[]}
 
-name: content.approval
+name: approval
 json: {"messageIdentifier":"message-001", ...}
 ```
 
-`response.suggestions` is response-driven. Suggestions may be returned after
+`suggestions` is response-driven. Suggestions may be returned after
 every response, may change by context, or may be omitted. The ViewModel clears
 stale suggestions while a new response is generating and replaces them only
 when the backend emits a new suggestion event.
@@ -240,7 +246,7 @@ when the backend emits a new suggestion event.
 Use information for non-transactional text and key-value facts.
 
 ```text
-event: content.information
+event: information
 data: {
   "messageIdentifier": "information-001",
   "title": "Sample transfer limit",
@@ -258,7 +264,7 @@ The backend chooses only an allowlisted chart type and supplies data. The app
 owns colors, fonts, dimensions, accessibility labels, and animation.
 
 ```text
-event: content.chart
+event: chart
 data: {
   "messageIdentifier": "chart-001",
   "title": "Spending · month to date",
@@ -282,7 +288,7 @@ HTML, JavaScript, and executable UI definitions are not accepted.
 ### Portfolio JSON
 
 ```text
-event: content.portfolio
+event: portfolio
 data: {
   "messageIdentifier": "portfolio-001",
   "title": "Portfolio summary",
@@ -302,7 +308,7 @@ data: {
 ### Financial-list JSON
 
 ```text
-event: content.financial-list
+event: financial_list
 data: {
   "messageIdentifier": "list-001",
   "title": "Incoming · last 30 days",
@@ -326,7 +332,7 @@ data: {
 ### Approval JSON
 
 ```text
-event: content.approval
+event: approval
 data: {
   "messageIdentifier": "approval-message-001",
   "approvalIdentifier": "approval-001",
@@ -350,7 +356,7 @@ output to the internal coordinator, which lazily presents the PIN sheet.
 ### Receipt JSON
 
 ```text
-event: content.receipt
+event: receipt
 data: {
   "messageIdentifier": "receipt-001",
   "title": "Conversion complete",
@@ -366,7 +372,7 @@ data: {
 ### Status JSON
 
 ```text
-event: content.status
+event: status
 data: {
   "messageIdentifier": "status-001",
   "title": "Completed",
@@ -378,7 +384,7 @@ data: {
 ### Suggestion JSON
 
 ```text
-event: response.suggestions
+event: suggestions
 data: {
   "suggestions": [
     {
@@ -392,11 +398,11 @@ data: {
 
 ### Forward-compatible fallback
 
-An unknown `content.*` event is rendered safely when it provides the common
+An unknown flat event name is rendered safely when it provides the common
 identifier and optional fallback text:
 
 ```text
-event: content.future-card
+event: future_card
 data: {
   "messageIdentifier": "future-001",
   "fallbackText": "Update the app to view this card."
@@ -443,7 +449,7 @@ submission, cancellation, and deallocation.
 | --- | --- |
 | `TanyaAIModule.makeViewController` | Creates one isolated feature graph and entry controller |
 | `TanyaAIHost` | One object the host creates: presentation plus deeplink hand-off |
-| `TanyaAIConfiguration.init` | Supplies an optional initial prompt |
+| `TanyaAIConfiguration.init` | Supplies an optional initial prompt and host-provided shortcuts |
 | `TanyaAIDependencies.init` | Injects chat session, theme, and optional authorization |
 | `TanyaAIChatSession` | The host's adapter over a vendor chat SDK |
 | `TanyaAIAuthorizationService.authorize` | Delegates secure approval to the host |
@@ -456,7 +462,8 @@ ViewModels, decoders, and the internal coordinator are implementation details.
 ### 1. Add the local package
 
 In Xcode, use **File → Add Package Dependencies → Add Local** and select
-`Packages/TanyaAI`. Link the `TanyaAI` product. The sandbox also links
+`Packages/TanyaAI`, keeping `Packages/DesignKit` beside it because TanyaAI
+depends on that sibling package. Link the `TanyaAI` product. The sandbox also links
 `TanyaAITestSupport`, but a host application must not ship that product.
 
 ### 2. Adapt your chat SDK
@@ -634,10 +641,12 @@ payload instead of adding another optional property to a generic object.
 Add a small value type under:
 
 ```text
-Sources/TanyaAIDomain/Models
+Packages/DesignKit/Sources/DesignKit/Models
 ```
 
-Domain models contain meaning, not layout coordinates or networking details.
+Shared bubble payloads live in DesignKit so its renderers do not depend back
+on TanyaAI. Feature-only message and stream models stay in TanyaAIDomain.
+Models contain meaning, not layout coordinates or networking details.
 
 ### 4. Add DTO and mapper support
 
@@ -854,7 +863,8 @@ The following are not allowed in this package:
 - constructing or configuring ViewModels, use cases, or services in `body`;
 - a singleton router, singleton feature graph, or hidden global presenter;
 - `AnyView` as a general dynamic bubble renderer;
-- arbitrary backend-driven layout, HTML, JavaScript, coordinates, or colors;
+- executable HTML or JavaScript; HTML is limited to the static `html` bubble;
+- arbitrary backend-driven native layout, coordinates, or colors;
 - arbitrary action names or URLs executed directly from a response;
 - raw PIN in messages, prompts, logs, analytics, storage, or clipboard;
 - certificates, tokens, secrets, absolute production hosts, or customer data;
@@ -907,3 +917,10 @@ Examples:
 - [`docs/BUBBLE_SCHEMA.md`](docs/BUBBLE_SCHEMA.md)
 - [`docs/INTEGRATION.md`](docs/INTEGRATION.md)
 - [`docs/PERFORMANCE.md`](docs/PERFORMANCE.md)
+
+Panduan tema Default/Premier/Private, override per halaman, dan registrasi font:
+[DesignKit themes](docs/DESIGNKIT_THEMES.md).
+
+Mulai integrasi host dengan [panduan langkah demi langkah](docs/HOST_INTEGRATION.md),
+atau jalankan `./Scripts/run_sandbox.sh --showcase` untuk review bubble.
+[Kontrak JSON](docs/BUBBLE_SCHEMA.md) dilengkapi [file contoh per bubble](Examples/BubbleResponses/).

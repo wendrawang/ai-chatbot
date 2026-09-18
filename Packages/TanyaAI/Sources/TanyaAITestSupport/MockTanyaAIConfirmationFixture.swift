@@ -121,7 +121,7 @@ enum MockTanyaAIConfirmationFixture {
     )
 
     private static let conversionReceipt = (
-        name: "content.receipt",
+        name: "receipt",
         payload: [
             "title": "Conversion complete",
             "detail": "USD 1,000 converted to IDR 16,250,000",
@@ -147,7 +147,7 @@ enum MockTanyaAIConfirmationFixture {
     ) -> MockTanyaAIResponseFixture.ContentEvent {
         let identifier = kind.replacingOccurrences(of: " ", with: "-")
         return (
-            name: "content.approval",
+            name: "approval",
             payload: [
                 "approvalIdentifier": "demo-\(identifier)-approval",
                 "transactionIdentifier": "demo-\(identifier)-transaction",

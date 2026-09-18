@@ -1,9 +1,10 @@
+import DesignKit
 import SwiftUI
 import TanyaAIDomain
 
 public struct TanyaAIChatView: View {
     @ObservedObject private var viewModel: TanyaAIChatViewModel
-    @Environment(\.tanyaAITheme) private var theme
+    @Environment(\.theme) private var theme
 
     public init(viewModel: TanyaAIChatViewModel) {
         self.viewModel = viewModel
@@ -15,7 +16,7 @@ public struct TanyaAIChatView: View {
             separator
             conversation
             errorBanner
-            suggestionStrip
+            shortcutStrip
             separator
             TanyaAIChatInputView(viewModel: viewModel)
         }
@@ -29,7 +30,7 @@ public struct TanyaAIChatView: View {
         ZStack {
             TanyaAIMessageListView(viewModel: viewModel)
             if viewModel.isRestoring {
-                TanyaAIRestoringView()
+                RestoringView()
             }
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
@@ -80,11 +81,11 @@ public struct TanyaAIChatView: View {
     }
 
     @ViewBuilder
-    private var suggestionStrip: some View {
-        if viewModel.showsSuggestions {
-            TanyaAISuggestionStrip(
-                suggestions: viewModel.suggestions,
-                onSelect: viewModel.sendSuggestion
+    private var shortcutStrip: some View {
+        if viewModel.isShortcutRowVisible {
+            ShortcutStrip(
+                shortcuts: viewModel.shortcuts,
+                onSelect: viewModel.sendShortcut
             )
         }
     }

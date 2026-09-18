@@ -1,3 +1,4 @@
+import DesignKit
 import SwiftUI
 import TanyaAIContracts
 import TanyaAIDomain
@@ -8,7 +9,7 @@ final class TanyaAICoordinator: NSObject {
     private let navigationController: UINavigationController
     private let dependencyContainer: TanyaAIDependencyContainer
     private weak var containerController: UIViewController?
-    private let actionHandler: (TanyaAIAction) -> Void
+    private let actionHandler: (Action) -> Void
     private weak var chatViewModel: TanyaAIChatViewModel?
     private weak var chatController: UIViewController?
 
@@ -16,7 +17,7 @@ final class TanyaAICoordinator: NSObject {
         navigationController: UINavigationController,
         dependencyContainer: TanyaAIDependencyContainer,
         containerController: UIViewController,
-        actionHandler: @escaping (TanyaAIAction) -> Void = { _ in }
+        actionHandler: @escaping (Action) -> Void = { _ in }
     ) {
         self.navigationController = navigationController
         self.dependencyContainer = dependencyContainer
@@ -30,12 +31,12 @@ final class TanyaAICoordinator: NSObject {
         show(.chat, animated: false)
     }
 
-    func show(_ route: TanyaAIRoute, animated: Bool = true) {
+    func show(_ route: TanyaAIRoute, animated isAnimated: Bool = true) {
         switch route {
         case .chat:
             showChat()
         case .history:
-            showHistory(animated: animated)
+            showHistory(animated: isAnimated)
         case .approval(let payload):
             showApproval(payload)
         }
@@ -48,7 +49,7 @@ final class TanyaAICoordinator: NSObject {
         }
         let controller = UIHostingController(
             rootView: TanyaAIChatView(viewModel: viewModel)
-                .tanyaAITheme(dependencyContainer.theme)
+                .theme(dependencyContainer.theme)
         )
         chatViewModel = viewModel
         chatController = controller
@@ -59,19 +60,19 @@ final class TanyaAICoordinator: NSObject {
         dependencyContainer.startInitialPrompt(on: viewModel)
     }
 
-    private func showHistory(animated: Bool) {
+    private func showHistory(animated isAnimated: Bool) {
         let viewModel = dependencyContainer.makeHistoryViewModel()
         let controller = UIHostingController(
             rootView: TanyaAIHistoryView(viewModel: viewModel)
-                .tanyaAITheme(dependencyContainer.theme)
+                .theme(dependencyContainer.theme)
         )
         navigationController.pushViewController(
             controller,
-            animated: animated
+            animated: isAnimated
         )
     }
 
-    private func showApproval(_ payload: TanyaAIApprovalPayload) {
+    private func showApproval(_ payload: ApprovalPayload) {
         // Unreachable when no authorization service was injected: the
         // ViewModel refuses the confirmation before it gets here.
         guard let viewModel = dependencyContainer.makePINViewModel(
@@ -111,7 +112,7 @@ final class TanyaAICoordinator: NSObject {
 
     private func handlePIN(
         _ output: TanyaAIPINOutput,
-        approval: TanyaAIApprovalPayload
+        approval: ApprovalPayload
     ) {
         switch output {
         case .started:
@@ -121,15 +122,15 @@ final class TanyaAICoordinator: NSObject {
             updateApproval(approval, state: .awaitingApproval)
         case .completed(let result):
             navigationController.dismiss(animated: true)
-            let state: TanyaAIApprovalPayload.State =
+            let state: ApprovalPayload.State =
                 result.status == .completed ? .completed : .processing
             updateApproval(approval, state: state)
         }
     }
 
     private func updateApproval(
-        _ approval: TanyaAIApprovalPayload,
-        state: TanyaAIApprovalPayload.State
+        _ approval: ApprovalPayload,
+        state: ApprovalPayload.State
     ) {
         chatViewModel?.updateApproval(
             identifier: approval.approvalIdentifier,
@@ -155,9 +156,9 @@ extension TanyaAICoordinator: UINavigationControllerDelegate {
     func navigationController(
         _ navigationController: UINavigationController,
         willShow viewController: UIViewController,
-        animated: Bool
+        animated isAnimated: Bool
     ) {
-        let showsChat = viewController === chatController
-        navigationController.setNavigationBarHidden(showsChat, animated: animated)
+        let isChatVisible = viewController === chatController
+        navigationController.setNavigationBarHidden(isChatVisible, animated: isAnimated)
     }
 }

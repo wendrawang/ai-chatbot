@@ -1,6 +1,6 @@
 import Combine
+import DesignKit
 import SwiftUI
-import TanyaAIDesignSystem
 import TanyaAIDomain
 import UIKit
 
@@ -13,11 +13,12 @@ extension TanyaAIMessageTableView {
 
         private weak var tableView: UITableView?
         private var state = TanyaAIMessageListState.empty
-        private var followsLatestMessage = true
+        private var isFollowingLatestMessage = true
         private var scrollRequestIdentifier = 0
-        private var theme = TanyaAITheme.sandbox
+        private var theme = Theme.sandbox
         private var handlers = TanyaAIMessageRowHandlers.inert
-        private var subscriptions: [String: AnyCancellable] = [:]
+        private var subscriptions: [ObjectIdentifier: AnyCancellable] = [:]
+        private var isHeightUpdatePending = false
 
         func attach(_ tableView: TanyaAITrackingTableView) {
             self.tableView = tableView
@@ -28,27 +29,27 @@ extension TanyaAIMessageTableView {
 
         func update(
             _ state: TanyaAIMessageListState,
-            theme: TanyaAITheme,
+            theme: Theme,
             handlers: TanyaAIMessageRowHandlers
         ) {
             let previous = self.state
+            let isThemeChanged = self.theme != theme
             self.state = state
             self.theme = theme
             self.handlers = handlers
             bindMessages(state.messages)
 
             tableView?.backgroundColor = theme.colors.background
-            let rowsChanged = state.rowsDiffer(from: previous)
-            if rowsChanged {
+            let isRowStructureChanged = state.rowsDiffer(from: previous)
+            if isRowStructureChanged || isThemeChanged {
                 tableView?.reloadData()
             }
-            guard followsLatestMessage else {
+            guard isFollowingLatestMessage else {
                 return
             }
             if previous.isRestoring, state.isRestoring == false {
                 parkAtBottom()
-            } else if rowsChanged
-                || previous.showsSuggestions != state.showsSuggestions {
+            } else if isRowStructureChanged {
                 scheduleScrollToBottom(animated: false)
             }
         }
@@ -70,65 +71,81 @@ extension TanyaAIMessageTableView {
             ) as? TanyaAIHostingTableViewCell else {
                 return UITableViewCell()
             }
-            cell.configure(rootView: rowView(at: indexPath.row))
+            guard let kind = state.kind(at: indexPath.row) else {
+                return cell
+            }
+            cell.configure(rootView: rowView(for: kind))
             return cell
         }
 
         func scrollViewWillBeginDragging(_ scrollView: UIScrollView) {
-            followsLatestMessage = false
+            isFollowingLatestMessage = false
         }
 
         func scrollViewDidEndDragging(
             _ scrollView: UIScrollView,
-            willDecelerate decelerate: Bool
+            willDecelerate isDecelerating: Bool
         ) {
-            guard !decelerate else {
+            guard !isDecelerating else {
                 return
             }
-            followsLatestMessage = isNearBottom(scrollView)
+            isFollowingLatestMessage = isNearBottom(scrollView)
         }
 
         func scrollViewDidEndDecelerating(_ scrollView: UIScrollView) {
-            followsLatestMessage = isNearBottom(scrollView)
+            isFollowingLatestMessage = isNearBottom(scrollView)
         }
 
-        private func rowView(at index: Int) -> TanyaAIMessageTableRow {
-            let message = index < state.messages.count
-                ? state.messages[index]
-                : nil
-            return TanyaAIMessageTableRow(
-                message: message,
+        private func rowView(
+            for kind: TanyaAIMessageRowKind
+        ) -> TanyaAIMessageTableRow {
+            TanyaAIMessageTableRow(
+                kind: kind,
                 theme: theme,
                 handlers: handlers
             )
         }
 
         private func bindMessages(_ messages: [TanyaAIMessageItemViewModel]) {
-            let identifiers = Set(messages.map(\.id))
+            let identifiers = Set(messages.map(ObjectIdentifier.init))
             subscriptions = subscriptions.filter { identifiers.contains($0.key) }
             messages.forEach { message in
-                guard subscriptions[message.id] == nil else {
+                guard subscriptions[ObjectIdentifier(message)] == nil else {
                     return
                 }
-                subscriptions[message.id] = message.objectWillChange.sink { [weak self] in
-                    DispatchQueue.main.async {
-                        self?.refreshRowHeight()
-                    }
+                subscriptions[ObjectIdentifier(message)] = message.objectWillChange.sink { [weak self] in
+                    self?.scheduleHeightUpdate()
                 }
             }
         }
 
+        private func scheduleHeightUpdate() {
+            guard !isHeightUpdatePending else { return }
+            isHeightUpdatePending = true
+            DispatchQueue.main.async { [weak self] in
+                self?.isHeightUpdatePending = false
+                self?.refreshRowHeight()
+            }
+        }
+
         private func refreshRowHeight() {
-            tableView?.beginUpdates()
-            tableView?.endUpdates()
-            guard followsLatestMessage else {
+            guard let tableView else { return }
+            for case let cell as TanyaAIHostingTableViewCell in tableView.visibleCells {
+                cell.invalidateHostedSize()
+            }
+            UIView.performWithoutAnimation {
+                tableView.beginUpdates()
+                tableView.endUpdates()
+                tableView.layoutIfNeeded()
+            }
+            guard isFollowingLatestMessage else {
                 return
             }
             scheduleScrollToBottom(animated: false)
         }
 
         private func tableLayoutDidChange() {
-            guard followsLatestMessage else {
+            guard isFollowingLatestMessage else {
                 return
             }
             scheduleScrollToBottom(animated: false)
@@ -160,18 +177,18 @@ extension TanyaAIMessageTableView {
             }
         }
 
-        private func scheduleScrollToBottom(animated: Bool) {
+        private func scheduleScrollToBottom(animated isAnimated: Bool) {
             scrollRequestIdentifier += 1
             let requestIdentifier = scrollRequestIdentifier
             DispatchQueue.main.async { [weak self] in
                 guard self?.scrollRequestIdentifier == requestIdentifier else {
                     return
                 }
-                self?.scrollToBottom(animated: animated)
+                self?.scrollToBottom(animated: isAnimated)
             }
         }
 
-        private func scrollToBottom(animated: Bool) {
+        private func scrollToBottom(animated isAnimated: Bool) {
             guard state.rowCount > 0, let tableView = tableView else {
                 return
             }
@@ -188,7 +205,7 @@ extension TanyaAIMessageTableView {
             }
             tableView.setContentOffset(
                 CGPoint(x: 0, y: maximumOffset),
-                animated: animated
+                animated: isAnimated
             )
         }
 

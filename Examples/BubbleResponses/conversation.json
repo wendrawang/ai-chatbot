@@ -1,0 +1,43 @@
+[
+  {
+    "event": "response_started",
+    "data": {
+      "messageIdentifier": "text-1"
+    }
+  },
+  {
+    "event": "text_delta",
+    "data": {
+      "messageIdentifier": "text-1",
+      "text": "Saldo Anda [bold]IDR 12.500.000[/bold]."
+    }
+  },
+  {
+    "event": "status",
+    "data": {
+      "messageIdentifier": "st-1",
+      "title": "Selesai",
+      "detail": "Permintaan Anda sudah diproses.",
+      "level": "success"
+    }
+  },
+  {
+    "event": "suggestions",
+    "data": {
+      "title": "Kategori apa yang diinginkan",
+      "suggestions": [
+        {
+          "identifier": "incoming",
+          "title": "Dana masuk",
+          "prompt": "Tampilkan dana masuk"
+        }
+      ]
+    }
+  },
+  {
+    "event": "response_completed",
+    "data": {
+      "messageIdentifier": "text-1"
+    }
+  }
+]

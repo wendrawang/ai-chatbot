@@ -1,4 +1,6 @@
+import DesignKit
 import Foundation
+import SwiftUI
 import TanyaAIDomain
 import TanyaAITestSupport
 import UIKit
@@ -7,6 +9,28 @@ import XCTest
 @testable import TanyaAIPresentation
 
 final class TanyaAILifecycleTests: XCTestCase {
+    func testRenderedChatsReleaseAcrossRepeatedCycles() {
+        for _ in 0..<25 {
+            weak var releasedModel: TanyaAIChatViewModel?
+            weak var releasedController: UIViewController?
+            autoreleasepool {
+                let viewModel = TanyaAIChatViewModel(useCase: TanyaAIChatUseCaseFixture())
+                let controller = UIHostingController(rootView: TanyaAIChatView(viewModel: viewModel))
+                let window = UIWindow(frame: UIScreen.main.bounds)
+                window.rootViewController = controller
+                window.makeKeyAndVisible()
+                controller.view.layoutIfNeeded()
+                releasedModel = viewModel
+                releasedController = controller
+                window.isHidden = true
+                window.rootViewController = nil
+            }
+            RunLoop.main.run(until: Date().addingTimeInterval(0.02))
+            XCTAssertNil(releasedController)
+            XCTAssertNil(releasedModel)
+        }
+    }
+
     func testChatViewModelReleasesAndCancelsActiveRequest() {
         let useCase = TanyaAIChatUseCaseFixture()
         weak var weakViewModel: TanyaAIChatViewModel?
@@ -59,8 +83,8 @@ final class TanyaAILifecycleTests: XCTestCase {
         XCTAssertNil(weakController)
     }
 
-    private func makeApproval() -> TanyaAIApprovalPayload {
-        TanyaAIApprovalPayload(
+    private func makeApproval() -> ApprovalPayload {
+        ApprovalPayload(
             approvalIdentifier: "approval-fixture",
             transactionIdentifier: "transaction-fixture",
             challengeIdentifier: "challenge-fixture",

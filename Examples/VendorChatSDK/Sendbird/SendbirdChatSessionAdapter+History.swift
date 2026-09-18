@@ -9,7 +9,7 @@ import TanyaAI
 extension SendbirdChatSessionAdapter {
     /// How many past messages a reopened conversation shows. No paging: the
     /// customer sees where they left off, not the whole archive.
-    static let historyLimit = 50
+    static let historyLimit = 100
 
     /// Reads the conversation back, so reopening the chat is not an empty
     /// screen. Sent before anything else, and only when there is something.
@@ -46,8 +46,12 @@ extension SendbirdChatSessionAdapter {
         let identifier = String(message.messageId)
         let text = (message as? UserMessage)?.message ?? ""
 
+        if let name = message.customType, !name.isEmpty,
+           !TanyaAIEventName.isContentName(name) {
+            return nil
+        }
         if let name = message.customType,
-           name.hasPrefix("content."),
+           TanyaAIEventName.isContentName(name),
            let json = message.data.data(using: .utf8),
            json.isEmpty == false {
             return TanyaAIChatSessionMessage(

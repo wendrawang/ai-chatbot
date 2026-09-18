@@ -61,24 +61,22 @@ public enum MockTanyaAIActionFixture {
     public static func actionCardEvents(
         identifier: String = "demo",
         message: String = "Your existing screens can take over from here.",
-        title: String? = "Continue in the app",
-        detail: String? = nil,
         buttons: [Button]
     ) -> [TanyaAIChatSessionEvent] {
         let messageIdentifier = "action-text-\(identifier)"
         var events = [
-            event("response.started", ["messageIdentifier": messageIdentifier]),
+            event("response_started", ["messageIdentifier": messageIdentifier]),
             event(
-                "text.delta",
+                "text_delta",
                 [
                     "messageIdentifier": messageIdentifier,
                     "text": message
                 ]
             ),
-            actionsEvent(identifier: identifier, title: title, detail: detail, buttons: buttons)
+            actionsEvent(identifier: identifier, buttons: buttons)
         ]
         events.append(
-            event("response.completed", ["messageIdentifier": messageIdentifier])
+            event("response_completed", ["messageIdentifier": messageIdentifier])
         )
         return events
     }
@@ -99,16 +97,16 @@ public enum MockTanyaAIActionFixture {
     ) -> [TanyaAIChatSessionEvent] {
         let messageIdentifier = "handoff-text-\(identifier)"
         let events = [
-            event("response.started", ["messageIdentifier": messageIdentifier]),
+            event("response_started", ["messageIdentifier": messageIdentifier]),
             event(
-                "text.delta",
+                "text_delta",
                 [
                     "messageIdentifier": messageIdentifier,
                     "text": "Confirm to continue in the existing flow."
                 ]
             ),
             event(
-                "content.approval",
+                "approval",
                 [
                     "messageIdentifier": "handoff-approval-\(identifier)",
                     "approvalIdentifier": "approval-\(identifier)",
@@ -126,18 +124,16 @@ public enum MockTanyaAIActionFixture {
                     ]
                 ]
             ),
-            event("response.completed", ["messageIdentifier": messageIdentifier])
+            event("response_completed", ["messageIdentifier": messageIdentifier])
         ]
         return events
     }
 
     static func actionsEvent(
         identifier: String,
-        title: String?,
-        detail: String?,
         buttons: [Button]
     ) -> TanyaAIChatSessionEvent {
-        var payload: [String: Any] = [
+        let payload: [String: Any] = [
             "messageIdentifier": "action-card-\(identifier)",
             "actions": buttons.map { button in
                 [
@@ -150,13 +146,7 @@ public enum MockTanyaAIActionFixture {
                 ]
             }
         ]
-        if let title {
-            payload["title"] = title
-        }
-        if let detail {
-            payload["detail"] = detail
-        }
-        return event("content.actions", payload)
+        return event("actions", payload)
     }
 
     private static func event(

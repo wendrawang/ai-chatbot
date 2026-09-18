@@ -1,7 +1,7 @@
 import Combine
+import DesignKit
 import Foundation
 import TanyaAIContracts
-import TanyaAIDesignSystem
 import UIKit
 
 /// The whole of the host's integration surface.
@@ -32,11 +32,12 @@ import UIKit
 /// `MainCoordinator()` deep inside a root screen has no initializer to thread
 /// anything through, and that is the common shape.
 public final class TanyaAIHost: ObservableObject {
-    private let theme: TanyaAITheme
+    private let theme: Theme
     private let authorizationService: TanyaAIAuthorizationService?
     private let deeplinkScheme: String
     private let deeplinkHost: String?
     private let initialPrompt: String?
+    private let shortcuts: [Suggestion]
     private let makeSession: () -> TanyaAIChatSession
     private let onDeeplink: (URL) -> Void
 
@@ -65,11 +66,12 @@ public final class TanyaAIHost: ObservableObject {
     ///     `scene(_:openURLContexts:)` calls. It is invoked only after the
     ///     feature has finished dismissing.
     public init(
-        theme: TanyaAITheme,
+        theme: Theme,
         authorizationService: TanyaAIAuthorizationService? = nil,
         deeplinkScheme: String,
         deeplinkHost: String? = nil,
         initialPrompt: String? = nil,
+        shortcuts: [Suggestion] = [],
         makeSession: @escaping () -> TanyaAIChatSession,
         onDeeplink: @escaping (URL) -> Void
     ) {
@@ -78,6 +80,7 @@ public final class TanyaAIHost: ObservableObject {
         self.deeplinkScheme = deeplinkScheme
         self.deeplinkHost = deeplinkHost
         self.initialPrompt = initialPrompt
+        self.shortcuts = shortcuts
         self.makeSession = makeSession
         self.onDeeplink = onDeeplink
     }
@@ -91,7 +94,10 @@ public final class TanyaAIHost: ObservableObject {
             return
         }
         let controller = TanyaAIModule.makeViewController(
-            configuration: TanyaAIConfiguration(initialPrompt: initialPrompt),
+            configuration: TanyaAIConfiguration(
+                initialPrompt: initialPrompt,
+                shortcuts: shortcuts
+            ),
             dependencies: TanyaAIDependencies(
                 chatSession: makeSession(),
                 authorizationService: authorizationService,
@@ -125,7 +131,7 @@ public final class TanyaAIHost: ObservableObject {
     /// dashboard, so it has to wait until the feature is gone - and waiting is
     /// the dismissal completion, never a timer. A push that starts while a
     /// modal is still animating away is dropped without an error.
-    private func handle(_ action: TanyaAIAction) {
+    private func handle(_ action: Action) {
         guard let url = accepted(action.deeplink) else {
             return
         }

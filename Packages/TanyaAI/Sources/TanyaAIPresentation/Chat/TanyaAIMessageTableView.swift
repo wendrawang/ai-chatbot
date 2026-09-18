@@ -1,12 +1,12 @@
 import Combine
+import DesignKit
 import SwiftUI
-import TanyaAIDesignSystem
 import TanyaAIDomain
 import UIKit
 
 struct TanyaAIMessageTableView: UIViewRepresentable {
     let state: TanyaAIMessageListState
-    let theme: TanyaAITheme
+    let theme: Theme
     let handlers: TanyaAIMessageRowHandlers
 
     func makeCoordinator() -> Coordinator {

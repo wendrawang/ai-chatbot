@@ -37,11 +37,11 @@ enum SandboxDeeplink {
 
 /// Swift key paths cannot address tuple elements, so query values are listed
 /// as an identifiable value rather than as dictionary pairs.
-struct SandboxDeeplinkParameter: Equatable, Identifiable {
+struct SandboxDeeplinkParameter: Equatable {
     let name: String
     let value: String
 
-    var id: String { name }
+    var identifier: String { name }
 }
 
 /// Stand-in for the deeplink dispatcher the host application already owns.

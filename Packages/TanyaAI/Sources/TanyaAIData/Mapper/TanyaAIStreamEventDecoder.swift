@@ -1,4 +1,6 @@
+import DesignKit
 import Foundation
+import TanyaAIContracts
 import TanyaAIDomain
 
 final class TanyaAIStreamEventDecoder {
@@ -11,36 +13,69 @@ final class TanyaAIStreamEventDecoder {
     }
 
     func decode(name: String, json: Data) throws -> TanyaAIStreamEvent? {
-        if let content = try decodeContent(name: name, json: json) {
+        guard let event = TanyaAIEventName(wireName: name) else {
+            return try decodeUnknown(name: name, json: json)
+        }
+        if let content = try decodeContent(name: event, json: json) {
             return content
         }
-        return try decodeLifecycle(name: name, json: json)
+        return try decodeLifecycle(name: event, json: json)
     }
 
-    /// Bubble payloads. Returns `nil` for any other event name, including a
-    /// `content.*` this version does not know - `decodeLifecycle` sends that
-    /// on to `decodeUnknown`, which degrades it to an unsupported bubble.
+    /// Known cards decode here; unknown flat names use the unsupported fallback.
+    ///
+    /// Split in two because one switch over every card is one branch past
+    /// what the linter allows, and because the halves are genuinely different
+    /// kinds of thing: what a conversation shows, and what money looks like.
     private func decodeContent(
-        name: String,
+        name: TanyaAIEventName,
+        json: Data
+    ) throws -> TanyaAIStreamEvent? {
+        if let event = try decodeConversationContent(name: name, json: json) {
+            return event
+        }
+        return try decodeFinancialContent(name: name, json: json)
+    }
+
+    private func decodeConversationContent(
+        name: TanyaAIEventName,
         json: Data
     ) throws -> TanyaAIStreamEvent? {
         switch name {
-        case "content.information":
+        case .image:
+            return try decodeImage(json)
+        case .choices:
+            return try decodeChoices(json)
+        case .liveAgent:
+            return try decodeLiveAgent(json)
+        case .html:
+            return try decodeHTML(json)
+        case .information:
             return try decodeInformation(json)
-        case "content.chart":
-            return try decodeChart(json)
-        case "content.portfolio":
-            return try decodePortfolio(json)
-        case "content.financial-list":
-            return try decodeFinancialList(json)
-        case "content.approval":
-            return try decodeApproval(json)
-        case "content.receipt":
-            return try decodeReceipt(json)
-        case "content.actions":
-            return try decodeActions(json)
-        case "content.status":
+        case .status:
             return try decodeStatus(json)
+        case .actions:
+            return try decodeActions(json)
+        default:
+            return nil
+        }
+    }
+
+    private func decodeFinancialContent(
+        name: TanyaAIEventName,
+        json: Data
+    ) throws -> TanyaAIStreamEvent? {
+        switch name {
+        case .chart:
+            return try decodeChart(json)
+        case .portfolio:
+            return try decodePortfolio(json)
+        case .financialList:
+            return try decodeFinancialList(json)
+        case .approval:
+            return try decodeApproval(json)
+        case .receipt:
+            return try decodeReceipt(json)
         default:
             return nil
         }
@@ -48,22 +83,22 @@ final class TanyaAIStreamEventDecoder {
 
     /// Everything that frames a response rather than filling it.
     private func decodeLifecycle(
-        name: String,
+        name: TanyaAIEventName,
         json: Data
     ) throws -> TanyaAIStreamEvent? {
         switch name {
-        case "response.started":
+        case .responseStarted:
             return try decodeStarted(json)
-        case "text.delta":
+        case .textDelta:
             return try decodeText(json)
-        case "response.suggestions":
+        case .suggestions:
             return try decodeSuggestions(json)
-        case "response.completed":
+        case .responseCompleted:
             return try decodeCompleted(json)
-        case "heartbeat":
+        case .heartbeat:
             return .heartbeat
         default:
-            return try decodeUnknown(name: name, json: json)
+            return nil
         }
     }
 
@@ -71,7 +106,7 @@ final class TanyaAIStreamEventDecoder {
         name: String,
         json: Data
     ) throws -> TanyaAIStreamEvent? {
-        guard name.hasPrefix("content.") else {
+        guard TanyaAIEventName.isContentName(name) else {
             return nil
         }
         let payload = try decoder.decode(
@@ -101,11 +136,11 @@ final class TanyaAIStreamEventDecoder {
 
     private func decodeInformation(_ data: Data) throws -> TanyaAIStreamEvent {
         let payload = try decoder.decode(TanyaAIInformationDTO.self, from: data)
-        var blocks: [TanyaAIInformationBlock] = [.text(payload.text)]
+        var blocks: [InformationBlock] = [.text(payload.text)]
         if !payload.items.isEmpty {
             blocks.append(.keyValue(payload.items.map(makeKeyValue)))
         }
-        let content = TanyaAIInformationPayload(
+        let content = InformationPayload(
             title: payload.title,
             blocks: blocks
         )
@@ -117,10 +152,10 @@ final class TanyaAIStreamEventDecoder {
 
     private func decodeChart(_ data: Data) throws -> TanyaAIStreamEvent {
         let payload = try decoder.decode(TanyaAIChartDTO.self, from: data)
-        let chartType = TanyaAIChartPayload.ChartType(
+        let chartType = ChartPayload.ChartType(
             rawValue: payload.chartType
         ) ?? .bar
-        let chart = TanyaAIChartPayload(
+        let chart = ChartPayload(
             title: payload.title,
             subtitle: payload.subtitle,
             totalValue: payload.totalValue,
@@ -136,7 +171,7 @@ final class TanyaAIStreamEventDecoder {
 
     private func decodePortfolio(_ data: Data) throws -> TanyaAIStreamEvent {
         let payload = try decoder.decode(TanyaAIPortfolioDTO.self, from: data)
-        let portfolio = TanyaAIPortfolioPayload(
+        let portfolio = PortfolioPayload(
             title: payload.title,
             totalValue: payload.totalValue,
             performanceText: payload.performanceText,
@@ -151,11 +186,11 @@ final class TanyaAIStreamEventDecoder {
 
     private func decodeApproval(_ data: Data) throws -> TanyaAIStreamEvent {
         let payload = try decoder.decode(TanyaAIApprovalDTO.self, from: data)
-        let approval = TanyaAIApprovalPayload(
+        let approval = ApprovalPayload(
             approvalIdentifier: payload.approvalIdentifier,
             transactionIdentifier: payload.transactionIdentifier,
             challengeIdentifier: payload.challengeIdentifier,
-            kind: TanyaAIApprovalPayload.Kind(
+            kind: ApprovalPayload.Kind(
                 rawValue: payload.kind ?? "generic"
             ) ?? .generic,
             title: payload.title,
@@ -173,8 +208,8 @@ final class TanyaAIStreamEventDecoder {
 
     private func decodeStatus(_ data: Data) throws -> TanyaAIStreamEvent {
         let payload = try decoder.decode(TanyaAIStatusDTO.self, from: data)
-        let level = TanyaAIStatusPayload.Level(rawValue: payload.level) ?? .neutral
-        let status = TanyaAIStatusPayload(
+        let level = StatusPayload.Level(rawValue: payload.level) ?? .neutral
+        let status = StatusPayload(
             title: payload.title,
             detail: payload.detail,
             level: level
@@ -190,14 +225,14 @@ final class TanyaAIStreamEventDecoder {
         return .responseCompleted(messageIdentifier: payload.messageIdentifier)
     }
 
-    private func makeKeyValue(_ item: TanyaAIKeyValueDTO) -> TanyaAIKeyValue {
-        TanyaAIKeyValue(label: item.label, value: item.value)
+    private func makeKeyValue(_ item: TanyaAIKeyValueDTO) -> KeyValue {
+        KeyValue(label: item.label, value: item.value)
     }
 
     private func makeChartSeries(
         _ item: TanyaAIChartSeriesDTO
-    ) -> TanyaAIChartSeries {
-        TanyaAIChartSeries(
+    ) -> ChartSeries {
+        ChartSeries(
             label: item.label,
             value: item.value,
             formattedValue: item.formattedValue

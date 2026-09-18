@@ -1,0 +1,15 @@
+{
+  "event": "receipt",
+  "data": {
+    "messageIdentifier": "rcp-1",
+    "title": "Transfer berhasil",
+    "detail": "Dana sudah diteruskan.",
+    "summary": [
+      {
+        "label": "Nomor referensi",
+        "value": "TRX-99812"
+      }
+    ],
+    "footnote": "Simpan nomor referensi ini."
+  }
+}

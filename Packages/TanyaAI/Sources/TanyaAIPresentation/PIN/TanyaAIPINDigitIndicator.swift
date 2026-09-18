@@ -1,8 +1,9 @@
+import DesignKit
 import SwiftUI
 
 struct TanyaAIPINDigitIndicator: View {
     let enteredDigitCount: Int
-    @Environment(\.tanyaAITheme) private var theme
+    @Environment(\.theme) private var theme
 
     var body: some View {
         HStack(spacing: 18) {

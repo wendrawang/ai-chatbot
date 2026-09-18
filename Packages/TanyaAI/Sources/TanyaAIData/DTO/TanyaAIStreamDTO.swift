@@ -16,6 +16,49 @@ struct TanyaAIInformationDTO: Decodable {
     let items: [TanyaAIKeyValueDTO]
 }
 
+struct TanyaAIImageDTO: Decodable {
+    let messageIdentifier: String
+    let imageURL: String
+    let caption: String
+    let aspectRatio: Double?
+    let accessibilityText: String?
+}
+
+struct TanyaAIHTMLDTO: Decodable {
+    let messageIdentifier: String
+    let html: String
+    let height: Double?
+    let accessibilityText: String?
+}
+
+struct TanyaAILiveAgentDTO: Decodable {
+    let messageIdentifier: String
+    let title: String
+    let detail: String?
+    let continueTitle: String?
+    let cancelTitle: String?
+    let action: TanyaAIActionDTO
+}
+
+struct TanyaAIChoicesDTO: Decodable {
+    let messageIdentifier: String
+    let title: String?
+    let choices: [TanyaAIChoiceDTO]
+    let isMultipleSelectionAllowed: Bool?
+    let submitTitle: String?
+
+    private enum CodingKeys: String, CodingKey {
+        case messageIdentifier, title, choices, submitTitle
+        case isMultipleSelectionAllowed = "allowsMultipleSelection"
+    }
+}
+
+struct TanyaAIChoiceDTO: Decodable {
+    let identifier: String
+    let title: String
+    let prompt: String?
+}
+
 struct TanyaAIKeyValueDTO: Decodable {
     let label: String
     let value: String
@@ -59,8 +102,6 @@ struct TanyaAIActionButtonDTO: Decodable {
 
 struct TanyaAIActionsDTO: Decodable {
     let messageIdentifier: String
-    let title: String?
-    let detail: String?
     let actions: [TanyaAIActionButtonDTO]
 }
 
@@ -105,6 +146,7 @@ struct TanyaAIReceiptDTO: Decodable {
 }
 
 struct TanyaAISuggestionsDTO: Decodable {
+    let title: String?
     let suggestions: [TanyaAISuggestionDTO]
 }
 

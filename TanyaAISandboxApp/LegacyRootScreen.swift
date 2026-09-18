@@ -9,7 +9,7 @@ struct LegacyRootScreen: View {
     @State private var isDetailActive = false
     @State private var isDestinationActive = false
     /// Set while a destination waits for the customer's own push to go away.
-    @State private var awaitsDetailPop = false
+    @State private var isAwaitingDetailPop = false
 
     var body: some View {
         NavigationView {
@@ -42,17 +42,17 @@ struct LegacyRootScreen: View {
             isDestinationActive = true
             return
         }
-        awaitsDetailPop = true
+        isAwaitingDetailPop = true
         isDetailActive = false
     }
 
     /// The pop has finished, so the destination can be pushed onto the
     /// dashboard. Ignored for an ordinary back tap, when nothing is waiting.
     private func detailDidDisappear() {
-        guard awaitsDetailPop else {
+        guard isAwaitingDetailPop else {
             return
         }
-        awaitsDetailPop = false
+        isAwaitingDetailPop = false
         // One hop, so the push starts after the pop has fully unwound.
         DispatchQueue.main.async {
             isDestinationActive = true

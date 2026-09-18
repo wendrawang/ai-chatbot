@@ -20,7 +20,7 @@ final class SendbirdChatSessionAdapter: NSObject, TanyaAIChatSession {
     private let existingChannelURL: String?
     private let delegateIdentifier = "tanyaai.session.\(UUID().uuidString)"
     private let lock = NSLock()
-    private var channel: GroupChannel?
+    private(set) var channel: GroupChannel?
     /// True once a channel is being opened, so a burst of sends does not
     /// create several channels for one conversation.
     private var isOpeningChannel = false
@@ -64,7 +64,7 @@ final class SendbirdChatSessionAdapter: NSObject, TanyaAIChatSession {
         isOpeningChannel = true
         lock.unlock()
 
-        GroupChannel.getChannel(url: existingChannelURL) { [weak self] channel, error in
+        GroupChannel.getChannel(url: existingChannelURL) { [weak self] channel, _ in
             guard let channel else {
                 // A stored channel that no longer exists must not dead-end the
                 // customer: fall back to a new conversation.
@@ -81,16 +81,16 @@ final class SendbirdChatSessionAdapter: NSObject, TanyaAIChatSession {
     func send(text: String, context: TanyaAIContext?, requestIdentifier: String) {
         lock.lock()
         let channel = self.channel
-        var startsChannel = false
+        var isChannelStartNeeded = false
         if channel == nil {
             queuedMessages.append(text)
-            startsChannel = !isOpeningChannel
+            isChannelStartNeeded = !isOpeningChannel
             isOpeningChannel = true
         }
         lock.unlock()
 
         guard let channel else {
-            if startsChannel {
+            if isChannelStartNeeded {
                 createChannel()
             }
             return
@@ -174,60 +174,4 @@ final class SendbirdChatSessionAdapter: NSObject, TanyaAIChatSession {
         lock.unlock()
         onEvent?(.failed(error))
     }
-}
-
-// MARK: - Incoming messages
-
-/// Both protocols, deliberately.
-///
-/// `channel(_:didReceive:)` is declared on `BaseChannelDelegate`, and
-/// `channelDidUpdateTypingStatus` on `GroupChannelDelegate`. Conforming to
-/// only the second one risks never being handed an incoming message - which
-/// fails silently, as a chat where the bot never answers.
-extension SendbirdChatSessionAdapter: BaseChannelDelegate, GroupChannelDelegate {
-    func channel(_ sender: BaseChannel, didReceive message: BaseMessage) {
-        guard sender.channelURL == channel?.channelURL else {
-            return
-        }
-        // The customer's own message comes back over the channel too.
-        guard message.sender?.userId != SendbirdChat.getCurrentUser()?.userId else {
-            return
-        }
-
-        let identifier = String(message.messageId)
-
-        // A typed card: the bot puts the package's own event JSON into the
-        // message, and this passes it through untouched.
-        if let name = message.customType,
-           name.hasPrefix("content."),
-           let json = message.data.data(using: .utf8),
-           json.isEmpty == false {
-            onEvent?(.structuredPayload(name: name, json: json))
-            // A card is a whole reply, so the turn ends here. Without this the
-            // customer is left watching a typing indicator that never resolves
-            // and a send button stuck as Stop.
-            onEvent?(.messageCompleted(messageIdentifier: identifier))
-            return
-        }
-
-        guard let text = (message as? UserMessage)?.message else {
-            return
-        }
-        // Sendbird delivers a whole message, so one delta then completion.
-        onEvent?(.messageStarted(messageIdentifier: identifier))
-        onEvent?(.messageDelta(messageIdentifier: identifier, text: text))
-        onEvent?(.messageCompleted(messageIdentifier: identifier))
-    }
-
-    func channelDidUpdateTypingStatus(_ sender: GroupChannel) {
-        guard sender.channelURL == channel?.channelURL else {
-            return
-        }
-        onEvent?(.typing(sender.getTypingUsers()?.isEmpty == false))
-    }
-}
-
-enum SendbirdAdapterError: Error {
-    case channelUnavailable
-    case notSignedIn
 }

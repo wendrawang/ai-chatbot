@@ -1,3 +1,4 @@
+import DesignKit
 import SwiftUI
 import UIKit
 
@@ -16,6 +17,13 @@ final class TanyaAIHostingTableViewCell: UITableViewCell {
     @available(*, unavailable)
     required init?(coder: NSCoder) {
         fatalError("init(coder:) is not supported")
+    }
+
+    /// The observed message can grow without configure being called again.
+    func invalidateHostedSize() {
+        hostingController?.view.invalidateIntrinsicContentSize()
+        hostingController?.view.setNeedsLayout()
+        contentView.setNeedsLayout()
     }
 
     func configure(rootView: TanyaAIMessageTableRow) {

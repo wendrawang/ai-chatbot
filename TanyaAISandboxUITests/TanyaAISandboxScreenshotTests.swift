@@ -58,6 +58,11 @@ final class TanyaAISandboxScreenshotTests: XCTestCase {
         XCTAssertFalse(confirmButton.exists)
     }
 
+    /// The prompts used to sit on a strip below the table, and this checked
+    /// that the strip started where the table ended. They are rows in the
+    /// conversation now, so the guarantee is expressed where it moved to: the
+    /// last reply, then the prompts under it, both inside the table and both
+    /// reachable. The property is the same one - nothing covers anything.
     func testSuggestionsDoNotCoverLatestBubble() {
         let messageTable = application.tables["chat.messageTable"]
         XCTAssertTrue(messageTable.waitForExistence(timeout: 10))
@@ -76,13 +81,17 @@ final class TanyaAISandboxScreenshotTests: XCTestCase {
             waitUntilHittable(latestBubble),
             "Bubble: \(latestBubble.frame), table: \(messageTable.frame)"
         )
-        XCTAssertLessThanOrEqual(
-            latestBubble.frame.maxY,
-            messageTable.frame.maxY + 1
+        XCTAssertTrue(
+            waitUntilHittable(suggestion),
+            "Prompt: \(suggestion.frame), table: \(messageTable.frame)"
         )
         XCTAssertLessThanOrEqual(
-            messageTable.frame.maxY,
+            latestBubble.frame.maxY,
             suggestion.frame.minY + 1
+        )
+        XCTAssertLessThanOrEqual(
+            suggestion.frame.maxY,
+            messageTable.frame.maxY + 1
         )
     }
 
@@ -114,6 +123,10 @@ final class TanyaAISandboxScreenshotTests: XCTestCase {
 
     private var scenarios: [ScreenshotScenario] {
         [
+            ScreenshotScenario(
+                "Jalani misinya, dapatkan Bonus Bunga Tabungan hingga 5,25% p.a.",
+                "image-promo"
+            ),
             ScreenshotScenario("Confirm currency conversion", "confirmation-currency"),
             ScreenshotScenario("Conversion complete", "receipt-success"),
             ScreenshotScenario("Confirm time deposit", "confirmation-deposit"),
@@ -125,6 +138,16 @@ final class TanyaAISandboxScreenshotTests: XCTestCase {
             ScreenshotScenario("Spending · month to date", "spending-chart"),
             ScreenshotScenario("Bills paid · July", "paid-bills-list"),
             ScreenshotScenario("Incoming · last 30 days", "incoming-funds-list"),
+            // Order matters: `reveal` only scrolls forward, so a scenario
+            // listed before the bubble it names can never be found again.
+            ScreenshotScenario(
+                "Kategori apa yang diinginkan",
+                "choices-card"
+            ),
+            ScreenshotScenario(
+                "Anda akan diarahkan ke agen kami",
+                "live-agent-card"
+            ),
             ScreenshotScenario("A neutral system update.", "status-neutral"),
             ScreenshotScenario("The sample request completed.", "status-success"),
             ScreenshotScenario("Review this demo warning.", "status-warning"),
@@ -141,15 +164,23 @@ final class TanyaAISandboxScreenshotTests: XCTestCase {
         in table: XCUIElement
     ) {
         let element = application.staticTexts[anchorText]
-        for _ in 0..<36 where element.isHittable == false {
+        for _ in 0..<36 where isVisible(element, in: table) == false {
             scrollForward(table)
         }
         XCTAssertTrue(
-            element.isHittable,
+            isVisible(element, in: table),
             "Could not reveal screenshot scenario: \(anchorText)"
         )
         alignNearTop(element, in: table)
         RunLoop.current.run(until: Date().addingTimeInterval(0.2))
+    }
+
+    // Offscreen static text can have no activation point. Screenshots need
+    // visible bounds, not a tappable accessibility activation point.
+    private func isVisible(_ element: XCUIElement, in table: XCUIElement) -> Bool {
+        guard element.exists else { return false }
+        let frame = element.frame
+        return !frame.isEmpty && table.frame.intersection(application.frame).contains(frame)
     }
 
     private func alignNearTop(

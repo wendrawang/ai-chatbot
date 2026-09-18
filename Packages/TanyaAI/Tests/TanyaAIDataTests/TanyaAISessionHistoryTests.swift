@@ -22,7 +22,33 @@ final class TanyaAISessionHistoryTests: XCTestCase {
             return XCTFail("Expected a history event")
         }
         XCTAssertEqual(restored.map(\.role), [.user, .assistant])
-        XCTAssertEqual(restored.map(\.id), ["1", "2"])
+        XCTAssertEqual(restored.map(\.identifier), ["1", "2"])
+        withExtendedLifetime(repository) {}
+    }
+
+    /// A vendor that hands back its whole archive must not put thousands of
+    /// rows into one table. The newest end is the one kept: a returning
+    /// customer wants where they left off, not where they started.
+    func testHistoryIsCappedAtTheNewestHundred() {
+        let session = SessionSpy()
+        let repository = TanyaAISessionRepository(session: session)
+        var events: [TanyaAIStreamEvent] = []
+        repository.observeUnsolicitedEvents { events.append($0) }
+
+        session.emit(.history((0..<150).map { index in
+            message(
+                identifier: "m-\(index)",
+                author: .customer,
+                text: "Pesan \(index)"
+            )
+        }))
+
+        guard case .history(let restored)? = events.first else {
+            return XCTFail("Expected a history event")
+        }
+        XCTAssertEqual(restored.count, 100)
+        XCTAssertEqual(restored.first?.identifier, "m-50")
+        XCTAssertEqual(restored.last?.identifier, "m-149")
         withExtendedLifetime(repository) {}
     }
 

@@ -56,7 +56,7 @@ drift from it.
 
 | Layer | Responsibility |
 | --- | --- |
-| Backend | Sends `content.actions`, or `handoff` on a confirmation, with the deeplink string |
+| Backend | Sends `actions`, or `handoff` on a confirmation, with the deeplink string |
 | Package | Renders the buttons and reports the deeplink through `onAction`. Nothing else - no parsing, no opening, no dismissal |
 | Host app | Checks the scheme and entry host, closes the feature, then hands the URL to its existing deeplink handler |
 

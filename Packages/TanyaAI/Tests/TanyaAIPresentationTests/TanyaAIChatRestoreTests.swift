@@ -7,8 +7,7 @@ import XCTest
 /// What a reopened chat shows, and when. The screen stays empty until the
 /// channel has said what it held, so nothing is ever drawn to be replaced.
 final class TanyaAIChatRestoreTests: XCTestCase {
-    /// A reopened conversation is what the customer comes back to, in
-    /// place of the greeting they would otherwise be given.
+    /// A reopened conversation contains only messages from the channel.
     func testHistoryReplacesTheConversation() {
         let useCase = TanyaAIChatUseCaseStub()
         let viewModel = TanyaAIChatViewModel(useCase: useCase)
@@ -18,12 +17,11 @@ final class TanyaAIChatRestoreTests: XCTestCase {
             TanyaAIMessage(identifier: "2", role: .assistant, content: .text("Hai"))
         ]))
 
-        XCTAssertEqual(viewModel.messages.map(\.id), ["1", "2"])
+        XCTAssertEqual(viewModel.messages.map(\.identifier), ["1", "2"])
     }
 
-    /// The greeting waits for the channel to say what it held. Showing it
-    /// first and swapping it for history is the blink this avoids.
-    func testGreetingWaitsUntilHistoryHasBeenReported() {
+    /// Empty history finishes loading without inserting a package greeting.
+    func testEmptyHistoryDoesNotInsertGreeting() {
         let useCase = TanyaAIChatUseCaseStub()
         let viewModel = TanyaAIChatViewModel(useCase: useCase)
 
@@ -32,7 +30,7 @@ final class TanyaAIChatRestoreTests: XCTestCase {
 
         useCase.sendUnsolicited(.history([]))
 
-        XCTAssertEqual(viewModel.messages.count, 1)
+        XCTAssertTrue(viewModel.messages.isEmpty)
         XCTAssertFalse(viewModel.isRestoring)
     }
 
@@ -44,12 +42,24 @@ final class TanyaAIChatRestoreTests: XCTestCase {
         let viewModel = TanyaAIChatViewModel(useCase: useCase)
 
         XCTAssertTrue(viewModel.isRestoring)
-        XCTAssertFalse(viewModel.showsTypingRow)
-        XCTAssertFalse(viewModel.showsSuggestions)
+        XCTAssertFalse(viewModel.isTypingRowVisible)
+        XCTAssertFalse(viewModel.isSuggestionRowVisible)
 
         useCase.sendUnsolicited(.history([]))
 
-        XCTAssertTrue(viewModel.showsSuggestions)
+        XCTAssertFalse(viewModel.isSuggestionRowVisible)
+    }
+
+    func testTextReplyDoesNotCreateSuggestions() {
+        let useCase = TanyaAIChatUseCaseStub()
+        let viewModel = TanyaAIChatViewModel(useCase: useCase)
+        useCase.sendUnsolicited(.history([]))
+        useCase.sendUnsolicited(.responseStarted(messageIdentifier: "reply-1"))
+        useCase.sendUnsolicited(.textDelta(messageIdentifier: "reply-1", text: "Halo"))
+        useCase.sendUnsolicited(.responseCompleted(messageIdentifier: "reply-1"))
+
+        XCTAssertTrue(viewModel.suggestions.isEmpty)
+        XCTAssertFalse(viewModel.isSuggestionRowVisible)
     }
 
     /// Typing before the channel answers wins. History is older than what

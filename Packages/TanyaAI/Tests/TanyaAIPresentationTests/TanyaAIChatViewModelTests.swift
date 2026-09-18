@@ -1,3 +1,4 @@
+import DesignKit
 import Foundation
 import TanyaAIContracts
 import TanyaAIDomain
@@ -45,7 +46,7 @@ final class TanyaAIChatViewModelTests: XCTestCase {
         let useCase = TanyaAIChatUseCaseStub()
         let viewModel = TanyaAIChatViewModel(useCase: useCase)
         let approval = makeApproval()
-        var receivedApproval: TanyaAIApprovalPayload?
+        var receivedApproval: ApprovalPayload?
         viewModel.onOutput = { output in
             if case .requestApproval(let payload) = output {
                 receivedApproval = payload
@@ -60,21 +61,27 @@ final class TanyaAIChatViewModelTests: XCTestCase {
     func testSelectingSuggestionSendsItsPrompt() {
         let useCase = TanyaAIChatUseCaseStub()
         let viewModel = TanyaAIChatViewModel(useCase: useCase)
+        useCase.sendUnsolicited(.history([]))
+        useCase.sendUnsolicited(.suggestions(title: nil, items: [
+            TanyaAISuggestionPayload(
+                identifier: "next-question", title: "Next question", prompt: "Show next answer"
+            )
+        ]))
         let suggestion = viewModel.suggestions[0]
 
         viewModel.sendSuggestion(suggestion)
 
         XCTAssertEqual(useCase.receivedText, suggestion.prompt)
-        XCTAssertFalse(viewModel.showsSuggestions)
+        XCTAssertFalse(viewModel.isSuggestionRowVisible)
     }
 
-    func testBackendSuggestionsReplaceInitialSuggestions() {
+    func testBackendResponseShowsSuggestions() {
         let useCase = TanyaAIChatUseCaseStub()
         let viewModel = TanyaAIChatViewModel(useCase: useCase)
         viewModel.sendMessage("Show spending")
 
         useCase.send(
-            .suggestions([
+            .suggestions(title: "Pilih satu", items: [
                 TanyaAISuggestionPayload(
                     identifier: "next-question",
                     title: "Next question",
@@ -84,25 +91,25 @@ final class TanyaAIChatViewModelTests: XCTestCase {
         )
         useCase.send(.responseCompleted(messageIdentifier: "assistant-1"))
 
-        XCTAssertTrue(viewModel.showsSuggestions)
+        XCTAssertTrue(viewModel.isSuggestionRowVisible)
         XCTAssertEqual(viewModel.suggestions.map(\.title), ["Next question"])
     }
 
     func testEveryConfirmationKindProducesApprovalOutput() {
         let useCase = TanyaAIChatUseCaseStub()
         let viewModel = TanyaAIChatViewModel(useCase: useCase)
-        var receivedKinds: [TanyaAIApprovalPayload.Kind] = []
+        var receivedKinds: [ApprovalPayload.Kind] = []
         viewModel.onOutput = { output in
             if case .requestApproval(let payload) = output {
                 receivedKinds.append(payload.kind)
             }
         }
 
-        TanyaAIApprovalPayload.Kind.allCasesForTests.forEach { kind in
+        ApprovalPayload.Kind.allCasesForTests.forEach { kind in
             viewModel.approve(makeApproval(kind: kind))
         }
 
-        XCTAssertEqual(receivedKinds, TanyaAIApprovalPayload.Kind.allCasesForTests)
+        XCTAssertEqual(receivedKinds, ApprovalPayload.Kind.allCasesForTests)
     }
 
     func testApprovalStateUpdatesExistingMessage() {
@@ -131,9 +138,9 @@ final class TanyaAIChatViewModelTests: XCTestCase {
     }
 
     private func makeApproval(
-        kind: TanyaAIApprovalPayload.Kind = .generic
-    ) -> TanyaAIApprovalPayload {
-        TanyaAIApprovalPayload(
+        kind: ApprovalPayload.Kind = .generic
+    ) -> ApprovalPayload {
+        ApprovalPayload(
             approvalIdentifier: "approval-demo",
             transactionIdentifier: "transaction-demo",
             challengeIdentifier: "challenge-demo",
@@ -146,7 +153,7 @@ final class TanyaAIChatViewModelTests: XCTestCase {
     }
 }
 
-private extension TanyaAIApprovalPayload.Kind {
+private extension ApprovalPayload.Kind {
     static let allCasesForTests: [Self] = [
         .currencyConversion,
         .timeDeposit,
