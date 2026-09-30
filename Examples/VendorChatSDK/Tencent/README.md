@@ -168,13 +168,13 @@ dari akun bot ke `userID` nasabah. Ada dua cara mengirim teks uji:
    ```json
    {
      "SyncOtherMachine": 2,
-     "From_Account": "tanya-ai-bot",
-     "To_Account": "customer-123",
+     "From_Account": "bot_poc",
+     "To_Account": "wen",
      "MsgRandom": 123456789,
      "MsgBody": [
        {
          "MsgType": "TIMTextElem",
-         "MsgContent": { "Text": "Halo, ini balasan bot uji." }
+         "MsgContent": { "Text": "Halo Wen, ini balasan dari bot_poc." }
        }
      ]
    }
@@ -190,46 +190,31 @@ dari akun bot ke `userID` nasabah. Ada dua cara mengirim teks uji:
    login bot pada host yang sama: `V2TIMManager.shared` menyimpan satu sesi
    login per proses.
 
-Contoh `curl` untuk cara pertama (jalankan di mesin/server yang **bisa**
-menjangkau API Tencent; bila Mac kantor memblokir Tencent, `curl` pada Mac
-itu juga tidak akan berhasil):
+Jalankan contoh `curl` di `send_test_reply.sh` dari root repo. Ganti
+`SDKAppID_ANDA` dengan SDKAppID yang sama seperti di host app. Domain di
+bawah **hanya contoh region Jakarta**; pilih domain REST sesuai region
+SDKAppID di [dokumentasi Tencent](https://www.tencentcloud.com/document/product/1047/34919).
+Script akan meminta UserSig app admin tanpa menampilkannya saat diketik.
 
 ```sh
-TENCENT_REST_HOST='adminapiidn.im.qcloud.com' # Contoh Jakarta; sesuaikan region SDKAppID.
-TENCENT_APP_ID='SDKAppID_ANDA'
-TENCENT_ADMIN_ID='administrator' # Cek ID app admin di console.
-TENCENT_ADMIN_SIG='USERSIG_APP_ADMIN'
-TENCENT_BOT_ID='tanya-ai-bot'
-TENCENT_CUSTOMER_ID='customer-123'
-TENCENT_REQUEST_RANDOM=$(od -An -N4 -tu4 /dev/urandom | tr -d '[:space:]')
-TENCENT_MESSAGE_RANDOM=$(od -An -N4 -tu4 /dev/urandom | tr -d '[:space:]')
-
-curl --silent --show-error --fail-with-body --request POST \
-  --url "https://${TENCENT_REST_HOST}/v4/openim/sendmsg" \
-  --url-query "sdkappid=${TENCENT_APP_ID}" \
-  --url-query "identifier=${TENCENT_ADMIN_ID}" \
-  --url-query "usersig=${TENCENT_ADMIN_SIG}" \
-  --url-query "random=${TENCENT_REQUEST_RANDOM}" \
-  --url-query 'contenttype=json' \
-  --header 'Content-Type: application/json' \
-  --data-binary @- <<JSON
-{
-  "SyncOtherMachine": 2,
-  "From_Account": "${TENCENT_BOT_ID}",
-  "To_Account": "${TENCENT_CUSTOMER_ID}",
-  "MsgRandom": ${TENCENT_MESSAGE_RANDOM},
-  "MsgBody": [{
-    "MsgType": "TIMTextElem",
-    "MsgContent": { "Text": "Halo, ini balasan bot uji." }
-  }]
-}
-JSON
+TENCENT_SDK_APP_ID='SDKAppID_ANDA' \
+TENCENT_REST_HOST='adminapiidn.im.qcloud.com' \
+sh Examples/VendorChatSDK/Tencent/send_test_reply.sh
 ```
 
-`TENCENT_ADMIN_SIG` adalah UserSig untuk **app admin**, bukan UserSig nasabah
-atau bot. Buat untuk ID admin melalui UserSig Tools saat PoC. Akun bot dan
-nasabah harus ada pada SDKAppID yang sama. Jangan simpan kredensial admin di
-repo atau host app. `curl` modern diperlukan untuk opsi `--url-query`.
+`TENCENT_ADMIN_SIG` adalah UserSig untuk **app admin** (`administrator` secara
+default; ganti lewat `TENCENT_ADMIN_ID` bila console menunjukkan ID lain),
+bukan UserSig nasabah `wen` atau bot `bot_poc`. Buat UserSig untuk ID admin
+melalui UserSig Tools saat PoC. SDKAppID **wajib** untuk request REST;
+`SDKSecretKey` **tidak diperlukan** oleh script maupun request. Secret hanya
+dipakai saat membuat UserSig dan harus disimpan di backend. Akun `bot_poc`
+dan `wen` harus ada pada SDKAppID yang sama. `curl` modern diperlukan untuk
+opsi `--url-query`.
+
+Jalankan dari mesin/server yang **bisa** menjangkau API Tencent. Bila Mac
+kantor memblokir Tencent, `curl` di Mac itu juga akan terblokir walaupun
+iPhone di jaringan seluler dapat menerima pesannya. Setelah script berjalan,
+periksa `ActionStatus: "OK"` dan `ErrorCode: 0` pada respons.
 
 Balasan yang berhasil diterima oleh listener akan menjadi bubble assistant;
 setelah layar ditutup dan dibuka lagi, pesan tersebut dibaca dari history C2C.
