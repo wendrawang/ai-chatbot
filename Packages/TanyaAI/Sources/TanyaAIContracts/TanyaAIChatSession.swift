@@ -60,7 +60,7 @@ public enum TanyaAIChatSessionEvent {
     /// A typed card, in the package's own event schema.
     ///
     /// - Parameters:
-    ///   - name: event name, such as `content.approval` or `content.actions`.
+    ///   - name: event name, such as `approval` or `actions`.
     ///   - json: the event's `data` object, as sent by the bot.
     ///
     /// This is what keeps the typed bubbles working over a vendor channel: the

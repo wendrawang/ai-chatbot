@@ -17,6 +17,17 @@ xcodebuild \
   build \
   -quiet
 
+# DesignKit is its own package now, so its tests need their own run: the
+# feature package's scheme does not carry them.
+cd "$PROJECT_ROOT/Packages/DesignKit"
+xcodebuild \
+  -scheme DesignKit \
+  -destination 'platform=iOS Simulator,name=iPhone 17 Pro' \
+  CODE_SIGNING_ALLOWED=NO \
+  -enableCodeCoverage YES \
+  test \
+  -quiet
+
 cd "$PROJECT_ROOT/Packages/TanyaAI"
 xcodebuild \
   -scheme TanyaAI-Package \

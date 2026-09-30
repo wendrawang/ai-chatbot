@@ -10,20 +10,23 @@ let package = Package(
     products: [
         .library(name: "TanyaAI", targets: ["TanyaAI"]),
         .library(
-            name: "TanyaAIDesignSystem",
-            targets: ["TanyaAIDesignSystem"]
-        ),
-        .library(
             name: "TanyaAITestSupport",
             targets: ["TanyaAITestSupport"]
         )
     ],
+    dependencies: [
+        // The design system is its own package, so it can be lifted out for
+        // another feature. The dependency only ever runs this way.
+        .package(path: "../DesignKit")
+    ],
     targets: [
         .target(name: "TanyaAIContracts"),
-        .target(name: "TanyaAIDesignSystem"),
         .target(
             name: "TanyaAIDomain",
-            dependencies: ["TanyaAIContracts"]
+            dependencies: [
+                "TanyaAIContracts",
+                .product(name: "DesignKit", package: "DesignKit")
+            ]
         ),
         .target(
             name: "TanyaAIData",
@@ -36,18 +39,18 @@ let package = Package(
             name: "TanyaAIPresentation",
             dependencies: [
                 "TanyaAIContracts",
-                "TanyaAIDesignSystem",
-                "TanyaAIDomain"
+                "TanyaAIDomain",
+                .product(name: "DesignKit", package: "DesignKit")
             ]
         ),
         .target(
             name: "TanyaAI",
             dependencies: [
                 "TanyaAIContracts",
-                "TanyaAIDesignSystem",
                 "TanyaAIDomain",
                 "TanyaAIData",
-                "TanyaAIPresentation"
+                "TanyaAIPresentation",
+                .product(name: "DesignKit", package: "DesignKit")
             ]
         ),
         .target(
@@ -74,7 +77,8 @@ let package = Package(
             dependencies: [
                 "TanyaAIPresentation",
                 "TanyaAIDomain",
-                "TanyaAITestSupport"
+                "TanyaAITestSupport",
+                .product(name: "DesignKit", package: "DesignKit")
             ]
         ),
         .testTarget(

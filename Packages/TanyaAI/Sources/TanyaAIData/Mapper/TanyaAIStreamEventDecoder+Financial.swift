@@ -1,3 +1,4 @@
+import DesignKit
 import Foundation
 import TanyaAIDomain
 
@@ -7,10 +8,10 @@ extension TanyaAIStreamEventDecoder {
             TanyaAIFinancialListDTO.self,
             from: data
         )
-        let style = TanyaAIFinancialListPayload.Style(
+        let style = FinancialListPayload.Style(
             rawValue: payload.style
         ) ?? .paidBills
-        let content = TanyaAIFinancialListPayload(
+        let content = FinancialListPayload(
             title: payload.title,
             style: style,
             rows: payload.rows.map(makeFinancialRow),
@@ -27,11 +28,11 @@ extension TanyaAIStreamEventDecoder {
 
     func decodeReceipt(_ data: Data) throws -> TanyaAIStreamEvent {
         let payload = try decoder.decode(TanyaAIReceiptDTO.self, from: data)
-        let content = TanyaAIReceiptPayload(
+        let content = ReceiptPayload(
             title: payload.title,
             detail: payload.detail,
             summary: payload.summary.map {
-                TanyaAIKeyValue(label: $0.label, value: $0.value)
+                KeyValue(label: $0.label, value: $0.value)
             },
             footnote: payload.footnote
         )
@@ -50,18 +51,18 @@ extension TanyaAIStreamEventDecoder {
                 prompt: $0.prompt
             )
         }
-        return .suggestions(suggestions)
+        return .suggestions(title: payload.title, items: suggestions)
     }
 
     private func makeFinancialRow(
         _ row: TanyaAIFinancialListRowDTO
-    ) -> TanyaAIFinancialListRow {
-        TanyaAIFinancialListRow(
+    ) -> FinancialListRow {
+        FinancialListRow(
             title: row.title,
             subtitle: row.subtitle,
             value: row.value,
             detail: row.detail,
-            tone: TanyaAIFinancialListRow.Tone(
+            tone: FinancialListRow.Tone(
                 rawValue: row.tone ?? "neutral"
             ) ?? .neutral
         )

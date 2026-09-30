@@ -1,0 +1,21 @@
+{
+  "event": "approval",
+  "data": {
+    "messageIdentifier": "apv-1",
+    "approvalIdentifier": "apv-1",
+    "transactionIdentifier": "trx-99",
+    "challengeIdentifier": "chg-99",
+    "title": "Konfirmasi transfer Anda",
+    "summary": [
+      {
+        "label": "Ke",
+        "value": "Sample Beneficiary"
+      },
+      {
+        "label": "Jumlah",
+        "value": "IDR 1.250.000"
+      }
+    ],
+    "expiresAt": "2099-09-20T09:00:00Z"
+  }
+}

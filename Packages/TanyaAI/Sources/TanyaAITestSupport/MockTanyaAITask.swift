@@ -4,24 +4,24 @@ import TanyaAIContracts
 public final class MockTanyaAITask: TanyaAICancellable {
     private let lock = NSLock()
     private var workItems: [DispatchWorkItem] = []
-    private var cancelled = false
+    private var isTaskCancelled = false
 
     public init() {}
 
     public func add(_ workItem: DispatchWorkItem) {
         lock.lock()
         workItems.append(workItem)
-        let shouldCancel = cancelled
+        let isCancellationNeeded = isTaskCancelled
         lock.unlock()
 
-        if shouldCancel {
+        if isCancellationNeeded {
             workItem.cancel()
         }
     }
 
     public func cancel() {
         lock.lock()
-        cancelled = true
+        isTaskCancelled = true
         let pendingItems = workItems
         workItems.removeAll()
         lock.unlock()
@@ -37,6 +37,6 @@ public final class MockTanyaAITask: TanyaAICancellable {
     public var isCancelled: Bool {
         lock.lock()
         defer { lock.unlock() }
-        return cancelled
+        return isTaskCancelled
     }
 }

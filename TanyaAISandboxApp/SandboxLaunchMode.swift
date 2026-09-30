@@ -30,7 +30,7 @@ enum SandboxLaunchMode {
 
     /// Shortens the mock chunk delay so a UI run does not wait on simulated
     /// streaming.
-    var usesFastStreaming: Bool {
+    var isFastStreamingEnabled: Bool {
         switch self {
         case .legacyHost:
             return false

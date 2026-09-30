@@ -1,0 +1,21 @@
+{
+  "event": "choices",
+  "data": {
+    "messageIdentifier": "q-1",
+    "title": "Kategori apa yang diinginkan",
+    "choices": [
+      {
+        "identifier": "dining",
+        "title": "Dining",
+        "prompt": "Promo dining"
+      },
+      {
+        "identifier": "travel",
+        "title": "Hotel",
+        "prompt": "Promo hotel"
+      }
+    ],
+    "allowsMultipleSelection": false,
+    "submitTitle": "Kirim"
+  }
+}

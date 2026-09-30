@@ -50,11 +50,19 @@ text() {
   send "" "Ini balasan teks biasa dengan [bold]tebal[/bold], [strike]coret[/strike], dan [color]hijau|25C36B[/color]." ""
 }
 
+image() {
+  send "content.image" "Jalani misinya, dapatkan Bonus Bunga Tabungan hingga 5,25% p.a." '{
+    "messageIdentifier": "img-1",
+    "imageURL": "https://picsum.photos/seed/tanyaai/920/575",
+    "caption": "Jalani misinya, dapatkan Bonus Bunga Tabungan hingga 5,25% p.a.",
+    "aspectRatio": 1.6,
+    "accessibilityText": "Amplop merah berisi koin dan tulisan bonus bunga"
+  }'
+}
+
 actions() {
   send "content.actions" "Lanjutkan di aplikasi" '{
     "messageIdentifier": "act-1",
-    "title": "Lanjutkan di aplikasi",
-    "detail": "Membuka layar yang sudah ada",
     "actions": [
       { "title": "Buka transfer", "style": "primary",
         "action": { "identifier": "open-transfer",
@@ -173,6 +181,7 @@ unsupported() {
 
 case "${1:-all}" in
   text) text ;;
+  image) image ;;
   actions) actions ;;
   approval) approval ;;
   status) status ;;
@@ -183,11 +192,11 @@ case "${1:-all}" in
   receipt) receipt ;;
   unsupported) unsupported ;;
   all)
-    text; actions; approval; status; information
+    text; image; actions; approval; status; information
     list; chart; portfolio; receipt; unsupported
     ;;
   *)
-    echo "kinds: text actions approval status information list chart portfolio receipt unsupported all"
+    echo "kinds: text image actions approval status information list chart portfolio receipt unsupported all"
     exit 1
     ;;
 esac

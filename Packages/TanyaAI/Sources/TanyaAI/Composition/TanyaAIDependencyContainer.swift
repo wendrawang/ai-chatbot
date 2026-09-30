@@ -1,3 +1,4 @@
+import DesignKit
 import TanyaAIData
 import TanyaAIDomain
 import TanyaAIPresentation
@@ -5,7 +6,7 @@ import TanyaAIPresentation
 final class TanyaAIDependencyContainer {
     private let configuration: TanyaAIConfiguration
     private let dependencies: TanyaAIDependencies
-    var theme: TanyaAITheme { dependencies.theme }
+    var theme: Theme { dependencies.theme }
 
     init(
         configuration: TanyaAIConfiguration,
@@ -22,7 +23,8 @@ final class TanyaAIDependencyContainer {
         let useCase = TanyaAIChatUseCase(repository: repository)
         return TanyaAIChatViewModel(
             useCase: useCase,
-            authorizesInFeature: dependencies.authorizationService != nil
+            isAuthorizationEnabled: dependencies.authorizationService != nil,
+            shortcuts: configuration.shortcuts
         )
     }
 
@@ -38,7 +40,7 @@ final class TanyaAIDependencyContainer {
     }
 
     func makePINViewModel(
-        approval: TanyaAIApprovalPayload
+        approval: ApprovalPayload
     ) -> TanyaAIPINViewModel? {
         guard let service = dependencies.authorizationService else {
             return nil

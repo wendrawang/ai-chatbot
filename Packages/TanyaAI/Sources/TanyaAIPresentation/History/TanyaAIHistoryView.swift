@@ -1,15 +1,16 @@
+import DesignKit
 import SwiftUI
 
 public struct TanyaAIHistoryView: View {
     @ObservedObject private var viewModel: TanyaAIHistoryViewModel
-    @Environment(\.tanyaAITheme) private var theme
+    @Environment(\.theme) private var theme
 
     public init(viewModel: TanyaAIHistoryViewModel) {
         self.viewModel = viewModel
     }
 
     public var body: some View {
-        List(viewModel.items) { item in
+        List(viewModel.items, id: \.identifier) { item in
             VStack(alignment: .leading, spacing: 4) {
                 Text(item.title)
                     .font(Font(theme.fonts.headline))

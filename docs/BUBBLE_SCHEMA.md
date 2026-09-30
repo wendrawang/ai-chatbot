@@ -1,250 +1,185 @@
-# Typed bubble and suggestion schema
+# JSON untuk menghasilkan bubble
 
-## How a bubble reaches the screen
+Package menerima **nama event + payload JSON** melalui `TanyaAIChatSession`.
+Backend tidak mengirim nama SwiftUI view. Nama event memilih bubble; payload
+mengisi teks, nilai, pilihan, atau tombolnya.
 
-Each bubble is **one message on the vendor channel**. The event name goes in
-the message's `custom_type`, and the payload goes in `data` as a **JSON
-string** - not an object.
-
-```json
-{
-  "message_type": "MESG",
-  "user_id": "<bot>",
-  "message": "text shown if the app is too old to know this type",
-  "custom_type": "content.actions",
-  "data": "{\"messageIdentifier\":\"act-1\", ...}"
-}
-```
-
-Three rules follow from that shape:
-
-- **One message, one bubble.** A reply of text *then* a confirmation is two
-  messages sent in order. There is no array-of-bubbles format.
-- **`messageIdentifier` is required on every payload**, and should be unique
-  per bubble.
-- **A message with no `custom_type` is a text bubble**, taking `message` as
-  its content.
-
-A message whose `custom_type` does not begin with `content.` is treated as
-plain text.
-
-## Field reference
-
-**This table is the contract.** The JSON shown later in this document, and the
-payloads in `send-bubble.sh`, are examples of it - if they ever disagree, this
-table and the DTOs it mirrors are what the package actually decodes.
-
-Required unless marked optional. `expiresAt` is ISO 8601.
-
-| Event | Fields |
-| --- | --- |
-| `content.information` | `title?`, `text`, `items[]` of `{label, value}` |
-| `content.status` | `title`, `detail`, `level` |
-| `content.actions` | `title?`, `detail?`, `actions[]` of `{title, style?, action:{identifier, deeplink}}` |
-| `content.approval` | `approvalIdentifier`, `transactionIdentifier`, `challengeIdentifier`, `kind?`, `title`, `summary[]` of `{label, value}`, `notice?`, `expiresAt`, `handoff?:{identifier, deeplink}` |
-| `content.receipt` | `title`, `detail`, `summary[]` of `{label, value}`, `footnote?` |
-| `content.chart` | `title`, `subtitle?`, `totalValue?`, `chartType`, `series[]` of `{label, value (number), formattedValue}`, `footnote?` |
-| `content.portfolio` | `title`, `totalValue`, `performanceText`, `allocations[]` of `{label, value (number), formattedValue}`, `footnote?` |
-| `content.financial-list` | `title`, `style`, `rows[]` of `{title, subtitle?, value, detail?, tone?}`, `totalLabel?`, `totalValue?`, `totalCaption?`, `footnote?` |
-
-Allowlisted values - anything else falls back to the first entry:
-
-| Field | Accepts |
-| --- | --- |
-| `status.level` | `neutral`, `success`, `warning`, `error` |
-| `chart.chartType` | `bar`, `line`, `donut`, `progress` |
-| `financial-list.style` | `paidBills`, `incoming`, `holdings` |
-| `financial-list.rows[].tone` | `neutral`, `positive` |
-| `actions[].style` | `primary`, `secondary` |
-| `approval.kind` | `transfer`, `currencyConversion`, `timeDeposit`, `savingsPlan`, `generic` |
-
-Runnable examples of every one of these are in
-[`Examples/VendorChatSDK/Sendbird/send-bubble.sh`](../Examples/VendorChatSDK/Sendbird/send-bubble.sh).
-
-## Rendering boundary
-
-The backend selects a semantic message type and sends its data. The iOS
-package owns layout, colors, typography, accessibility, interaction rules, and
-fallback behavior. It does not accept arbitrary SwiftUI, HTML, coordinates,
-fonts, or executable actions from a response.
-
-Current semantic content types are:
-
-- text;
-- information;
-- approval;
-- receipt;
-- portfolio;
-- chart;
-- financial list;
-- status;
-- host actions;
-- unsupported fallback.
-
-The schema is hybrid rather than one generic `summary` payload. Approvals and
-financial lists use typed variants because their behavior remains the same.
-Approval, receipt, portfolio, and chart remain separate because their state,
-security, and fallback rules differ. Their renderers still share visual
-primitives.
-
-Confirmation variants share one typed approval renderer:
-
-- currency conversion;
-- time deposit;
-- transfer;
-- savings plan;
-- generic fallback.
-
-A confirmation that reached `completed`, `failed`, `expired`, or `cancelled`
-is closed and never changes again. Two consequences for the response contract:
-
-- a later `content.approval` reusing the same `messageIdentifier` renders a
-  **new** bubble rather than reopening the closed one, so a confirmation the
-  customer rejected stays rejected on screen;
-- a state update arriving late - an authorization callback for a sheet the
-  customer already dismissed - is ignored.
-
-Reuse of a `messageIdentifier` is still worth avoiding: send a fresh one per
-confirmation, and the intent is unambiguous.
-
-Every pending confirmation exposes the same `Confirm` intent. The internal
-UIKit coordinator lazily presents the numeric PIN bottom sheet. PIN values are
-short-lived presentation state and never become chat content or stream data.
-
-## Host actions
-
-An action asks the host to open one of its own screens. The response carries
-the deeplink as one string, in whatever shape the host's existing deeplink
-handler already accepts:
-
-`custom_type: content.actions`
+## Contoh paling sederhana: status
 
 ```json
 {
-  "messageIdentifier": "act-1",
-  "title": "Lanjutkan di aplikasi",
-  "detail": "Membuka layar yang sudah ada",
-  "actions": [
-    {
-      "title": "Buka transfer",
-      "style": "primary",
-      "action": {
-        "identifier": "open-transfer",
-        "deeplink": "ocbcid://mobile?type=transfer"
-      }
-    }
-  ]
-}
-```
-
-`style` accepts `primary` and `secondary`; anything else falls back to
-`primary`. An empty `actions` array renders the unsupported fallback instead
-of an empty card. `identifier` is for accessibility identifiers and analytics,
-never for routing.
-
-A confirmation can hand off the same way. When `handoff` is present the
-`Confirm` button stops opening the in-feature PIN sheet and reports the action
-to the host, so an existing authorization flow can take over:
-
-`custom_type: content.approval`
-
-```json
-{
-  "messageIdentifier": "apv-1",
-  "approvalIdentifier": "approval-001",
-  "transactionIdentifier": "trx-001",
-  "challengeIdentifier": "chl-001",
-  "kind": "transfer",
-  "title": "Konfirmasi transfer Anda",
-  "summary": [
-    { "label": "Ke", "value": "Sample Beneficiary" },
-    { "label": "Jumlah", "value": "IDR 1.250.000" }
-  ],
-  "notice": "Otorisasi dilakukan di flow existing.",
-  "expiresAt": "2099-01-01T00:00:00Z",
-  "handoff": {
-    "identifier": "handoff-transfer",
-    "deeplink": "ocbcid://mobile?type=transfer&amount=1250000"
+  "event": "status",
+  "data": {
+    "messageIdentifier": "status-1",
+    "title": "Selesai",
+    "detail": "Permintaan Anda sudah diproses.",
+    "level": "success"
   }
 }
 ```
 
-The package forwards the deeplink and does nothing else: it does not parse it,
-open it, dismiss itself, or navigate. Because the string arrives from the
-stream, the host must check it before opening: the scheme has to be the app's
-own, and the host has to be the app's deeplink entry point. Anything else is
-dropped. Resolving the link to a screen stays with the host's existing
-deeplink handler.
+`event` + `data` adalah **envelope contoh yang netral terhadap vendor**, bukan
+endpoint atau format yang otomatis diparse package. Adapter host mengambil nama
+`event` dan mengubah **objek data saja** menjadi `Data`, lalu meneruskannya:
 
-## Text formatting
+```swift
+let payload = Data("""
+{
+  "messageIdentifier": "status-1",
+  "title": "Selesai",
+  "detail": "Sudah diproses.",
+  "level": "success"
+}
+""".utf8)
+onEvent?(.structuredPayload(name: "status", json: payload))
+onEvent?(.messageCompleted(messageIdentifier: "status-1"))
+```
 
-Reply text may carry inline styling, so a labelled list reads as one answer
-instead of several bubbles. The wire format is a closed set of bracket tags:
+Jangan meneruskan seluruh envelope sebagai `json:`. Package membutuhkan field
+`messageIdentifier` langsung di root payload, bukan di dalam `data` lagi.
 
-| Tag | Renders |
+## Pilih bubble
+
+Setiap tautan berisi payload lengkap, field wajib, dan perilakunya.
+
+| Tampilan | Event | Referensi |
+| --- | --- | --- |
+| Teks | `text_delta` | Contoh streaming di bawah |
+| Gambar + caption | `image` | [Gambar](bubbles/CONTENT.md#image) |
+| Pilihan + submit | `choices` | [Choices](bubbles/CONTENT.md#choices) |
+| Tombol deeplink | `actions` | [Actions](bubbles/CONTENT.md#actions) |
+| HTML statis | `html` | [HTML](bubbles/CONTENT.md#html) |
+| Penawaran agen | `live_agent` | [Live agent](bubbles/CONTENT.md#live_agent) |
+| Konfirmasi + PIN/hand-off | `approval` | [Approval](bubbles/FINANCIAL.md#approval) |
+| Bukti transaksi | `receipt` | [Receipt](bubbles/FINANCIAL.md#receipt) |
+| Chart | `chart` | [Chart](bubbles/FINANCIAL.md#chart) |
+| Portfolio | `portfolio` | [Portfolio](bubbles/FINANCIAL.md#portfolio) |
+| Daftar keuangan | `financial_list` | [Financial list](bubbles/FINANCIAL.md#financial_list) |
+| Status proses | `status` | [Status](bubbles/INFORMATION.md#status) |
+| Teks + label/value | `information` | [Information](bubbles/INFORMATION.md#information) |
+| Saran, satu tap langsung kirim | `suggestions` | [Suggestions](bubbles/INFORMATION.md#suggestions) |
+| Jenis belum dikenal | nama baru, misalnya `future_card` | [Fallback](bubbles/INFORMATION.md#future_card) |
+
+File siap dibaca backend tersedia di [Examples/BubbleResponses](../Examples/BubbleResponses/).
+[conversation.json](../Examples/BubbleResponses/conversation.json) berisi contoh
+satu balasan lengkap: mulai → teks → status → suggestions → selesai. Array tersebut
+adalah fixture; adapter harus meneruskan event satu per satu sesuai urutan.
+
+## Teks dan streaming
+
+```json
+[
+  {"event":"response_started","data":{"messageIdentifier":"text-1"}},
+  {"event":"text_delta","data":{"messageIdentifier":"text-1","text":"Saldo Anda "}},
+  {"event":"text_delta","data":{"messageIdentifier":"text-1","text":"[bold]IDR 12.500.000[/bold]."}},
+  {"event":"response_completed","data":{"messageIdentifier":"text-1"}}
+]
+```
+
+Identifier yang sama membuat delta bergabung pada satu bubble. Untuk bubble baru,
+gunakan identifier baru. Konten dengan identifier sama memperbarui bubble tersebut;
+ada pengecualian untuk approval yang sudah selesai agar catatannya tidak ditimpa.
+
+Adapter harus memetakan event lifecycle ke enum session yang tepat:
+
+| Event backend | Emit dari adapter |
 | --- | --- |
-| `[bold]wen[/bold]` | Bold |
-| `[strike]wen[/strike]` | Struck through |
-| `[color]wen\|25C36B[/color]` | Text in `#25C36B` |
+| `response_started` | `.messageStarted(messageIdentifier: ...)` |
+| `text_delta` | `.messageDelta(messageIdentifier: ..., text: ...)` |
+| `response_completed` | `.messageCompleted(messageIdentifier: ...)` |
+| Nama bubble pada katalog atau tipe baru | `.structuredPayload(name: ..., json: payloadData)` |
+| `suggestions` | `.structuredPayload(name: "suggestions", json: payloadData)` |
+| `heartbeat` | `.structuredPayload(name: "heartbeat", json: Data("{}".utf8))` |
 
-Markdown is deliberately not used. Asterisks are ordinary characters in
-banking copy - masked cards, footnote markers - and a closed tag set means a
-response can reach exactly these three styles and nothing else: no links, no
-images, no headings.
+Khusus completion, gunakan `.messageCompleted`, bukan sekadar structured payload
+bernama `response_completed`, agar repository ikut menutup request aktif.
+Kirim suggestions sebelum completion untuk satu balasan terurut. Jika SDK mengirim
+pesan utuh, satu `.messageDelta` cukup. Jangan mengirim ulang seluruh teks sebagai
+delta karena akan terduplikasi. Error transport dikirim sebagai `.failed(error)`.
 
-Behaviour the client guarantees:
+Styling teks memakai tag berikut, bukan Markdown:
 
-- **An unknown tag is dropped and its text kept**, so a backend can ship a new
-  tag before the app supports it.
-- **An unclosed tag styles the remainder**, since text arrives in chunks.
-- **A half-arrived tag is hidden** rather than flashing raw markup.
-- **A mismatched closing tag keeps the content** and forgets the styling.
-- **Anything else is literal.** `biaya [1] gratis` shows its brackets.
+| Tag | Hasil |
+| --- | --- |
+| `[bold]teks[/bold]` | Tebal |
+| `[italic]teks[/italic]` | Miring |
+| `[underline]teks[/underline]` | Garis bawah |
+| `[strike]teks[/strike]` | Coret |
+| `[color]teks\|25C36B[/color]` | Warna hex |
 
-`[color]` carries its value inside the element, after the last `|`, and only
-six-digit RRGGBB is accepted. Note that this hands colour choice to the
-response: a value with poor contrast against the bubble is the backend's
-mistake to make. If that matters, restrict the palette server-side.
+Tag dapat bersarang. Tag tidak dikenal dibuang, teksnya dipertahankan.
 
-## Dynamic suggestions
+## Kalau memakai Sendbird
 
-Suggestions use the event name `response.suggestions`:
+Contoh adapter Sendbird memakai `custom_type` untuk nama bubble dan `data` berupa
+**string JSON**, sesuai bentuk field yang dibaca adapter:
 
 ```json
 {
-  "suggestions": [
-    {
-      "identifier": "incoming",
-      "title": "Incoming funds",
-      "prompt": "Show incoming funds"
-    }
-  ]
+  "message_type": "MESG",
+  "user_id": "bot-user-id",
+  "custom_type": "status",
+  "message": "Permintaan selesai",
+  "data": "{\"messageIdentifier\":\"status-1\",\"title\":\"Selesai\",\"detail\":\"Sudah diproses.\",\"level\":\"success\"}"
 }
 ```
 
-**Not currently reachable over a vendor channel.** The Sendbird adapter
-forwards only names beginning with `content.`, so a suggestion sent this way
-arrives as plain text. The package decodes the event; widening that filter in
-the adapter is what would connect it.
+Ini contoh body pesan, bukan endpoint lengkap untuk mengirim ke vendor. Backend
+sebaiknya memakai serializer JSON untuk mengisi `data`, bukan menyusun escape
+secara manual. `message` berguna untuk dashboard/notifikasi; pada typed bubble,
+aplikasi merender `data` dan tidak memakai `message` sebagai fallback.
 
-The ViewModel replaces the current chips with the latest event. The backend
-may return suggestions after every response, return a different set for each
-context, or omit them. Suggestions are cleared while generation is active so
-stale actions cannot be selected against a new response.
+Adapter Sendbird contoh memakai `TanyaAIChatSessionEvent.fromWire(name:json:)`
+untuk nama di katalog, termasuk suggestions dan lifecycle streaming. Card utuh
+langsung diikuti completion; streaming selesai hanya ketika `response_completed`
+diterima. Event kontrol tidak dipulihkan sebagai kartu history; backend harus
+menyimpan hasil teks utuh, bukan menjadikan setiap delta sebagai pesan history.
+Format inbound typed card 3Dolphins belum terverifikasi; pakai mock untuk review.
 
-## Reusable financial primitives
+## Nama unik tanpa titik
 
-Charts use an allowlisted chart type plus typed series data. The host theme
-owns the chart palette. Financial lists use a typed style for paid bills,
-incoming funds, or holdings while sharing row, total, caption, and footnote
-models.
+Nama canonical memakai huruf kecil dan underscore untuk dua kata. Seluruh 17 nama
+terdaftar di `TanyaAIEventName` (tersedia melalui `import TanyaAI`). Gunakan
+`TanyaAIEventName.status.rawValue` ketika tidak ingin menulis string manual.
 
-Dedicated financial contexts remain semantic even when they reuse primitives:
+- Bubble: `image`, `choices`, `actions`, `html`, `live_agent`, `approval`, `receipt`,
+  `chart`, `portfolio`, `financial_list`, `status`, `information`.
+- Saran: `suggestions`.
+- Lifecycle: `response_started`, `text_delta`, `response_completed`, `heartbeat`.
 
-- portfolio owns its total, performance, allocation series, and disclaimer;
-- spending owns its total, comparison text, series, and disclaimer;
-- receipts own success state and immutable summary rows;
-- confirmations own kind, summary rows, notice, identifiers, and state.
+Nama lama seperti `content.status` dan `response.completed` hanya alias untuk
+membaca payload/history lama. Payload dan contoh baru memakai nama tanpa titik.
+Kompatibilitas satu arah: app baru membaca format lama; app versi lama belum
+tentu memahami format baru. Sesuaikan rollout backend dengan versi client.
+Nama baru yang belum dikenal, misalnya `future_card`, menampilkan fallback apabila
+payload membawa `messageIdentifier`. Nama kontrol bertitik yang tidak dikenal
+diabaikan. Seluruh custom_type non-kosong pada kanal fitur dianggap milik kontrak
+ini, jadi jangan mencampurkan tipe metadata vendor lain ke field tersebut.
 
-Unknown event types map to an unsupported fallback instead of crashing or
-rendering an untrusted layout.
+Untuk adapter sendiri, gunakan satu fungsi pemetaan:
+
+```swift
+let event = try TanyaAIChatSessionEvent.fromWire(name: name, json: payloadData)
+onEvent?(event)
+```
+
+Fungsi tersebut mengubah lifecycle ke enum native sehingga completion juga
+membersihkan request repository. Error payload lifecycle perlu diteruskan sebagai
+`.failed(error)`. Adapter pesan utuh menambahkan `.messageCompleted(...)` setelah
+card; adapter streaming mengikuti event completion dari backend.
+
+## Aturan payload agar stabil dan ringan
+
+- Gunakan identifier stabil dan unik untuk bubble yang berbeda.
+- Field wajib harus ada. Array kosong boleh pada kontrak yang mengizinkannya;
+  optional dapat dihilangkan. Enum tidak dikenal memiliki fallback, tetapi field
+  wajib yang hilang tetap gagal decode.
+- Payload rusak menjadi bubble unsupported; nama baru, misalnya `future_card` baru dapat membawa
+  `fallbackText`. Event di luar nama yang dikenal dan prefix content diabaikan.
+- Kirim URL gambar, bukan base64. Sertakan aspectRatio yang benar. Hindari HTML
+  untuk tampilan yang sudah memiliki bubble native.
+- Nilai numerik chart menentukan proporsi; `formattedValue` menentukan label.
+- Pertahankan typed payload di history agar kartu dapat dipulihkan. Package
+  mempertahankan 100 pesan terbaru, tetapi host tetap perlu membatasi ukuran
+  payload dari backend sesuai kebutuhan produknya.
+- Payload approval berisi challenge/expiry, bukan PIN atau token autentikasi.

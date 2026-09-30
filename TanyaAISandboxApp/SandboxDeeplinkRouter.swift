@@ -1,4 +1,5 @@
 import Combine
+import DesignKit
 import Foundation
 import TanyaAI
 
@@ -14,7 +15,7 @@ final class SandboxDeeplinkRouter: ObservableObject {
     @Published var activeDestination: SandboxDeeplinkDestination?
 
     /// Set while a validated destination waits to be pushed.
-    @Published private(set) var hasPendingDestination = false
+    @Published private(set) var isDestinationPending = false
 
     private var pendingDestination: SandboxDeeplinkDestination?
     private let opener: (URL) -> Void
@@ -60,7 +61,7 @@ final class SandboxDeeplinkRouter: ObservableObject {
             return false
         }
         pendingDestination = destination
-        hasPendingDestination = true
+        isDestinationPending = true
 
         guard let presenter, presenter.isPresenting else {
             deliverPendingDestination()
@@ -78,7 +79,7 @@ final class SandboxDeeplinkRouter: ObservableObject {
             return
         }
         pendingDestination = nil
-        hasPendingDestination = false
+        isDestinationPending = false
         activeDestination = destination
     }
 

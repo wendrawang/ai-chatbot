@@ -1,25 +1,33 @@
+import DesignKit
 import SwiftUI
-import TanyaAIDesignSystem
 import TanyaAIDomain
 
 struct TanyaAIMessageTableRow: View {
-    let message: TanyaAIMessageItemViewModel?
-    let theme: TanyaAITheme
+    let kind: TanyaAIMessageRowKind
+    let theme: Theme
     let handlers: TanyaAIMessageRowHandlers
 
     var body: some View {
         Group {
-            if let message = message {
+            switch kind {
+            case .message(let message):
                 TanyaAIMessageRowView(
                     viewModel: message,
                     handlers: handlers
                 )
-            } else {
-                TanyaAITypingIndicatorView()
+                .id(message.identifier)
+            case .typing:
+                TypingIndicatorView()
+            case .suggestions(let title, let suggestions):
+                SuggestionList(
+                    title: title,
+                    suggestions: suggestions,
+                    onSelect: handlers.onSuggestion
+                )
             }
         }
         .padding(.horizontal, 16)
         .padding(.vertical, 6)
-        .tanyaAITheme(theme)
+        .theme(theme)
     }
 }

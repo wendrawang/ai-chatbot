@@ -1,8 +1,9 @@
+import DesignKit
 import Foundation
 import TanyaAIDomain
 
 extension TanyaAIStreamEventDecoder {
-    /// Decodes a `content.actions` event into an action card.
+    /// Decodes a `actions` event into an action card.
     ///
     /// An empty button list is not an empty card: it degrades to the same
     /// unsupported fallback as an unknown content type, so a malformed
@@ -22,13 +23,7 @@ extension TanyaAIStreamEventDecoder {
 
         return .content(
             messageIdentifier: payload.messageIdentifier,
-            content: .actions(
-                TanyaAIActionPayload(
-                    title: payload.title,
-                    detail: payload.detail,
-                    buttons: buttons
-                )
-            )
+            content: .actions(ActionPayload(buttons: buttons))
         )
     }
 
@@ -36,8 +31,8 @@ extension TanyaAIStreamEventDecoder {
     ///
     /// The deeplink is carried through untouched. Validation belongs to the
     /// host, which is the only layer that knows what the app can open.
-    func makeAction(_ dto: TanyaAIActionDTO) -> TanyaAIAction {
-        TanyaAIAction(
+    func makeAction(_ dto: TanyaAIActionDTO) -> Action {
+        Action(
             identifier: dto.identifier,
             deeplink: dto.deeplink
         )
@@ -46,10 +41,10 @@ extension TanyaAIStreamEventDecoder {
     /// An unknown style falls back to `primary` instead of failing the stream.
     private func makeActionButton(
         _ dto: TanyaAIActionButtonDTO
-    ) -> TanyaAIActionButton {
-        TanyaAIActionButton(
+    ) -> ActionButton {
+        ActionButton(
             title: dto.title,
-            style: TanyaAIActionButton.Style(
+            style: ActionButton.Style(
                 rawValue: dto.style ?? "primary"
             ) ?? .primary,
             action: makeAction(dto.action)

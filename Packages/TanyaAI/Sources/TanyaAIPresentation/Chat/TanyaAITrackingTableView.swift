@@ -9,9 +9,9 @@ final class TanyaAITrackingTableView: UITableView {
     override func layoutSubviews() {
         super.layoutSubviews()
 
-        let boundsChanged = trackedBoundsSize != bounds.size
-        let contentChanged = trackedContentSize != contentSize
-        guard boundsChanged || contentChanged else {
+        let isBoundsChanged = trackedBoundsSize != bounds.size
+        let isContentChanged = trackedContentSize != contentSize
+        guard isBoundsChanged || isContentChanged else {
             return
         }
         trackedBoundsSize = bounds.size

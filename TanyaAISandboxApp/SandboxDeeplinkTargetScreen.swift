@@ -23,7 +23,7 @@ struct SandboxDeeplinkTargetScreen: View {
                     .foregroundColor(.secondary)
                     .accessibilityIdentifier("deeplink.url")
 
-                ForEach(destination.sortedParameters) { parameter in
+                ForEach(destination.sortedParameters, id: \.identifier) { parameter in
                     HStack {
                         Text(parameter.name)
                             .foregroundColor(.secondary)

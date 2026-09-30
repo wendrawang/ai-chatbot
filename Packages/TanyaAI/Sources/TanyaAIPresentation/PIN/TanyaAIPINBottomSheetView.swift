@@ -1,8 +1,9 @@
+import DesignKit
 import SwiftUI
 
 public struct TanyaAIPINBottomSheetView: View {
     @ObservedObject private var viewModel: TanyaAIPINViewModel
-    @Environment(\.tanyaAITheme) private var theme
+    @Environment(\.theme) private var theme
 
     public init(viewModel: TanyaAIPINViewModel) {
         self.viewModel = viewModel

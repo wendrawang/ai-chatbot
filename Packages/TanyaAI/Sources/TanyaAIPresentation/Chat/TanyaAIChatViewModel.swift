@@ -1,4 +1,5 @@
 import Combine
+import DesignKit
 import Foundation
 import TanyaAIContracts
 import TanyaAIDomain
@@ -10,21 +11,24 @@ public final class TanyaAIChatViewModel: ObservableObject {
     /// rather than by a turn the customer started.
     @Published public private(set) var isAgentTyping = false
     /// True until the channel reports what it already held. The conversation
-    /// stays empty meanwhile, so a greeting is never shown and then replaced.
+    /// stays empty meanwhile, so no temporary message is shown and then replaced.
     @Published public private(set) var isRestoring = true
     @Published public private(set) var errorMessage: String?
-    @Published public private(set) var suggestions: [TanyaAISuggestion]
+    @Published public private(set) var suggestions: [Suggestion]
+    /// The question the prompts answer, when the reply sent one.
+    @Published public private(set) var suggestionsTitle: String?
     @Published public var inputText = ""
 
     public var onOutput: ((TanyaAIChatOutput) -> Void)?
 
-    private let useCase: TanyaAIChatUseCaseProtocol
+    let useCase: TanyaAIChatUseCaseProtocol
     /// Maps a message identifier the backend reuses onto the bubble that
     /// replaced a settled confirmation. See `appendContent`.
     var redirectedIdentifiers: [String: String] = [:]
-    private var activeRequest: TanyaAICancellable?
-    private var conversationIdentifier: String?
-    private lazy var textDeltaBuffer = TanyaAITextDeltaBuffer { [weak self] identifier, text in
+    var activeRequest: TanyaAICancellable?
+    var activeRequestIdentifier: String?
+    var conversationIdentifier: String?
+    lazy var textDeltaBuffer = TanyaAITextDeltaBuffer { [weak self] identifier, text in
         self?.appendTextDeltaNow(
             identifier: identifier,
             text: text
@@ -33,20 +37,26 @@ public final class TanyaAIChatViewModel: ObservableObject {
 
     /// Whether the host injected an authorization service, and so whether a
     /// confirmation without a hand-off can be completed in the chat.
-    let authorizesInFeature: Bool
+    let isAuthorizationEnabled: Bool
+
+    /// Ways in, supplied by the host and unchanged by use. Unlike the prompts
+    /// a reply offers, these answer no question and so never go away.
+    public let shortcuts: [Suggestion]
 
     public init(
         useCase: TanyaAIChatUseCaseProtocol,
-        authorizesInFeature: Bool = true
+        isAuthorizationEnabled: Bool = true,
+        shortcuts: [Suggestion] = []
     ) {
         self.useCase = useCase
-        self.authorizesInFeature = authorizesInFeature
+        self.isAuthorizationEnabled = isAuthorizationEnabled
+        self.shortcuts = shortcuts
         messages = []
-        suggestions = TanyaAISuggestion.sandboxDefaults
+        suggestions = []
         // A reply nobody asked for still belongs on screen. Without this the
         // channel delivers it and the graph drops it on the floor.
         useCase.observeUnsolicitedEvents { [weak self] event in
-            self?.performOnMain {
+            self?.performOnMain { [weak self] in
                 self?.handle(event)
             }
         }
@@ -63,14 +73,16 @@ public final class TanyaAIChatViewModel: ObservableObject {
         inputText = ""
         errorMessage = nil
         suggestions = []
+        suggestionsTitle = nil
         isRestoring = false
         isGenerating = true
         appendUserMessage(message)
         startRequest(message)
     }
 
-    public func sendSuggestion(_ suggestion: TanyaAISuggestion) {
+    public func sendSuggestion(_ suggestion: Suggestion) {
         suggestions = []
+        suggestionsTitle = nil
         sendMessage(suggestion.prompt)
     }
 
@@ -79,7 +91,20 @@ public final class TanyaAIChatViewModel: ObservableObject {
         sendCurrentMessage()
     }
 
-    public var showsSuggestions: Bool {
+    /// Hidden while a reply is arriving. Tapping one then would do nothing -
+    /// a turn is already open - and a control that ignores a tap is worse
+    /// than one that is not there.
+    public var isShortcutRowVisible: Bool {
+        shortcuts.isEmpty == false && !isGenerating && !isRestoring
+    }
+
+    /// Sends a shortcut. The list itself does not change: it is a way in, not
+    /// an answer to anything.
+    public func sendShortcut(_ shortcut: Suggestion) {
+        sendMessage(shortcut.prompt)
+    }
+
+    public var isSuggestionRowVisible: Bool {
         !isGenerating && !isRestoring && !suggestions.isEmpty
     }
 
@@ -91,22 +116,23 @@ public final class TanyaAIChatViewModel: ObservableObject {
     ///
     /// Restoring is not one of these: it has its own loading state, and dots
     /// promising a reply that nobody asked for would be a lie.
-    public var showsTypingRow: Bool {
+    public var isTypingRowVisible: Bool {
         isGenerating || isAgentTyping
     }
 
     public func cancelGeneration() {
+        activeRequestIdentifier = nil
         activeRequest?.cancel()
         activeRequest = nil
         textDeltaBuffer.flushAll()
         isGenerating = false
+        isAgentTyping = false
     }
 
     /// Puts a reopened conversation on screen.
     ///
     /// Replaces rather than appends: a returning customer should see where
-    /// they left off. An empty batch means there is nothing to come back to,
-    /// so this is where the greeting is finally earned.
+    /// they left off. An empty batch leaves the conversation empty.
     private func restore(_ restored: [TanyaAIMessage]) {
         isRestoring = false
         // The customer may have typed before the channel answered. What they
@@ -115,12 +141,8 @@ public final class TanyaAIChatViewModel: ObservableObject {
         guard messages.isEmpty else {
             return
         }
-        guard restored.isEmpty == false else {
-            // Nothing to come back to, so this is a first conversation.
-            messages = [Self.makeWelcomeMessage()]
-            return
-        }
-        messages = restored.map(TanyaAIMessageItemViewModel.init)
+        messages = restored.suffix(TanyaAIMessage.historyLimit)
+            .map(TanyaAIMessageItemViewModel.init)
     }
 
     /// A confirmation arrived that this app cannot complete, because no
@@ -143,24 +165,18 @@ public final class TanyaAIChatViewModel: ObservableObject {
         textDeltaBuffer.cancel()
     }
 
-    private func startRequest(_ text: String) {
-        activeRequest = useCase.sendMessage(
-            conversationIdentifier: conversationIdentifier,
-            text: text,
-            onEvent: { [weak self] event in
-                self?.performOnMain {
-                    self?.handle(event)
-                }
-            },
-            completion: { [weak self] result in
-                self?.performOnMain {
-                    self?.handleCompletion(result)
-                }
-            }
-        )
+    func appendMessage(_ message: TanyaAIMessageItemViewModel) {
+        messages.append(message)
+        let overflow = messages.count - TanyaAIMessage.historyLimit
+        guard overflow > 0 else { return }
+        messages.removeFirst(overflow)
+        let identifiers = Set(messages.map(\.identifier))
+        redirectedIdentifiers = redirectedIdentifiers.filter {
+            identifiers.contains($0.value)
+        }
     }
 
-    private func handle(_ event: TanyaAIStreamEvent) {
+    func handle(_ event: TanyaAIStreamEvent) {
         switch event {
         case .responseStarted(let messageIdentifier):
             appendAssistantPlaceholder(identifier: messageIdentifier)
@@ -171,13 +187,15 @@ public final class TanyaAIChatViewModel: ObservableObject {
             )
         case .content(let messageIdentifier, let content):
             appendContent(identifier: messageIdentifier, content: content)
-        case .suggestions(let payloads):
+        case .suggestions(let title, let payloads):
+            suggestionsTitle = title
             suggestions = payloads.map(makeSuggestion)
         case .responseCompleted:
             textDeltaBuffer.flushAll()
             isGenerating = false
             isAgentTyping = false
             activeRequest = nil
+            activeRequestIdentifier = nil
         case .hostAction(let action):
             onOutput?(.performAction(action))
         case .typing(let isTyping):
@@ -189,53 +207,15 @@ public final class TanyaAIChatViewModel: ObservableObject {
         }
     }
 
-    private func handleCompletion(_ result: Result<Void, Error>) {
+    func handleCompletion(_ result: Result<Void, Error>) {
         activeRequest = nil
+        activeRequestIdentifier = nil
         textDeltaBuffer.flushAll()
         isGenerating = false
+        isAgentTyping = false
         if case .failure = result {
             errorMessage = "The response was interrupted. Please try again."
         }
-    }
-
-    func appendMessage(_ message: TanyaAIMessageItemViewModel) {
-        messages.append(message)
-    }
-
-    private func appendUserMessage(_ text: String) {
-        let message = TanyaAIMessage(
-            identifier: UUID().uuidString,
-            role: .user,
-            content: .text(text)
-        )
-        appendMessage(TanyaAIMessageItemViewModel(message: message))
-    }
-
-    private func appendAssistantPlaceholder(identifier: String) {
-        let target = resolvedIdentifier(for: identifier)
-        if let existing = message(identifier: target),
-           isSettledApproval(existing.content) == false {
-            return
-        }
-        appendContent(identifier: identifier, content: .text(""))
-    }
-
-    private func appendTextDeltaNow(identifier: String, text: String) {
-        // Text may not overwrite a settled confirmation either: routing
-        // through `appendContent` gives the delta a fresh bubble.
-        let target = resolvedIdentifier(for: identifier)
-        guard let message = message(identifier: target),
-              isSettledApproval(message.content) == false else {
-            appendContent(identifier: identifier, content: .text(text))
-            return
-        }
-        let existingText: String
-        if case .text(let value) = message.content {
-            existingText = value
-        } else {
-            existingText = ""
-        }
-        message.update(content: .text(existingText + text))
     }
 
 }

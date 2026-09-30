@@ -1,3 +1,4 @@
+import DesignKit
 import Foundation
 import TanyaAIDomain
 
@@ -6,7 +7,7 @@ import TanyaAIDomain
 /// Split out so the ViewModel proper holds only what changes state.
 extension TanyaAIChatViewModel {
     func message(identifier: String) -> TanyaAIMessageItemViewModel? {
-        messages.first { $0.id == identifier }
+        messages.first { $0.identifier == identifier }
     }
 
     /// The newest bubble carrying this approval identifier.
@@ -24,10 +25,35 @@ extension TanyaAIChatViewModel {
         }
     }
 
+    /// The newest bubble carrying this choices identifier, for the same
+    /// reason as `approvalMessage`: a repeated question makes a second card,
+    /// and taps belong to the one in front of the customer.
+    func choicesMessage(
+        identifier: String
+    ) -> TanyaAIMessageItemViewModel? {
+        messages.last { message in
+            guard case .choices(let payload) = message.content else {
+                return false
+            }
+            return payload.identifier == identifier
+        }
+    }
+
+    func liveAgentMessage(
+        identifier: String
+    ) -> TanyaAIMessageItemViewModel? {
+        messages.last { message in
+            guard case .liveAgent(let payload) = message.content else {
+                return false
+            }
+            return payload.identifier == identifier
+        }
+    }
+
     func makeSuggestion(
         _ payload: TanyaAISuggestionPayload
-    ) -> TanyaAISuggestion {
-        TanyaAISuggestion(
+    ) -> Suggestion {
+        Suggestion(
             identifier: payload.identifier,
             title: payload.title,
             prompt: payload.prompt
@@ -42,18 +68,5 @@ extension TanyaAIChatViewModel {
         } else {
             DispatchQueue.main.async(execute: action)
         }
-    }
-
-    static func makeWelcomeMessage() -> TanyaAIMessageItemViewModel {
-        let message = TanyaAIMessage(
-            identifier: "sandbox-welcome",
-            role: .assistant,
-            content: .text(
-                "[bold]Welcome to the sanitized Tanya AI "
-                    + "sandbox.[/bold] "
-                    + "Ask for a sample portfolio to start the demo."
-            )
-        )
-        return TanyaAIMessageItemViewModel(message: message)
     }
 }

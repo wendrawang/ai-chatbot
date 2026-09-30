@@ -12,9 +12,11 @@ final class SessionSpy: TanyaAIChatSession {
     private(set) var sentTexts: [String] = []
     private(set) var sentContexts: [TanyaAIContext?] = []
     private(set) var isConnected = false
+    var connectionEvents: [TanyaAIChatSessionEvent] = []
 
     func connect() {
         isConnected = true
+        connectionEvents.forEach { onEvent?($0) }
     }
 
     func send(

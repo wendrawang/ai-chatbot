@@ -1,3 +1,4 @@
+import DesignKit
 import Foundation
 import TanyaAIContracts
 import TanyaAIDomain
@@ -16,6 +17,8 @@ final class TanyaAISessionRepositoryTests: XCTestCase {
         let session = SessionSpy()
         let repository = TanyaAISessionRepository(session: session)
 
+        XCTAssertFalse(session.isConnected)
+        repository.observeUnsolicitedEvents { _ in }
         XCTAssertTrue(session.isConnected)
         XCTAssertTrue(session.sentTexts.isEmpty)
         // The repository closes the session in deinit, so it has to outlive
@@ -28,7 +31,9 @@ final class TanyaAISessionRepositoryTests: XCTestCase {
     func testReleasingTheRepositoryClosesTheSession() {
         let session = SessionSpy()
         autoreleasepool {
-            _ = TanyaAISessionRepository(session: session)
+            let repository = TanyaAISessionRepository(session: session)
+            repository.observeUnsolicitedEvents { _ in }
+            XCTAssertTrue(session.isConnected)
         }
 
         XCTAssertFalse(session.isConnected)
@@ -89,7 +94,7 @@ final class TanyaAISessionRepositoryTests: XCTestCase {
             .structuredPayload(name: "content.actions", json: actionCardJSON)
         )
 
-        let buttons = events.compactMap { event -> [TanyaAIActionButton]? in
+        let buttons = events.compactMap { event -> [ActionButton]? in
             guard case .content(_, .actions(let payload)) = event else {
                 return nil
             }
@@ -146,7 +151,7 @@ final class TanyaAISessionRepositoryTests: XCTestCase {
             )
         )
 
-        let actions = events.compactMap { event -> TanyaAIAction? in
+        let actions = events.compactMap { event -> Action? in
             guard case .hostAction(let action) = event else {
                 return nil
             }

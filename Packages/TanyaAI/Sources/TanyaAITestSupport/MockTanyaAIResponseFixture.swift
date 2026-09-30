@@ -50,16 +50,16 @@ enum MockTanyaAIResponseFixture {
     ) -> [TanyaAIChatSessionEvent] {
         let textIdentifier = "text-\(identifier)"
         var events = [
-            event("response.started", ["messageIdentifier": textIdentifier]),
+            event("response_started", ["messageIdentifier": textIdentifier]),
             event(
-                "text.delta",
+                "text_delta",
                 ["messageIdentifier": textIdentifier, "text": text]
             )
         ]
         events.append(contentsOf: contentEvents(contents, identifier: identifier))
-        events.append(event("response.suggestions", ["suggestions": suggestions]))
+        events.append(event("suggestions", ["suggestions": suggestions]))
         events.append(
-            event("response.completed", ["messageIdentifier": textIdentifier])
+            event("response_completed", ["messageIdentifier": textIdentifier])
         )
         return events
     }
@@ -84,27 +84,12 @@ enum MockTanyaAIResponseFixture {
         _ name: String,
         _ payload: [String: Any]
     ) -> TanyaAIChatSessionEvent {
-        let identifier = payload["messageIdentifier"] as? String ?? "message"
-        switch name {
-        case "response.started":
-            return .messageStarted(messageIdentifier: identifier)
-        case "text.delta":
-            return .messageDelta(
-                messageIdentifier: identifier,
-                text: payload["text"] as? String ?? ""
-            )
-        case "response.completed":
-            return .messageCompleted(messageIdentifier: identifier)
-        default:
-            return .structuredPayload(name: name, json: json(payload))
+        do {
+            let json = try JSONSerialization.data(withJSONObject: payload, options: [.sortedKeys])
+            return try .fromWire(name: name, json: json)
+        } catch {
+            return .failed(error)
         }
-    }
-
-    private static func json(_ payload: [String: Any]) -> Data {
-        (try? JSONSerialization.data(
-            withJSONObject: payload,
-            options: [.sortedKeys]
-        )) ?? Data("{}".utf8)
     }
 
     private static func contentEvents(
