@@ -151,6 +151,58 @@ diterjemahkan menjadi tiga event `messageStarted`, `messageDelta`, dan
 `messageCompleted`. Saat chat ditutup, adapter hanya melepas listener. Login
 Tencent tetap hidup sampai logout host. Tidak ada greeting otomatis.
 
+## Uji balasan bot tanpa backend AI
+
+Untuk memastikan bubble balasan bekerja, pakai **SDKAppID yang sama** untuk
+akun nasabah dan akun bot. `botUserID` pada `TencentTanyaAIComposition` harus
+persis sama dengan ID akun bot. Buka Tanya AI di app nasabah, lalu kirim teks
+dari akun bot ke `userID` nasabah. Ada dua cara mengirim teks uji:
+
+1. Login akun bot pada **proses aplikasi lain** (misalnya simulator lain atau
+   aplikasi demo Tencent) dengan UserSig milik bot. Kirim pesan C2C ke
+   `userID` nasabah. Jangan logout akun nasabah lalu login bot pada host yang
+   sama: `V2TIMManager.shared` menyimpan satu sesi login per proses.
+2. Dari backend atau [REST API debugger Tencent](https://trtc.io/document/34919),
+   panggil `v4/openim/sendmsg` memakai `identifier` dan UserSig **app admin**.
+   Isi body berikut; `From_Account` adalah `botUserID`, `To_Account` adalah
+   `userID` nasabah yang sedang login:
+
+   ```json
+   {
+     "SyncOtherMachine": 2,
+     "From_Account": "tanya-ai-bot",
+     "To_Account": "customer-123",
+     "MsgRandom": 123456789,
+     "MsgBody": [
+       {
+         "MsgType": "TIMTextElem",
+         "MsgContent": { "Text": "Halo, ini balasan bot uji." }
+       }
+     ]
+   }
+   ```
+
+   Gunakan `MsgRandom` baru untuk setiap pengiriman. Admin UserSig dan
+   `SDKSecretKey` hanya boleh dipakai di backend/alat uji, bukan di host app.
+   Periksa `ActionStatus` dan `ErrorCode` pada respons REST, bukan hanya HTTP
+   200. Jangan set `OnlineOnlyFlag: 1` untuk uji history karena pesan itu tidak
+   disimpan dalam riwayat.
+
+Balasan yang berhasil diterima oleh listener akan menjadi bubble assistant;
+setelah layar ditutup dan dibuka lagi, pesan tersebut dibaca dari history C2C.
+Adapter hanya menampilkan **teks** saat ini, jadi custom message, suggestion,
+dan bubble kaya tidak akan tampil tanpa pemetaan payload tambahan.
+
+Untuk membuat respons otomatis, aktifkan callback
+[`C2C.CallbackAfterSendMsg`](https://trtc.io/document/34365) ke backend.
+Saat callback berasal dari nasabah ke `botUserID`, berhasil (`SendMsgResult`
+bernilai `0`), dan memuat `TIMTextElem`, backend dapat mengirim teks balasan
+melalui `v4/openim/sendmsg` dengan `From_Account = botUserID` dan
+`To_Account = From_Account` pada callback. Abaikan callback yang berasal dari
+bot agar balasan bot tidak memicu loop. Untuk PoC echo, teks respons dapat
+berupa `"Echo: " + pesanNasabah`; untuk balasan AI, ganti pembuat teks di
+backend. Jangan taruh logic atau kredensial bot di package TanyaAI.
+
 ## Batas PoC ini
 
 - Jalur yang ditulis sekarang adalah **teks biasa**. `context` dan
