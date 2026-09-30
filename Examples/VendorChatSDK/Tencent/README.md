@@ -13,9 +13,12 @@ Package **TanyaAI tetap diperlukan** untuk UI, tema, history view, dan kontrak
    host. Tambahkan `pod 'TXIMSDK_Plus_Swift_iOS_XCFramework'` ke target host,
    jalankan `pod install`, dan buka `.xcworkspace`. Samakan versi SDK dengan
    API di file contoh ini saat integrasi.
-2. Backend host menerbitkan `userID` Tencent dan **UserSig** untuk nasabah
-   yang sudah terautentikasi. Kunci untuk membuat UserSig hanya berada di
-   backend, bukan dalam app atau repo.
+2. Untuk PoC lokal, buka [Chat Console → Development Tools → UserSig Tools](https://console.trtc.io/usersig),
+   pilih `SDKAppID`, isi `UserID`, lalu klik **Generate**. Pakai `UserID` dan
+   UserSig yang sama sebagai pasangan pada `connectTencent(userID:userSig:)`.
+   Jangan commit UserSig hasil console ke repo; UserSig punya masa berlaku.
+   Untuk produksi, backend host harus menerbitkan UserSig bagi nasabah yang
+   sudah terautentikasi. `SDKSecretKey` hanya berada di backend.
 3. Siapkan `botUserID` Tencent dan proses bot/backend yang menerima pesan C2C
    dari nasabah lalu mengirim balasan sebagai akun bot. SDK ini infra pesan;
    login dan `sendMessage` saja tidak menghasilkan respons AI.
@@ -52,8 +55,8 @@ func application(
 
 Pada `login()` yang sudah ada, buat host **sebelum** mengubah state menjadi
 `.loggedIn`, agar `MainCoordinator` sejak pertama kali tampil mendapat objek
-host yang stabil. Setelah backend host memastikan login dan mengembalikan
-kredensial Tencent, jalankan `connectTencent`:
+host yang stabil. Setelah login host berhasil dan pasangan `userID`/UserSig
+Tencent tersedia, jalankan `connectTencent`:
 
 ```swift
 @Published private(set) var isTencentReady = false
@@ -89,7 +92,8 @@ func connectTencent(userID: String, userSig: String) {
 
 Panggil `prepareTanyaAI()` tepat sebelum `state = .loggedIn`, lalu
 `connectTencent` sekali per sesi login yang berhasil setelah mengambil UserSig
-dari backend. Bila UserSig kedaluwarsa atau akun ter-kick, ambil UserSig
+dari console (PoC) atau backend (produksi). Bila UserSig kedaluwarsa atau akun
+ter-kick, ambil UserSig
 baru dan login ulang melalui state aplikasi. Saat logout, kosongkan
 `tanyaAIHost`, `isTencentReady`, dan `pendingTanyaAIDeeplink`, lalu panggil
 `TencentChatLifecycle.shared.logout(completion:)`. Tunggu callback logout
