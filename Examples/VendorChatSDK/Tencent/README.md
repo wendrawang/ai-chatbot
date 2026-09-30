@@ -13,9 +13,12 @@ Package **TanyaAI tetap diperlukan** untuk UI, tema, history view, dan kontrak
    host. Tambahkan `pod 'TXIMSDK_Plus_Swift_iOS_XCFramework'` ke target host,
    jalankan `pod install`, dan buka `.xcworkspace`. Samakan versi SDK dengan
    API di file contoh ini saat integrasi.
-2. Untuk PoC lokal, buka [Chat Console → Development Tools → UserSig Tools](https://console.trtc.io/usersig),
-   pilih `SDKAppID`, isi `UserID`, lalu klik **Generate**. Pakai `UserID` dan
-   UserSig yang sama sebagai pasangan pada `connectTencent(userID:userSig:)`.
+2. Membuat akun di menu **Users** belum menghasilkan UserSig yang ditampilkan
+   di sana. Untuk PoC lokal, buka
+   [Chat Console → Development Tools → UserSig Tools](https://console.trtc.io/usersig),
+   pilih `SDKAppID`, isi `UserID` akun tadi, klik **Generate**, lalu klik
+   **Copy Signature (UserSig)** pada hasil generator. Pakai `UserID` dan
+   UserSig tersebut sebagai pasangan pada `connectTencent(userID:userSig:)`.
    Jangan commit UserSig hasil console ke repo; UserSig punya masa berlaku.
    Untuk produksi, backend host harus menerbitkan UserSig bagi nasabah yang
    sudah terautentikasi. `SDKSecretKey` hanya berada di backend.
