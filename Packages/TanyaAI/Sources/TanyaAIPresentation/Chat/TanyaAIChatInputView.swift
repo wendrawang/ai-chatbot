@@ -27,6 +27,7 @@ struct TanyaAIChatInputView: View {
                 font: theme.fonts.body,
                 textColor: theme.colors.primaryText
             )
+            .fixedSize(horizontal: false, vertical: true)
             .frame(maxWidth: .infinity)
 
             if viewModel.inputText.isEmpty {
