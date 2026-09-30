@@ -22,8 +22,9 @@ Package **TanyaAI tetap diperlukan** untuk UI, tema, history view, dan kontrak
    Jangan commit UserSig hasil console ke repo; UserSig punya masa berlaku.
    Untuk produksi, backend host harus menerbitkan UserSig bagi nasabah yang
    sudah terautentikasi. `SDKSecretKey` hanya berada di backend.
-3. Siapkan `botUserID` Tencent dan proses bot/backend yang menerima pesan C2C
-   dari nasabah lalu mengirim balasan sebagai akun bot. SDK ini infra pesan;
+3. Siapkan `botUserID` Tencent. Uji balasan manual dapat memakai REST API;
+   balasan otomatis membutuhkan proses bot/backend yang menerima pesan C2C
+   dari nasabah lalu membalas sebagai akun bot. SDK ini infra pesan;
    login dan `sendMessage` saja tidak menghasilkan respons AI.
 4. Tentukan kebijakan satu percakapan per nasabah. Contoh ini membaca 20 pesan
    C2C terakhir; pagination history dan pergantian conversation perlu ditambah
@@ -158,11 +159,8 @@ akun nasabah dan akun bot. `botUserID` pada `TencentTanyaAIComposition` harus
 persis sama dengan ID akun bot. Buka Tanya AI di app nasabah, lalu kirim teks
 dari akun bot ke `userID` nasabah. Ada dua cara mengirim teks uji:
 
-1. Login akun bot pada **proses aplikasi lain** (misalnya simulator lain atau
-   aplikasi demo Tencent) dengan UserSig milik bot. Kirim pesan C2C ke
-   `userID` nasabah. Jangan logout akun nasabah lalu login bot pada host yang
-   sama: `V2TIMManager.shared` menyimpan satu sesi login per proses.
-2. Dari backend atau [REST API debugger Tencent](https://trtc.io/document/34919),
+1. Dari terminal yang dapat mengakses Tencent, backend, atau
+   [REST API debugger Tencent](https://www.tencentcloud.com/document/product/1047/34919),
    panggil `v4/openim/sendmsg` memakai `identifier` dan UserSig **app admin**.
    Isi body berikut; `From_Account` adalah `botUserID`, `To_Account` adalah
    `userID` nasabah yang sedang login:
@@ -187,6 +185,51 @@ dari akun bot ke `userID` nasabah. Ada dua cara mengirim teks uji:
    Periksa `ActionStatus` dan `ErrorCode` pada respons REST, bukan hanya HTTP
    200. Jangan set `OnlineOnlyFlag: 1` untuk uji history karena pesan itu tidak
    disimpan dalam riwayat.
+2. Atau login akun bot pada **proses aplikasi lain** dengan UserSig milik bot,
+   lalu kirim pesan C2C ke `userID` nasabah. Jangan logout akun nasabah lalu
+   login bot pada host yang sama: `V2TIMManager.shared` menyimpan satu sesi
+   login per proses.
+
+Contoh `curl` untuk cara pertama (jalankan di mesin/server yang **bisa**
+menjangkau API Tencent; bila Mac kantor memblokir Tencent, `curl` pada Mac
+itu juga tidak akan berhasil):
+
+```sh
+TENCENT_REST_HOST='adminapiidn.im.qcloud.com' # Contoh Jakarta; sesuaikan region SDKAppID.
+TENCENT_APP_ID='SDKAppID_ANDA'
+TENCENT_ADMIN_ID='administrator' # Cek ID app admin di console.
+TENCENT_ADMIN_SIG='USERSIG_APP_ADMIN'
+TENCENT_BOT_ID='tanya-ai-bot'
+TENCENT_CUSTOMER_ID='customer-123'
+TENCENT_REQUEST_RANDOM=$(od -An -N4 -tu4 /dev/urandom | tr -d '[:space:]')
+TENCENT_MESSAGE_RANDOM=$(od -An -N4 -tu4 /dev/urandom | tr -d '[:space:]')
+
+curl --silent --show-error --fail-with-body --request POST \
+  --url "https://${TENCENT_REST_HOST}/v4/openim/sendmsg" \
+  --url-query "sdkappid=${TENCENT_APP_ID}" \
+  --url-query "identifier=${TENCENT_ADMIN_ID}" \
+  --url-query "usersig=${TENCENT_ADMIN_SIG}" \
+  --url-query "random=${TENCENT_REQUEST_RANDOM}" \
+  --url-query 'contenttype=json' \
+  --header 'Content-Type: application/json' \
+  --data-binary @- <<JSON
+{
+  "SyncOtherMachine": 2,
+  "From_Account": "${TENCENT_BOT_ID}",
+  "To_Account": "${TENCENT_CUSTOMER_ID}",
+  "MsgRandom": ${TENCENT_MESSAGE_RANDOM},
+  "MsgBody": [{
+    "MsgType": "TIMTextElem",
+    "MsgContent": { "Text": "Halo, ini balasan bot uji." }
+  }]
+}
+JSON
+```
+
+`TENCENT_ADMIN_SIG` adalah UserSig untuk **app admin**, bukan UserSig nasabah
+atau bot. Buat untuk ID admin melalui UserSig Tools saat PoC. Akun bot dan
+nasabah harus ada pada SDKAppID yang sama. Jangan simpan kredensial admin di
+repo atau host app. `curl` modern diperlukan untuk opsi `--url-query`.
 
 Balasan yang berhasil diterima oleh listener akan menjadi bubble assistant;
 setelah layar ditutup dan dibuka lagi, pesan tersebut dibaca dari history C2C.
@@ -212,9 +255,10 @@ backend. Jangan taruh logic atau kredensial bot di package TanyaAI.
   kontrak payload bot yang disepakati. Adapter ini tidak menebak JSON yang
   dikirim bot. Definisikan custom message sesuai `docs/BUBBLE_SCHEMA.md`,
   kemudian petakan ke event `TanyaAIChatSession` bila PoC mencakup fitur itu.
-- Tidak ada E2E tanpa SDK terpasang, UserSig yang valid, akun bot, dan proses
-  backend yang menjawab pesan. Verifikasi akhir perlu dilakukan di host app
-  dengan dua akun Tencent. File contoh ini bukan target build repo sandbox.
+- Uji balasan manual membutuhkan SDK terpasang, login nasabah yang valid,
+  akun bot, dan satu pesan dari akun bot (melalui REST atau klien kedua).
+  Balasan otomatis membutuhkan backend yang menjawab pesan. Verifikasi akhir
+  tetap perlu dilakukan di host app; file contoh bukan target build sandbox.
 
 Referensi API: [integrasi SDK iOS](https://trtc.io/document/34307),
 [Swift V2TIMManager](https://im.sdk.qcloud.com/doc/en/swift_V2TIMManager.html),
