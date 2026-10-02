@@ -21,19 +21,30 @@ struct TanyaAIChatInputView: View {
     }
 
     private var field: some View {
-        TextField(
-            "Ask Tanya AI",
-            text: $viewModel.inputText,
-            onCommit: viewModel.sendCurrentMessage
-        )
-        .font(Font(theme.fonts.body))
-        .foregroundColor(Color(theme.colors.primaryText))
+        ZStack(alignment: .topLeading) {
+            TanyaAIGrowingTextView(
+                text: $viewModel.inputText,
+                font: theme.fonts.body,
+                textColor: theme.colors.primaryText
+            )
+            .fixedSize(horizontal: false, vertical: true)
+            .frame(maxWidth: .infinity)
+
+            if viewModel.inputText.isEmpty {
+                Text("Ask Tanya AI")
+                    .font(Font(theme.fonts.body))
+                    .foregroundColor(Color(theme.colors.secondaryText))
+                    .accessibilityHidden(true)
+                    .allowsHitTesting(false)
+            }
+        }
         .padding(.horizontal, 18)
         .padding(.vertical, 12)
         .background(Color(theme.colors.surface))
-        .clipShape(Capsule())
+        .clipShape(RoundedRectangle(cornerRadius: 22))
         .overlay(
-            Capsule().stroke(Color(theme.colors.divider), lineWidth: 1)
+            RoundedRectangle(cornerRadius: 22)
+                .stroke(Color(theme.colors.divider), lineWidth: 1)
         )
     }
 
