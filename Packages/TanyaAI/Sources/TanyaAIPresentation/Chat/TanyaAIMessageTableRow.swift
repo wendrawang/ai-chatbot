@@ -6,6 +6,8 @@ struct TanyaAIMessageTableRow: View {
     let kind: TanyaAIMessageRowKind
     let theme: Theme
     let handlers: TanyaAIMessageRowHandlers
+    var artwork = ArtworkMetrics()
+    var imageLoader: ImageLoading = ImageLoader.shared
 
     var body: some View {
         Group {
@@ -26,8 +28,10 @@ struct TanyaAIMessageTableRow: View {
                 )
             }
         }
-        .padding(.horizontal, 16)
-        .padding(.vertical, 6)
+        .padding(.horizontal, artwork.size(DesignKitMetrics.Spacing.wide))
+        .padding(.vertical, artwork.size(DesignKitMetrics.Spacing.snug))
         .theme(theme)
+        .artwork(artwork)
+        .imageLoader(imageLoader)
     }
 }

@@ -15,14 +15,17 @@ public struct TanyaAIDependencies {
     /// to its existing flows never needs one, and passes nil.
     public let authorizationService: TanyaAIAuthorizationService?
     public let theme: Theme
+    public let imageLoader: ImageLoading
 
     public init(
         chatSession: TanyaAIChatSession,
         authorizationService: TanyaAIAuthorizationService? = nil,
-        theme: Theme
+        theme: Theme,
+        imageLoader: ImageLoading = ImageLoader()
     ) {
         self.chatSession = chatSession
         self.authorizationService = authorizationService
         self.theme = theme
+        self.imageLoader = imageLoader
     }
 }

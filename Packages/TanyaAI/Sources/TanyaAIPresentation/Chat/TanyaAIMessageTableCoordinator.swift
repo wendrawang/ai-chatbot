@@ -16,6 +16,8 @@ extension TanyaAIMessageTableView {
         private var isFollowingLatestMessage = true
         private var scrollRequestIdentifier = 0
         private var theme = Theme.sandbox
+        private var artwork = ArtworkMetrics()
+        private var imageLoader: ImageLoading = ImageLoader.shared
         private var handlers = TanyaAIMessageRowHandlers.inert
         private var subscriptions: [ObjectIdentifier: AnyCancellable] = [:]
         private var isHeightUpdatePending = false
@@ -30,12 +32,17 @@ extension TanyaAIMessageTableView {
         func update(
             _ state: TanyaAIMessageListState,
             theme: Theme,
-            handlers: TanyaAIMessageRowHandlers
+            handlers: TanyaAIMessageRowHandlers,
+            artwork: ArtworkMetrics = ArtworkMetrics(),
+            imageLoader: ImageLoading = ImageLoader.shared
         ) {
             let previous = self.state
-            let isThemeChanged = self.theme != theme
+            let isThemeChanged = self.theme != theme || self.artwork != artwork
+                || self.imageLoader !== imageLoader
             self.state = state
             self.theme = theme
+            self.artwork = artwork
+            self.imageLoader = imageLoader
             self.handlers = handlers
             bindMessages(state.messages)
 
@@ -102,7 +109,9 @@ extension TanyaAIMessageTableView {
             TanyaAIMessageTableRow(
                 kind: kind,
                 theme: theme,
-                handlers: handlers
+                handlers: handlers,
+                artwork: artwork,
+                imageLoader: imageLoader
             )
         }
 

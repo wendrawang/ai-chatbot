@@ -9,14 +9,15 @@ import SwiftUI
 struct TanyaAIChatInputView: View {
     @ObservedObject var viewModel: TanyaAIChatViewModel
     @Environment(\.theme) private var theme
+    @Environment(\.artwork) private var artwork
 
     var body: some View {
-        HStack(alignment: .bottom, spacing: 10) {
+        HStack(alignment: .bottom, spacing: artwork.size(10)) {
             field
             actionButton
         }
-        .padding(.horizontal, 16)
-        .padding(.vertical, 12)
+        .padding(.horizontal, artwork.size(16))
+        .padding(.vertical, artwork.size(12))
         .background(Color(theme.colors.background))
     }
 
@@ -38,13 +39,13 @@ struct TanyaAIChatInputView: View {
                     .allowsHitTesting(false)
             }
         }
-        .padding(.horizontal, 18)
-        .padding(.vertical, 12)
+        .padding(.horizontal, artwork.size(18))
+        .padding(.vertical, artwork.size(12))
         .background(Color(theme.colors.surface))
-        .clipShape(RoundedRectangle(cornerRadius: 22))
+        .clipShape(RoundedRectangle(cornerRadius: artwork.size(22)))
         .overlay(
-            RoundedRectangle(cornerRadius: 22)
-                .stroke(Color(theme.colors.divider), lineWidth: 1)
+            RoundedRectangle(cornerRadius: artwork.size(22))
+                .stroke(Color(theme.colors.divider), lineWidth: artwork.size(1))
         )
     }
 
@@ -74,9 +75,9 @@ struct TanyaAIChatInputView: View {
     ) -> some View {
         Button(action: action) {
             Image(systemName: symbol)
-                .font(.system(size: 16, weight: .bold))
+                .font(.system(size: artwork.size(16), weight: .bold))
                 .foregroundColor(Color(theme.colors.userBubbleText))
-                .frame(width: 44, height: 44)
+                .frame(width: artwork.tapTarget(), height: artwork.tapTarget())
                 .background(Color(theme.colors.accent))
                 .clipShape(Circle())
         }

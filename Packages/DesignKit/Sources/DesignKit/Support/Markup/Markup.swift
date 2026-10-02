@@ -56,11 +56,11 @@ enum MarkupTag: String {
 ///   text instead of losing everything after the bracket.
 /// - **Anything else stays literal.** A stray `[` is just a bracket.
 enum MarkupParser {
+    static let maximumDepth = 32
     static func runs(from source: String) -> [MarkupRun] {
         var frames: [Frame] = [Frame(tag: nil)]
         var buffer = ""
         var index = source.startIndex
-
         while index < source.endIndex {
             guard source[index] == "[" else {
                 buffer.append(source[index])
@@ -93,6 +93,9 @@ enum MarkupParser {
             if token.isClosing {
                 close(token.name, in: &frames)
             } else {
+                guard frames.count <= maximumDepth else {
+                    return [MarkupRun(text: plainText(from: source), style: MarkupStyle())]
+                }
                 frames.append(Frame(tag: MarkupTag(rawValue: token.name)))
             }
         }
@@ -202,32 +205,4 @@ enum MarkupParser {
         }
     }
 
-    static func isValidHex(_ value: String) -> Bool {
-        value.count == 6 && value.allSatisfy(\.isHexDigit)
-    }
-
-    private struct Token {
-        let name: String
-        let isClosing: Bool
-        let isTag: Bool
-        let end: String.Index
-
-        init?(source: String, from start: String.Index) {
-            // A tag has at most 12 letters plus brackets and an optional '/'.
-            // Never rescan the whole remaining message for each literal '['.
-            guard let closingBracket = source[start...].prefix(15).firstIndex(of: "]")
-            else {
-                return nil
-            }
-            let inner = source[source.index(after: start)..<closingBracket]
-            let isClosing = inner.hasPrefix("/")
-            let name = String(isClosing ? inner.dropFirst() : inner)
-            self.name = name
-            self.isClosing = isClosing
-            self.end = source.index(after: closingBracket)
-            self.isTag = name.isEmpty == false
-                && name.count <= 12
-                && name.allSatisfy { $0.isLowercase && $0.isLetter }
-        }
-    }
 }

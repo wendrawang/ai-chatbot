@@ -1,3 +1,5 @@
+import DesignKit
+import TanyaAIDomain
 import SwiftUI
 
 public struct ApprovalBubble: View {
@@ -6,6 +8,7 @@ public struct ApprovalBubble: View {
     let onCancel: () -> Void
     let onApprove: () -> Void
     @Environment(\.theme) private var theme
+    @Environment(\.artwork) private var artwork
 
     public init(
         payload: ApprovalPayload,
@@ -29,8 +32,8 @@ public struct ApprovalBubble: View {
             actions
         }
         .background(Color(theme.colors.surface))
-        .cornerRadius(DesignKitMetrics.Radius.card)
-        .frame(maxWidth: 340, alignment: .leading)
+        .cornerRadius(artwork.size(DesignKitMetrics.Radius.card))
+        .frame(maxWidth: artwork.size(DesignKitMetrics.Size.cardMaximumWidth), alignment: .leading)
         .accessibilityElement(children: .contain)
         .accessibilityIdentifier(
             "confirmation.\(payload.kind.rawValue)"
@@ -38,43 +41,44 @@ public struct ApprovalBubble: View {
     }
 
     private var header: some View {
-        HStack(spacing: 10) {
+        HStack(spacing: artwork.size(DesignKitMetrics.Spacing.medium)) {
             Image(systemName: symbolName)
-                .font(Font(theme.fonts.headline))
+                .designFont(.headline)
                 .foregroundColor(Color(theme.colors.accent))
-                .frame(width: 24)
+                .frame(width: artwork.size(DesignKitMetrics.Size.icon))
             Text(payload.title)
-                .font(Font(theme.fonts.headline))
+                .designFont(.headline)
                 .foregroundColor(Color(theme.colors.primaryText))
         }
-        .padding(DesignKitMetrics.Spacing.wide)
+        .foregroundColor(Color(theme.colors.primaryText))
+        .padding(artwork.size(DesignKitMetrics.Spacing.wide))
     }
 
     private var summary: some View {
-        VStack(spacing: DesignKitMetrics.Spacing.regular) {
+        VStack(spacing: artwork.size(DesignKitMetrics.Spacing.regular)) {
             ForEach(payload.summary.indices, id: \.self) { index in
-                HStack(alignment: .firstTextBaseline, spacing: DesignKitMetrics.Spacing.regular) {
+                HStack(alignment: .firstTextBaseline, spacing: artwork.size(DesignKitMetrics.Spacing.regular)) {
                     Text(payload.summary[index].label)
                         .foregroundColor(Color(theme.colors.secondaryText))
-                    Spacer(minLength: 8)
+                    Spacer(minLength: artwork.size(DesignKitMetrics.Spacing.compact))
                     Text(payload.summary[index].value)
-                        .font(Font(theme.fonts.headline))
+                        .designFont(.headline)
                         .multilineTextAlignment(.trailing)
                 }
-                .font(Font(theme.fonts.subheadline))
+                .designFont(.subheadline)
             }
         }
-        .padding(DesignKitMetrics.Spacing.wide)
+        .padding(artwork.size(DesignKitMetrics.Spacing.wide))
     }
 
     @ViewBuilder
     private var notice: some View {
         if let notice = payload.notice {
             Text(notice)
-                .font(Font(theme.fonts.footnote))
+                .designFont(.footnote)
                 .foregroundColor(Color(theme.colors.secondaryText))
-                .padding(.horizontal, DesignKitMetrics.Spacing.wide)
-                .padding(.bottom, 12)
+                .padding(.horizontal, artwork.size(DesignKitMetrics.Spacing.wide))
+                .padding(.bottom, artwork.size(DesignKitMetrics.Spacing.regular))
         }
     }
 
@@ -82,36 +86,33 @@ public struct ApprovalBubble: View {
     private var status: some View {
         if payload.state != .awaitingApproval {
             Text(statusText)
-                .font(Font(theme.fonts.footnote))
+                .designFont(.footnote)
                 .foregroundColor(statusColor)
-                .padding(.horizontal, DesignKitMetrics.Spacing.wide)
-                .padding(.bottom, 12)
+                .padding(.horizontal, artwork.size(DesignKitMetrics.Spacing.wide))
+                .padding(.bottom, artwork.size(DesignKitMetrics.Spacing.regular))
         }
     }
 
     @ViewBuilder
     private var actions: some View {
         if payload.state == .awaitingApproval {
-            HStack(spacing: DesignKitMetrics.Spacing.compact) {
-                actionButton("Edit", action: onEdit)
-                actionButton("Cancel", action: onCancel)
+            HStack(spacing: artwork.size(DesignKitMetrics.Spacing.compact)) {
+                actionButton(ChatCopy.text("Edit"), action: onEdit)
+                actionButton(ChatCopy.text("Cancel"), action: onCancel)
                 Button(action: onApprove) {
-                    Text("Confirm")
-                        .font(Font(theme.fonts.button))
+                    Text(ChatCopy.text("Confirm"))
+                        .designFont(.button)
                         .frame(
                             maxWidth: .infinity,
-                            minHeight: DesignKitMetrics.Size
-                                .minimumTapTarget
+                            minHeight: artwork.tapTarget()
                         )
                 }
-                .foregroundColor(Color(theme.colors.userBubbleText))
-                .background(Color(theme.colors.accent))
-                .cornerRadius(DesignKitMetrics.Radius.bubble)
+                .buttonStyle(DesignButtonStyle())
                 .accessibilityIdentifier(
                     "approval.open.\(payload.kind.rawValue)"
                 )
             }
-            .padding(DesignKitMetrics.Spacing.regular)
+            .padding(artwork.size(DesignKitMetrics.Spacing.regular))
         }
     }
 
@@ -121,21 +122,19 @@ public struct ApprovalBubble: View {
     ) -> some View {
         Button(action: action) {
             Text(title)
-                .font(Font(theme.fonts.button))
+                .designFont(.button)
                 .frame(
                     maxWidth: .infinity,
-                    minHeight: DesignKitMetrics.Size.minimumTapTarget
+                    minHeight: artwork.tapTarget(DesignKitMetrics.Size.minimumTapTarget)
                 )
         }
-        .foregroundColor(Color(theme.colors.primaryText))
-        .background(Color(theme.colors.background))
-        .cornerRadius(DesignKitMetrics.Radius.bubble)
+        .buttonStyle(DesignButtonStyle(.secondary))
     }
 
     private var cardDivider: some View {
         Rectangle()
             .fill(Color(theme.colors.divider))
-            .frame(height: 0.5)
+            .frame(height: artwork.stroke(0.5))
     }
 
     private var symbolName: String {
@@ -150,13 +149,13 @@ public struct ApprovalBubble: View {
 
     private var statusText: String {
         switch payload.state {
-        case .awaitingApproval: return "Awaiting your approval"
-        case .authorizing: return "Authorizing securely"
-        case .processing: return "Processing"
-        case .completed: return "Completed"
-        case .failed: return "Authorization failed"
-        case .expired: return "Approval expired"
-        case .cancelled: return "Cancelled"
+        case .awaitingApproval: return ChatCopy.text("Awaiting your approval")
+        case .authorizing: return ChatCopy.text("Authorizing securely")
+        case .processing: return ChatCopy.text("Processing")
+        case .completed: return ChatCopy.text("Completed")
+        case .failed: return ChatCopy.text("Authorization failed")
+        case .expired: return ChatCopy.text("Approval expired")
+        case .cancelled: return ChatCopy.text("Cancelled")
         }
     }
 

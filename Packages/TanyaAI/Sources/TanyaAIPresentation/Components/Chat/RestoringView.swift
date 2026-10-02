@@ -1,3 +1,5 @@
+import DesignKit
+import TanyaAIDomain
 import Foundation
 import SwiftUI
 
@@ -9,20 +11,21 @@ import SwiftUI
 /// swapped in afterwards would start from a zero frame instead.
 public struct RestoringView: View {
     @Environment(\.theme) private var theme
+    @Environment(\.artwork) private var artwork
 
     public init() {}
 
     public var body: some View {
-        VStack(spacing: DesignKitMetrics.Spacing.regular) {
+        VStack(spacing: artwork.size(DesignKitMetrics.Spacing.regular)) {
             ProgressView()
-            Text("Loading your conversation")
-                .font(Font(theme.fonts.footnote))
+            Text(ChatCopy.text("Loading your conversation"))
+                .designFont(.footnote)
                 .foregroundColor(Color(theme.colors.secondaryText))
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .background(Color(theme.colors.background))
         .accessibilityElement(children: .ignore)
-        .accessibility(label: Text("Loading your conversation"))
+        .accessibility(label: Text(ChatCopy.text("Loading your conversation")))
         .accessibility(identifier: "chat.restoring")
     }
 }

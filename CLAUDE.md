@@ -24,22 +24,25 @@ di dalam `Packages/TanyaAI`, tapi package sendiri, supaya kelak bisa diangkat
 keluar untuk fitur lain. Ketergantungannya satu arah: TanyaAI → DesignKit,
 tidak pernah sebaliknya.
 
-Karena itu **tipe payload ikut pindah ke DesignKit**. Kalau payload tetap di
-`TanyaAIDomain`, DesignKit harus bergantung balik ke TanyaAI dan SwiftPM
-menolak siklusnya. `TanyaAIMessageRowView` tetap di `TanyaAIPresentation`:
-tugasnya memetakan view model ke komponen, jadi ia jahitannya.
+Data presentasi reusable tetap di `DesignKit/Models`. Kontrak fitur chat
+(approval transaction/challenge, action/deeplink, pilihan prompt, suggestion,
+agent handoff) berada di `TanyaAIDomain`; view-nya di
+`TanyaAIPresentation/Components/Chat`. `TanyaAIMessageRowView` menjahitnya.
+DesignKit tidak memerlukan dependensi balik ke fitur.
 
 Isi DesignKit disusun atomic design:
 
 | Folder | Isi |
 | --- | --- |
-| `Tokens/` | `DesignKitMetrics`, `Theme`, `Colors`, `Fonts`, `ThemeEnvironment` |
-| `Models/` | `ApprovalPayload`, `ChartPayload`, `Action`, `Suggestion`, dst |
-| `Atoms/` | `OutlinedBackground`, `RemoteImage`, `RichText`, `Markup`, `SegmentedBarView` |
-| `Molecules/` | `TextBubble`, `ImageBubble`, `SuggestionRow`, `ActionLink`, `TypingIndicatorView`, … |
-| `Organisms/` | `ApprovalBubble`, `ChartBubble`, `ReceiptBubble`, `SuggestionList`, `ActionBubble`, … |
+| `Tokens`, `Theme`, `Typography`, `Foundations` | Nilai dasar, semantic mapping, font dan artwork metrics |
+| `Models` | Data presentasi chart, image, information, receipt, portfolio |
+| `Atoms` | Primitive visual dan button style |
+| `Molecules` | Text/image/status/information card dan chart legend |
+| `Organisms` | Chart, receipt, portfolio, financial list dan HTML card |
+| `Support` | Parser, image loading, WebKit dan perhitungan layout; bukan UI atom |
 
-**Angka tampilan ambil dari `DesignKitMetrics`, jangan ketik langsung.**
+**Angka tampilan ambil dari `DesignKitMetrics`, lalu resolve melalui artwork environment.**
+Generated token selalu nilai dasar; `sizeInArtwork(_:)` tidak mengubah token.
 
 **Tidak boleh ada kata "Tanya" di dalam DesignKit** — nama tipe, nama file,
 maupun teks. Ia harus bisa dipakai fitur lain tanpa terasa pinjaman. Host
@@ -72,10 +75,11 @@ Sebelas tipe konten plus fallback. Yang perlu diingat soal tampilannya:
   pilihan.** Suggestion sekali tap langsung kirim; choices menunggu submit.
 - **Shortcut bukan protokol.** Host yang inquiry lalu mengoper daftarnya lewat
   `TanyaAIConfiguration` — sebuah nilai, bukan layanan.
-- **`content.image` mengambil gambar lewat `URLSession.shared`.** Di bank ini
-  keputusan, bukan detail: host yang melakukan pinning mem-pin session-nya
-  sendiri, dan ini bukan session itu. Kirim `aspectRatio` — tanpa itu tinggi
-  baris berubah saat gambar mendarat.
+- **`content.image` menggunakan `ImageLoading` yang bisa diinjeksi.** Host dapat
+  memakai `ImageLoader(session: pinnedSession)` per sesi. Clear decoded cache
+  saat logout; task view dibatalkan saat dilepas. Kirim `aspectRatio` agar tinggi stabil.
+
+Panduan migrasi: `docs/DESIGNKIT_MIGRATION.md`.
 
 ## Perintah
 

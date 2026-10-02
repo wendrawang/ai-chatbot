@@ -1,6 +1,7 @@
 import UIKit
 
 public struct Fonts: Equatable {
+    var recipes: [DesignKitTypography]?
     public let title: UIFont
     public let headline: UIFont
     public let body: UIFont

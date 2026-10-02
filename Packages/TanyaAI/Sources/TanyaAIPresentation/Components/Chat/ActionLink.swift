@@ -1,3 +1,5 @@
+import DesignKit
+import TanyaAIDomain
 import SwiftUI
 
 /// One hand-off link - "Lihat Produk Sekarang", "Connect dengan Agent".
@@ -8,6 +10,7 @@ public struct ActionLink: View {
     let button: ActionButton
     let onTap: (Action) -> Void
     @Environment(\.theme) private var theme
+    @Environment(\.artwork) private var artwork
 
     public init(
         button: ActionButton,
@@ -33,9 +36,9 @@ public struct ActionLink: View {
 
     private var label: some View {
         text
-            .font(Font(theme.fonts.button))
-            .padding(.horizontal, DesignKitMetrics.Spacing.wide)
-            .frame(minHeight: DesignKitMetrics.Size.minimumTapTarget)
+            .designFont(.button)
+            .padding(.horizontal, artwork.size(DesignKitMetrics.Spacing.wide))
+            .frame(minHeight: artwork.tapTarget(DesignKitMetrics.Size.minimumTapTarget))
             .fixedSize(horizontal: false, vertical: true)
     }
 

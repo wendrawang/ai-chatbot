@@ -50,6 +50,8 @@ final class TanyaAICoordinator: NSObject {
         let controller = UIHostingController(
             rootView: TanyaAIChatView(viewModel: viewModel)
                 .theme(dependencyContainer.theme)
+                .imageLoader(dependencyContainer.imageLoader)
+                .artworkLayout()
         )
         chatViewModel = viewModel
         chatController = controller
@@ -65,6 +67,8 @@ final class TanyaAICoordinator: NSObject {
         let controller = UIHostingController(
             rootView: TanyaAIHistoryView(viewModel: viewModel)
                 .theme(dependencyContainer.theme)
+                .imageLoader(dependencyContainer.imageLoader)
+                .artworkLayout()
         )
         navigationController.pushViewController(
             controller,

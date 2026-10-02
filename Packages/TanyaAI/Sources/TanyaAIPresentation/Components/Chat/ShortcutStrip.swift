@@ -1,3 +1,5 @@
+import DesignKit
+import TanyaAIDomain
 import SwiftUI
 
 /// The shortcuts a host offers above the keyboard.
@@ -10,6 +12,7 @@ public struct ShortcutStrip: View {
     let shortcuts: [Suggestion]
     let onSelect: (Suggestion) -> Void
     @Environment(\.theme) private var theme
+    @Environment(\.artwork) private var artwork
 
     public init(
         shortcuts: [Suggestion],
@@ -21,7 +24,7 @@ public struct ShortcutStrip: View {
 
     public var body: some View {
         ScrollView(.horizontal, showsIndicators: false) {
-            HStack(spacing: DesignKitMetrics.Spacing.compact) {
+            HStack(spacing: artwork.size(DesignKitMetrics.Spacing.compact)) {
                 ForEach(shortcuts, id: \.identifier) { shortcut in
                     Button(
                         action: { onSelect(shortcut) },
@@ -31,22 +34,22 @@ public struct ShortcutStrip: View {
                     .background(pill)
                     .accessibilityIdentifier("shortcut.\(shortcut.identifier)")
                     .accessibility(
-                        label: Text("Shortcut: \(shortcut.title)")
+                        label: Text(String(format: ChatCopy.text("Shortcut: %@"), shortcut.title))
                     )
                 }
             }
-            .padding(.horizontal, DesignKitMetrics.Spacing.regular)
-            .padding(.vertical, DesignKitMetrics.Spacing.compact)
+            .padding(.horizontal, artwork.size(DesignKitMetrics.Spacing.regular))
+            .padding(.vertical, artwork.size(DesignKitMetrics.Spacing.compact))
         }
         .accessibilityIdentifier("shortcuts.strip")
     }
 
     private func label(_ shortcut: Suggestion) -> some View {
         Text(shortcut.title)
-            .font(Font(theme.fonts.button))
+            .designFont(.button)
             .lineLimit(1)
-            .padding(.horizontal, DesignKitMetrics.Spacing.wide)
-            .frame(minHeight: DesignKitMetrics.Size.minimumTapTarget)
+            .padding(.horizontal, artwork.size(DesignKitMetrics.Spacing.wide))
+            .frame(minHeight: artwork.tapTarget(DesignKitMetrics.Size.minimumTapTarget))
     }
 
     private var pill: some View {
@@ -55,7 +58,7 @@ public struct ShortcutStrip: View {
             .overlay(
                 Capsule().stroke(
                     Color(theme.colors.divider),
-                    lineWidth: DesignKitMetrics.Stroke.hairline
+                    lineWidth: artwork.stroke(DesignKitMetrics.Stroke.hairline)
                 )
             )
     }

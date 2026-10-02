@@ -8,6 +8,7 @@ import SwiftUI
 public struct HTMLBubble: View {
     let payload: HTMLPayload
     @Environment(\.theme) private var theme
+    @Environment(\.artwork) private var artwork
     @State private var height: CGFloat
 
     public init(payload: HTMLPayload) {
@@ -16,25 +17,26 @@ public struct HTMLBubble: View {
         // anything renders. A measured correction afterwards moves the
         // conversation under the reader, which is what `declaredHeight` is
         // there to avoid.
-        _height = State(initialValue: payload.initialHeight)
+        _height = State(initialValue: HTMLSizing.height(payload.initialHeight))
     }
 
     public var body: some View {
         HTMLWebView(
             html: payload.html,
             theme: theme,
-            onHeightChange: adopt
+            onHeightChange: adopt,
+            artwork: artwork
         )
         .frame(height: height)
-        .padding(DesignKitMetrics.Spacing.regular)
+        .padding(artwork.size(DesignKitMetrics.Spacing.regular))
         .background(OutlinedBackground())
         .frame(
-            maxWidth: DesignKitMetrics.Size.bubbleMaximumWidth,
+            maxWidth: artwork.size(DesignKitMetrics.Size.bubbleMaximumWidth),
             alignment: .leading
         )
         .accessibilityElement(children: .ignore)
         .accessibility(
-            label: Text(payload.accessibilityText ?? "Formatted result")
+            label: Text(payload.accessibilityText ?? DesignCopy.text("Formatted result"))
         )
         .accessibilityIdentifier("html.card")
     }
@@ -47,6 +49,6 @@ public struct HTMLBubble: View {
         guard abs(measured - height) > 1 else {
             return
         }
-        height = measured
+        height = HTMLSizing.height(measured)
     }
 }

@@ -644,9 +644,13 @@ Add a small value type under:
 Packages/DesignKit/Sources/DesignKit/Models
 ```
 
-Shared bubble payloads live in DesignKit so its renderers do not depend back
-on TanyaAI. Feature-only message and stream models stay in TanyaAIDomain.
-Models contain meaning, not layout coordinates or networking details.
+Reusable presentation data lives in DesignKit. Chat-specific approval, action,
+choices, suggestion, and handoff contracts live in TanyaAIDomain; their views
+live in TanyaAIPresentation/Components/Chat. DesignKit has no dependency on the
+feature. Models contain meaning, not layout coordinates or networking details.
+
+See [DesignKit migration](docs/DESIGNKIT_MIGRATION.md) for atomic boundaries,
+container-based artwork sizing, theme selection, typography, and host setup.
 
 ### 4. Add DTO and mapper support
 

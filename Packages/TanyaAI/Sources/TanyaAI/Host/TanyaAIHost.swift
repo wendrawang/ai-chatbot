@@ -1,5 +1,6 @@
 import Combine
 import DesignKit
+import TanyaAIDomain
 import Foundation
 import TanyaAIContracts
 import UIKit

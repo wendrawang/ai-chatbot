@@ -1,3 +1,5 @@
+import DesignKit
+import TanyaAIDomain
 import SwiftUI
 
 /// One prompt the reply is offering.
@@ -8,6 +10,7 @@ public struct SuggestionRow: View {
     let suggestion: Suggestion
     let onSelect: (Suggestion) -> Void
     @Environment(\.theme) private var theme
+    @Environment(\.artwork) private var artwork
 
     public init(
         suggestion: Suggestion,
@@ -26,31 +29,31 @@ public struct SuggestionRow: View {
         // No outline of its own: the list it sits in is the bubble, and a
         // border here would draw a box inside a box.
         .accessibility(
-            label: Text("Suggested question: \(suggestion.title)")
+            label: Text(String(format: ChatCopy.text("Suggested question: %@"), suggestion.title))
         )
         .accessibilityIdentifier("suggestion.\(suggestion.identifier)")
     }
 
     private var content: some View {
-        HStack(spacing: DesignKitMetrics.Spacing.regular) {
+        HStack(spacing: artwork.size(DesignKitMetrics.Spacing.regular)) {
             Circle()
                 .stroke(
                     Color(theme.colors.divider),
-                    lineWidth: DesignKitMetrics.Stroke.indicator
+                    lineWidth: artwork.stroke(DesignKitMetrics.Stroke.indicator)
                 )
                 .frame(
-                    width: DesignKitMetrics.Size.indicator,
-                    height: DesignKitMetrics.Size.indicator
+                    width: artwork.size(DesignKitMetrics.Size.indicator),
+                    height: artwork.size(DesignKitMetrics.Size.indicator)
                 )
             Text(suggestion.title)
-                .font(Font(theme.fonts.body))
+                .designFont(.body)
                 .foregroundColor(Color(theme.colors.primaryText))
                 .fixedSize(horizontal: false, vertical: true)
                 .frame(maxWidth: .infinity, alignment: .leading)
         }
         .frame(
             maxWidth: .infinity,
-            minHeight: DesignKitMetrics.Size.minimumTapTarget,
+            minHeight: artwork.tapTarget(DesignKitMetrics.Size.minimumTapTarget),
             alignment: .leading
         )
     }

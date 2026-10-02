@@ -7,6 +7,7 @@ final class TanyaAIDependencyContainer {
     private let configuration: TanyaAIConfiguration
     private let dependencies: TanyaAIDependencies
     var theme: Theme { dependencies.theme }
+    var imageLoader: ImageLoading { dependencies.imageLoader }
 
     init(
         configuration: TanyaAIConfiguration,

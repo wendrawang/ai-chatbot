@@ -10,7 +10,7 @@ import SwiftUI
 /// `AttributedString`: the styles here are a closed set that `Text` already
 /// carries, so the extra type would buy nothing.
 struct RichText: View {
-    let text: String
+    let runs: [MarkupRun]
     let font: Font
     let color: Color
 
@@ -22,9 +22,8 @@ struct RichText: View {
     }
 
     private var styledText: Text {
-        let runs = MarkupParser.runs(from: text)
         guard let first = runs.first else {
-            return Text(text)
+            return Text("")
         }
         return runs.dropFirst().reduce(styled(first)) { result, run in
             result + styled(run)

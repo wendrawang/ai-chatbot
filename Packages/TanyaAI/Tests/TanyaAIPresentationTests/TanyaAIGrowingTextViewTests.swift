@@ -44,19 +44,23 @@ final class TanyaAIGrowingTextViewTests: XCTestCase {
             window.layoutIfNeeded()
             heights.append(field.frame.height)
 
-            let renderer = UIGraphicsImageRenderer(bounds: window.bounds)
-            let image = renderer.image { context in
-                window.layer.render(in: context.cgContext)
-            }
-            let attachment = XCTAttachment(image: image)
-            attachment.name = name
-            attachment.lifetime = .keepAlways
-            add(attachment)
+            attachScreenshot(of: window, name: name)
         }
         XCTAssertEqual(heights.count, 3)
         XCTAssertGreaterThan(heights[1], heights[0])
         XCTAssertEqual(heights[2], heights[1], accuracy: 1)
         XCTAssertTrue(findTextView(in: controller.view)?.isScrollEnabled == true)
+    }
+
+    private func attachScreenshot(of window: UIWindow, name: String) {
+        let renderer = UIGraphicsImageRenderer(bounds: window.bounds)
+        let image = renderer.image { context in
+            window.layer.render(in: context.cgContext)
+        }
+        let attachment = XCTAttachment(image: image)
+        attachment.name = name
+        attachment.lifetime = .keepAlways
+        add(attachment)
     }
 
     private func findTextView(in view: UIView) -> TanyaAIBoundedTextView? {

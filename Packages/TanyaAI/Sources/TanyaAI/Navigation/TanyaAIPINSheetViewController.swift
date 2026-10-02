@@ -11,6 +11,7 @@ final class TanyaAIPINSheetViewController: UIViewController {
             rootView: AnyView(
                 TanyaAIPINBottomSheetView(viewModel: viewModel)
                     .theme(theme)
+                    .artworkLayout()
             )
         )
         super.init(nibName: nil, bundle: nil)

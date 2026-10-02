@@ -20,6 +20,8 @@ struct HTMLWebView: UIViewRepresentable {
     let html: String
     let theme: Theme
     let onHeightChange: (CGFloat) -> Void
+    var artwork = ArtworkMetrics()
+    @Environment(\.colorScheme) private var colorScheme
 
     func makeCoordinator() -> Coordinator {
         Coordinator(onHeightChange: onHeightChange)
@@ -28,6 +30,7 @@ struct HTMLWebView: UIViewRepresentable {
     func makeUIView(context: Context) -> WKWebView {
         let configuration = WKWebViewConfiguration()
         configuration.defaultWebpagePreferences.allowsContentJavaScript = false
+        configuration.websiteDataStore = .nonPersistent()
         let webView = WKWebView(frame: .zero, configuration: configuration)
         webView.navigationDelegate = context.coordinator
         // The bubble scrolls, not the fragment inside it.
@@ -46,7 +49,12 @@ struct HTMLWebView: UIViewRepresentable {
     }
 
     func updateUIView(_ webView: WKWebView, context: Context) {
-        let document = Self.document(html: html, theme: theme)
+        context.coordinator.onHeightChange = onHeightChange
+        let traits = UITraitCollection(traitsFrom: [
+            webView.traitCollection,
+            UITraitCollection(userInterfaceStyle: colorScheme == .dark ? .dark : .light)
+        ])
+        let document = Self.document(html: html, theme: theme, traits: traits, artwork: artwork)
         guard context.coordinator.loadedDocument != document else {
             return
         }
@@ -63,13 +71,20 @@ struct HTMLWebView: UIViewRepresentable {
     ///
     /// Without this the fragment ignores the theme entirely and a dark-mode
     /// conversation gets a white rectangle in the middle of it.
-    static func document(html: String, theme: Theme) -> String {
-        let text = theme.colors.primaryText.cssColor
-        let secondary = theme.colors.secondaryText.cssColor
-        let divider = theme.colors.divider.cssColor
+    static func document(
+        html: String,
+        theme: Theme,
+        traits: UITraitCollection = .current,
+        artwork: ArtworkMetrics = ArtworkMetrics()
+    ) -> String {
+        let text = theme.colors.primaryText.cssColor(traits)
+        let secondary = theme.colors.secondaryText.cssColor(traits)
+        let divider = theme.colors.divider.cssColor(traits)
         let size = theme.fonts.body.pointSize
         return """
         <!doctype html><html><head><meta charset="utf-8">
+        <meta http-equiv="Content-Security-Policy" content="default-src 'none';
+        style-src 'unsafe-inline'; img-src data:; base-uri 'none'; form-action 'none'">
         <meta name="viewport" content="width=device-width,initial-scale=1">
         <style>
         :root { color-scheme: light dark; }
@@ -81,7 +96,8 @@ struct HTMLWebView: UIViewRepresentable {
         }
         table { border-collapse: collapse; width: 100%; }
         th, td {
-          padding: 8px 12px;
+          padding-block: \(artwork.size(DesignKitMetrics.Spacing.compact))px;
+          padding-inline: \(artwork.size(DesignKitMetrics.Spacing.regular))px;
           border-bottom: 1px solid \(divider);
           text-align: left;
         }
@@ -94,7 +110,7 @@ struct HTMLWebView: UIViewRepresentable {
     final class Coordinator: NSObject, WKNavigationDelegate {
         private(set) var loadedDocument: String?
         private var isInitialNavigationPending = false
-        private let onHeightChange: (CGFloat) -> Void
+        var onHeightChange: (CGFloat) -> Void
         private var observation: NSKeyValueObservation?
 
         init(onHeightChange: @escaping (CGFloat) -> Void) {
@@ -114,17 +130,20 @@ struct HTMLWebView: UIViewRepresentable {
             observation = webView.scrollView.observe(
                 \.contentSize,
                 options: [.new]
-            ) { [onHeightChange] _, change in
+            ) { [weak self, weak webView] _, change in
                 guard let height = change.newValue?.height, height > 0 else {
                     return
                 }
-                onHeightChange(height)
+                webView?.scrollView.isScrollEnabled = height > HTMLSizing.maximumHeight
+                self?.onHeightChange(HTMLSizing.height(height))
             }
         }
 
         func stopObserving() {
             observation?.invalidate()
             observation = nil
+            onHeightChange = { _ in }
+            loadedDocument = nil
         }
 
         func webView(
@@ -150,12 +169,12 @@ struct HTMLWebView: UIViewRepresentable {
 private extension UIColor {
     /// Resolved against the current traits, because a dynamic colour means
     /// nothing to a stylesheet.
-    var cssColor: String {
+    func cssColor(_ traits: UITraitCollection) -> String {
         var red: CGFloat = 0
         var green: CGFloat = 0
         var blue: CGFloat = 0
         var alpha: CGFloat = 0
-        resolvedColor(with: .current).getRed(
+        resolvedColor(with: traits).getRed(
             &red,
             green: &green,
             blue: &blue,

@@ -8,6 +8,8 @@ struct TanyaAIMessageTableView: UIViewRepresentable {
     let state: TanyaAIMessageListState
     let theme: Theme
     let handlers: TanyaAIMessageRowHandlers
+    @Environment(\.artwork) private var artwork
+    @Environment(\.imageLoader) private var imageLoader
 
     func makeCoordinator() -> Coordinator {
         Coordinator()
@@ -33,6 +35,8 @@ struct TanyaAIMessageTableView: UIViewRepresentable {
     }
 
     func updateUIView(_ tableView: UITableView, context: Context) {
-        context.coordinator.update(state, theme: theme, handlers: handlers)
+        context.coordinator.update(
+            state, theme: theme, handlers: handlers, artwork: artwork, imageLoader: imageLoader
+        )
     }
 }

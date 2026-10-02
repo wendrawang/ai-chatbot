@@ -1,3 +1,5 @@
+import DesignKit
+import TanyaAIDomain
 import SwiftUI
 
 /// The prompts a reply offers, as one bubble at the end of the conversation.
@@ -14,6 +16,7 @@ public struct SuggestionList: View {
     let suggestions: [Suggestion]
     let onSelect: (Suggestion) -> Void
     @Environment(\.theme) private var theme
+    @Environment(\.artwork) private var artwork
 
     public init(
         title: String?,
@@ -28,15 +31,15 @@ public struct SuggestionList: View {
     public var body: some View {
         VStack(
             alignment: .leading,
-            spacing: DesignKitMetrics.Spacing.regular
+            spacing: artwork.size(DesignKitMetrics.Spacing.regular)
         ) {
             heading
             rows
         }
-        .padding(DesignKitMetrics.Spacing.wide)
+        .padding(artwork.size(DesignKitMetrics.Spacing.wide))
         .background(OutlinedBackground())
         .frame(
-            maxWidth: DesignKitMetrics.Size.bubbleMaximumWidth,
+            maxWidth: artwork.size(DesignKitMetrics.Size.bubbleMaximumWidth),
             alignment: .leading
         )
         // Without the second frame the box is centred in the row and the
@@ -50,7 +53,7 @@ public struct SuggestionList: View {
     private var heading: some View {
         if let title = title, title.isEmpty == false {
             Text(title)
-                .font(Font(theme.fonts.headline))
+                .designFont(.headline)
                 .foregroundColor(Color(theme.colors.primaryText))
                 .fixedSize(horizontal: false, vertical: true)
                 .frame(maxWidth: .infinity, alignment: .leading)
@@ -60,7 +63,7 @@ public struct SuggestionList: View {
     private var rows: some View {
         VStack(
             alignment: .leading,
-            spacing: DesignKitMetrics.Spacing.compact
+            spacing: artwork.size(DesignKitMetrics.Spacing.compact)
         ) {
             ForEach(suggestions, id: \.identifier) { suggestion in
                 SuggestionRow(suggestion: suggestion, onSelect: onSelect)

@@ -13,7 +13,9 @@ import SwiftUI
 public struct TextBubble: View {
     let text: String
     let isUser: Bool
+    private let runs: [MarkupRun]
     @Environment(\.theme) private var theme
+    @Environment(\.artwork) private var artwork
 
     public init(
         text: String,
@@ -21,34 +23,40 @@ public struct TextBubble: View {
     ) {
         self.text = text
         self.isUser = isUser
+        runs = MarkupParser.runs(from: text.isEmpty ? "…" : text)
     }
 
     public var body: some View {
         bubble
             .frame(
-                maxWidth: DesignKitMetrics.Size.bubbleMaximumWidth,
+                maxWidth: artwork.size(DesignKitMetrics.Size.bubbleMaximumWidth),
                 alignment: isUser ? .trailing : .leading
             )
     }
 
     private var bubble: some View {
         RichText(
-            text: text.isEmpty ? "…" : text,
+            runs: runs,
             font: Font(theme.fonts.body),
             color: textColor
         )
-        .padding(.horizontal, DesignKitMetrics.Spacing.wide)
-        .padding(.vertical, DesignKitMetrics.Spacing.regular)
+        .lineSpacing(theme.fonts.lineSpacing(for: .body))
+        .padding(.horizontal, artwork.size(DesignKitMetrics.Spacing.wide))
+        .padding(.vertical, artwork.size(DesignKitMetrics.Spacing.regular))
         .background(background)
         .accessibility(
-            label: Text(text.isEmpty ? "Assistant is responding" : text)
+            label: Text(accessibilityText)
         )
+    }
+
+    private var accessibilityText: String {
+        text.isEmpty ? DesignCopy.text("Assistant is responding") : runs.map(\.text).joined()
     }
 
     @ViewBuilder
     private var background: some View {
         if isUser {
-            RoundedRectangle(cornerRadius: DesignKitMetrics.Radius.bubble)
+            RoundedRectangle(cornerRadius: artwork.size(DesignKitMetrics.Radius.bubble))
                 .fill(Color(theme.colors.userBubble))
         } else {
             OutlinedBackground()

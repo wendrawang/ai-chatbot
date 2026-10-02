@@ -3,6 +3,7 @@ import SwiftUI
 public struct FinancialListBubble: View {
     let payload: FinancialListPayload
     @Environment(\.theme) private var theme
+    @Environment(\.artwork) private var artwork
 
     public init(payload: FinancialListPayload) {
         self.payload = payload
@@ -17,8 +18,8 @@ public struct FinancialListBubble: View {
             footnote
         }
         .background(Color(theme.colors.surface))
-        .cornerRadius(DesignKitMetrics.Radius.card)
-        .frame(maxWidth: 340, alignment: .leading)
+        .cornerRadius(artwork.size(DesignKitMetrics.Radius.card))
+        .frame(maxWidth: artwork.size(DesignKitMetrics.Size.cardMaximumWidth), alignment: .leading)
         .accessibilityElement(children: .contain)
         .accessibilityIdentifier(
             "financialList.\(payload.style.rawValue)"
@@ -26,38 +27,38 @@ public struct FinancialListBubble: View {
     }
 
     private var header: some View {
-        HStack(spacing: 10) {
+        HStack(spacing: artwork.size(DesignKitMetrics.Spacing.medium)) {
             Image(systemName: symbolName)
-                .font(Font(theme.fonts.headline))
+                .designFont(.headline)
                 .foregroundColor(iconColor)
-                .frame(width: 24)
+                .frame(width: artwork.size(DesignKitMetrics.Size.icon))
             Text(payload.title)
-                .font(Font(theme.fonts.headline))
+                .designFont(.headline)
                 .foregroundColor(Color(theme.colors.primaryText))
         }
-        .padding(DesignKitMetrics.Spacing.wide)
+        .padding(artwork.size(DesignKitMetrics.Spacing.wide))
     }
 
     private var rows: some View {
-        VStack(spacing: DesignKitMetrics.Spacing.roomy) {
+        VStack(spacing: artwork.size(DesignKitMetrics.Spacing.roomy)) {
             ForEach(payload.rows.indices, id: \.self) { index in
                 row(payload.rows[index])
             }
         }
-        .padding(DesignKitMetrics.Spacing.wide)
+        .padding(artwork.size(DesignKitMetrics.Spacing.wide))
     }
 
     private func row(_ item: FinancialListRow) -> some View {
-        HStack(alignment: .firstTextBaseline, spacing: DesignKitMetrics.Spacing.regular) {
-            VStack(alignment: .leading, spacing: 3) {
+        HStack(alignment: .firstTextBaseline, spacing: artwork.size(DesignKitMetrics.Spacing.regular)) {
+            VStack(alignment: .leading, spacing: artwork.size(DesignKitMetrics.Radius.swatch)) {
                 Text(item.title)
-                    .font(Font(theme.fonts.subheadline))
+                    .designFont(.subheadline)
                 optionalText(item.subtitle)
             }
-            Spacer(minLength: 8)
-            VStack(alignment: .trailing, spacing: 3) {
+            Spacer(minLength: artwork.size(DesignKitMetrics.Spacing.compact))
+            VStack(alignment: .trailing, spacing: artwork.size(DesignKitMetrics.Radius.swatch)) {
                 Text(item.value)
-                    .font(Font(theme.fonts.headline))
+                    .designFont(.headline)
                     .foregroundColor(valueColor(item))
                 optionalText(item.detail)
             }
@@ -68,7 +69,7 @@ public struct FinancialListBubble: View {
     private func optionalText(_ text: String?) -> some View {
         if let text = text {
             Text(text)
-                .font(Font(theme.fonts.caption))
+                .designFont(.caption)
                 .foregroundColor(Color(theme.colors.secondaryText))
         }
     }
@@ -76,18 +77,18 @@ public struct FinancialListBubble: View {
     @ViewBuilder
     private var total: some View {
         if let label = payload.totalLabel, let value = payload.totalValue {
-            VStack(spacing: DesignKitMetrics.Spacing.regular) {
+            VStack(spacing: artwork.size(DesignKitMetrics.Spacing.regular)) {
                 cardDivider
                 HStack(alignment: .firstTextBaseline) {
                     Text(label)
                     Spacer()
-                    VStack(alignment: .trailing, spacing: 2) {
-                        Text(value).font(Font(theme.fonts.headline))
+                    VStack(alignment: .trailing, spacing: artwork.size(2)) {
+                        Text(value).designFont(.headline)
                         optionalText(payload.totalCaption)
                     }
                 }
-                .font(Font(theme.fonts.subheadline))
-                .padding(.horizontal, DesignKitMetrics.Spacing.wide)
+                .designFont(.subheadline)
+                .padding(.horizontal, artwork.size(DesignKitMetrics.Spacing.wide))
             }
         }
     }
@@ -96,16 +97,16 @@ public struct FinancialListBubble: View {
     private var footnote: some View {
         if let footnote = payload.footnote {
             Text(footnote)
-                .font(Font(theme.fonts.footnote))
+                .designFont(.footnote)
                 .foregroundColor(Color(theme.colors.secondaryText))
-                .padding(DesignKitMetrics.Spacing.wide)
+                .padding(artwork.size(DesignKitMetrics.Spacing.wide))
         }
     }
 
     private var cardDivider: some View {
         Rectangle()
             .fill(Color(theme.colors.divider))
-            .frame(height: 0.5)
+            .frame(height: artwork.stroke(0.5))
     }
 
     private var symbolName: String {

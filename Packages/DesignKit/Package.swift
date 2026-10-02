@@ -11,6 +11,7 @@ import PackageDescription
 /// along with it.
 let package = Package(
     name: "DesignKit",
+    defaultLocalization: "en",
     platforms: [
         .iOS(.v15)
     ],
@@ -18,7 +19,10 @@ let package = Package(
         .library(name: "DesignKit", targets: ["DesignKit"])
     ],
     targets: [
-        .target(name: "DesignKit", resources: [.copy("Resources/Fonts")]),
+        .target(
+            name: "DesignKit",
+            resources: [.copy("Resources/Fonts"), .process("Resources/en.lproj"), .process("Resources/id.lproj")]
+        ),
         .testTarget(
             name: "DesignKitTests",
             dependencies: ["DesignKit"]

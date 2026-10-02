@@ -1,3 +1,5 @@
+import TanyaAIDomain
+
 public extension Suggestion {
     static var sandboxDefaults: [Suggestion] {
         [

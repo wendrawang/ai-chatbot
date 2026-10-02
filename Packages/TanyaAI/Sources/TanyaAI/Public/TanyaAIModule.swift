@@ -1,4 +1,5 @@
 import DesignKit
+import TanyaAIDomain
 import UIKit
 
 public enum TanyaAIModule {

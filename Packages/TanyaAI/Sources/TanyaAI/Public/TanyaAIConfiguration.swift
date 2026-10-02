@@ -1,4 +1,5 @@
 import DesignKit
+import TanyaAIDomain
 
 public struct TanyaAIConfiguration: Equatable {
     /// Sent as the customer's first message when the chat opens. Nil opens an

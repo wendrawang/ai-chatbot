@@ -7,19 +7,23 @@ import SwiftUI
 struct ChartLegendView: View {
     let series: [ChartSeries]
     @Environment(\.theme) private var theme
+    @Environment(\.artwork) private var artwork
 
     var body: some View {
-        VStack(spacing: 9) {
+        VStack(spacing: artwork.size(DesignKitMetrics.Spacing.legend)) {
             ForEach(series.indices, id: \.self) { index in
-                HStack(spacing: 9) {
-                    RoundedRectangle(cornerRadius: 3)
+                HStack(spacing: artwork.size(DesignKitMetrics.Spacing.legend)) {
+                    RoundedRectangle(cornerRadius: artwork.size(DesignKitMetrics.Radius.swatch))
                         .fill(segmentColor(index))
-                        .frame(width: 12, height: 12)
+                        .frame(
+                            width: artwork.size(DesignKitMetrics.Spacing.regular),
+                            height: artwork.size(DesignKitMetrics.Spacing.regular)
+                        )
                     Text(series[index].label)
-                        .font(Font(theme.fonts.subheadline))
-                    Spacer(minLength: 8)
+                        .designFont(.subheadline)
+                    Spacer(minLength: artwork.size(DesignKitMetrics.Spacing.compact))
                     Text(series[index].formattedValue)
-                        .font(Font(theme.fonts.headline))
+                        .designFont(.headline)
                 }
                 .accessibilityElement(children: .ignore)
                 .accessibility(
@@ -30,10 +34,11 @@ struct ChartLegendView: View {
                 )
             }
         }
+        .foregroundColor(Color(theme.colors.primaryText))
     }
 
     private func segmentColor(_ index: Int) -> Color {
         let colors = theme.colors.chartColors
-        return Color(colors[index % colors.count])
+        return Color(colors.isEmpty ? theme.colors.accent : colors[index % colors.count])
     }
 }
