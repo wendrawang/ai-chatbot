@@ -9,11 +9,8 @@ enum MockTanyaAIResponseFixture {
         let prompt = prompt.lowercased()
         let identifier = UUID().uuidString.prefix(8).lowercased()
 
-        if prompt.contains("showcase") {
-            return MockTanyaAIShowcaseFixture.events(identifier: String(identifier))
-        }
-        if prompt.contains("deeplink") {
-            return MockTanyaAIDeeplinkFixture.events(identifier: String(identifier))
+        if let demo = demoEvents(for: prompt, identifier: String(identifier)) {
+            return demo
         }
         if prompt.contains("conversion") || prompt.contains("currency") {
             return MockTanyaAIConfirmationFixture.conversionEvents(String(identifier))
@@ -40,6 +37,13 @@ enum MockTanyaAIResponseFixture {
             return MockTanyaAIConfirmationFixture.transferEvents(String(identifier))
         }
         return MockTanyaAIInsightFixture.portfolioEvents(String(identifier))
+    }
+
+    private static func demoEvents(for prompt: String, identifier: String) -> [TanyaAIChatSessionEvent]? {
+        if let answer = MockTanyaAIAnswerFixture.events(for: prompt, identifier: identifier) { return answer }
+        if prompt.contains("showcase") { return MockTanyaAIShowcaseFixture.events(identifier: identifier) }
+        if prompt.contains("deeplink") { return MockTanyaAIDeeplinkFixture.events(identifier: identifier) }
+        return nil
     }
 
     static func response(

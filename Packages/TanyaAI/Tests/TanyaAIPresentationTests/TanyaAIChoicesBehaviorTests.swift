@@ -67,7 +67,8 @@ final class TanyaAIChoicesBehaviorTests: XCTestCase {
                     title: "Hotel & Travel",
                     prompt: "Promo hotel"
                 )
-            ]
+            ],
+            isMultipleSelectionAllowed: true
         )
     }
 

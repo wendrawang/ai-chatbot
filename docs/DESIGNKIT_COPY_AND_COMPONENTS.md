@@ -110,13 +110,13 @@ oleh package. Pilihan bahasa respons bot tetap menjadi kontrak host/backend.
 | --- | --- |
 | DesignKit / Atoms | `GrowingTextInput`, `SelectionChip`, `SecureCodeIndicator`, `ActionLink`, `RoundedCorners` |
 | DesignKit / Molecules | `MessageComposer`, `NumericKeypad`, `OptionRow`, `OptionList`, `OptionStrip`, `SummaryRow`, `LoadingStateView`, `TypingIndicatorView` |
-| DesignKit / Organisms | `ChoiceGroup` dan card kompleks yang sudah ada |
+| DesignKit / Organisms | `ResponseContent`, `ChoiceGroup` dan card kompleks yang sudah ada |
 | DesignKit / Support/UIKit | `HostingTableViewCell<Content>`, `LayoutTrackingTableView` |
 | TanyaAIPresentation | `ChatScreen`, `ConversationHistoryScreen`, `AuthorizationSheet`, adapter pesan dan approval |
 
 `SelectionOption` hanya berisi identifier dan title. Payload aksi, prompt yang
 dikirim, transaction ID, challenge PIN, serta aturan pilihan tetap berada di
-TanyaAIDomain. `ChoicesBubble` mengadaptasi aturan itu ke `ChoiceGroup` tanpa
+TanyaAIDomain. `ChoicesBubble` mengadaptasi radio ke `ResponseContent` dan multi-select ke `ChoiceGroup` tanpa
 membuat DesignKit bergantung pada domain chat. `ApprovalBubble`/`LiveAgentBubble`
 tetap di fitur karena memahami status transaksi/handoff, bukan sekadar tampilan.
 
@@ -130,6 +130,7 @@ internal. Caller yang mengimpor langsung view presentasi perlu mengganti:
 | `TanyaAIHistoryView` | `ConversationHistoryScreen` |
 | `TanyaAIPINBottomSheetView` | `AuthorizationSheet` |
 | `ChoiceChip` | `DesignKit.SelectionChip(title:...)` |
+| `TanyaAIChatInputView` | `DesignKit.MessageComposer` (GrowingTextInput satu–empat baris) |
 | `SuggestionList` / `ShortcutStrip` | `DesignKit.OptionList(options:...)` / `OptionStrip(options:...)` |
 | `RestoringView()` | `DesignKit.LoadingStateView(label:...)` |
 | `ActionLink(button:onTap:)` | `DesignKit.ActionLink(title:isUnderlined:onTap:)` |
@@ -178,3 +179,5 @@ bahwa setiap string/angka adalah salah atau bahwa runtime pasti bebas leak.
 
 Lihat [hasil dan batas validasi](DESIGNKIT_VALIDATION.md). Jalankan verification
 runtime iOS sebelum migrasi produksi luas.
+
+Komposisi jawaban empat bagian dan integrasi host: [ANSWER_CONTENT.md](ANSWER_CONTENT.md).

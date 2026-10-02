@@ -29,6 +29,7 @@ struct MessageListView: View {
                 ),
                 onAction: viewModel.perform,
                 onSuggestion: viewModel.sendSuggestion,
+                onAnswerOption: viewModel.selectAnswerOption,
                 onDeclineLiveAgent: viewModel.declineLiveAgent
             )
         )

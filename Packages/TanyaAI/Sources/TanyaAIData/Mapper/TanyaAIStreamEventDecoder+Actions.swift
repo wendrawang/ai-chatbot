@@ -39,7 +39,7 @@ extension TanyaAIStreamEventDecoder {
     }
 
     /// An unknown style falls back to `primary` instead of failing the stream.
-    private func makeActionButton(
+    func makeActionButton(
         _ dto: TanyaAIActionButtonDTO
     ) -> ActionButton {
         ActionButton(

@@ -21,8 +21,7 @@ public struct OptionRow: View {
         } label: {
             content
         }
-        // No outline of its own: the list it sits in is the bubble, and a
-        // border here would draw a box inside a box.
+        .buttonStyle(.plain)
         .accessibility(
             label: Text(option.title)
         )
@@ -33,7 +32,7 @@ public struct OptionRow: View {
         HStack(spacing: artwork.size(DesignKitMetrics.Spacing.regular)) {
             Circle()
                 .stroke(
-                    Color(theme.colors.divider),
+                    Color(theme.colors.primaryText),
                     lineWidth: artwork.stroke(DesignKitMetrics.Stroke.indicator)
                 )
                 .frame(
@@ -51,5 +50,8 @@ public struct OptionRow: View {
             minHeight: artwork.tapTarget(DesignKitMetrics.Size.minimumTapTarget),
             alignment: .leading
         )
+        .padding(.horizontal, artwork.size(DesignKitMetrics.Spacing.wide))
+        .padding(.vertical, artwork.size(DesignKitMetrics.Spacing.compact))
+        .background(OutlinedBackground())
     }
 }

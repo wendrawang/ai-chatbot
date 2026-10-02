@@ -31,6 +31,8 @@ struct MessageRowView: View {
                 text: text,
                 isUser: viewModel.role == .user
             )
+        case .answer(let payload):
+            answer(payload)
         case .image(let payload):
             ImageBubble(payload: payload)
         case .information(let payload):
@@ -52,11 +54,7 @@ struct MessageRowView: View {
                 onCancel: { handlers.onDeclineLiveAgent(payload) }
             )
         case .choices(let payload):
-            ChoicesBubble(
-                payload: payload,
-                onToggle: { handlers.choices.onToggle(payload, $0) },
-                onSubmit: { handlers.choices.onSubmit(payload) }
-            )
+            choices(payload)
         case .receipt(let payload):
             ReceiptBubble(payload: payload)
         case .status(let payload):
@@ -80,6 +78,22 @@ struct MessageRowView: View {
             onEdit: { handlers.approval.onEdit(payload) },
             onCancel: { handlers.approval.onCancel(payload) },
             onApprove: { handlers.approval.onApprove(payload) }
+        )
+    }
+
+    private func answer(_ payload: AnswerPayload) -> some View {
+        AnswerView(
+            payload: payload,
+            onSelect: { handlers.onAnswerOption(viewModel.identifier, $0) },
+            onAction: handlers.onAction
+        )
+    }
+
+    private func choices(_ payload: ChoicesPayload) -> some View {
+        ChoicesBubble(
+            payload: payload,
+            onToggle: { handlers.choices.onToggle(payload, $0) },
+            onSubmit: { handlers.choices.onSubmit(payload) }
         )
     }
 }

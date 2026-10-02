@@ -2,6 +2,7 @@ import DesignKit
 
 public enum TanyaAIMessageContent: Equatable {
     case text(String)
+    case answer(AnswerPayload)
     case image(ImagePayload)
     case choices(ChoicesPayload)
     case liveAgent(LiveAgentPayload)

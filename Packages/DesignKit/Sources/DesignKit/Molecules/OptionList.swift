@@ -26,14 +26,10 @@ public struct OptionList: View {
             heading
             rows
         }
-        .padding(artwork.size(DesignKitMetrics.Spacing.wide))
-        .background(OutlinedBackground())
         .frame(
             maxWidth: artwork.size(DesignKitMetrics.Size.bubbleMaximumWidth),
             alignment: .leading
         )
-        // Without the second frame the box is centred in the row and the
-        // prompts sit indented from every bubble above them.
         .frame(maxWidth: .infinity, alignment: .leading)
         .accessibilityElement(children: .contain)
         .accessibilityIdentifier("options.list")

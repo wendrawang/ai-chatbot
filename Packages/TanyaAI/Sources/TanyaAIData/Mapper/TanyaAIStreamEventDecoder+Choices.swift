@@ -62,7 +62,7 @@ extension TanyaAIStreamEventDecoder {
                     title: payload.title,
                     choices: choices,
                     isMultipleSelectionAllowed:
-                        payload.isMultipleSelectionAllowed ?? true,
+                        payload.isMultipleSelectionAllowed ?? false,
                     submitTitle: payload.submitTitle
                 )
             )

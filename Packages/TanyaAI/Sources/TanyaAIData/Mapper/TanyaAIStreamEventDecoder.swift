@@ -42,6 +42,8 @@ final class TanyaAIStreamEventDecoder {
         json: Data
     ) throws -> TanyaAIStreamEvent? {
         switch name {
+        case .answer:
+            return try decodeAnswer(json)
         case .image:
             return try decodeImage(json)
         case .choices:

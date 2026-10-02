@@ -1,15 +1,6 @@
 import SwiftUI
 
-/// One message bubble.
-///
-/// The customer's own words sit in an accent bubble on the right; a reply sits
-/// in an outlined bubble on the left, and may carry inline styling so a
-/// labelled list reads as one answer instead of several bubbles.
-///
-/// The reply is outlined rather than filled, and carries no attribution
-/// above it. Two filled colours facing each other made every
-/// exchange look like two shouting sides; the outline lets the customer's own
-/// turns be the only thing with weight.
+/// Outgoing text uses an accent bubble; incoming text is an unboxed response.
 public struct TextBubble: View {
     let text: String
     let isUser: Bool
@@ -42,8 +33,8 @@ public struct TextBubble: View {
             color: textColor
         )
         .lineSpacing(theme.fonts.lineSpacing(for: .body))
-        .padding(.horizontal, artwork.size(DesignKitMetrics.Spacing.wide))
-        .padding(.vertical, artwork.size(DesignKitMetrics.Spacing.regular))
+        .padding(.horizontal, isUser ? artwork.size(DesignKitMetrics.Spacing.wide) : 0)
+        .padding(.vertical, isUser ? artwork.size(DesignKitMetrics.Spacing.regular) : 0)
         .background(background)
         .accessibility(
             label: Text(accessibilityText)
@@ -59,8 +50,6 @@ public struct TextBubble: View {
         if isUser {
             RoundedRectangle(cornerRadius: artwork.size(DesignKitMetrics.Radius.bubble))
                 .fill(Color(theme.colors.userBubble))
-        } else {
-            OutlinedBackground()
         }
     }
 

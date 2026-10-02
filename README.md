@@ -33,6 +33,7 @@ Build, install, and launch on a simulator in one step:
 ```
 
 Any argument is forwarded to the app. `--showcase` renders every bubble, and
+`--answers` shows the four-part response and immediate radio selection.
 `--deeplink` opens on the legacy host and streams an action card plus a
 confirmation that hands off: **Open legacy detail → Open Tanya AI → Open
 transfer form**. The feature closes, the stack returns to Legacy Home, and the
@@ -157,7 +158,8 @@ This avoids both extremes:
 | `html` | Static formatted result | JavaScript disabled; navigation restricted to the app's initial load |
 | `actions` | Host-owned deeplink hand-off | Underlined action links |
 | `liveAgent` | Offer to continue with a person | Accept hands off; decline settles the card |
-| `choices` | Pick options, then explicitly submit | Single or multiple selection |
+| `answer` | Combine text, radio options, image, and actions | Any nonempty subset; radio sends on tap |
+| `choices` | Radio sends on tap; options then disappear | Explicit multi-selection retains submit |
 | `information` | Safe generic text and key-value information | Allowlisted blocks |
 | `chart` | Standalone data visualization | `bar`, `line`, `donut`, `progress` |
 | `portfolio` | Portfolio total, performance, allocation, disclaimer | Reuses chart primitives |

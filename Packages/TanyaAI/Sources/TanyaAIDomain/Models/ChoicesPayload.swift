@@ -1,10 +1,6 @@
 import Foundation
 
-/// A question whose answer is confirmed rather than sent on touch.
-///
-/// The difference from `Suggestion` is the submit button, not the number of
-/// choices: a single-select question that still waits for confirmation belongs
-/// here, and a multi-select one that sent on every tap would be unusable.
+/// Radio options send on touch. Explicit multi-selection requires confirmation.
 public struct ChoicesPayload: Equatable {
     public struct Choice: Equatable {
         public let identifier: String
@@ -30,8 +26,7 @@ public struct ChoicesPayload: Equatable {
     public let isMultipleSelectionAllowed: Bool
     public let submitTitle: String?
     public var selected: Set<String>
-    /// A submitted card stays on screen but stops accepting input: the
-    /// conversation is the record of what was asked and answered.
+    /// Answered radio options disappear; the question text remains.
     public var isSubmitted: Bool
 
     public var isSubmittable: Bool {
@@ -51,7 +46,7 @@ public struct ChoicesPayload: Equatable {
         identifier: String,
         title: String?,
         choices: [Choice],
-        isMultipleSelectionAllowed: Bool = true,
+        isMultipleSelectionAllowed: Bool = false,
         submitTitle: String? = nil,
         selected: Set<String> = [],
         isSubmitted: Bool = false

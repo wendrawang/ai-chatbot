@@ -7,7 +7,7 @@ import XCTest
 final class TanyaAIEventNameTests: XCTestCase {
     func testCanonicalNamesAreCompleteUniqueAndDotFree() {
         let expected: Set<String> = [
-            "image", "choices", "actions", "html", "live_agent", "approval",
+            "answer", "image", "choices", "actions", "html", "live_agent", "approval",
             "receipt", "chart", "portfolio", "financial_list", "status", "information",
             "suggestions", "response_started", "text_delta", "response_completed", "heartbeat"
         ]

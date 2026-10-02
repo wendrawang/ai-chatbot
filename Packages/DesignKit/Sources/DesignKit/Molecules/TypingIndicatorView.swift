@@ -1,10 +1,7 @@
 import Foundation
 import SwiftUI
 
-/// The waiting state, shaped like the reply it will become.
-///
-/// Three dots inside an assistant bubble rather than a spinner on a row of
-/// its own, so the conversation does not jump when the answer arrives.
+/// Unboxed activity dots aligned with incoming text.
 ///
 /// The animation is scoped to `isAnimating`. The unscoped `animation(_:)`
 /// would animate every change in this subtree - including the layout the row
@@ -56,8 +53,6 @@ public struct TypingIndicatorView: View {
                     )
             }
         }
-        .padding(.horizontal, artwork.size(DesignKitMetrics.Spacing.wide))
         .padding(.vertical, artwork.size(DesignKitMetrics.Spacing.roomy))
-        .background(OutlinedBackground())
     }
 }

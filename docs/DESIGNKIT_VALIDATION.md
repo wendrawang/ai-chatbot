@@ -8,7 +8,7 @@ mengikuti foto kode; 374×812 dapat dipilih melalui parameter root.
 - SwiftLint strict: lulus tanpa violation.
 - SwiftParser check: semua method maksimal 50 baris fisik; file maksimal 250 baris.
 - Build aplikasi sandbox untuk iOS Simulator melalui `xcodebuild`: lulus.
-- **56 test DesignKit dan 135 test TanyaAI** dieksekusi pada iPhone 17 Pro,
+- **56 test DesignKit dan 148 test TanyaAI** dieksekusi pada iPhone 17 Pro,
   iOS 26.5 Simulator (arm64): seluruhnya lulus, tanpa skipped test.
   Termasuk runtime UIKit/WebKit, localized copy, history injection, pelepasan
   controller/ViewModel, cancellation request, dan observer setelah dismantle.
@@ -16,8 +16,9 @@ mengikuti foto kode; 374×812 dapat dipilih melalui parameter root.
   ArtworkMetrics, ChipLayout, ChartGeometry, parser markup, dan CopyCatalog. Semuanya lulus.
   Termasuk 4.000 nested markup tags, geometri tidak valid, tablet cap, custom
   reference width, pixel rounding, minimum tap target, serta normalisasi angka ekstrem.
-- **7 test UI sandbox** lulus: legacy navigation, deeplink, handoff approval,
-  penolakan link, seluruh contoh bubble, PIN valid, dan posisi suggestion.
+- **8 test UI sandbox** lulus: legacy navigation, deeplink, handoff approval,
+  penolakan link, seluruh contoh bubble, PIN valid, posisi suggestion, dan radio
+  yang menjadi prompt lalu hilang dari jawaban.
   Screenshot direkam sebagai attachment hasil XCTest.
 - Guard literal UI, dependency komponen, serta parity key/placeholder en/id: lulus.
 - CopyCatalog: regional locale, fallback, override host, placeholder literal, dan isolasi bahasa lulus.
@@ -36,10 +37,13 @@ adalah `-adjustedContentInset.top`, bukan selalu nol. Test juga memastikan row k
 Tidak ada perubahan perilaku scroll untuk meloloskan assertion.
 
 Test scroll 100 pesan ditambah typing row lulus ambang yang sudah ada (best-of-three
-minimal 55 FPS). Sampel run: 45,34 / 55,80 / 60,15 FPS. Ini menunjukkan variasi
+minimal 55 FPS). Sampel run terbaru: 58,72 / 56,95 / 59,90 FPS.
+Run sebelumnya: 45,34 / 55,80 / 60,15 FPS. Ini menunjukkan variasi
 simulator; tidak membuktikan sustained 60 FPS pada perangkat nyata. Test pelepasan
 objek lulus, tetapi tidak membuktikan bebas leak untuk seluruh integrasi vendor.
-Profiling Instruments dan perangkat nyata tetap merupakan pengukuran terpisah.
+Percobaan Instruments Leaks gagal attach dengan `Cannot find process for provided pid`
+meskipun app berjalan; tidak ada hasil scan Leaks yang diklaim. Profiling perangkat
+nyata/vendor SDK tetap merupakan pengukuran terpisah.
 
 ## Refactor komponen dan copy
 
@@ -62,3 +66,16 @@ diperbarui dan lulus saat dijalankan di simulator.
   SwiftUI memakai `.theme(themeManager)`.
 
 Lihat [panduan migrasi](DESIGNKIT_MIGRATION.md) untuk setup host dan contoh pemakaian.
+
+## Jawaban empat bagian — perubahan setelah PR input empat baris
+
+Input generik tetap `DesignKit.MessageComposer`. Jawaban text tanpa outline,
+radio per option, gambar, dan action dikomposisikan oleh `ResponseContent`;
+aturan kirim dan consumed state berada di fitur. Tambahan test mencakup 15
+kombinasi decode, prompt fallback, duplicate/replay, preserved content saat
+streaming, restored answered state, dan pengecilan row tanpa overlap.
+
+Test UI khusus radio lulus dan merekam screenshot
+[sebelum](../Artifacts/Screenshots/answer-before-selection.png) /
+[sesudah](../Artifacts/Screenshots/answer-after-selection.png). Panduan JSON dan
+host tersedia di [ANSWER_CONTENT.md](ANSWER_CONTENT.md).

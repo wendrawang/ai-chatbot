@@ -85,6 +85,8 @@ public final class TanyaAIChatViewModel: ObservableObject {
     }
 
     public func sendSuggestion(_ suggestion: Suggestion) {
+        guard !isGenerating, !isRestoring,
+              !suggestion.prompt.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else { return }
         suggestions = []
         suggestionsTitle = nil
         sendMessage(suggestion.prompt)

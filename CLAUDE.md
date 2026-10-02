@@ -57,8 +57,9 @@ Sebelas tipe konten plus fallback. Yang perlu diingat soal tampilannya:
 - **Prompt saran ada di dalam percakapan**, sebagai baris terakhir — bukan
   strip di atas keyboard. Lingkarannya afordans, bukan state: sekali tap
   langsung terkirim.
-- **Balasan memakai bubble outline**, tanpa atribusi "TANYA AI" di atasnya.
-  Hanya giliran nasabah yang punya bobot warna.
+- **Teks balasan tanpa bubble outline atau background.** Prompt nasabah tetap
+  memakai accent bubble. `answer` menggabungkan teks, radio, gambar, dan action
+  sebagai bagian opsional; outline hanya pada masing-masing option/kartu/link.
 - **Deeplink tampil sebagai tautan bergaris bawah**, bukan tombol terisi,
   dan **tanpa judul di atasnya** — penjelasannya dikirim sebagai pesan teks
   biasa sebelumnya. `content.actions` tidak lagi punya `title`/`detail`.
@@ -71,8 +72,10 @@ Sebelas tipe konten plus fallback. Yang perlu diingat soal tampilannya:
   URL.** Chart tetap `content.chart` — ia ikut tema, ikut Dynamic Type, dan
   bisa dibaca VoiceOver; tidak satu pun bertahan di dalam web view. Kirim
   `height`, atau baris tumbuh setelah fragmen dirender.
-- **Choices vs suggestion: pembedanya tombol konfirmasi, bukan jumlah
-  pilihan.** Suggestion sekali tap langsung kirim; choices menunggu submit.
+- **Radio satu tap langsung mengirim prompt, lalu option list pada jawaban itu
+  hilang.** `choices` default single-select; `allowsMultipleSelection: true`
+  mempertahankan kontrak multi-select + submit untuk integrasi lama.
+  Teks, gambar, dan action tetap tampil setelah radio dipilih.
 - **Shortcut bukan protokol.** Host yang inquiry lalu mengoper daftarnya lewat
   `TanyaAIConfiguration` — sebuah nilai, bukan layanan.
 - **`content.image` menggunakan `ImageLoading` yang bisa diinjeksi.** Host dapat
