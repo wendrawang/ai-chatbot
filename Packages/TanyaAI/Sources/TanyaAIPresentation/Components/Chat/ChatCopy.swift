@@ -1,7 +1,8 @@
+import DesignKit
 import Foundation
 
-enum ChatCopy {
-    static func text(_ key: String) -> String {
-        NSLocalizedString(key, bundle: .module, comment: "Component label")
+extension CopyCatalog {
+    func chat(_ key: String, values: [String: String] = [:]) -> String {
+        text(key, bundle: .module, values: values)
     }
 }

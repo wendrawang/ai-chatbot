@@ -42,7 +42,7 @@ extension TanyaAISessionRepository {
         }
         guard let event = try? decoder.decode(name: name, json: json),
               case .content(_, let content) = event else {
-            return .unsupported("This content requires a newer app version.")
+            return .unsupported(nil)
         }
         return content
     }

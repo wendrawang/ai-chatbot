@@ -7,6 +7,7 @@ public struct ApprovalBubble: View {
     let onEdit: () -> Void
     let onCancel: () -> Void
     let onApprove: () -> Void
+    @Environment(\.copyCatalog) private var copy
     @Environment(\.theme) private var theme
     @Environment(\.artwork) private var artwork
 
@@ -97,10 +98,10 @@ public struct ApprovalBubble: View {
     private var actions: some View {
         if payload.state == .awaitingApproval {
             HStack(spacing: artwork.size(DesignKitMetrics.Spacing.compact)) {
-                actionButton(ChatCopy.text("Edit"), action: onEdit)
-                actionButton(ChatCopy.text("Cancel"), action: onCancel)
+                actionButton(copy.chat("chat.edit"), action: onEdit)
+                actionButton(copy.chat("chat.cancel"), action: onCancel)
                 Button(action: onApprove) {
-                    Text(ChatCopy.text("Confirm"))
+                    Text(copy.chat("chat.confirm"))
                         .designFont(.button)
                         .frame(
                             maxWidth: .infinity,
@@ -134,7 +135,7 @@ public struct ApprovalBubble: View {
     private var cardDivider: some View {
         Rectangle()
             .fill(Color(theme.colors.divider))
-            .frame(height: artwork.stroke(0.5))
+            .frame(height: artwork.stroke(DesignKitMetrics.Stroke.divider))
     }
 
     private var symbolName: String {
@@ -149,13 +150,13 @@ public struct ApprovalBubble: View {
 
     private var statusText: String {
         switch payload.state {
-        case .awaitingApproval: return ChatCopy.text("Awaiting your approval")
-        case .authorizing: return ChatCopy.text("Authorizing securely")
-        case .processing: return ChatCopy.text("Processing")
-        case .completed: return ChatCopy.text("Completed")
-        case .failed: return ChatCopy.text("Authorization failed")
-        case .expired: return ChatCopy.text("Approval expired")
-        case .cancelled: return ChatCopy.text("Cancelled")
+        case .awaitingApproval: return copy.chat("chat.awaitingApproval")
+        case .authorizing: return copy.chat("chat.authorizing")
+        case .processing: return copy.chat("chat.processing")
+        case .completed: return copy.chat("chat.completed")
+        case .failed: return copy.chat("chat.authorizationFailed")
+        case .expired: return copy.chat("chat.approvalExpired")
+        case .cancelled: return copy.chat("chat.cancelled")
         }
     }
 

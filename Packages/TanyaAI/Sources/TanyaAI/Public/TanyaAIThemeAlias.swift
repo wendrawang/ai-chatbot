@@ -8,3 +8,5 @@ import DesignKit
 public typealias TanyaAITheme = DesignKit.Theme
 public typealias TanyaAIColors = DesignKit.Colors
 public typealias TanyaAIFonts = DesignKit.Fonts
+
+public typealias TanyaAICopyCatalog = DesignKit.CopyCatalog

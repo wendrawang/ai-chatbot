@@ -1,9 +1,7 @@
-import DesignKit
-import TanyaAIDomain
 import SwiftUI
 import UIKit
 
-/// One choice in a `ChoicesBubble`.
+/// One choice in a `ChoiceGroup`.
 ///
 /// The tick appears only when selected, so a chip is as wide as its words.
 /// Reserving the tick's width in every chip was tried first, to stop rows
@@ -11,8 +9,8 @@ import UIKit
 /// keep any two from sharing a row, which turned a flowing grid into a single
 /// column and lost the shape the design is built on. Repacking is the smaller
 /// cost of the two.
-public struct ChoiceChip: View {
-    let choice: ChoicesPayload.Choice
+public struct SelectionChip: View {
+    let title: String
     let isSelected: Bool
     let isEnabled: Bool
     let onTap: () -> Void
@@ -20,15 +18,15 @@ public struct ChoiceChip: View {
     @Environment(\.artwork) private var artwork
 
     /// The tick and the gap after it, counted only when it is showing.
-    static let indicatorWidth: CGFloat = 20
+    static let indicatorWidth = DesignKitMetrics.Size.indicator
 
     public init(
-        choice: ChoicesPayload.Choice,
+        title: String,
         isSelected: Bool,
         isEnabled: Bool,
         onTap: @escaping () -> Void
     ) {
-        self.choice = choice
+        self.title = title
         self.isSelected = isSelected
         self.isEnabled = isEnabled
         self.onTap = onTap
@@ -37,13 +35,13 @@ public struct ChoiceChip: View {
     /// How wide this chip wants to be, so rows can be packed before anything
     /// is drawn. Measured with the same font the label uses, and with the tick
     /// counted only when this chip is showing one.
-    static func width(
-        of choice: ChoicesPayload.Choice,
+    public static func width(
+        of title: String,
         isSelected: Bool,
         font: UIFont,
         artwork: ArtworkMetrics = ArtworkMetrics()
     ) -> CGFloat {
-        let text = (choice.title as NSString).size(
+        let text = (title as NSString).size(
             withAttributes: [.font: font]
         ).width
         let tick = isSelected
@@ -58,7 +56,7 @@ public struct ChoiceChip: View {
                 if isSelected {
                     tick
                 }
-                Text(choice.title)
+                Text(title)
                     .designFont(.body)
                     .fixedSize(horizontal: false, vertical: true)
             }
@@ -68,16 +66,15 @@ public struct ChoiceChip: View {
         .disabled(isEnabled == false)
         .foregroundColor(Color(foreground))
         .background(background)
-        .accessibilityIdentifier("choice.\(choice.identifier)")
         .accessibility(
-            label: Text(choice.title)
+            label: Text(title)
         )
         .accessibility(addTraits: isSelected ? [.isSelected] : [])
     }
 
     private var tick: some View {
         Image(systemName: "checkmark")
-            .font(.system(size: artwork.size(DesignKitMetrics.Spacing.regular), weight: .bold))
+            .designFont(.caption)
             .frame(width: artwork.size(Self.indicatorWidth))
     }
 
@@ -85,7 +82,7 @@ public struct ChoiceChip: View {
         Capsule()
             .fill(
                 isSelected
-                    ? Color(theme.colors.accent).opacity(0.1)
+                    ? Color(theme.colors.accent).opacity(DesignKitMetrics.Opacity.selected)
                     : Color(theme.colors.assistantBubble)
             )
             .overlay(

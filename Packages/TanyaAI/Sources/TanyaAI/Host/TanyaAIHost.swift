@@ -39,6 +39,8 @@ public final class TanyaAIHost: ObservableObject {
     private let deeplinkHost: String?
     private let initialPrompt: String?
     private let shortcuts: [Suggestion]
+    private let copy: CopyCatalog
+    private let historyItems: [ConversationSummary]
     private let makeSession: () -> TanyaAIChatSession
     private let onDeeplink: (URL) -> Void
 
@@ -59,6 +61,8 @@ public final class TanyaAIHost: ObservableObject {
     ///     customer to `https://…` or into another application.
     ///   - deeplinkHost: pins the link to one entry point. Nil accepts any
     ///     host under the scheme.
+    ///   - copy: UI language and host overrides, captured for this host instance.
+    ///   - historyItems: host-provided conversation summaries; empty by default.
     ///   - makeSession: called once per presentation. It must return a *new*
     ///     session each time: the feature takes ownership of the session's
     ///     callback and closes it on dismissal, so a shared instance would be
@@ -73,6 +77,8 @@ public final class TanyaAIHost: ObservableObject {
         deeplinkHost: String? = nil,
         initialPrompt: String? = nil,
         shortcuts: [Suggestion] = [],
+        copy: CopyCatalog = CopyCatalog(),
+        historyItems: [ConversationSummary] = [],
         makeSession: @escaping () -> TanyaAIChatSession,
         onDeeplink: @escaping (URL) -> Void
     ) {
@@ -82,6 +88,8 @@ public final class TanyaAIHost: ObservableObject {
         self.deeplinkHost = deeplinkHost
         self.initialPrompt = initialPrompt
         self.shortcuts = shortcuts
+        self.copy = copy
+        self.historyItems = historyItems
         self.makeSession = makeSession
         self.onDeeplink = onDeeplink
     }
@@ -97,7 +105,9 @@ public final class TanyaAIHost: ObservableObject {
         let controller = TanyaAIModule.makeViewController(
             configuration: TanyaAIConfiguration(
                 initialPrompt: initialPrompt,
-                shortcuts: shortcuts
+                shortcuts: shortcuts,
+                copy: copy,
+                historyItems: historyItems
             ),
             dependencies: TanyaAIDependencies(
                 chatSession: makeSession(),

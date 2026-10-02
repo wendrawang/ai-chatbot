@@ -1,5 +1,3 @@
-import DesignKit
-import TanyaAIDomain
 import Foundation
 import SwiftUI
 
@@ -17,15 +15,19 @@ public struct TypingIndicatorView: View {
     @Environment(\.accessibilityReduceMotion) private var isReduceMotion
     @State private var isAnimating = false
 
-    private let dotCount = 3
+    private let dotCount = DesignKitMetrics.Motion.dotCount
 
-    public init() {}
+    private let label: String
+
+    public init(label: String) {
+        self.label = label
+    }
 
     public var body: some View {
         dots
             .frame(maxWidth: .infinity, alignment: .leading)
             .accessibilityElement(children: .ignore)
-            .accessibility(label: Text(ChatCopy.text("Assistant is responding")))
+            .accessibility(label: Text(label))
             .task(id: isReduceMotion) {
                 isAnimating = false
                 guard !isReduceMotion else { return }
@@ -45,11 +47,11 @@ public struct TypingIndicatorView: View {
                         width: artwork.size(DesignKitMetrics.Size.dot),
                         height: artwork.size(DesignKitMetrics.Size.dot)
                     )
-                    .opacity(isAnimating ? 1 : 0.3)
+                    .opacity(isAnimating ? 1 : DesignKitMetrics.Opacity.restingDot)
                     .animation(
-                        isReduceMotion ? nil : Animation.easeInOut(duration: 0.6)
+                        isReduceMotion ? nil : Animation.easeInOut(duration: DesignKitMetrics.Motion.dotDuration)
                             .repeatForever()
-                            .delay(Double(index) * 0.2),
+                            .delay(Double(index) * DesignKitMetrics.Motion.dotDelay),
                         value: isAnimating
                     )
             }

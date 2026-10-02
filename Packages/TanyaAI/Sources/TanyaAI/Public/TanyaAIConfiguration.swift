@@ -2,8 +2,12 @@ import DesignKit
 import TanyaAIDomain
 
 public struct TanyaAIConfiguration: Equatable {
-    /// Sent as the customer's first message when the chat opens. Nil opens an
-    /// empty conversation.
+    /// Language and localized host overrides for this presentation.
+    public let copy: CopyCatalog
+    /// Optional summaries supplied by the host, empty by default.
+    public let historyItems: [ConversationSummary]
+
+    /// Optional first message sent when opening; nil sends nothing automatically.
     public let initialPrompt: String?
 
     /// Ways in, shown above the keyboard and unchanged by use.
@@ -18,8 +22,12 @@ public struct TanyaAIConfiguration: Equatable {
 
     public init(
         initialPrompt: String? = nil,
-        shortcuts: [Suggestion] = []
+        shortcuts: [Suggestion] = [],
+        copy: CopyCatalog = CopyCatalog(),
+        historyItems: [ConversationSummary] = []
     ) {
+        self.copy = copy
+        self.historyItems = historyItems
         self.initialPrompt = initialPrompt
         self.shortcuts = shortcuts
     }

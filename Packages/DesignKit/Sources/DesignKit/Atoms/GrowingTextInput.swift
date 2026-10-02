@@ -2,27 +2,38 @@ import SwiftUI
 import UIKit
 
 /// A multiline composer that stays one to four lines tall on iOS 15.
-struct TanyaAIGrowingTextView: UIViewRepresentable {
+public struct GrowingTextInput: UIViewRepresentable {
     @Binding var text: String
     let font: UIFont
     let textColor: UIColor
+    let accessibilityLabel: String
 
-    func makeUIView(context: Context) -> TanyaAIBoundedTextView {
-        let textView = TanyaAIBoundedTextView()
+    public init(text: Binding<String>, font: UIFont, textColor: UIColor, accessibilityLabel: String) {
+        self._text = text
+        self.font = font
+        self.textColor = textColor
+        self.accessibilityLabel = accessibilityLabel
+    }
+
+    public func makeUIView(context: Context) -> BoundedTextView {
+        let textView = BoundedTextView()
         textView.delegate = context.coordinator
         textView.backgroundColor = .clear
         textView.textContainerInset = .zero
         textView.textContainer.lineFragmentPadding = 0
-        textView.adjustsFontForContentSizeCategory = true
+        textView.adjustsFontForContentSizeCategory = false
         textView.isScrollEnabled = false
         textView.text = text
-        textView.accessibilityLabel = "Ask Tanya AI"
+        textView.font = font
+        textView.textColor = textColor
+        textView.accessibilityLabel = accessibilityLabel
         textView.setContentHuggingPriority(.defaultLow, for: .horizontal)
         return textView
     }
 
-    func updateUIView(_ textView: TanyaAIBoundedTextView, context: Context) {
+    public func updateUIView(_ textView: BoundedTextView, context: Context) {
         context.coordinator.parent = self
+        textView.accessibilityLabel = accessibilityLabel
         if textView.font != font {
             textView.font = font
         }
@@ -35,34 +46,38 @@ struct TanyaAIGrowingTextView: UIViewRepresentable {
         textView.setNeedsLayout()
     }
 
-    func makeCoordinator() -> Coordinator {
+    public static func dismantleUIView(_ textView: BoundedTextView, coordinator: Coordinator) {
+        textView.delegate = nil
+    }
+
+    public func makeCoordinator() -> Coordinator {
         Coordinator(parent: self)
     }
 
-    final class Coordinator: NSObject, UITextViewDelegate {
-        var parent: TanyaAIGrowingTextView
+    public final class Coordinator: NSObject, UITextViewDelegate {
+        var parent: GrowingTextInput
 
-        init(parent: TanyaAIGrowingTextView) {
+        init(parent: GrowingTextInput) {
             self.parent = parent
         }
 
-        func textViewDidChange(_ textView: UITextView) {
+        public func textViewDidChange(_ textView: UITextView) {
             parent.text = textView.text
             textView.setNeedsLayout()
         }
     }
 }
 
-final class TanyaAIBoundedTextView: UITextView {
+public final class BoundedTextView: UITextView {
     private var measuredHeight: CGFloat = 0
     private var isMeasuring = false
 
-    override var intrinsicContentSize: CGSize {
-        let lineHeight = font?.lineHeight ?? 20
+    public override var intrinsicContentSize: CGSize {
+        let lineHeight = font?.lineHeight ?? UIFont.preferredFont(forTextStyle: .body).lineHeight
         return CGSize(width: UIView.noIntrinsicMetric, height: max(measuredHeight, lineHeight))
     }
 
-    override func layoutSubviews() {
+    public override func layoutSubviews() {
         super.layoutSubviews()
         guard bounds.width > 0, !isMeasuring else { return }
 
@@ -72,14 +87,14 @@ final class TanyaAIBoundedTextView: UITextView {
         ).height
         isMeasuring = false
 
-        let lineHeight = font?.lineHeight ?? 20
-        let maxHeight = ceil(lineHeight * 4)
+        let lineHeight = font?.lineHeight ?? UIFont.preferredFont(forTextStyle: .body).lineHeight
+        let maxHeight = ceil(lineHeight * CGFloat(DesignKitMetrics.Text.maximumInputLines))
         let nextHeight = min(max(ceil(fittedHeight), ceil(lineHeight)), maxHeight)
-        let shouldScroll = fittedHeight > maxHeight + 0.5
+        let shouldScroll = fittedHeight > maxHeight + DesignKitMetrics.Layout.measurementTolerance
         if isScrollEnabled != shouldScroll {
             isScrollEnabled = shouldScroll
         }
-        if abs(nextHeight - measuredHeight) > 0.5 {
+        if abs(nextHeight - measuredHeight) > DesignKitMetrics.Layout.measurementTolerance {
             measuredHeight = nextHeight
             invalidateIntrinsicContentSize()
         }

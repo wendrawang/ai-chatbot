@@ -12,7 +12,7 @@ import UIKit
 /// nearest controller that can present, so the feature opens over the screen
 /// the customer is looking at - without ever entering the host's
 /// `NavigationView`.
-struct TanyaAIHostAnchor: UIViewControllerRepresentable {
+struct ChatHostAnchor: UIViewControllerRepresentable {
     let host: TanyaAIHost
 
     func makeUIViewController(context: Context) -> UIViewController {
@@ -41,7 +41,7 @@ public extension View {
     /// never involved and cannot be disturbed by it.
     func tanyaAIHost(_ host: TanyaAIHost) -> some View {
         background(
-            TanyaAIHostAnchor(host: host)
+            ChatHostAnchor(host: host)
                 .frame(width: 0, height: 0)
         )
     }

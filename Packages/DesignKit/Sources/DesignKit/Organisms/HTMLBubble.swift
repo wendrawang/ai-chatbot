@@ -7,6 +7,7 @@ import SwiftUI
 /// read aloud, none of which survive inside a web view.
 public struct HTMLBubble: View {
     let payload: HTMLPayload
+    @Environment(\.copyCatalog) private var copy
     @Environment(\.theme) private var theme
     @Environment(\.artwork) private var artwork
     @State private var height: CGFloat
@@ -36,7 +37,7 @@ public struct HTMLBubble: View {
         )
         .accessibilityElement(children: .ignore)
         .accessibility(
-            label: Text(payload.accessibilityText ?? DesignCopy.text("Formatted result"))
+            label: Text(payload.accessibilityText ?? copy.design("design.formattedResult"))
         )
         .accessibilityIdentifier("html.card")
     }
@@ -46,7 +47,7 @@ public struct HTMLBubble: View {
     /// A web view reports its size more than once while laying out, and
     /// resizing the row on every report makes the conversation twitch.
     private func adopt(_ measured: CGFloat) {
-        guard abs(measured - height) > 1 else {
+        guard abs(measured - height) > DesignKitMetrics.Layout.measurementTolerance else {
             return
         }
         height = HTMLSizing.height(measured)

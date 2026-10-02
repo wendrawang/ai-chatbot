@@ -2,21 +2,23 @@ import CoreGraphics
 
 /// Converts Figma points using the active container, never a cached screen size.
 public struct ArtworkMetrics: Equatable {
-    public static let referenceSize = CGSize(width: 375, height: 812)
+    public static let referenceSize = DesignKitMetrics.Artwork.referenceSize
     public let scale: CGFloat
     public let displayScale: CGFloat
 
     public init(
         containerSize: CGSize = Self.referenceSize,
         referenceSize: CGSize = Self.referenceSize,
-        displayScale: CGFloat = 2,
-        maximumScale: CGFloat = 1.25
+        displayScale: CGFloat = DesignKitMetrics.Artwork.defaultDisplayScale,
+        maximumScale: CGFloat = DesignKitMetrics.Artwork.maximumScale
     ) {
-        let width = referenceSize.width.isFinite && referenceSize.width > 0 ? referenceSize.width : 375
+        let width = referenceSize.width.isFinite && referenceSize.width > 0
+            ? referenceSize.width : Self.referenceSize.width
         let ratio = containerSize.width / width
-        let limit = maximumScale.isFinite && maximumScale > 0 ? maximumScale : 1.25
+        let limit = maximumScale.isFinite && maximumScale > 0 ? maximumScale : DesignKitMetrics.Artwork.maximumScale
         scale = ratio.isFinite && ratio > 0 ? min(ratio, limit) : 1
-        self.displayScale = displayScale.isFinite && displayScale > 0 ? displayScale : 2
+        self.displayScale = displayScale.isFinite && displayScale > 0
+            ? displayScale : DesignKitMetrics.Artwork.defaultDisplayScale
     }
 
     /// Uniform width scaling preserves proportions; height never stretches independently.
@@ -33,8 +35,8 @@ public struct ArtworkMetrics: Equatable {
     }
 
     /// Accessibility targets must not shrink below 44 points on narrow containers.
-    public func tapTarget(_ value: CGFloat = 44) -> CGFloat {
-        max(44, size(value))
+    public func tapTarget(_ value: CGFloat = DesignKitMetrics.Size.minimumTapTarget) -> CGFloat {
+        max(DesignKitMetrics.Size.minimumTapTarget, size(value))
     }
 }
 

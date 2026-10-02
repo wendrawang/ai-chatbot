@@ -1,12 +1,12 @@
 import DesignKit
 import SwiftUI
 
-struct TanyaAIMessageListView: View {
+struct MessageListView: View {
     @ObservedObject var viewModel: TanyaAIChatViewModel
     @Environment(\.theme) private var theme
 
     var body: some View {
-        TanyaAIMessageTableView(
+        MessageTableView(
             state: TanyaAIMessageListState(
                 messages: viewModel.messages,
                 isRestoring: viewModel.isRestoring,

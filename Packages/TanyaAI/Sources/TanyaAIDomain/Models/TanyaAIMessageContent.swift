@@ -14,5 +14,5 @@ public enum TanyaAIMessageContent: Equatable {
     case receipt(ReceiptPayload)
     case status(StatusPayload)
     case actions(ActionPayload)
-    case unsupported(String)
+    case unsupported(String?)
 }

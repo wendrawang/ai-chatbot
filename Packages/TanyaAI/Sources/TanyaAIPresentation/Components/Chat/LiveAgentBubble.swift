@@ -11,6 +11,7 @@ public struct LiveAgentBubble: View {
     let payload: LiveAgentPayload
     let onContinue: (Action) -> Void
     let onCancel: () -> Void
+    @Environment(\.copyCatalog) private var copy
     @Environment(\.theme) private var theme
     @Environment(\.artwork) private var artwork
 
@@ -59,7 +60,7 @@ public struct LiveAgentBubble: View {
     @ViewBuilder
     private var buttons: some View {
         if payload.isDeclined {
-            Text(payload.cancelTitle)
+            Text(payload.cancelTitle ?? copy.chat("chat.cancel"))
                 .designFont(.footnote)
                 .foregroundColor(Color(theme.colors.secondaryText))
                 .padding(.top, artwork.size(DesignKitMetrics.Spacing.tight))
@@ -74,7 +75,7 @@ public struct LiveAgentBubble: View {
 
     private var cancelButton: some View {
         Button(action: onCancel) {
-            label(payload.cancelTitle)
+            label(payload.cancelTitle ?? copy.chat("chat.cancel"))
         }
         .foregroundColor(Color(theme.colors.primaryText))
         .background(Color(theme.colors.background))
@@ -92,7 +93,7 @@ public struct LiveAgentBubble: View {
     private var continueButton: some View {
         Button(
             action: { onContinue(payload.action) },
-            label: { label(payload.continueTitle) }
+            label: { label(payload.continueTitle ?? copy.chat("chat.continue")) }
         )
         .foregroundColor(Color(theme.colors.userBubbleText))
         .background(Color(theme.colors.accent))

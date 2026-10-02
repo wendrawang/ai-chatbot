@@ -43,11 +43,15 @@ public final class TanyaAIChatViewModel: ObservableObject {
     /// a reply offers, these answer no question and so never go away.
     public let shortcuts: [Suggestion]
 
+    private let copy: CopyCatalog
+
     public init(
         useCase: TanyaAIChatUseCaseProtocol,
         isAuthorizationEnabled: Bool = true,
-        shortcuts: [Suggestion] = []
+        shortcuts: [Suggestion] = [],
+        copy: CopyCatalog = CopyCatalog()
     ) {
+        self.copy = copy
         self.useCase = useCase
         self.isAuthorizationEnabled = isAuthorizationEnabled
         self.shortcuts = shortcuts
@@ -149,7 +153,7 @@ public final class TanyaAIChatViewModel: ObservableObject {
     /// authorization service was injected. Says so instead of leaving the
     /// customer with a Confirm button that does nothing.
     func reportUnauthorizableApproval() {
-        errorMessage = "This confirmation has to be completed in the app."
+        errorMessage = copy.chat("chat.authorizationRequired")
     }
 
     public func close() {
@@ -214,7 +218,7 @@ public final class TanyaAIChatViewModel: ObservableObject {
         isGenerating = false
         isAgentTyping = false
         if case .failure = result {
-            errorMessage = "The response was interrupted. Please try again."
+            errorMessage = copy.chat("chat.interrupted")
         }
     }
 

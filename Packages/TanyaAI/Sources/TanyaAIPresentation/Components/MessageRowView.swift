@@ -2,20 +2,22 @@ import DesignKit
 import SwiftUI
 import TanyaAIDomain
 
-struct TanyaAIMessageRowView: View {
+struct MessageRowView: View {
+    @Environment(\.artwork) private var artwork
+    @Environment(\.copyCatalog) private var copy
     @ObservedObject var viewModel: TanyaAIMessageItemViewModel
     let handlers: TanyaAIMessageRowHandlers
 
     var body: some View {
-        HStack {
+        HStack(spacing: artwork.size(DesignKitMetrics.Spacing.compact)) {
             if viewModel.role == .user {
-                Spacer(minLength: 48)
+                Spacer(minLength: artwork.size(DesignKitMetrics.Spacing.doubleExtraLarge))
             }
 
             content
 
             if viewModel.role != .user {
-                Spacer(minLength: 32)
+                Spacer(minLength: artwork.size(DesignKitMetrics.Spacing.extraLarge))
             }
         }
         .accessibilityElement(children: .contain)
@@ -64,8 +66,8 @@ struct TanyaAIMessageRowView: View {
         case .unsupported(let message):
             StatusBubble(
                 payload: StatusPayload(
-                    title: "Update required",
-                    detail: message,
+                    title: copy.chat("chat.updateRequired"),
+                    detail: message ?? copy.chat("chat.unsupported"),
                     level: .warning
                 )
             )

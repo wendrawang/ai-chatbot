@@ -1,13 +1,12 @@
-import DesignKit
 import SwiftUI
 import UIKit
 
-final class TanyaAIHostingTableViewCell: UITableViewCell {
-    static let reuseIdentifier = "TanyaAIHostingTableViewCell"
+public final class HostingTableViewCell<Content: View>: UITableViewCell {
+    public static var reuseIdentifier: String { String(reflecting: Self.self) }
 
-    private var hostingController: UIHostingController<TanyaAIMessageTableRow>?
+    private var hostingController: UIHostingController<Content>?
 
-    override init(style: UITableViewCell.CellStyle, reuseIdentifier: String?) {
+    public override init(style: UITableViewCell.CellStyle, reuseIdentifier: String?) {
         super.init(style: style, reuseIdentifier: reuseIdentifier)
         selectionStyle = .none
         backgroundColor = .clear
@@ -15,18 +14,18 @@ final class TanyaAIHostingTableViewCell: UITableViewCell {
     }
 
     @available(*, unavailable)
-    required init?(coder: NSCoder) {
+    public required init?(coder: NSCoder) {
         fatalError("init(coder:) is not supported")
     }
 
-    /// The observed message can grow without configure being called again.
-    func invalidateHostedSize() {
+    /// The hosted content can grow without configure being called again.
+    public func invalidateHostedSize() {
         hostingController?.view.invalidateIntrinsicContentSize()
         hostingController?.view.setNeedsLayout()
         contentView.setNeedsLayout()
     }
 
-    func configure(rootView: TanyaAIMessageTableRow) {
+    public func configure(rootView: Content) {
         if let hostingController = hostingController {
             hostingController.rootView = rootView
             hostingController.view.invalidateIntrinsicContentSize()

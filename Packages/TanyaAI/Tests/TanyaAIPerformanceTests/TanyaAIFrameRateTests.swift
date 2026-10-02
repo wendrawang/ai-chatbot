@@ -68,7 +68,7 @@ final class TanyaAIFrameRateTests: XCTestCase {
         useCase.appendStatusMessages(count: messageCount)
 
         let controller = UIHostingController(
-            rootView: TanyaAIChatView(viewModel: viewModel)
+            rootView: ChatScreen(viewModel: viewModel)
         )
         let window = UIWindow(frame: UIScreen.main.bounds)
         window.rootViewController = controller

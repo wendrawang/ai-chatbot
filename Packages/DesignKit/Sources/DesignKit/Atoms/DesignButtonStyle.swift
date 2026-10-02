@@ -25,7 +25,9 @@ public struct DesignButtonStyle: ButtonStyle {
             .foregroundColor(Color(emphasis == .primary ? theme.colors.userBubbleText : theme.colors.primaryText))
             .background(Color(emphasis == .primary ? theme.colors.accent : theme.colors.background))
             .cornerRadius(artwork.size(DesignKitMetrics.Radius.bubble))
-            .opacity(isEnabled ? (configuration.isPressed ? 0.7 : 1) : 0.35)
+            .opacity(isEnabled
+                ? (configuration.isPressed ? DesignKitMetrics.Opacity.pressed : 1)
+                : DesignKitMetrics.Opacity.disabled)
             .contentShape(Rectangle())
     }
 }

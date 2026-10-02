@@ -28,7 +28,7 @@ public struct ChoicesPayload: Equatable {
     public let choices: [Choice]
     /// False makes each tap replace the selection instead of adding to it.
     public let isMultipleSelectionAllowed: Bool
-    public let submitTitle: String
+    public let submitTitle: String?
     public var selected: Set<String>
     /// A submitted card stays on screen but stops accepting input: the
     /// conversation is the record of what was asked and answered.
@@ -52,7 +52,7 @@ public struct ChoicesPayload: Equatable {
         title: String?,
         choices: [Choice],
         isMultipleSelectionAllowed: Bool = true,
-        submitTitle: String = "Submit",
+        submitTitle: String? = nil,
         selected: Set<String> = [],
         isSubmitted: Bool = false
     ) {

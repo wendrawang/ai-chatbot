@@ -61,11 +61,11 @@ Host application
 TanyaAIModule.makeViewController
           │
           ▼
-TanyaAIContainerViewController
+ChatContainerViewController
 └── UINavigationController
-    ├── UIHostingController<TanyaAIChatView>
-    ├── UIHostingController<TanyaAIHistoryView>
-    └── TanyaAIPINSheetViewController
+    ├── UIHostingController<ChatScreen>
+    ├── UIHostingController<ConversationHistoryScreen>
+    └── AuthorizationSheetViewController
           │
           ▼
 View → ViewModel → UseCase → Repository → injected transport
@@ -608,7 +608,7 @@ presenter into the existing coordinator or ViewModel action boundary:
 Legacy NavigationView screen
     → button action
     → scene-owned presentation gateway
-    → present TanyaAIContainerViewController full screen
+    → present ChatContainerViewController full screen
 ```
 
 The sandbox UI test verifies that the legacy navigation position and local
@@ -662,7 +662,7 @@ string directly into UI behavior.
 ### 5. Add presentation
 
 Add a focused renderer under `TanyaAIPresentation/Components` and one case in
-`TanyaAIMessageRowView`. Keep the view declarative. It may emit a typed user
+`MessageRowView`. Keep the view declarative. It may emit a typed user
 intent but may not call repositories, services, or routers.
 
 ### 6. Add business logic at the correct layer
@@ -928,3 +928,5 @@ Panduan tema Default/Premier/Private, override per halaman, dan registrasi font:
 Mulai integrasi host dengan [panduan langkah demi langkah](docs/HOST_INTEGRATION.md),
 atau jalankan `./Scripts/run_sandbox.sh --showcase` untuk review bubble.
 [Kontrak JSON](docs/BUBBLE_SCHEMA.md) dilengkapi [file contoh per bubble](Examples/BubbleResponses/).
+
+Panduan copy multilanguage, token ukuran, dan komponen generik: [DesignKit copy & components](docs/DESIGNKIT_COPY_AND_COMPONENTS.md).

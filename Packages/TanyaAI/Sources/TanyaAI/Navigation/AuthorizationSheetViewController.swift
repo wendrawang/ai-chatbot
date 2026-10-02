@@ -3,14 +3,15 @@ import SwiftUI
 import TanyaAIPresentation
 import UIKit
 
-final class TanyaAIPINSheetViewController: UIViewController {
+final class AuthorizationSheetViewController: UIViewController {
     private let hostingController: UIHostingController<AnyView>
 
-    init(viewModel: TanyaAIPINViewModel, theme: Theme) {
+    init(viewModel: TanyaAIPINViewModel, theme: Theme, copy: CopyCatalog = CopyCatalog()) {
         hostingController = UIHostingController(
             rootView: AnyView(
-                TanyaAIPINBottomSheetView(viewModel: viewModel)
+                AuthorizationSheet(viewModel: viewModel)
                     .theme(theme)
+                    .copyCatalog(copy)
                     .artworkLayout()
             )
         )

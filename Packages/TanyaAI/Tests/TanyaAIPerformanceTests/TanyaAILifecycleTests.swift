@@ -15,7 +15,7 @@ final class TanyaAILifecycleTests: XCTestCase {
             weak var releasedController: UIViewController?
             autoreleasepool {
                 let viewModel = TanyaAIChatViewModel(useCase: TanyaAIChatUseCaseFixture())
-                let controller = UIHostingController(rootView: TanyaAIChatView(viewModel: viewModel))
+                let controller = UIHostingController(rootView: ChatScreen(viewModel: viewModel))
                 let window = UIWindow(frame: UIScreen.main.bounds)
                 window.rootViewController = controller
                 window.makeKeyAndVisible()

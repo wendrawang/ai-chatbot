@@ -4,7 +4,7 @@ import SwiftUI
 import TanyaAIDomain
 import UIKit
 
-extension TanyaAIMessageTableView {
+extension MessageTableView {
     final class Coordinator: NSObject, UITableViewDataSource, UITableViewDelegate {
         /// A layout that will not settle must not spin the loop in
         /// `parkAtBottom`. Two passes cover the usual case: aim at the
@@ -15,6 +15,7 @@ extension TanyaAIMessageTableView {
         private var state = TanyaAIMessageListState.empty
         private var isFollowingLatestMessage = true
         private var scrollRequestIdentifier = 0
+        private var copy = CopyCatalog()
         private var theme = Theme.sandbox
         private var artwork = ArtworkMetrics()
         private var imageLoader: ImageLoading = ImageLoader.shared
@@ -22,7 +23,7 @@ extension TanyaAIMessageTableView {
         private var subscriptions: [ObjectIdentifier: AnyCancellable] = [:]
         private var isHeightUpdatePending = false
 
-        func attach(_ tableView: TanyaAITrackingTableView) {
+        func attach(_ tableView: LayoutTrackingTableView) {
             self.tableView = tableView
             tableView.onLayoutChange = { [weak self] in
                 self?.tableLayoutDidChange()
@@ -34,11 +35,13 @@ extension TanyaAIMessageTableView {
             theme: Theme,
             handlers: TanyaAIMessageRowHandlers,
             artwork: ArtworkMetrics = ArtworkMetrics(),
-            imageLoader: ImageLoading = ImageLoader.shared
+            imageLoader: ImageLoading = ImageLoader.shared,
+            copy: CopyCatalog = CopyCatalog()
         ) {
             let previous = self.state
             let isThemeChanged = self.theme != theme || self.artwork != artwork
-                || self.imageLoader !== imageLoader
+                || self.imageLoader !== imageLoader || self.copy != copy
+            self.copy = copy
             self.state = state
             self.theme = theme
             self.artwork = artwork
@@ -47,6 +50,9 @@ extension TanyaAIMessageTableView {
             bindMessages(state.messages)
 
             tableView?.backgroundColor = theme.colors.background
+            tableView?.estimatedRowHeight = artwork.size(DesignKitMetrics.Size.estimatedRowHeight)
+            let inset = artwork.size(DesignKitMetrics.Spacing.snug)
+            tableView?.contentInset = UIEdgeInsets(top: inset, left: 0, bottom: inset, right: 0)
             let isRowStructureChanged = state.rowsDiffer(from: previous)
             if isRowStructureChanged || isThemeChanged {
                 tableView?.reloadData()
@@ -73,9 +79,9 @@ extension TanyaAIMessageTableView {
             cellForRowAt indexPath: IndexPath
         ) -> UITableViewCell {
             guard let cell = tableView.dequeueReusableCell(
-                withIdentifier: TanyaAIHostingTableViewCell.reuseIdentifier,
+                withIdentifier: MessageHostingCell.reuseIdentifier,
                 for: indexPath
-            ) as? TanyaAIHostingTableViewCell else {
+            ) as? MessageHostingCell else {
                 return UITableViewCell()
             }
             guard let kind = state.kind(at: indexPath.row) else {
@@ -105,11 +111,12 @@ extension TanyaAIMessageTableView {
 
         private func rowView(
             for kind: TanyaAIMessageRowKind
-        ) -> TanyaAIMessageTableRow {
-            TanyaAIMessageTableRow(
+        ) -> MessageTableRow {
+            MessageTableRow(
                 kind: kind,
                 theme: theme,
                 handlers: handlers,
+                copy: copy,
                 artwork: artwork,
                 imageLoader: imageLoader
             )
@@ -139,7 +146,7 @@ extension TanyaAIMessageTableView {
 
         private func refreshRowHeight() {
             guard let tableView else { return }
-            for case let cell as TanyaAIHostingTableViewCell in tableView.visibleCells {
+            for case let cell as MessageHostingCell in tableView.visibleCells {
                 cell.invalidateHostedSize()
             }
             UIView.performWithoutAnimation {
@@ -209,7 +216,7 @@ extension TanyaAIMessageTableView {
                     - tableView.bounds.height
                     + tableView.adjustedContentInset.bottom
             )
-            guard abs(tableView.contentOffset.y - maximumOffset) > 0.5 else {
+            guard abs(tableView.contentOffset.y - maximumOffset) > DesignKitMetrics.Layout.measurementTolerance else {
                 return
             }
             tableView.setContentOffset(
@@ -222,7 +229,8 @@ extension TanyaAIMessageTableView {
             let visibleBottom = scrollView.contentOffset.y
                 + scrollView.bounds.height
                 - scrollView.adjustedContentInset.bottom
-            return scrollView.contentSize.height - visibleBottom < 80
+            let threshold = artwork.size(DesignKitMetrics.Layout.scrollFollowThreshold)
+            return scrollView.contentSize.height - visibleBottom < threshold
         }
     }
 }

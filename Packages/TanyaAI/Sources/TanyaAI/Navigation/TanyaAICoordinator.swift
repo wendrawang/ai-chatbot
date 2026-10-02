@@ -48,8 +48,9 @@ final class TanyaAICoordinator: NSObject {
             self?.handle(output)
         }
         let controller = UIHostingController(
-            rootView: TanyaAIChatView(viewModel: viewModel)
+            rootView: ChatScreen(viewModel: viewModel)
                 .theme(dependencyContainer.theme)
+                .copyCatalog(dependencyContainer.copy)
                 .imageLoader(dependencyContainer.imageLoader)
                 .artworkLayout()
         )
@@ -65,8 +66,9 @@ final class TanyaAICoordinator: NSObject {
     private func showHistory(animated isAnimated: Bool) {
         let viewModel = dependencyContainer.makeHistoryViewModel()
         let controller = UIHostingController(
-            rootView: TanyaAIHistoryView(viewModel: viewModel)
+            rootView: ConversationHistoryScreen(viewModel: viewModel)
                 .theme(dependencyContainer.theme)
+                .copyCatalog(dependencyContainer.copy)
                 .imageLoader(dependencyContainer.imageLoader)
                 .artworkLayout()
         )
@@ -88,9 +90,10 @@ final class TanyaAICoordinator: NSObject {
             self?.handlePIN(output, approval: payload)
             viewModel?.clearSensitiveState()
         }
-        let controller = TanyaAIPINSheetViewController(
+        let controller = AuthorizationSheetViewController(
             viewModel: viewModel,
-            theme: dependencyContainer.theme
+            theme: dependencyContainer.theme,
+            copy: dependencyContainer.copy
         )
         controller.isModalInPresentation = true
         navigationController.present(controller, animated: true)

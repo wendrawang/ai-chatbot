@@ -23,7 +23,7 @@ public enum TanyaAIModule {
             configuration: configuration,
             dependencies: dependencies
         )
-        return TanyaAIContainerViewController(
+        return ChatContainerViewController(
             dependencyContainer: dependencyContainer,
             actionHandler: onAction
         )

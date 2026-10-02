@@ -14,6 +14,7 @@ public struct TextBubble: View {
     let text: String
     let isUser: Bool
     private let runs: [MarkupRun]
+    @Environment(\.copyCatalog) private var copy
     @Environment(\.theme) private var theme
     @Environment(\.artwork) private var artwork
 
@@ -50,7 +51,7 @@ public struct TextBubble: View {
     }
 
     private var accessibilityText: String {
-        text.isEmpty ? DesignCopy.text("Assistant is responding") : runs.map(\.text).joined()
+        text.isEmpty ? copy.design("design.responding") : runs.map(\.text).joined()
     }
 
     @ViewBuilder

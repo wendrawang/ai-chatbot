@@ -114,7 +114,6 @@ final class TanyaAIStreamEventDecoder {
             from: json
         )
         let message = payload.fallbackText
-            ?? "This content requires a newer app version."
         return .content(
             messageIdentifier: payload.messageIdentifier,
             content: .unsupported(message)

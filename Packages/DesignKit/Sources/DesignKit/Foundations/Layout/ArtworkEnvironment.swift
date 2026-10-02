@@ -34,7 +34,7 @@ public extension View {
     /// Apply once to a screen/container root, outside `.theme(...)`.
     func artworkLayout(
         referenceSize: CGSize = ArtworkMetrics.referenceSize,
-        maximumScale: CGFloat = 1.25
+        maximumScale: CGFloat = DesignKitMetrics.Artwork.maximumScale
     ) -> some View {
         modifier(ArtworkLayout(referenceSize: referenceSize, maximumScale: maximumScale))
     }

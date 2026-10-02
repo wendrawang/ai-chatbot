@@ -6,7 +6,7 @@ Implementasi referensi fitur chat perbankan modular: SwiftPM package lokal
 ## Bentuk arsitektur
 
 Navigasi internal fitur memakai **UIKit** (`TanyaAICoordinator` +
-`TanyaAIContainerViewController` + `UINavigationController`), bukan
+`ChatContainerViewController` + `UINavigationController`), bukan
 `NavigationStack`. Fitur tampil sebagai view controller sendiri, jadi tidak
 pernah masuk ke stack navigasi host.
 
@@ -27,7 +27,7 @@ tidak pernah sebaliknya.
 Data presentasi reusable tetap di `DesignKit/Models`. Kontrak fitur chat
 (approval transaction/challenge, action/deeplink, pilihan prompt, suggestion,
 agent handoff) berada di `TanyaAIDomain`; view-nya di
-`TanyaAIPresentation/Components/Chat`. `TanyaAIMessageRowView` menjahitnya.
+`TanyaAIPresentation/Components/Chat`. `MessageRowView` menjahitnya.
 DesignKit tidak memerlukan dependensi balik ke fitur.
 
 Isi DesignKit disusun atomic design:
@@ -80,6 +80,8 @@ Sebelas tipe konten plus fallback. Yang perlu diingat soal tampilannya:
   saat logout; task view dibatalkan saat dilepas. Kirim `aspectRatio` agar tinggi stabil.
 
 Panduan migrasi: `docs/DESIGNKIT_MIGRATION.md`.
+Copy multilanguage dan komponen generik: `docs/DESIGNKIT_COPY_AND_COMPONENTS.md`.
+Teks UI dari resource/injeksi host; jalankan `Scripts/check_design_system.py`.
 
 ## Perintah
 

@@ -34,8 +34,8 @@ extension TanyaAIStreamEventDecoder {
                     identifier: payload.messageIdentifier,
                     title: payload.title,
                     detail: payload.detail,
-                    continueTitle: payload.continueTitle ?? "Continue",
-                    cancelTitle: payload.cancelTitle ?? "Cancel",
+                    continueTitle: payload.continueTitle,
+                    cancelTitle: payload.cancelTitle,
                     action: makeAction(payload.action)
                 )
             )
@@ -63,7 +63,7 @@ extension TanyaAIStreamEventDecoder {
                     choices: choices,
                     isMultipleSelectionAllowed:
                         payload.isMultipleSelectionAllowed ?? true,
-                    submitTitle: payload.submitTitle ?? "Submit"
+                    submitTitle: payload.submitTitle
                 )
             )
         )

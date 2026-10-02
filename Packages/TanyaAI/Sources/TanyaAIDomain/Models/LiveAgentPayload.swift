@@ -11,8 +11,8 @@ public struct LiveAgentPayload: Equatable {
     public let identifier: String
     public let title: String
     public let detail: String?
-    public let continueTitle: String
-    public let cancelTitle: String
+    public let continueTitle: String?
+    public let cancelTitle: String?
     /// Where "continue" goes. The package does not open it; the host does,
     /// after the feature has closed.
     public let action: Action
@@ -25,8 +25,8 @@ public struct LiveAgentPayload: Equatable {
         identifier: String,
         title: String,
         detail: String? = nil,
-        continueTitle: String = "Continue",
-        cancelTitle: String = "Cancel",
+        continueTitle: String? = nil,
+        cancelTitle: String? = nil,
         action: Action,
         isDeclined: Bool = false
     ) {

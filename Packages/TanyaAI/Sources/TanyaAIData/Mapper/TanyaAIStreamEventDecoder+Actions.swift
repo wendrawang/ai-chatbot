@@ -16,7 +16,7 @@ extension TanyaAIStreamEventDecoder {
             return .content(
                 messageIdentifier: payload.messageIdentifier,
                 content: .unsupported(
-                    "This action requires a newer app version."
+                    nil
                 )
             )
         }

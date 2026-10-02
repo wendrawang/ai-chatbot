@@ -50,7 +50,7 @@ public struct ReceiptBubble: View {
         VStack(spacing: artwork.size(DesignKitMetrics.Spacing.regular)) {
             Rectangle()
                 .fill(Color(theme.colors.divider))
-                .frame(height: artwork.stroke(0.5))
+                .frame(height: artwork.stroke(DesignKitMetrics.Stroke.divider))
             ForEach(payload.summary.indices, id: \.self) { index in
                 HStack(alignment: .firstTextBaseline, spacing: artwork.size(DesignKitMetrics.Spacing.regular)) {
                     Text(payload.summary[index].label)

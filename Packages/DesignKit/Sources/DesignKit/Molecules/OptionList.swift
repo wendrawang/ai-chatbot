@@ -1,30 +1,20 @@
-import DesignKit
-import TanyaAIDomain
 import SwiftUI
 
-/// The prompts a reply offers, as one bubble at the end of the conversation.
-///
-/// In the conversation rather than on a strip above the keyboard: they answer
-/// the question just asked, so they belong where that question is, and they
-/// scroll away with it once answered.
-///
-/// One tap sends. There is no confirm step here - that is what `ChoicesBubble`
-/// is for, and the presence or absence of a submit button is the whole of the
-/// difference between the two.
-public struct SuggestionList: View {
+/// A vertical list of options; each tap reports the selected value.
+public struct OptionList: View {
     let title: String?
-    let suggestions: [Suggestion]
-    let onSelect: (Suggestion) -> Void
+    let options: [SelectionOption]
+    let onSelect: (SelectionOption) -> Void
     @Environment(\.theme) private var theme
     @Environment(\.artwork) private var artwork
 
     public init(
         title: String?,
-        suggestions: [Suggestion],
-        onSelect: @escaping (Suggestion) -> Void
+        options: [SelectionOption],
+        onSelect: @escaping (SelectionOption) -> Void
     ) {
         self.title = title
-        self.suggestions = suggestions
+        self.options = options
         self.onSelect = onSelect
     }
 
@@ -46,7 +36,7 @@ public struct SuggestionList: View {
         // prompts sit indented from every bubble above them.
         .frame(maxWidth: .infinity, alignment: .leading)
         .accessibilityElement(children: .contain)
-        .accessibilityIdentifier("suggestions.list")
+        .accessibilityIdentifier("options.list")
     }
 
     @ViewBuilder
@@ -65,8 +55,8 @@ public struct SuggestionList: View {
             alignment: .leading,
             spacing: artwork.size(DesignKitMetrics.Spacing.compact)
         ) {
-            ForEach(suggestions, id: \.identifier) { suggestion in
-                SuggestionRow(suggestion: suggestion, onSelect: onSelect)
+            ForEach(options, id: \.identifier) { option in
+                OptionRow(option: option, onSelect: onSelect)
             }
         }
     }

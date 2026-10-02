@@ -1,51 +1,44 @@
-import DesignKit
-import TanyaAIDomain
 import SwiftUI
 
-/// The shortcuts a host offers above the keyboard.
-///
-/// Not the same thing as the prompts a reply offers, despite looking alike.
-/// These come from the application, not the bot; they answer no question in
-/// particular; and they stay put after one is used, because they are a way in
-/// rather than a reply to something just said.
-public struct ShortcutStrip: View {
-    let shortcuts: [Suggestion]
-    let onSelect: (Suggestion) -> Void
+/// A horizontal row of options with stable identifiers.
+public struct OptionStrip: View {
+    let options: [SelectionOption]
+    let onSelect: (SelectionOption) -> Void
     @Environment(\.theme) private var theme
     @Environment(\.artwork) private var artwork
 
     public init(
-        shortcuts: [Suggestion],
-        onSelect: @escaping (Suggestion) -> Void
+        options: [SelectionOption],
+        onSelect: @escaping (SelectionOption) -> Void
     ) {
-        self.shortcuts = shortcuts
+        self.options = options
         self.onSelect = onSelect
     }
 
     public var body: some View {
         ScrollView(.horizontal, showsIndicators: false) {
             HStack(spacing: artwork.size(DesignKitMetrics.Spacing.compact)) {
-                ForEach(shortcuts, id: \.identifier) { shortcut in
+                ForEach(options, id: \.identifier) { option in
                     Button(
-                        action: { onSelect(shortcut) },
-                        label: { label(shortcut) }
+                        action: { onSelect(option) },
+                        label: { label(option) }
                     )
                     .foregroundColor(Color(theme.colors.accent))
                     .background(pill)
-                    .accessibilityIdentifier("shortcut.\(shortcut.identifier)")
+                    .accessibilityIdentifier("option.\(option.identifier)")
                     .accessibility(
-                        label: Text(String(format: ChatCopy.text("Shortcut: %@"), shortcut.title))
+                        label: Text(option.title)
                     )
                 }
             }
             .padding(.horizontal, artwork.size(DesignKitMetrics.Spacing.regular))
             .padding(.vertical, artwork.size(DesignKitMetrics.Spacing.compact))
         }
-        .accessibilityIdentifier("shortcuts.strip")
+        .accessibilityIdentifier("options.strip")
     }
 
-    private func label(_ shortcut: Suggestion) -> some View {
-        Text(shortcut.title)
+    private func label(_ option: SelectionOption) -> some View {
+        Text(option.title)
             .designFont(.button)
             .lineLimit(1)
             .padding(.horizontal, artwork.size(DesignKitMetrics.Spacing.wide))

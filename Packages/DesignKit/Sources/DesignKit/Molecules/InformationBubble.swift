@@ -44,14 +44,14 @@ public struct InformationBubble: View {
         case .divider:
             Rectangle()
                 .fill(Color(theme.colors.divider))
-                .frame(height: artwork.stroke(0.5))
+                .frame(height: artwork.stroke(DesignKitMetrics.Stroke.divider))
         }
     }
 
     private func keyValueList(_ items: [KeyValue]) -> some View {
         VStack(spacing: artwork.size(DesignKitMetrics.Spacing.compact)) {
             ForEach(items.indices, id: \.self) { index in
-                HStack(alignment: .firstTextBaseline) {
+                HStack(alignment: .firstTextBaseline, spacing: artwork.size(DesignKitMetrics.Spacing.compact)) {
                     Text(items[index].label)
                         .foregroundColor(Color(theme.colors.secondaryText))
                     Spacer(minLength: artwork.size(DesignKitMetrics.Spacing.wide))

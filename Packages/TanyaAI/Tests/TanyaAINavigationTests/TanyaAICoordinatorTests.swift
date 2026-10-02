@@ -44,7 +44,7 @@ final class TanyaAICoordinatorTests: XCTestCase {
             coordinator.show(.approval(makeApproval(kind)))
             XCTAssertTrue(
                 navigationController.presentedViewController
-                    is TanyaAIPINSheetViewController
+                    is AuthorizationSheetViewController
             )
             navigationController.dismiss(animated: false)
         }

@@ -1,3 +1,4 @@
+import DesignKit
 import TanyaAIDomain
 import UIKit
 import XCTest
@@ -5,11 +6,11 @@ import XCTest
 
 final class TanyaAIBubbleHeightTests: XCTestCase {
     func testGrowingTextResizesRowAndMovesFollowingBubble() {
-        let coordinator = TanyaAIMessageTableView.Coordinator()
-        let tableView = TanyaAITrackingTableView(frame: CGRect(x: 0, y: 0, width: 390, height: 700))
+        let coordinator = MessageTableView.Coordinator()
+        let tableView = LayoutTrackingTableView(frame: CGRect(x: 0, y: 0, width: 390, height: 700))
         tableView.register(
-            TanyaAIHostingTableViewCell.self,
-            forCellReuseIdentifier: TanyaAIHostingTableViewCell.reuseIdentifier
+            MessageHostingCell.self,
+            forCellReuseIdentifier: MessageHostingCell.reuseIdentifier
         )
         tableView.rowHeight = UITableView.automaticDimension
         tableView.estimatedRowHeight = 60
@@ -42,12 +43,12 @@ final class TanyaAIBubbleHeightTests: XCTestCase {
     }
 
     func testPendingHeightUpdateDoesNotRetainTableOrCoordinator() {
-        weak var releasedTable: TanyaAITrackingTableView?
-        weak var releasedCoordinator: TanyaAIMessageTableView.Coordinator?
+        weak var releasedTable: LayoutTrackingTableView?
+        weak var releasedCoordinator: MessageTableView.Coordinator?
         weak var releasedMessage: TanyaAIMessageItemViewModel?
         autoreleasepool {
-            let coordinator = TanyaAIMessageTableView.Coordinator()
-            let tableView = TanyaAITrackingTableView(frame: .zero)
+            let coordinator = MessageTableView.Coordinator()
+            let tableView = LayoutTrackingTableView(frame: .zero)
             coordinator.attach(tableView)
             let message = item(identifier: "pending", text: "Short")
             coordinator.update(TanyaAIMessageListState(

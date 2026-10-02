@@ -16,3 +16,4 @@ public typealias TanyaAIReceiptPayload = DesignKit.ReceiptPayload
 public typealias TanyaAIStatusPayload = DesignKit.StatusPayload
 public typealias TanyaAISuggestion = TanyaAIDomain.Suggestion
 public typealias TanyaAIKeyValue = DesignKit.KeyValue
+public typealias TanyaAIConversationSummary = TanyaAIDomain.ConversationSummary

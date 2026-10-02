@@ -1,2 +1,5 @@
-"Assistant is responding" = "Assistant is responding";
-"Formatted result" = "Formatted result";
+"design.responding" = "Responding";
+"design.formattedResult" = "Formatted result";
+"design.loading" = "Loading";
+"design.digit" = "Digit {digit}";
+"design.deleteDigit" = "Delete digit";

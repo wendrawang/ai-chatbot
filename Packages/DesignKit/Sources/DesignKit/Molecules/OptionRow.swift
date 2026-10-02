@@ -1,37 +1,32 @@
-import DesignKit
-import TanyaAIDomain
 import SwiftUI
 
-/// One prompt the reply is offering.
-///
-/// The circle is an affordance, not a state. A tap sends immediately - nothing
-/// is held selected and there is no confirm step - so it never shows filled.
-public struct SuggestionRow: View {
-    let suggestion: Suggestion
-    let onSelect: (Suggestion) -> Void
+/// A tappable option with a circular affordance and a wrapping label.
+public struct OptionRow: View {
+    let option: SelectionOption
+    let onSelect: (SelectionOption) -> Void
     @Environment(\.theme) private var theme
     @Environment(\.artwork) private var artwork
 
     public init(
-        suggestion: Suggestion,
-        onSelect: @escaping (Suggestion) -> Void
+        option: SelectionOption,
+        onSelect: @escaping (SelectionOption) -> Void
     ) {
-        self.suggestion = suggestion
+        self.option = option
         self.onSelect = onSelect
     }
 
     public var body: some View {
         Button {
-            onSelect(suggestion)
+            onSelect(option)
         } label: {
             content
         }
         // No outline of its own: the list it sits in is the bubble, and a
         // border here would draw a box inside a box.
         .accessibility(
-            label: Text(String(format: ChatCopy.text("Suggested question: %@"), suggestion.title))
+            label: Text(option.title)
         )
-        .accessibilityIdentifier("suggestion.\(suggestion.identifier)")
+        .accessibilityIdentifier("option.\(option.identifier)")
     }
 
     private var content: some View {
@@ -45,7 +40,7 @@ public struct SuggestionRow: View {
                     width: artwork.size(DesignKitMetrics.Size.indicator),
                     height: artwork.size(DesignKitMetrics.Size.indicator)
                 )
-            Text(suggestion.title)
+            Text(option.title)
                 .designFont(.body)
                 .foregroundColor(Color(theme.colors.primaryText))
                 .fixedSize(horizontal: false, vertical: true)

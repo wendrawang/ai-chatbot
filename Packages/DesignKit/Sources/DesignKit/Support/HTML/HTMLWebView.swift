@@ -98,10 +98,10 @@ struct HTMLWebView: UIViewRepresentable {
         th, td {
           padding-block: \(artwork.size(DesignKitMetrics.Spacing.compact))px;
           padding-inline: \(artwork.size(DesignKitMetrics.Spacing.regular))px;
-          border-bottom: 1px solid \(divider);
+          border-bottom: \(artwork.stroke(DesignKitMetrics.Stroke.divider))px solid \(divider);
           text-align: left;
         }
-        th { color: \(secondary); font-weight: 600; }
+        th { color: \(secondary); font-weight: \(DesignKitMetrics.Web.headerWeight); }
         img { max-width: 100%; height: auto; }
         </style></head><body>\(html)</body></html>
         """

@@ -2,10 +2,11 @@ import DesignKit
 import SwiftUI
 import TanyaAIDomain
 
-struct TanyaAIMessageTableRow: View {
+struct MessageTableRow: View {
     let kind: TanyaAIMessageRowKind
     let theme: Theme
     let handlers: TanyaAIMessageRowHandlers
+    var copy = CopyCatalog()
     var artwork = ArtworkMetrics()
     var imageLoader: ImageLoading = ImageLoader.shared
 
@@ -13,18 +14,22 @@ struct TanyaAIMessageTableRow: View {
         Group {
             switch kind {
             case .message(let message):
-                TanyaAIMessageRowView(
+                MessageRowView(
                     viewModel: message,
                     handlers: handlers
                 )
                 .id(message.identifier)
             case .typing:
-                TypingIndicatorView()
+                TypingIndicatorView(label: copy.chat("chat.responding"))
             case .suggestions(let title, let suggestions):
-                SuggestionList(
+                OptionList(
                     title: title,
-                    suggestions: suggestions,
-                    onSelect: handlers.onSuggestion
+                    options: suggestions.map { SelectionOption(identifier: $0.identifier, title: $0.title) },
+                    onSelect: { option in
+                        if let suggestion = suggestions.first(where: { $0.identifier == option.identifier }) {
+                            handlers.onSuggestion(suggestion)
+                        }
+                    }
                 )
             }
         }
@@ -33,5 +38,6 @@ struct TanyaAIMessageTableRow: View {
         .theme(theme)
         .artwork(artwork)
         .imageLoader(imageLoader)
+        .copyCatalog(copy)
     }
 }

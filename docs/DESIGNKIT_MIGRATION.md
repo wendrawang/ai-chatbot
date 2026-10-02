@@ -1,5 +1,7 @@
 # Migrasi host ke DesignKit
 
+Lanjutan: [copy multilanguage dan komponen generik](DESIGNKIT_COPY_AND_COMPONENTS.md).
+
 ## Batas package dan atomic design
 
 | Lapisan | Tanggung jawab |

@@ -79,10 +79,10 @@ public struct FinancialListBubble: View {
         if let label = payload.totalLabel, let value = payload.totalValue {
             VStack(spacing: artwork.size(DesignKitMetrics.Spacing.regular)) {
                 cardDivider
-                HStack(alignment: .firstTextBaseline) {
+                HStack(alignment: .firstTextBaseline, spacing: artwork.size(DesignKitMetrics.Spacing.compact)) {
                     Text(label)
-                    Spacer()
-                    VStack(alignment: .trailing, spacing: artwork.size(2)) {
+                    Spacer(minLength: artwork.size(DesignKitMetrics.Spacing.compact))
+                    VStack(alignment: .trailing, spacing: artwork.size(DesignKitMetrics.Spacing.micro)) {
                         Text(value).designFont(.headline)
                         optionalText(payload.totalCaption)
                     }
@@ -106,7 +106,7 @@ public struct FinancialListBubble: View {
     private var cardDivider: some View {
         Rectangle()
             .fill(Color(theme.colors.divider))
-            .frame(height: artwork.stroke(0.5))
+            .frame(height: artwork.stroke(DesignKitMetrics.Stroke.divider))
     }
 
     private var symbolName: String {

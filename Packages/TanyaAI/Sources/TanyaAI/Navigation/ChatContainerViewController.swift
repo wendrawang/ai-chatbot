@@ -2,7 +2,7 @@ import DesignKit
 import TanyaAIDomain
 import UIKit
 
-final class TanyaAIContainerViewController: UIViewController {
+final class ChatContainerViewController: UIViewController {
     private let featureNavigationController = UINavigationController()
     /// Held, not just assigned: `transitioningDelegate` is weak, and a
     /// released delegate silently restores the sheet animation.

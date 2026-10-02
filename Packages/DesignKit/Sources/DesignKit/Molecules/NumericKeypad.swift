@@ -1,16 +1,24 @@
-import DesignKit
 import SwiftUI
 
-struct TanyaAIPINKeypadView: View {
+public struct NumericKeypad: View {
+    @Environment(\.artwork) private var artwork
     let onDigit: (Int) -> Void
     let onDelete: () -> Void
     let isDisabled: Bool
     @Environment(\.theme) private var theme
 
+    @Environment(\.copyCatalog) private var copy
+
+    public init(onDigit: @escaping (Int) -> Void, onDelete: @escaping () -> Void, isDisabled: Bool = false) {
+        self.onDigit = onDigit
+        self.onDelete = onDelete
+        self.isDisabled = isDisabled
+    }
+
     private let digitRows = [[1, 2, 3], [4, 5, 6], [7, 8, 9]]
 
-    var body: some View {
-        VStack(spacing: 10) {
+    public var body: some View {
+        VStack(spacing: artwork.size(DesignKitMetrics.Spacing.medium)) {
             ForEach(digitRows.indices, id: \.self) { index in
                 digitRow(digitRows[index])
             }
@@ -20,7 +28,7 @@ struct TanyaAIPINKeypadView: View {
     }
 
     private func digitRow(_ digits: [Int]) -> some View {
-        HStack(spacing: 12) {
+        HStack(spacing: artwork.size(DesignKitMetrics.Spacing.regular)) {
             ForEach(digits, id: \.self) { digit in
                 digitButton(digit)
             }
@@ -28,7 +36,7 @@ struct TanyaAIPINKeypadView: View {
     }
 
     private var finalRow: some View {
-        HStack(spacing: 12) {
+        HStack(spacing: artwork.size(DesignKitMetrics.Spacing.regular)) {
             keypadSpacer
             digitButton(0)
             deleteButton
@@ -43,14 +51,14 @@ struct TanyaAIPINKeypadView: View {
                     .font(Font(theme.fonts.title))
                     .foregroundColor(Color(theme.colors.primaryText))
                     .frame(maxWidth: .infinity)
-                    .frame(height: 54)
+                    .frame(minHeight: artwork.tapTarget(DesignKitMetrics.Size.keypadHeight))
                     .background(Color(theme.colors.surface))
-                    .cornerRadius(14)
+                    .cornerRadius(artwork.size(DesignKitMetrics.Radius.keypad))
             }
         )
         .buttonStyle(PlainButtonStyle())
-        .accessibility(label: Text("Digit \(digit)"))
-        .accessibilityIdentifier("pin.digit.\(digit)")
+        .accessibility(label: Text(copy.design("design.digit", values: ["digit": String(digit)])))
+        .accessibilityIdentifier("keypad.digit.\(digit)")
     }
 
     private var deleteButton: some View {
@@ -59,17 +67,17 @@ struct TanyaAIPINKeypadView: View {
                 .font(Font(theme.fonts.headline))
                 .foregroundColor(Color(theme.colors.secondaryText))
                 .frame(maxWidth: .infinity)
-                .frame(height: 54)
+                .frame(minHeight: artwork.tapTarget(DesignKitMetrics.Size.keypadHeight))
         }
         .buttonStyle(PlainButtonStyle())
-        .accessibility(label: Text("Delete PIN digit"))
-        .accessibilityIdentifier("pin.delete")
+        .accessibility(label: Text(copy.design("design.deleteDigit")))
+        .accessibilityIdentifier("keypad.delete")
     }
 
     private var keypadSpacer: some View {
         Color.clear
             .frame(maxWidth: .infinity)
-            .frame(height: 54)
+            .frame(minHeight: artwork.tapTarget(DesignKitMetrics.Size.keypadHeight))
             .accessibility(hidden: true)
     }
 }

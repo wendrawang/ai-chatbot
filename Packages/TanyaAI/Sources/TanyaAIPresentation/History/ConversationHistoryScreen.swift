@@ -1,7 +1,8 @@
 import DesignKit
 import SwiftUI
 
-public struct TanyaAIHistoryView: View {
+public struct ConversationHistoryScreen: View {
+    @Environment(\.copyCatalog) private var copy
     @ObservedObject private var viewModel: TanyaAIHistoryViewModel
     @Environment(\.theme) private var theme
 
@@ -11,17 +12,17 @@ public struct TanyaAIHistoryView: View {
 
     public var body: some View {
         List(viewModel.items, id: \.identifier) { item in
-            VStack(alignment: .leading, spacing: 4) {
-                Text(item.title)
-                    .font(Font(theme.fonts.headline))
-                Text(item.detail)
-                    .font(Font(theme.fonts.subheadline))
-                    .foregroundColor(Color(theme.colors.secondaryText))
-            }
-            .padding(.vertical, 4)
+            SummaryRow(title: item.title, detail: item.detail)
         }
         .listStyle(PlainListStyle())
+        .overlay {
+            if viewModel.items.isEmpty {
+                Text(copy.chat("chat.emptyHistory"))
+                    .designFont(.body)
+                    .foregroundColor(Color(theme.colors.secondaryText))
+            }
+        }
         .background(Color(theme.colors.background))
-        .navigationBarTitle("History", displayMode: .inline)
+        .navigationBarTitle(copy.chat("chat.history"), displayMode: .inline)
     }
 }

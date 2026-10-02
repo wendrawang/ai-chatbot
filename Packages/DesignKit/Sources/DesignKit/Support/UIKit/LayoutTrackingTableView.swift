@@ -1,12 +1,12 @@
 import UIKit
 
-final class TanyaAITrackingTableView: UITableView {
-    var onLayoutChange: (() -> Void)?
+public final class LayoutTrackingTableView: UITableView {
+    public var onLayoutChange: (() -> Void)?
 
     private var trackedBoundsSize = CGSize.zero
     private var trackedContentSize = CGSize.zero
 
-    override func layoutSubviews() {
+    public override func layoutSubviews() {
         super.layoutSubviews()
 
         let isBoundsChanged = trackedBoundsSize != bounds.size
