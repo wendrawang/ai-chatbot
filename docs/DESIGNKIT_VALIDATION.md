@@ -7,27 +7,39 @@ mengikuti foto kode; 374×812 dapat dipilih melalui parameter root.
 
 - SwiftLint strict: lulus tanpa violation.
 - SwiftParser check: semua method maksimal 50 baris fisik; file maksimal 250 baris.
-- Compiler iOS 15 simulator: module emission DesignKit, enam target TanyaAI,
-  dan sumber aplikasi sandbox lulus. Karena SwiftPM/Xcode tidak dapat menulis cache
-  sistem di sesi ini, pemeriksaan memakai `swiftc` dengan module cache lokal dan
-  accessor `Bundle.module` sementara; ini bukan hasil build aplikasi lengkap.
-- Semua sumber test DesignKit dan lima target test TanyaAI lolos type checking
-  terhadap modul di atas. Kedua manifest Package.swift juga lolos type checking.
+- Build aplikasi sandbox untuk iOS Simulator melalui `xcodebuild`: lulus.
+- **56 test DesignKit dan 135 test TanyaAI** dieksekusi pada iPhone 17 Pro,
+  iOS 26.5 Simulator (arm64): seluruhnya lulus, tanpa skipped test.
+  Termasuk runtime UIKit/WebKit, localized copy, history injection, pelepasan
+  controller/ViewModel, cancellation request, dan observer setelah dismantle.
 - **36 XCTest benar-benar dijalankan pada macOS**, memakai sumber produksi murni:
   ArtworkMetrics, ChipLayout, ChartGeometry, parser markup, dan CopyCatalog. Semuanya lulus.
   Termasuk 4.000 nested markup tags, geometri tidak valid, tablet cap, custom
   reference width, pixel rounding, minimum tap target, serta normalisasi angka ekstrem.
+- **7 test UI sandbox** lulus: legacy navigation, deeplink, handoff approval,
+  penolakan link, seluruh contoh bubble, PIN valid, dan posisi suggestion.
+  Screenshot direkam sebagai attachment hasil XCTest.
 - Guard literal UI, dependency komponen, serta parity key/placeholder en/id: lulus.
 - CopyCatalog: regional locale, fallback, override host, placeholder literal, dan isolasi bahasa lulus.
 - `git diff --check` bersih; generated token tidak berubah.
 
-## Yang belum dapat dijalankan dalam sesi ini
+## Lingkungan dan batas pengukuran
 
-Full `xcodebuild`/simulator terhalang CoreSimulatorService dan izin cache SwiftPM.
-Test runtime UIKit/WebKit, screenshot, dan Instruments Leaks/Allocations belum
-terverifikasi. Test lifecycle WebKit telah ditambahkan dan lolos type checking,
-tetapi belum dieksekusi di iOS. Jalankan `Scripts/verify.sh` dan profiling pada host
-sebelum migrasi produksi luas. Tidak ada klaim bebas leak atau jaminan FPS perangkat.
+Verifikasi menggunakan Xcode dari `/Applications/Xcode.app` pada macOS 27.0.1.
+`Scripts/verify.sh` memilih runtime terpasang berdasarkan model, karena iPhone 17
+Pro tersedia di iOS 26.5 tetapi tidak pada runtime terbaru di mesin ini. Pilihan
+model dapat diubah dengan `TANYA_AI_SIMULATOR`; CI dapat memberi destination lengkap
+melalui `TANYA_AI_TEST_DESTINATION`.
+
+Assertion restore percakapan kosong diperbaiki: posisi paling atas UITableView
+adalah `-adjustedContentInset.top`, bukan selalu nol. Test juga memastikan row kosong.
+Tidak ada perubahan perilaku scroll untuk meloloskan assertion.
+
+Test scroll 100 pesan ditambah typing row lulus ambang yang sudah ada (best-of-three
+minimal 55 FPS). Sampel run: 45,34 / 55,80 / 60,15 FPS. Ini menunjukkan variasi
+simulator; tidak membuktikan sustained 60 FPS pada perangkat nyata. Test pelepasan
+objek lulus, tetapi tidak membuktikan bebas leak untuk seluruh integrasi vendor.
+Profiling Instruments dan perangkat nyata tetap merupakan pengukuran terpisah.
 
 ## Refactor komponen dan copy
 
@@ -36,7 +48,7 @@ di TanyaAI. Teks bawaan UI berada di resource en/id dan dapat dioverride dari
 host. Copy disalurkan ke seluruh root presentasi dan row UIKit, serta ViewModel
 error. Sample history dan default suggestion produksi dihapus. Test error
 terlokalisasi dan history injection ditambah; test UIKit yang terdampak rename
-diperbarui dan lolos type checking, belum dieksekusi.
+diperbarui dan lulus saat dijalankan di simulator.
 
 ## Batas desain yang disengaja
 

@@ -43,7 +43,9 @@ final class TanyaAIMessageListTests: XCTestCase {
             handlers: .inert
         )
 
-        XCTAssertEqual(tableView.contentOffset.y, 0, accuracy: 1)
+        XCTAssertEqual(tableView.numberOfRows(inSection: 0), 0)
+        // UIKit's top offset includes the tokenized content inset.
+        XCTAssertEqual(tableView.contentOffset.y, -tableView.adjustedContentInset.top, accuracy: 1)
     }
 
     func testTypingRowCountsAsARow() {

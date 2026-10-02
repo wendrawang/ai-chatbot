@@ -47,6 +47,10 @@ DEVELOPER_DIR=/Applications/Xcode.app/Contents/Developer \
   ./Scripts/verify.sh
 ```
 
+The verifier selects the newest installed iOS runtime containing `iPhone 17 Pro`.
+Set `TANYA_AI_SIMULATOR` to another installed model, or provide an explicit
+`TANYA_AI_TEST_DESTINATION` (for example, `platform=iOS Simulator,id=<UDID>`).
+
 ## Architecture
 
 ```text
