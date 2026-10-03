@@ -11,6 +11,7 @@ public enum TanyaAIMessageContent: Equatable {
     case chart(ChartPayload)
     case portfolio(PortfolioPayload)
     case financialList(FinancialListPayload)
+    case confirmation(ConfirmationPayload)
     case approval(ApprovalPayload)
     case receipt(ReceiptPayload)
     case status(StatusPayload)

@@ -42,7 +42,7 @@ public enum DesignKitMetrics {
     public enum Radius {
         public static let keypad: CGFloat = 14
         public static let sheet: CGFloat = 20
-        public static let composer: CGFloat = 22
+        public static let composer: CGFloat = 16
         public static let swatch: CGFloat = 3
         /// 12 - replies, prompts, hand-off links, image cards.
         public static let bubble: CGFloat = 12
@@ -69,6 +69,7 @@ public enum DesignKitMetrics {
 
     /// Sizes that are not spacing.
     public enum Size {
+        public static let composerAction: CGFloat = 32
         public static let keypadHeight: CGFloat = 54
         public static let secureDigit: CGFloat = 14
         public static let estimatedRowHeight: CGFloat = 96

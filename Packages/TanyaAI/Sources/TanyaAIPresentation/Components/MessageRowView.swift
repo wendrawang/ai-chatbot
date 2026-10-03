@@ -43,6 +43,8 @@ struct MessageRowView: View {
             PortfolioBubble(payload: payload)
         case .financialList(let payload):
             FinancialListBubble(payload: payload)
+        case .confirmation(let payload):
+            confirmation(payload)
         case .approval(let payload):
             approval(payload)
         case .html(let payload):
@@ -62,14 +64,23 @@ struct MessageRowView: View {
         case .actions(let payload):
             ActionBubble(payload: payload, onAction: handlers.onAction)
         case .unsupported(let message):
-            StatusBubble(
-                payload: StatusPayload(
-                    title: copy.chat("chat.updateRequired"),
-                    detail: message ?? copy.chat("chat.unsupported"),
-                    level: .warning
-                )
-            )
+            unsupported(message)
         }
+    }
+
+    private func unsupported(_ message: String?) -> some View {
+        StatusBubble(payload: StatusPayload(
+            title: copy.chat("chat.updateRequired"), detail: message ?? copy.chat("chat.unsupported"), level: .warning
+        ))
+    }
+
+    private func confirmation(_ payload: ConfirmationPayload) -> some View {
+        ConfirmationCard(
+            title: copy.chat("chat.confirmation"),
+            fields: payload.fields.map { KeyValue(label: $0.label, value: $0.value) },
+            confirmLabel: copy.chat("chat.confirm"), onConfirm: { handlers.onConfirmation(payload) }
+        )
+        .accessibilityIdentifier("confirmation.\(payload.confirmationIdentifier)")
     }
 
     private func approval(_ payload: ApprovalPayload) -> some View {

@@ -43,14 +43,18 @@ final class TanyaAIAnswerBehaviorTests: XCTestCase {
         model.inputText = "Next draft"
         model.selectAnswerOption("answer", "help")
         XCTAssertEqual(model.inputText, "Next draft")
-        XCTAssertEqual(model.messages.first?.content, .answer(answer))
+        guard case .answer(let current) = model.messages.first?.content else { return XCTFail("Missing answer") }
+        XCTAssertTrue(current.isAnswered)
     }
 
-    func testSelectionConsumesOnlyItsOwnAnswer() {
+    func testOnlyLatestAnswerCanBeSelected() {
         let useCase = TanyaAIChatUseCaseStub()
         let model = makeModel(useCase)
         useCase.sendUnsolicited(.content(messageIdentifier: "other", content: .answer(answer)))
         model.selectAnswerOption("answer", "help")
+        XCTAssertNil(useCase.receivedText)
+        guard case .answer(let previous) = model.messages[0].content else { return XCTFail("Missing previous") }
+        XCTAssertTrue(previous.isAnswered)
         XCTAssertEqual(model.messages[1].content, .answer(answer))
     }
 

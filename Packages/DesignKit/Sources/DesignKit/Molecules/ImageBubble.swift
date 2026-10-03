@@ -22,6 +22,14 @@ public struct ImageBubble: View {
     public var body: some View {
         VStack(alignment: .leading, spacing: 0) {
             picture
+            if let title = payload.title, !title.isEmpty {
+                Text(title)
+                    .designFont(.headline)
+                    .foregroundColor(Color(theme.colors.primaryText))
+                    .fixedSize(horizontal: false, vertical: true)
+                    .padding(.horizontal, artwork.size(DesignKitMetrics.Spacing.wide))
+                    .padding(.top, artwork.size(DesignKitMetrics.Spacing.roomy))
+            }
             caption
         }
         .background(Color(theme.colors.assistantBubble))
@@ -62,7 +70,7 @@ public struct ImageBubble: View {
 
     private var captionText: some View {
         Text(payload.caption)
-            .designFont(.headline)
+            .designFont(payload.title == nil ? .headline : .body)
             .foregroundColor(Color(theme.colors.primaryText))
             .lineSpacing(artwork.size(DesignKitMetrics.Text.captionLineSpacing))
             // Without this a long caption is truncated to one line instead of

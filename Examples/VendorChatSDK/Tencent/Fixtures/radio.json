@@ -1,0 +1,8 @@
+[
+  {
+    "MsgType": "TIMCustomElem",
+    "MsgContent": {
+      "Data": "{\"type\":\"radio_button\",\"options\":[{\"label\":\"Cashback Belanja 10%\",\"value\":\"promo_cashback10\"},{\"label\":\"Bunga Deposito Spesial 6%\",\"value\":\"promo_deposito6\"}]}"
+    }
+  }
+]

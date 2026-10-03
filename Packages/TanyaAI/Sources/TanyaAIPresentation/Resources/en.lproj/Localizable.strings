@@ -32,3 +32,5 @@
 "chat.submit" = "Submit";
 "chat.emptyHistory" = "No conversations yet";
 "chat.subtitle" = "";
+"chat.latest" = "Scroll to latest message";
+"chat.confirmation" = "Confirm details";

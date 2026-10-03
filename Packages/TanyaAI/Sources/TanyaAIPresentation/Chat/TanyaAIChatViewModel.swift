@@ -37,6 +37,8 @@ public final class TanyaAIChatViewModel: ObservableObject {
 
     /// Whether the host injected an authorization service, and so whether a
     /// confirmation without a hand-off can be completed in the chat.
+    var isConfirmationRequested = false
+    let isConfirmationEnabled: Bool
     let isAuthorizationEnabled: Bool
 
     /// Ways in, supplied by the host and unchanged by use. Unlike the prompts
@@ -48,9 +50,11 @@ public final class TanyaAIChatViewModel: ObservableObject {
     public init(
         useCase: TanyaAIChatUseCaseProtocol,
         isAuthorizationEnabled: Bool = true,
+        isConfirmationEnabled: Bool = false,
         shortcuts: [Suggestion] = [],
         copy: CopyCatalog = CopyCatalog()
     ) {
+        self.isConfirmationEnabled = isConfirmationEnabled
         self.copy = copy
         self.useCase = useCase
         self.isAuthorizationEnabled = isAuthorizationEnabled
@@ -149,6 +153,7 @@ public final class TanyaAIChatViewModel: ObservableObject {
         }
         messages = restored.suffix(TanyaAIMessage.historyLimit)
             .map(TanyaAIMessageItemViewModel.init)
+        messages.dropLast().forEach { $0.consumeOptions() }
     }
 
     /// A confirmation arrived that this app cannot complete, because no
@@ -172,6 +177,7 @@ public final class TanyaAIChatViewModel: ObservableObject {
     }
 
     func appendMessage(_ message: TanyaAIMessageItemViewModel) {
+        messages.last?.consumeOptions()
         messages.append(message)
         let overflow = messages.count - TanyaAIMessage.historyLimit
         guard overflow > 0 else { return }

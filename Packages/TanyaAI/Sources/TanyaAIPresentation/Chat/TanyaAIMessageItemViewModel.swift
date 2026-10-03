@@ -23,13 +23,18 @@ public final class TanyaAIMessageItemViewModel:
     }
 
     public func update(content: TanyaAIMessageContent) {
-        self.content = preservingSelection(in: content)
+        let next = preservingSelection(in: content)
+        if self.content != next { self.content = next }
     }
 
     /// A replay of the same answer cannot bring back options already sent.
     func consumeOptions() {
+        guard !isOptionsConsumed else { return }
         isOptionsConsumed = true
-        update(content: content)
+        switch content {
+        case .answer, .choices: update(content: content)
+        default: break
+        }
     }
 
     private func preservingSelection(in content: TanyaAIMessageContent) -> TanyaAIMessageContent {

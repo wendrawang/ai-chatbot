@@ -13,6 +13,7 @@ public struct ImagePayload: Equatable {
 
     /// The copy under the picture.
     public let caption: String
+    public let title: String?
 
     /// Width divided by height.
     ///
@@ -34,8 +35,10 @@ public struct ImagePayload: Equatable {
         imageURL: URL?,
         caption: String,
         aspectRatio: Double = ImagePayload.defaultAspectRatio,
-        accessibilityText: String? = nil
+        accessibilityText: String? = nil,
+        title: String? = nil
     ) {
+        self.title = title
         self.imageURL = imageURL
         self.caption = caption
         // A backend that sends zero or a negative ratio would collapse the row

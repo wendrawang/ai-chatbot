@@ -4,7 +4,8 @@
 `DesignKit.MessageComposer`. Field di dalamnya memakai `GrowingTextInput`:
 satu sampai empat baris tumbuh mengikuti teks, selanjutnya scroll. Warna, font,
 padding, radius, dan tinggi minimum memakai theme/artwork serta token DesignKit.
-Caller memberi binding teks, placeholder, label aksesibilitas, dan callback.
+Tombol kirim berada di dalam kotak pada sisi kanan bawah: abu-abu ketika disabled,
+accent ketika siap kirim. Caller memberi binding teks, placeholder, label aksesibilitas, dan callback.
 Logic sesi/kirim tetap di TanyaAI. Update **DesignKit dan TanyaAI bersama**.
 
 ## Format jawaban yang disetujui
@@ -52,14 +53,15 @@ event `actions` yang sudah ada.
 
 Saat radio dipilih, prompt menjadi pesan nasabah dan dikirim melalui sesi yang
 sudah diinjeksi. **Semua option dari jawaban itu hilang**; teks, gambar, dan
-action tetap. Jawaban lain tidak berubah. Tap ganda/replay untuk identifier yang
+action tetap. Radio pada pesan lama juga hilang ketika pesan berikutnya datang. Tap ganda/replay untuk identifier yang
 sama tidak dapat mengirim ulang atau memunculkan kembali option yang sudah dipakai.
 Pilihan invalid, prompt kosong, atau tap ketika request masih aktif tidak
 mengkonsumsi pilihan maupun mengganti draft.
 
-Untuk history, kirim `isAnswered: true` pada jawaban yang sudah dijawab agar
-radio tetap tersembunyi saat dibuka ulang. Host/backend bertanggung jawab
-menyimpan status ini; package tidak menulis state chat ke penyimpanan host.
+Untuk history, hanya pesan terakhir yang mempertahankan radio. `isAnswered: true`
+tetap didukung untuk status settled eksplisit. Package tidak menulis state chat
+ke penyimpanan host. Kontrak Tencent terbaru memakai `TIMTextElem`/`TIMCustomElem`;
+lihat [TENCENT_MESSAGE_CONTRACT.md](TENCENT_MESSAGE_CONTRACT.md) untuk payload dan setup host.
 
 ## Meneruskan dari adapter host
 
@@ -109,3 +111,8 @@ behavior package produksi.
 
 Screenshot simulator dari test UI: [sebelum radio tap](../Artifacts/Screenshots/answer-before-selection.png)
 dan [sesudah radio tap](../Artifacts/Screenshots/answer-after-selection.png).
+
+Saat pengguna scroll ke atas, tombol `ScrollToLatestButton` generik muncul di
+bawah area percakapan. Tap kembali ke pesan terbaru dan mengaktifkan auto-follow.
+Balasan baru tidak memaksa posisi baca pengguna yang sedang berada di atas.
+Bukti screenshot ada di [DESIGNKIT_VALIDATION.md](DESIGNKIT_VALIDATION.md).

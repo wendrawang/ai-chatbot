@@ -18,7 +18,7 @@ final class TanyaAIDependencyContainer {
         self.dependencies = dependencies
     }
 
-    func makeChatViewModel() -> TanyaAIChatViewModel {
+    func makeChatViewModel(isConfirmationEnabled: Bool = false) -> TanyaAIChatViewModel {
         let repository = TanyaAISessionRepository(
             session: dependencies.chatSession
         )
@@ -26,6 +26,7 @@ final class TanyaAIDependencyContainer {
         return TanyaAIChatViewModel(
             useCase: useCase,
             isAuthorizationEnabled: dependencies.authorizationService != nil,
+            isConfirmationEnabled: isConfirmationEnabled,
             shortcuts: configuration.shortcuts,
             copy: copy
         )

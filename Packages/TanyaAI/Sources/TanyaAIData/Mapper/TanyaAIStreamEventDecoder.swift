@@ -16,6 +16,7 @@ final class TanyaAIStreamEventDecoder {
         guard let event = TanyaAIEventName(wireName: name) else {
             return try decodeUnknown(name: name, json: json)
         }
+        if event == .components { return try decodeComponents(json) }
         if let content = try decodeContent(name: event, json: json) {
             return content
         }

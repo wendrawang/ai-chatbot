@@ -2,9 +2,8 @@ import SwiftUI
 
 /// The composer.
 ///
-/// A single capsule holds the field, and the action sits in a filled circle
-/// beside it: sending and stopping occupy the same place, so the control the
-/// customer reaches for never moves.
+/// A rounded container holds both the growing field and its trailing action.
+/// The action stays at the bottom as the field grows to four lines.
 public struct MessageComposer: View {
     @Binding private var text: String
     private let placeholder: String
@@ -33,10 +32,18 @@ public struct MessageComposer: View {
     @Environment(\.artwork) private var artwork
 
     public var body: some View {
-        HStack(alignment: .bottom, spacing: artwork.size(DesignKitMetrics.Spacing.medium)) {
+        HStack(alignment: .bottom, spacing: artwork.size(DesignKitMetrics.Spacing.compact)) {
             field
             actionButton
         }
+        .padding(.horizontal, artwork.size(DesignKitMetrics.Spacing.wide))
+        .padding(.vertical, artwork.size(DesignKitMetrics.Spacing.compact))
+        .background(Color(theme.colors.surface))
+        .clipShape(RoundedRectangle(cornerRadius: artwork.size(DesignKitMetrics.Radius.composer)))
+        .overlay(
+            RoundedRectangle(cornerRadius: artwork.size(DesignKitMetrics.Radius.composer))
+                .stroke(Color(theme.colors.divider), lineWidth: artwork.stroke(DesignKitMetrics.Stroke.hairline))
+        )
         .padding(.horizontal, artwork.size(DesignKitMetrics.Spacing.wide))
         .padding(.vertical, artwork.size(DesignKitMetrics.Spacing.regular))
         .background(Color(theme.colors.background))
@@ -61,14 +68,7 @@ public struct MessageComposer: View {
                     .allowsHitTesting(false)
             }
         }
-        .padding(.horizontal, artwork.size(DesignKitMetrics.Spacing.card))
-        .padding(.vertical, artwork.size(DesignKitMetrics.Spacing.regular))
-        .background(Color(theme.colors.surface))
-        .clipShape(RoundedRectangle(cornerRadius: artwork.size(DesignKitMetrics.Radius.composer)))
-        .overlay(
-            RoundedRectangle(cornerRadius: artwork.size(DesignKitMetrics.Radius.composer))
-                .stroke(Color(theme.colors.divider), lineWidth: artwork.stroke(DesignKitMetrics.Stroke.hairline))
-        )
+        .padding(.vertical, artwork.size(DesignKitMetrics.Spacing.compact))
     }
 
     @ViewBuilder
@@ -77,15 +77,14 @@ public struct MessageComposer: View {
             circularButton(
                 symbol: "stop.fill",
                 label: stopLabel,
-                action: onStop
+                isActive: true, action: onStop
             )
         } else {
             circularButton(
                 symbol: "arrow.up",
                 label: sendLabel,
-                action: onSend
+                isActive: isSendEnabled, action: onSend
             )
-            .opacity(isSendEnabled ? 1 : DesignKitMetrics.Opacity.disabledSend)
             .disabled(isSendEnabled == false)
         }
     }
@@ -93,16 +92,22 @@ public struct MessageComposer: View {
     private func circularButton(
         symbol: String,
         label: String,
-        action: @escaping () -> Void
+        isActive: Bool, action: @escaping () -> Void
     ) -> some View {
         Button(action: action) {
             Image(systemName: symbol)
                 .designFont(.button)
                 .foregroundColor(Color(theme.colors.userBubbleText))
-                .frame(width: artwork.tapTarget(), height: artwork.tapTarget())
-                .background(Color(theme.colors.accent))
+                .frame(
+                    width: artwork.size(DesignKitMetrics.Size.composerAction),
+                    height: artwork.size(DesignKitMetrics.Size.composerAction)
+                )
+                .background(Color(isActive ? theme.colors.accent : theme.colors.secondaryText))
                 .clipShape(Circle())
+                .frame(width: artwork.tapTarget(), height: artwork.tapTarget())
+                .contentShape(Rectangle())
         }
+        .buttonStyle(.plain)
         .accessibility(label: Text(label))
     }
 

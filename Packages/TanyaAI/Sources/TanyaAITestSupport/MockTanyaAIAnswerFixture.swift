@@ -9,29 +9,25 @@ enum MockTanyaAIAnswerFixture {
     }
 
     static func events(identifier: String) -> [TanyaAIChatSessionEvent] {
-        let payload: [String: Any] = [
-            "messageIdentifier": "answer-\(identifier)",
-            "text": "Pilih informasi yang ingin Anda lihat.",
-            "options": [
-                ["identifier": "product", "title": "Informasi produk"],
-                ["identifier": "support", "title": "Hubungi dukungan"]
-            ],
-            "image": [
-                "imageURL": "https://picsum.photos/seed/product/800/320",
-                "caption": "Promo produk pilihan",
-                "aspectRatio": 2.5,
-                "accessibilityText": "Ilustrasi promo produk"
-            ],
-            "actions": [[
-                "title": "Lihat produk",
-                "action": ["identifier": "product", "deeplink": "tanyaai-sandbox://deeplink?type=transfer"]
-            ]]
+        let parts: [[String: Any]] = [
+            ["type": "radio_button", "options": [
+                ["label": "Informasi produk", "value": "product"],
+                ["label": "Hubungi dukungan", "value": "support"]
+            ]],
+            ["type": "info_card", "title": "Promo produk pilihan", "description": "Informasi promo produk.",
+             "image": "https://picsum.photos/seed/product/800/320"],
+            ["type": "link_button", "label": "Lihat produk", "destination_type": "deeplink",
+             "target": "tanyaai-sandbox://deeplink?type=transfer"]
         ]
-        return [
-            .messageStarted(messageIdentifier: "answer-\(identifier)"),
-            MockTanyaAIResponseFixture.event("answer", payload),
-            .messageCompleted(messageIdentifier: "answer-\(identifier)")
-        ]
+        do {
+            let elements = try parts.map { TanyaAIChatSessionElement.custom(
+                try JSONSerialization.data(withJSONObject: $0)
+            ) }
+            return try TanyaAIChatSessionMessage(
+                identifier: "answer-\(identifier)", author: .assistant,
+                elements: [.text("Pilih informasi yang ingin Anda lihat.")] + elements
+            ).contentEvents
+        } catch { return [.failed(error)] }
     }
 
     static func selected(identifier: String) -> [TanyaAIChatSessionEvent] {

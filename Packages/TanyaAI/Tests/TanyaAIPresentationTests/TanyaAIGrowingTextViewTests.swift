@@ -15,6 +15,7 @@ final class TanyaAIGrowingTextViewTests: XCTestCase {
         defer { window.isHidden = true }
 
         let examples = [
+            ("composer-empty", ""),
             ("composer-1-line", "Halo Wen"),
             ("composer-4-lines", "Baris pertama\nBaris kedua\nBaris ketiga\nBaris keempat"),
             (
@@ -43,9 +44,9 @@ final class TanyaAIGrowingTextViewTests: XCTestCase {
 
             attachScreenshot(of: window, name: name)
         }
-        XCTAssertEqual(heights.count, 3)
-        XCTAssertGreaterThan(heights[1], heights[0])
-        XCTAssertEqual(heights[2], heights[1], accuracy: 1)
+        XCTAssertEqual(heights.count, 4)
+        XCTAssertGreaterThan(heights[2], heights[1])
+        XCTAssertEqual(heights[3], heights[2], accuracy: 1)
         XCTAssertTrue(findTextView(in: controller.view)?.isScrollEnabled == true)
     }
 

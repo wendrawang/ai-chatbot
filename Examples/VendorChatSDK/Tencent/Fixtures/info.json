@@ -1,0 +1,8 @@
+[
+  {
+    "MsgType": "TIMCustomElem",
+    "MsgContent": {
+      "Data": "{\"type\":\"info_card\",\"title\":\"Cashback Belanja 10%\",\"description\":\"Dapatkan cashback 10% untuk transaksi kartu debit OCBC di merchant pilihan, berlaku s.d. 31 Des 2026\",\"image\":\"https://cdn.ocbc.co.id/promo/cashback10-detail.jpg\"}"
+    }
+  }
+]

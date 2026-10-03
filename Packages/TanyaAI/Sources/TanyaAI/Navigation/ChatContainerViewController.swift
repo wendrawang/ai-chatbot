@@ -9,13 +9,16 @@ final class ChatContainerViewController: UIViewController {
     private let pushTransition = TanyaAIPushTransition()
     private var coordinator: TanyaAICoordinator?
     private let dependencyContainer: TanyaAIDependencyContainer
+    private let confirmationHandler: ((ConfirmationPayload) -> Void)?
     private let actionHandler: (Action) -> Void
 
     init(
         dependencyContainer: TanyaAIDependencyContainer,
-        actionHandler: @escaping (Action) -> Void = { _ in }
+        actionHandler: @escaping (Action) -> Void = { _ in },
+        confirmationHandler: ((ConfirmationPayload) -> Void)? = nil
     ) {
         self.dependencyContainer = dependencyContainer
+        self.confirmationHandler = confirmationHandler
         self.actionHandler = actionHandler
         super.init(nibName: nil, bundle: nil)
         modalPresentationStyle = .fullScreen
@@ -60,7 +63,7 @@ final class ChatContainerViewController: UIViewController {
             navigationController: featureNavigationController,
             dependencyContainer: dependencyContainer,
             containerController: self,
-            actionHandler: actionHandler
+            actionHandler: actionHandler, confirmationHandler: confirmationHandler
         )
         self.coordinator = coordinator
         coordinator.start()

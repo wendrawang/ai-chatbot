@@ -17,6 +17,7 @@ public enum TanyaAIModule {
     public static func makeViewController(
         configuration: TanyaAIConfiguration = TanyaAIConfiguration(),
         dependencies: TanyaAIDependencies,
+        onConfirmation: ((ConfirmationPayload) -> Void)? = nil,
         onAction: @escaping (Action) -> Void = { _ in }
     ) -> UIViewController {
         let dependencyContainer = TanyaAIDependencyContainer(
@@ -25,7 +26,7 @@ public enum TanyaAIModule {
         )
         return ChatContainerViewController(
             dependencyContainer: dependencyContainer,
-            actionHandler: onAction
+            actionHandler: onAction, confirmationHandler: onConfirmation
         )
     }
 }

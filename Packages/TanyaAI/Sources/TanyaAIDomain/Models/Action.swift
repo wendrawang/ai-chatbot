@@ -5,6 +5,12 @@
 /// decision cannot live in the package: only the host knows which schemes and
 /// destinations belong to the app.
 public struct Action: Equatable {
+    public enum DestinationType: String, Equatable, Decodable {
+        case deeplink, webview, browser
+    }
+
+    public let destinationType: DestinationType
+
     /// Stable identifier for the action, used for accessibility identifiers
     /// and analytics. Not a destination.
     public let identifier: String
@@ -17,7 +23,8 @@ public struct Action: Equatable {
     /// silently while decoding.
     public let deeplink: String
 
-    public init(identifier: String, deeplink: String) {
+    public init(identifier: String, deeplink: String, destinationType: DestinationType = .deeplink) {
+        self.destinationType = destinationType
         self.identifier = identifier
         self.deeplink = deeplink
     }

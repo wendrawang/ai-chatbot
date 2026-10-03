@@ -1,6 +1,6 @@
 # PoC Tencent Chat untuk host Tanya AI
 
-Ini contoh **host-side**, bukan perubahan pada package TanyaAI. Salin tiga file
+Ini contoh **host-side**, bukan perubahan pada package TanyaAI. Salin seluruh file
 Swift di folder ini ke target host app. Contoh memakai **Tencent Chat Core SDK
 edisi Swift** (`ImSDK_Plus_Swift`) dan percakapan C2C antara `userID` nasabah dan
 `botUserID`. Jangan pasang TUIKit bila UI chat tetap memakai TanyaAI.
@@ -148,8 +148,8 @@ Package memanggil `makeSession` (instance **baru** setiap presentasi), lalu
 `connect()`. Adapter memasang listener, mengambil history C2C, mengirim
 `.history` dan `.connected`. Saat nasabah menekan kirim, package memanggil
 `send(text:...)`; adapter mengirim pesan ke `botUserID`. Balasan C2C dari bot
-diterjemahkan menjadi tiga event `messageStarted`, `messageDelta`, dan
-`messageCompleted`. Saat chat ditutup, adapter hanya melepas listener. Login
+diterjemahkan menjadi konten dan `messageCompleted`; live/history memakai
+pemetaan yang sama. Saat chat ditutup, adapter hanya melepas listener. Login
 Tencent tetap hidup sampai logout host. Tidak ada greeting otomatis.
 
 ## Uji balasan bot tanpa backend AI
@@ -231,19 +231,27 @@ bot agar balasan bot tidak memicu loop. Untuk PoC echo, teks respons dapat
 berupa `"Echo: " + pesanNasabah`; untuk balasan AI, ganti pembuat teks di
 backend. Jangan taruh logic atau kredensial bot di package TanyaAI.
 
+## Custom bubble dan kontrak terbaru
+
+Adapter membaca `TIMTextElem` serta seluruh rantai `TIMCustomElem` untuk live dan
+history. Update DesignKit/TanyaAI bersama dan salin **seluruh** file Swift folder
+ini, termasuk `TencentChatSessionAdapter+Contract.swift`. Kontrak `Data`, aturan
+radio terbaru, callback `destination_type`, dan handoff PIN dijelaskan lengkap
+di [TENCENT_MESSAGE_CONTRACT.md](../../../docs/TENCENT_MESSAGE_CONTRACT.md).
+
+Jalankan `sh send_test_reply.sh answer` untuk kombinasi teks/radio/kartu/link.
+Argumen lainnya: `text`, `radio`, `info`, `link`, `confirmation`.
+Script membutuhkan Python 3; sender default `bot_poc`, recipient default `wen`.
+
 ## Batas PoC ini
 
-- Jalur yang ditulis sekarang adalah **teks biasa**. `context` dan
-  `requestIdentifier` belum dikirim ke Tencent karena backend belum menyepakati
-  format metadata. Jangan menyisipkannya ke teks yang terlihat.
-- Bubble bertipe, suggestions, typing, dan deeplink dari bot memerlukan
-  kontrak payload bot yang disepakati. Adapter ini tidak menebak JSON yang
-  dikirim bot. Definisikan custom message sesuai `docs/BUBBLE_SCHEMA.md`,
-  kemudian petakan ke event `TanyaAIChatSession` bila PoC mencakup fitur itu.
-- Uji balasan manual membutuhkan SDK terpasang, login nasabah yang valid,
-  akun bot, dan satu pesan dari akun bot (melalui REST atau klien kedua).
-  Balasan otomatis membutuhkan backend yang menjawab pesan. Verifikasi akhir
-  tetap perlu dilakukan di host app; file contoh bukan target build sandbox.
+- `context`/`requestIdentifier` belum dikirim sebagai metadata Tencent; kontrak
+  backend harus menetapkan jalurnya. Teks radio menggunakan label sebagai prompt;
+  `value` dipertahankan sebagai ID pilihan.
+- History tetap 20 pesan C2C terakhir. Pagination membutuhkan backend/host policy.
+- Konfirmasi baru mengirim confirmation ID/fields ke flow PIN host, tanpa
+  memalsukan challenge atau menjalankan transaksi di package.
+- Runtime Tencent/login dan pengiriman REST tetap diuji pada host/device Anda.
 
 Referensi API: [integrasi SDK iOS](https://trtc.io/document/34307),
 [Swift V2TIMManager](https://im.sdk.qcloud.com/doc/en/swift_V2TIMManager.html),

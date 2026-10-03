@@ -79,3 +79,34 @@ Test UI khusus radio lulus dan merekam screenshot
 [sebelum](../Artifacts/Screenshots/answer-before-selection.png) /
 [sesudah](../Artifacts/Screenshots/answer-after-selection.png). Panduan JSON dan
 host tersedia di [ANSWER_CONTENT.md](ANSWER_CONTENT.md).
+
+## Kontrak Tencent dan kontrol percakapan — 3 Oktober 2026
+
+- **56 test DesignKit dan 164 test TanyaAI** lulus pada iPhone 17 Pro / iOS 26.5
+  Simulator, tanpa skipped test. Termasuk seluruh 15 kombinasi elemen custom,
+  Unicode, destination type, malformed payload, reference/raw amount konfirmasi,
+  history/live parity, radio lama/replay, dan pelepasan scroll coordinator/control.
+- **9 test UI unik** telah lulus dalam run lengkap dan rerun yang terdampak. Run
+  lengkap pertama menemukan masalah command scroll yang belum diamati bridge
+  UIKit dan test PIN yang hanya menggulir sampai judul. Bridge kini mengamati
+  control, visibility tidak muncul selama auto-follow, dan test PIN memastikan
+  tombolnya terlihat. Ketiga test terkait lulus pada rerun.
+- Input kosong, 1 baris, 4 baris, dan >4 baris direkam lewat XCTest dan diperiksa
+  visualnya. Tinggi berhenti tumbuh pada 4 baris; UITextView kemudian scroll.
+- Semua file Swift contoh Tencent lolos **typecheck dengan framework asli
+  ImSDK_Plus_Swift 9.1.7818** dari podspec, target iOS 15 arm64 Simulator. Ini
+  memverifikasi API SDK dan package; login, server, serta delivery pada real
+  device tetap membutuhkan host. Tidak ada SDK binary/kredensial yang di-commit.
+- Script REST diuji secara offline: fixture request dan jalur success/FAIL
+  Tencent benar. Tidak ada pesan yang dikirim ke akun nyata selama verifikasi.
+- Style/literal UI/localization guard dan `git diff --check` lulus. Generated
+  token tidak berubah. Duplicate suppression FIFO dibatasi 512 ID dan antrean
+  live selama history dibatasi 100 pesan; message graph package tetap 100.
+
+Bukti visual: [arrow muncul](../Artifacts/Screenshots/scroll-to-latest-visible.png),
+[sesudah kembali ke latest](../Artifacts/Screenshots/scroll-to-latest-completed.png),
+[input kosong](../Artifacts/Screenshots/composer-empty.png),
+[1 baris](../Artifacts/Screenshots/composer-1-line.png),
+[4 baris](../Artifacts/Screenshots/composer-4-lines.png), dan
+[lebih dari 4 baris](../Artifacts/Screenshots/composer-over-4-lines.png).
+Tidak ada klaim baru tentang hasil Instruments Leaks atau sustained FPS perangkat nyata.

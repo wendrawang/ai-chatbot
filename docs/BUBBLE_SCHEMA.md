@@ -1,5 +1,7 @@
 # JSON untuk menghasilkan bubble
 
+Kontrak Tencent `TIMTextElem`/`TIMCustomElem` terbaru: [TENCENT_MESSAGE_CONTRACT.md](TENCENT_MESSAGE_CONTRACT.md).
+
 Package menerima **nama event + payload JSON** melalui `TanyaAIChatSession`.
 Backend tidak mengirim nama SwiftUI view. Nama event memilih bubble; payload
 mengisi teks, nilai, pilihan, atau tombolnya.

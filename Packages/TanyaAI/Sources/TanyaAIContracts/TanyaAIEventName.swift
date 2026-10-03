@@ -2,6 +2,7 @@ import Foundation
 
 /// Unique wire names shared by the decoder, host adapters, and fixtures.
 public enum TanyaAIEventName: String, CaseIterable {
+    case components
     case answer
     case image
     case choices

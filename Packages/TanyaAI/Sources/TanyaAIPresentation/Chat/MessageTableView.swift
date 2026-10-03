@@ -7,6 +7,7 @@ import UIKit
 struct MessageTableView: UIViewRepresentable {
     let state: TanyaAIMessageListState
     let theme: Theme
+    @ObservedObject var scrollControl: TanyaAIMessageScrollControl
     let handlers: TanyaAIMessageRowHandlers
     @Environment(\.copyCatalog) private var copy
     @Environment(\.artwork) private var artwork
@@ -39,6 +40,7 @@ struct MessageTableView: UIViewRepresentable {
     }
 
     func updateUIView(_ tableView: UITableView, context: Context) {
+        context.coordinator.updateScrollControl(scrollControl)
         context.coordinator.update(
             state, theme: theme, handlers: handlers, artwork: artwork, imageLoader: imageLoader, copy: copy
         )

@@ -32,3 +32,5 @@
 "chat.submit" = "Kirim";
 "chat.emptyHistory" = "Belum ada percakapan";
 "chat.subtitle" = "";
+"chat.latest" = "Ke pesan terbaru";
+"chat.confirmation" = "Konfirmasi rincian";

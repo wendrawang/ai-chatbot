@@ -3,6 +3,9 @@ import SwiftUI
 
 struct MessageListView: View {
     @ObservedObject var viewModel: TanyaAIChatViewModel
+    @StateObject private var scrollControl = TanyaAIMessageScrollControl()
+    @Environment(\.copyCatalog) private var copy
+    @Environment(\.artwork) private var artwork
     @Environment(\.theme) private var theme
 
     var body: some View {
@@ -17,6 +20,7 @@ struct MessageListView: View {
                 suggestionsTitle: viewModel.suggestionsTitle
             ),
             theme: theme,
+            scrollControl: scrollControl,
             handlers: TanyaAIMessageRowHandlers(
                 approval: .init(
                     onEdit: viewModel.editApproval,
@@ -29,9 +33,17 @@ struct MessageListView: View {
                 ),
                 onAction: viewModel.perform,
                 onSuggestion: viewModel.sendSuggestion,
+                onConfirmation: viewModel.confirm,
                 onAnswerOption: viewModel.selectAnswerOption,
                 onDeclineLiveAgent: viewModel.declineLiveAgent
             )
         )
+        .overlay(alignment: .bottom) {
+            if scrollControl.isAwayFromLatest && !viewModel.isRestoring {
+                ScrollToLatestButton(label: copy.chat("chat.latest"), onTap: scrollControl.returnToLatest)
+                    .accessibilityIdentifier("chat.latest")
+                    .padding(.bottom, artwork.size(DesignKitMetrics.Spacing.regular))
+            }
+        }
     }
 }

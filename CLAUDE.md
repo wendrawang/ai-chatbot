@@ -75,7 +75,11 @@ Sebelas tipe konten plus fallback. Yang perlu diingat soal tampilannya:
 - **Radio satu tap langsung mengirim prompt, lalu option list pada jawaban itu
   hilang.** `choices` default single-select; `allowsMultipleSelection: true`
   mempertahankan kontrak multi-select + submit untuk integrasi lama.
+  Radio hanya tampil pada pesan terakhir; pesan baru menghabiskan option lama.
   Teks, gambar, dan action tetap tampil setelah radio dipilih.
+- **Input generik memiliki tombol kirim di dalam kotak, tumbuh sampai 4 baris lalu scroll.**
+  Tombol ke pesan terbaru muncul saat pengguna menjauh dari bawah; pesan baru tidak
+  menarik posisi baca pengguna.
 - **Shortcut bukan protokol.** Host yang inquiry lalu mengoper daftarnya lewat
   `TanyaAIConfiguration` — sebuah nilai, bukan layanan.
 - **`content.image` menggunakan `ImageLoading` yang bisa diinjeksi.** Host dapat

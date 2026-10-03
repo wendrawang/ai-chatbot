@@ -7,7 +7,7 @@ import XCTest
 final class TanyaAIEventNameTests: XCTestCase {
     func testCanonicalNamesAreCompleteUniqueAndDotFree() {
         let expected: Set<String> = [
-            "answer", "image", "choices", "actions", "html", "live_agent", "approval",
+            "components", "answer", "image", "choices", "actions", "html", "live_agent", "approval",
             "receipt", "chart", "portfolio", "financial_list", "status", "information",
             "suggestions", "response_started", "text_delta", "response_completed", "heartbeat"
         ]
@@ -106,6 +106,7 @@ final class TanyaAIEventNameTests: XCTestCase {
             "approvalIdentifier": "approval", "transactionIdentifier": "transaction",
             "challengeIdentifier": "challenge", "expiresAt": "2099-01-01T00:00:00Z",
             "suggestions": [["identifier": "next", "title": "Next", "prompt": "Next"]],
+            "elements": [["type": "text", "text": "Sample text"]],
             "fallbackText": "Please update"
         ]
         return try JSONSerialization.data(withJSONObject: object)

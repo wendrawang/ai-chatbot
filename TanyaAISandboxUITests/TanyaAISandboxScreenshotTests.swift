@@ -40,6 +40,9 @@ final class TanyaAISandboxScreenshotTests: XCTestCase {
         moveToTop(messageTable)
         reveal("Confirm your transfer", in: messageTable)
         let confirmButton = application.buttons["approval.open.transfer"]
+        for _ in 0..<4 where confirmButton.isHittable == false {
+            scrollForward(messageTable)
+        }
         XCTAssertTrue(confirmButton.isHittable)
         confirmButton.tap()
         XCTAssertTrue(
