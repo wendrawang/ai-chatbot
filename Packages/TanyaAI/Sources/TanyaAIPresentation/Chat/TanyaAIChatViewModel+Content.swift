@@ -29,6 +29,7 @@ extension TanyaAIChatViewModel {
             return
         }
 
+        if messages.last !== existingMessage { existingMessage.consumeOptions() }
         existingMessage.update(content: content)
     }
 

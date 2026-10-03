@@ -9,7 +9,7 @@ final class TanyaAIMessageListTests: XCTestCase {
     /// latest message. Parking on the next runloop would draw one frame at
     /// the top of the conversation first, which is the jump customers saw.
     func testRestoredConversationIsParkedBeforeItIsDrawn() {
-        let coordinator = TanyaAIMessageTableView.Coordinator()
+        let coordinator = MessageTableView.Coordinator()
         let tableView = makeTableView(coordinator: coordinator)
 
         coordinator.update(
@@ -33,7 +33,7 @@ final class TanyaAIMessageListTests: XCTestCase {
 
     /// Nothing to park against. The empty case must not scroll into a void.
     func testRestoringToAnEmptyConversationStaysAtTheTop() {
-        let coordinator = TanyaAIMessageTableView.Coordinator()
+        let coordinator = MessageTableView.Coordinator()
         let tableView = makeTableView(coordinator: coordinator)
 
         coordinator.update(restoring, theme: .sandbox, handlers: .inert)
@@ -43,7 +43,9 @@ final class TanyaAIMessageListTests: XCTestCase {
             handlers: .inert
         )
 
-        XCTAssertEqual(tableView.contentOffset.y, 0, accuracy: 1)
+        XCTAssertEqual(tableView.numberOfRows(inSection: 0), 0)
+        // UIKit's top offset includes the tokenized content inset.
+        XCTAssertEqual(tableView.contentOffset.y, -tableView.adjustedContentInset.top, accuracy: 1)
     }
 
     func testTypingRowCountsAsARow() {
@@ -170,9 +172,9 @@ final class TanyaAIMessageListTests: XCTestCase {
     }
 
     private func makeTableView(
-        coordinator: TanyaAIMessageTableView.Coordinator
+        coordinator: MessageTableView.Coordinator
     ) -> UITableView {
-        let tableView = TanyaAITrackingTableView(
+        let tableView = LayoutTrackingTableView(
             frame: CGRect(x: 0, y: 0, width: 320, height: 480),
             style: .plain
         )
@@ -181,8 +183,8 @@ final class TanyaAIMessageListTests: XCTestCase {
         tableView.rowHeight = UITableView.automaticDimension
         tableView.estimatedRowHeight = 96
         tableView.register(
-            TanyaAIHostingTableViewCell.self,
-            forCellReuseIdentifier: TanyaAIHostingTableViewCell.reuseIdentifier
+            MessageHostingCell.self,
+            forCellReuseIdentifier: MessageHostingCell.reuseIdentifier
         )
         coordinator.attach(tableView)
         return tableView

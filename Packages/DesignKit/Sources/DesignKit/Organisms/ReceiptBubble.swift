@@ -3,38 +3,43 @@ import SwiftUI
 public struct ReceiptBubble: View {
     let payload: ReceiptPayload
     @Environment(\.theme) private var theme
+    @Environment(\.artwork) private var artwork
 
     public init(payload: ReceiptPayload) {
         self.payload = payload
     }
 
     public var body: some View {
-        VStack(spacing: 16) {
+        VStack(spacing: artwork.size(DesignKitMetrics.Spacing.wide)) {
             successHeader
             summary
             footnote
         }
-        .padding(DesignKitMetrics.Spacing.card)
+        .foregroundColor(Color(theme.colors.primaryText))
+        .padding(artwork.size(DesignKitMetrics.Spacing.card))
         .background(Color(theme.colors.surface))
-        .cornerRadius(DesignKitMetrics.Radius.card)
-        .frame(maxWidth: 340, alignment: .leading)
+        .cornerRadius(artwork.size(DesignKitMetrics.Radius.card))
+        .frame(maxWidth: artwork.size(DesignKitMetrics.Size.cardMaximumWidth), alignment: .leading)
         .accessibilityElement(children: .contain)
         .accessibilityIdentifier("receipt.success")
     }
 
     private var successHeader: some View {
-        VStack(spacing: 10) {
+        VStack(spacing: artwork.size(DesignKitMetrics.Spacing.medium)) {
             Image(systemName: "checkmark")
-                .font(Font(theme.fonts.title))
+                .designFont(.title)
                 .foregroundColor(Color(theme.colors.success))
-                .frame(width: 64, height: 64)
+                .frame(
+                            width: artwork.size(DesignKitMetrics.Size.successIcon),
+                            height: artwork.size(DesignKitMetrics.Size.successIcon)
+                        )
                 .background(Color(theme.colors.success).opacity(0.12))
                 .clipShape(Circle())
             Text(payload.title)
-                .font(Font(theme.fonts.title))
+                .designFont(.title)
                 .multilineTextAlignment(.center)
             Text(payload.detail)
-                .font(Font(theme.fonts.body))
+                .designFont(.body)
                 .foregroundColor(Color(theme.colors.secondaryText))
                 .multilineTextAlignment(.center)
         }
@@ -42,20 +47,20 @@ public struct ReceiptBubble: View {
     }
 
     private var summary: some View {
-        VStack(spacing: DesignKitMetrics.Spacing.regular) {
+        VStack(spacing: artwork.size(DesignKitMetrics.Spacing.regular)) {
             Rectangle()
                 .fill(Color(theme.colors.divider))
-                .frame(height: 0.5)
+                .frame(height: artwork.stroke(DesignKitMetrics.Stroke.divider))
             ForEach(payload.summary.indices, id: \.self) { index in
-                HStack(alignment: .firstTextBaseline, spacing: DesignKitMetrics.Spacing.regular) {
+                HStack(alignment: .firstTextBaseline, spacing: artwork.size(DesignKitMetrics.Spacing.regular)) {
                     Text(payload.summary[index].label)
                         .foregroundColor(Color(theme.colors.secondaryText))
-                    Spacer(minLength: 8)
+                    Spacer(minLength: artwork.size(DesignKitMetrics.Spacing.compact))
                     Text(payload.summary[index].value)
-                        .font(Font(theme.fonts.headline))
+                        .designFont(.headline)
                         .multilineTextAlignment(.trailing)
                 }
-                .font(Font(theme.fonts.subheadline))
+                .designFont(.subheadline)
             }
         }
     }
@@ -64,7 +69,7 @@ public struct ReceiptBubble: View {
     private var footnote: some View {
         if let footnote = payload.footnote {
             Text(footnote)
-                .font(Font(theme.fonts.footnote))
+                .designFont(.footnote)
                 .foregroundColor(Color(theme.colors.secondaryText))
                 .frame(maxWidth: .infinity, alignment: .leading)
         }

@@ -6,6 +6,11 @@ PROJECT_ROOT="$(CDPATH= cd -- "$(dirname -- "$0")/.." && pwd)"
 DEVELOPER_DIR="${DEVELOPER_DIR:-/Applications/Xcode.app/Contents/Developer}"
 export DEVELOPER_DIR
 
+# A device name alone defaults to the latest SDK runtime, which may not contain
+# that model. Select an installed destination, or let CI supply an explicit one.
+TEST_DESTINATION="${TANYA_AI_TEST_DESTINATION:-$(python3 "$PROJECT_ROOT/Scripts/simulator_destination.py")}"
+printf 'Testing on %s\n' "$TEST_DESTINATION"
+
 ruby "$PROJECT_ROOT/Scripts/generate_project.rb"
 "$PROJECT_ROOT/Scripts/check_style.sh"
 
@@ -22,7 +27,8 @@ xcodebuild \
 cd "$PROJECT_ROOT/Packages/DesignKit"
 xcodebuild \
   -scheme DesignKit \
-  -destination 'platform=iOS Simulator,name=iPhone 17 Pro' \
+  -destination "$TEST_DESTINATION" \
+  -parallel-testing-enabled NO \
   CODE_SIGNING_ALLOWED=NO \
   -enableCodeCoverage YES \
   test \
@@ -31,7 +37,8 @@ xcodebuild \
 cd "$PROJECT_ROOT/Packages/TanyaAI"
 xcodebuild \
   -scheme TanyaAI-Package \
-  -destination 'platform=iOS Simulator,name=iPhone 17 Pro' \
+  -destination "$TEST_DESTINATION" \
+  -parallel-testing-enabled NO \
   CODE_SIGNING_ALLOWED=NO \
   -enableCodeCoverage YES \
   test \
@@ -41,7 +48,8 @@ cd "$PROJECT_ROOT"
 xcodebuild \
   -project "$PROJECT_ROOT/TanyaAISandbox.xcodeproj" \
   -scheme TanyaAISandbox \
-  -destination 'platform=iOS Simulator,name=iPhone 17 Pro' \
+  -destination "$TEST_DESTINATION" \
+  -parallel-testing-enabled NO \
   CODE_SIGNING_ALLOWED=NO \
   -enableCodeCoverage YES \
   test \

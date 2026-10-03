@@ -1,0 +1,26 @@
+[
+  {
+    "MsgType": "TIMTextElem",
+    "MsgContent": {
+      "Text": "Ada promo apa aja yang lagi jalan?"
+    }
+  },
+  {
+    "MsgType": "TIMCustomElem",
+    "MsgContent": {
+      "Data": "{\"type\":\"radio_button\",\"options\":[{\"label\":\"Cashback Belanja 10%\",\"value\":\"promo_cashback10\"},{\"label\":\"Bunga Deposito Spesial 6%\",\"value\":\"promo_deposito6\"}]}"
+    }
+  },
+  {
+    "MsgType": "TIMCustomElem",
+    "MsgContent": {
+      "Data": "{\"type\":\"info_card\",\"title\":\"Cashback Belanja 10%\",\"description\":\"Dapatkan cashback 10% untuk transaksi kartu debit OCBC di merchant pilihan, berlaku s.d. 31 Des 2026\",\"image\":\"https://cdn.ocbc.co.id/promo/cashback10-detail.jpg\"}"
+    }
+  },
+  {
+    "MsgType": "TIMCustomElem",
+    "MsgContent": {
+      "Data": "{\"type\":\"link_button\",\"label\":\"Bicara dengan Agent\",\"target\":\"ocbcid://mobile?type=live-chat&identifier=investasi&message=Saya%20tertarik%20untuk%20akses%20likuiditas%20dari%20obligasi%20saya%20melalui%20Investment%20Backed%20Loan\",\"destination_type\":\"deeplink\"}"
+    }
+  }
+]

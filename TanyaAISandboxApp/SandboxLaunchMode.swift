@@ -3,10 +3,13 @@ import Foundation
 enum SandboxLaunchMode {
     case legacyHost
     case showcase
+    case answers
     case deeplink
 
     init(arguments: [String]) {
-        if arguments.contains("--showcase") {
+        if arguments.contains("--answers") {
+            self = .answers
+        } else if arguments.contains("--showcase") {
             self = .showcase
         } else if arguments.contains("--deeplink") {
             self = .deeplink
@@ -23,7 +26,7 @@ enum SandboxLaunchMode {
         switch self {
         case .legacyHost, .deeplink:
             return false
-        case .showcase:
+        case .showcase, .answers:
             return true
         }
     }
@@ -34,7 +37,7 @@ enum SandboxLaunchMode {
         switch self {
         case .legacyHost:
             return false
-        case .showcase, .deeplink:
+        case .showcase, .answers, .deeplink:
             return true
         }
     }
@@ -45,6 +48,8 @@ enum SandboxLaunchMode {
             return nil
         case .showcase:
             return "showcase all bubbles"
+        case .answers:
+            return "answer composition demo"
         case .deeplink:
             return "deeplink hand-off"
         }

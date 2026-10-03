@@ -1,5 +1,7 @@
 # JSON untuk menghasilkan bubble
 
+Kontrak Tencent `TIMTextElem`/`TIMCustomElem` terbaru: [TENCENT_MESSAGE_CONTRACT.md](TENCENT_MESSAGE_CONTRACT.md).
+
 Package menerima **nama event + payload JSON** melalui `TanyaAIChatSession`.
 Backend tidak mengirim nama SwiftUI view. Nama event memilih bubble; payload
 mengisi teks, nilai, pilihan, atau tombolnya.
@@ -44,9 +46,10 @@ Setiap tautan berisi payload lengkap, field wajib, dan perilakunya.
 
 | Tampilan | Event | Referensi |
 | --- | --- | --- |
-| Teks | `text_delta` | Contoh streaming di bawah |
+| Kombinasi teks, radio, gambar, action | `answer` | [Answer](ANSWER_CONTENT.md) |
+| Teks tanpa outline | `text_delta` | Contoh streaming di bawah |
 | Gambar + caption | `image` | [Gambar](bubbles/CONTENT.md#image) |
-| Pilihan + submit | `choices` | [Choices](bubbles/CONTENT.md#choices) |
+| Radio langsung kirim; multi-select eksplisit + submit | `choices` | [Choices](bubbles/CONTENT.md#choices) |
 | Tombol deeplink | `actions` | [Actions](bubbles/CONTENT.md#actions) |
 | HTML statis | `html` | [HTML](bubbles/CONTENT.md#html) |
 | Penawaran agen | `live_agent` | [Live agent](bubbles/CONTENT.md#live_agent) |
@@ -138,11 +141,11 @@ Format inbound typed card 3Dolphins belum terverifikasi; pakai mock untuk review
 
 ## Nama unik tanpa titik
 
-Nama canonical memakai huruf kecil dan underscore untuk dua kata. Seluruh 17 nama
+Nama canonical memakai huruf kecil dan underscore untuk dua kata. Seluruh 18 nama
 terdaftar di `TanyaAIEventName` (tersedia melalui `import TanyaAI`). Gunakan
 `TanyaAIEventName.status.rawValue` ketika tidak ingin menulis string manual.
 
-- Bubble: `image`, `choices`, `actions`, `html`, `live_agent`, `approval`, `receipt`,
+- Bubble: `answer`, `image`, `choices`, `actions`, `html`, `live_agent`, `approval`, `receipt`,
   `chart`, `portfolio`, `financial_list`, `status`, `information`.
 - Saran: `suggestions`.
 - Lifecycle: `response_started`, `text_delta`, `response_completed`, `heartbeat`.

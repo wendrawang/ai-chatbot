@@ -6,7 +6,9 @@ import TanyaAIPresentation
 final class TanyaAIDependencyContainer {
     private let configuration: TanyaAIConfiguration
     private let dependencies: TanyaAIDependencies
+    var copy: CopyCatalog { configuration.copy }
     var theme: Theme { dependencies.theme }
+    var imageLoader: ImageLoading { dependencies.imageLoader }
 
     init(
         configuration: TanyaAIConfiguration,
@@ -16,7 +18,7 @@ final class TanyaAIDependencyContainer {
         self.dependencies = dependencies
     }
 
-    func makeChatViewModel() -> TanyaAIChatViewModel {
+    func makeChatViewModel(isConfirmationEnabled: Bool = false) -> TanyaAIChatViewModel {
         let repository = TanyaAISessionRepository(
             session: dependencies.chatSession
         )
@@ -24,12 +26,14 @@ final class TanyaAIDependencyContainer {
         return TanyaAIChatViewModel(
             useCase: useCase,
             isAuthorizationEnabled: dependencies.authorizationService != nil,
-            shortcuts: configuration.shortcuts
+            isConfirmationEnabled: isConfirmationEnabled,
+            shortcuts: configuration.shortcuts,
+            copy: copy
         )
     }
 
     func makeHistoryViewModel() -> TanyaAIHistoryViewModel {
-        TanyaAIHistoryViewModel()
+        TanyaAIHistoryViewModel(items: configuration.historyItems)
     }
 
     func startInitialPrompt(on viewModel: TanyaAIChatViewModel) {
@@ -47,7 +51,8 @@ final class TanyaAIDependencyContainer {
         }
         return TanyaAIPINViewModel(
             approval: approval,
-            authorizationService: service
+            authorizationService: service,
+            copy: copy
         )
     }
 }

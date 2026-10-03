@@ -45,6 +45,7 @@ struct AccountPage: View {
     var body: some View {
         AccountContent()
             .theme(manager)
+            .artworkLayout()
     }
 }
 ```
@@ -119,10 +120,13 @@ SwiftUI custom font relatif terhadap text style. Ukuran berasal dari generated
 tokens; tidak ditulis ulang ke loader. UIKit memakai system fallback jika nama font
 tidak ditemukan; test memastikan semua font bundled ditemukan tanpa fallback.
 
-`Fonts.branded()` menghasilkan snapshot UIFont untuk kategori ukuran saat dibuat.
-Untuk host UIKit yang mengubah kategori ukuran saat runtime, buat ulang `Fonts`
-dan theme pada perubahan `preferredContentSizeCategory`. SwiftUI yang memakai
-`swiftUIFont(relativeTo:)` mengikuti Dynamic Type secara langsung.
+`Fonts.branded()` menyimpan resep ukuran asli. `.theme(...)` meresolve ulang font
+saat artwork/size category berubah, tanpa menggandakan skala. Di UIKit, panggil
+`theme.resolved(artwork:traits:)` saat bounds atau trait berubah. Palette lama
+berisi `UIFont` langsung tetap snapshot final untuk kompatibilitas.
+
+Panduan lengkap ukuran `sizeInArtwork`, setup root, batas atomic design, dan
+migrasi host: [DESIGNKIT_MIGRATION.md](DESIGNKIT_MIGRATION.md).
 
 Untuk resource font lain:
 

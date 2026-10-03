@@ -1,0 +1,32 @@
+{
+  "event": "answer",
+  "data": {
+    "messageIdentifier": "answer-1",
+    "text": "Informasi apa yang ingin Anda lihat?",
+    "options": [
+      {
+        "identifier": "product",
+        "title": "Informasi produk"
+      },
+      {
+        "identifier": "support",
+        "title": "Hubungi dukungan"
+      }
+    ],
+    "image": {
+      "imageURL": "https://cdn.example.com/promo.png",
+      "caption": "Bonus bunga tabungan",
+      "aspectRatio": 1.6,
+      "accessibilityText": "Ilustrasi bonus bunga"
+    },
+    "actions": [
+      {
+        "title": "Lihat produk",
+        "action": {
+          "identifier": "product",
+          "deeplink": "ocbcid://mobile?type=product"
+        }
+      }
+    ]
+  }
+}

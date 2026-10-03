@@ -5,6 +5,8 @@ set -eu
 PROJECT_ROOT="$(CDPATH= cd -- "$(dirname -- "$0")/.." && pwd)"
 MAXIMUM_LINES=250
 
+python3 "$PROJECT_ROOT/Scripts/check_design_system.py"
+
 # SwiftLint loads sourcekitd out of the toolchain, so it needs a real Xcode
 # even when xcode-select still points at the Command Line Tools. verify.sh
 # exports the same default; repeated here so a direct run behaves the same.
@@ -30,7 +32,7 @@ find "$PROJECT_ROOT/TanyaAISandboxApp" \
 if command -v swiftlint >/dev/null 2>&1; then
   swiftlint lint \
     --config "$PROJECT_ROOT/.swiftlint.yml" \
-    --strict
+    --strict --no-cache
 else
   echo "SwiftLint is required to enforce identifier and boolean naming rules."
   exit 1

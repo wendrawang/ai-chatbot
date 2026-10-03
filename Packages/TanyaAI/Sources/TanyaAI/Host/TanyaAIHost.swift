@@ -1,5 +1,6 @@
 import Combine
 import DesignKit
+import TanyaAIDomain
 import Foundation
 import TanyaAIContracts
 import UIKit
@@ -38,7 +39,11 @@ public final class TanyaAIHost: ObservableObject {
     private let deeplinkHost: String?
     private let initialPrompt: String?
     private let shortcuts: [Suggestion]
+    private let copy: CopyCatalog
+    private let historyItems: [ConversationSummary]
     private let makeSession: () -> TanyaAIChatSession
+    private let onDestination: ((Action, URL) -> Void)?
+    private let onConfirmation: ((ConfirmationPayload) -> Void)?
     private let onDeeplink: (URL) -> Void
 
     private weak var anchor: UIViewController?
@@ -58,10 +63,14 @@ public final class TanyaAIHost: ObservableObject {
     ///     customer to `https://…` or into another application.
     ///   - deeplinkHost: pins the link to one entry point. Nil accepts any
     ///     host under the scheme.
+    ///   - copy: UI language and host overrides, captured for this host instance.
+    ///   - historyItems: host-provided conversation summaries; empty by default.
     ///   - makeSession: called once per presentation. It must return a *new*
     ///     session each time: the feature takes ownership of the session's
     ///     callback and closes it on dismissal, so a shared instance would be
     ///     torn out from under the next presentation.
+    ///   - onDestination: optional typed handler for deeplink/webview/browser.
+    ///   - onConfirmation: opens the host PIN flow after dismissal; carries the backend reference.
     ///   - onDeeplink: the host's existing deeplink handler - the same one
     ///     `scene(_:openURLContexts:)` calls. It is invoked only after the
     ///     feature has finished dismissing.
@@ -72,15 +81,23 @@ public final class TanyaAIHost: ObservableObject {
         deeplinkHost: String? = nil,
         initialPrompt: String? = nil,
         shortcuts: [Suggestion] = [],
+        copy: CopyCatalog = CopyCatalog(),
+        historyItems: [ConversationSummary] = [],
         makeSession: @escaping () -> TanyaAIChatSession,
+        onDestination: ((Action, URL) -> Void)? = nil,
+        onConfirmation: ((ConfirmationPayload) -> Void)? = nil,
         onDeeplink: @escaping (URL) -> Void
     ) {
+        self.onDestination = onDestination
+        self.onConfirmation = onConfirmation
         self.theme = theme
         self.authorizationService = authorizationService
         self.deeplinkScheme = deeplinkScheme
         self.deeplinkHost = deeplinkHost
         self.initialPrompt = initialPrompt
         self.shortcuts = shortcuts
+        self.copy = copy
+        self.historyItems = historyItems
         self.makeSession = makeSession
         self.onDeeplink = onDeeplink
     }
@@ -96,16 +113,17 @@ public final class TanyaAIHost: ObservableObject {
         let controller = TanyaAIModule.makeViewController(
             configuration: TanyaAIConfiguration(
                 initialPrompt: initialPrompt,
-                shortcuts: shortcuts
+                shortcuts: shortcuts,
+                copy: copy,
+                historyItems: historyItems
             ),
             dependencies: TanyaAIDependencies(
                 chatSession: makeSession(),
                 authorizationService: authorizationService,
                 theme: theme
             ),
-            onAction: { [weak self] action in
-                self?.handle(action)
-            }
+            onConfirmation: confirmationCallback,
+            onAction: { [weak self] action in self?.handle(action) }
         )
         presented = controller
         anchor.present(controller, animated: true)
@@ -132,22 +150,35 @@ public final class TanyaAIHost: ObservableObject {
     /// the dismissal completion, never a timer. A push that starts while a
     /// modal is still animating away is dropped without an error.
     private func handle(_ action: Action) {
-        guard let url = accepted(action.deeplink) else {
+        guard let url = accepted(action) else {
             return
         }
         dismiss { [weak self] in
-            self?.onDeeplink(url)
+            guard let self else { return }
+            if let onDestination = self.onDestination {
+                onDestination(action, url)
+            } else {
+                self.onDeeplink(url)
+            }
         }
     }
 
-    /// The security boundary, and deliberately the whole of it.
-    ///
-    /// The scheme check rejects `https://…`, `tel:`, and anything that would
-    /// launch a different application. What the link means past that is the
-    /// host's existing handler's business; a second parser here would only
-    /// drift from it.
-    private func accepted(_ deeplink: String) -> URL? {
-        guard let url = URL(string: deeplink),
+    /// PIN belongs to the host; wait until its presenting screen is available.
+    private var confirmationCallback: ((ConfirmationPayload) -> Void)? {
+        guard onConfirmation != nil else { return nil }
+        return { [weak self] payload in
+            self?.dismiss { [weak self] in self?.onConfirmation?(payload) }
+        }
+    }
+
+    /// The host still validates HTTPS domains before routing a browser or webview intent.
+    func accepted(_ action: Action) -> URL? {
+        if action.destinationType != .deeplink {
+            guard onDestination != nil, let url = URL(string: action.deeplink),
+                  url.scheme == "https", url.host != nil, url.user == nil, url.password == nil else { return nil }
+            return url
+        }
+        guard let url = URL(string: action.deeplink),
               url.scheme == deeplinkScheme else {
             return nil
         }

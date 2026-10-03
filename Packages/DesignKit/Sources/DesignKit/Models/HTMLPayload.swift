@@ -27,7 +27,7 @@ public struct HTMLPayload: Equatable {
 
     /// Used when the payload does not say. Tall enough for a few rows of a
     /// small table, which is what this is mostly for.
-    public static let defaultHeight: CGFloat = 180
+    public static let defaultHeight: CGFloat = DesignKitMetrics.Web.initialHeight
 
     public init(
         identifier: String,

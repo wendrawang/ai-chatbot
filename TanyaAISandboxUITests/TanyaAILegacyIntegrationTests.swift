@@ -25,7 +25,7 @@ final class TanyaAILegacyIntegrationTests: XCTestCase {
         XCTAssertFalse(application.staticTexts["Legacy state: 1"].exists)
         capture(name: "legacy-tanya-ai-full-screen")
 
-        application.buttons["Close Tanya AI"].tap()
+        application.buttons["Close chat"].tap()
         assertLegacyCounterEqualsOne()
         capture(name: "legacy-navigation-restored")
     }

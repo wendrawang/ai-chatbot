@@ -173,7 +173,7 @@ public final class TanyaAISessionRepository: TanyaAIRepository {
                 .content(
                     messageIdentifier: UUID().uuidString,
                     content: .unsupported(
-                        "This content requires a newer app version."
+                        nil
                     )
                 )
             )

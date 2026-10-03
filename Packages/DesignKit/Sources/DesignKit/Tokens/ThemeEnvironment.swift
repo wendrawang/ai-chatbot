@@ -15,6 +15,6 @@ public extension EnvironmentValues {
 
 public extension View {
     func theme(_ theme: Theme) -> some View {
-        environment(\.theme, theme)
+        modifier(ResolvedTheme(theme: theme))
     }
 }

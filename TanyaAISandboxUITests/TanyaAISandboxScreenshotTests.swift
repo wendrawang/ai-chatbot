@@ -26,10 +26,10 @@ final class TanyaAISandboxScreenshotTests: XCTestCase {
         }
 
         XCTAssertTrue(
-            application.buttons["Suggested question: Currency"].exists
+            application.buttons["Currency"].exists
         )
         XCTAssertTrue(
-            application.buttons["Suggested question: Time deposit"].exists
+            application.buttons["Time deposit"].exists
         )
     }
 
@@ -40,6 +40,9 @@ final class TanyaAISandboxScreenshotTests: XCTestCase {
         moveToTop(messageTable)
         reveal("Confirm your transfer", in: messageTable)
         let confirmButton = application.buttons["approval.open.transfer"]
+        for _ in 0..<4 where confirmButton.isHittable == false {
+            scrollForward(messageTable)
+        }
         XCTAssertTrue(confirmButton.isHittable)
         confirmButton.tap()
         XCTAssertTrue(
@@ -72,7 +75,7 @@ final class TanyaAISandboxScreenshotTests: XCTestCase {
             "Update the app to view this sample card."
         ]
         let suggestion = application.buttons[
-            "Suggested question: Currency"
+            "Currency"
         ]
         XCTAssertTrue(latestBubble.waitForExistence(timeout: 5))
         XCTAssertTrue(suggestion.waitForExistence(timeout: 5))

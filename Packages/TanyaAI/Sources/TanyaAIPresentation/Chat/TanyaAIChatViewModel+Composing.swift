@@ -37,6 +37,15 @@ extension TanyaAIChatViewModel {
         let existingText: String
         if case .text(let value) = message.content {
             existingText = value
+        } else if case .answer(let payload) = message.content {
+            message.update(content: .answer(AnswerPayload(
+                text: (payload.text ?? "") + text,
+                options: payload.options,
+                image: payload.image,
+                actions: payload.actions,
+                isAnswered: payload.isAnswered
+            )))
+            return
         } else {
             existingText = ""
         }

@@ -6,7 +6,7 @@ Implementasi referensi fitur chat perbankan modular: SwiftPM package lokal
 ## Bentuk arsitektur
 
 Navigasi internal fitur memakai **UIKit** (`TanyaAICoordinator` +
-`TanyaAIContainerViewController` + `UINavigationController`), bukan
+`ChatContainerViewController` + `UINavigationController`), bukan
 `NavigationStack`. Fitur tampil sebagai view controller sendiri, jadi tidak
 pernah masuk ke stack navigasi host.
 
@@ -24,22 +24,25 @@ di dalam `Packages/TanyaAI`, tapi package sendiri, supaya kelak bisa diangkat
 keluar untuk fitur lain. Ketergantungannya satu arah: TanyaAI → DesignKit,
 tidak pernah sebaliknya.
 
-Karena itu **tipe payload ikut pindah ke DesignKit**. Kalau payload tetap di
-`TanyaAIDomain`, DesignKit harus bergantung balik ke TanyaAI dan SwiftPM
-menolak siklusnya. `TanyaAIMessageRowView` tetap di `TanyaAIPresentation`:
-tugasnya memetakan view model ke komponen, jadi ia jahitannya.
+Data presentasi reusable tetap di `DesignKit/Models`. Kontrak fitur chat
+(approval transaction/challenge, action/deeplink, pilihan prompt, suggestion,
+agent handoff) berada di `TanyaAIDomain`; view-nya di
+`TanyaAIPresentation/Components/Chat`. `MessageRowView` menjahitnya.
+DesignKit tidak memerlukan dependensi balik ke fitur.
 
 Isi DesignKit disusun atomic design:
 
 | Folder | Isi |
 | --- | --- |
-| `Tokens/` | `DesignKitMetrics`, `Theme`, `Colors`, `Fonts`, `ThemeEnvironment` |
-| `Models/` | `ApprovalPayload`, `ChartPayload`, `Action`, `Suggestion`, dst |
-| `Atoms/` | `OutlinedBackground`, `RemoteImage`, `RichText`, `Markup`, `SegmentedBarView` |
-| `Molecules/` | `TextBubble`, `ImageBubble`, `SuggestionRow`, `ActionLink`, `TypingIndicatorView`, … |
-| `Organisms/` | `ApprovalBubble`, `ChartBubble`, `ReceiptBubble`, `SuggestionList`, `ActionBubble`, … |
+| `Tokens`, `Theme`, `Typography`, `Foundations` | Nilai dasar, semantic mapping, font dan artwork metrics |
+| `Models` | Data presentasi chart, image, information, receipt, portfolio |
+| `Atoms` | Primitive visual dan button style |
+| `Molecules` | Text/image/status/information card dan chart legend |
+| `Organisms` | Chart, receipt, portfolio, financial list dan HTML card |
+| `Support` | Parser, image loading, WebKit dan perhitungan layout; bukan UI atom |
 
-**Angka tampilan ambil dari `DesignKitMetrics`, jangan ketik langsung.**
+**Angka tampilan ambil dari `DesignKitMetrics`, lalu resolve melalui artwork environment.**
+Generated token selalu nilai dasar; `sizeInArtwork(_:)` tidak mengubah token.
 
 **Tidak boleh ada kata "Tanya" di dalam DesignKit** — nama tipe, nama file,
 maupun teks. Ia harus bisa dipakai fitur lain tanpa terasa pinjaman. Host
@@ -54,8 +57,9 @@ Sebelas tipe konten plus fallback. Yang perlu diingat soal tampilannya:
 - **Prompt saran ada di dalam percakapan**, sebagai baris terakhir — bukan
   strip di atas keyboard. Lingkarannya afordans, bukan state: sekali tap
   langsung terkirim.
-- **Balasan memakai bubble outline**, tanpa atribusi "TANYA AI" di atasnya.
-  Hanya giliran nasabah yang punya bobot warna.
+- **Teks balasan tanpa bubble outline atau background.** Prompt nasabah tetap
+  memakai accent bubble. `answer` menggabungkan teks, radio, gambar, dan action
+  sebagai bagian opsional; outline hanya pada masing-masing option/kartu/link.
 - **Deeplink tampil sebagai tautan bergaris bawah**, bukan tombol terisi,
   dan **tanpa judul di atasnya** — penjelasannya dikirim sebagai pesan teks
   biasa sebelumnya. `content.actions` tidak lagi punya `title`/`detail`.
@@ -68,14 +72,23 @@ Sebelas tipe konten plus fallback. Yang perlu diingat soal tampilannya:
   URL.** Chart tetap `content.chart` — ia ikut tema, ikut Dynamic Type, dan
   bisa dibaca VoiceOver; tidak satu pun bertahan di dalam web view. Kirim
   `height`, atau baris tumbuh setelah fragmen dirender.
-- **Choices vs suggestion: pembedanya tombol konfirmasi, bukan jumlah
-  pilihan.** Suggestion sekali tap langsung kirim; choices menunggu submit.
+- **Radio satu tap langsung mengirim prompt, lalu option list pada jawaban itu
+  hilang.** `choices` default single-select; `allowsMultipleSelection: true`
+  mempertahankan kontrak multi-select + submit untuk integrasi lama.
+  Radio hanya tampil pada pesan terakhir; pesan baru menghabiskan option lama.
+  Teks, gambar, dan action tetap tampil setelah radio dipilih.
+- **Input generik memiliki tombol kirim di dalam kotak, tumbuh sampai 4 baris lalu scroll.**
+  Tombol ke pesan terbaru muncul saat pengguna menjauh dari bawah; pesan baru tidak
+  menarik posisi baca pengguna.
 - **Shortcut bukan protokol.** Host yang inquiry lalu mengoper daftarnya lewat
   `TanyaAIConfiguration` — sebuah nilai, bukan layanan.
-- **`content.image` mengambil gambar lewat `URLSession.shared`.** Di bank ini
-  keputusan, bukan detail: host yang melakukan pinning mem-pin session-nya
-  sendiri, dan ini bukan session itu. Kirim `aspectRatio` — tanpa itu tinggi
-  baris berubah saat gambar mendarat.
+- **`content.image` menggunakan `ImageLoading` yang bisa diinjeksi.** Host dapat
+  memakai `ImageLoader(session: pinnedSession)` per sesi. Clear decoded cache
+  saat logout; task view dibatalkan saat dilepas. Kirim `aspectRatio` agar tinggi stabil.
+
+Panduan migrasi: `docs/DESIGNKIT_MIGRATION.md`.
+Copy multilanguage dan komponen generik: `docs/DESIGNKIT_COPY_AND_COMPONENTS.md`.
+Teks UI dari resource/injeksi host; jalankan `Scripts/check_design_system.py`.
 
 ## Perintah
 

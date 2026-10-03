@@ -1,3 +1,4 @@
+@testable import DesignKit
 import SwiftUI
 import UIKit
 import XCTest
@@ -6,11 +7,7 @@ import XCTest
 final class TanyaAIGrowingTextViewTests: XCTestCase {
     func testCaptureComposerLineCounts() {
         let viewModel = TanyaAIChatViewModel(useCase: TanyaAIChatUseCaseStub())
-        let content = VStack(spacing: 0) {
-            Spacer()
-            TanyaAIChatInputView(viewModel: viewModel)
-        }
-        .background(Color.white)
+        let content = ComposerFixture(viewModel: viewModel)
         let controller = UIHostingController(rootView: content)
         let window = UIWindow(frame: CGRect(x: 0, y: 0, width: 393, height: 280))
         window.rootViewController = controller
@@ -18,6 +15,7 @@ final class TanyaAIGrowingTextViewTests: XCTestCase {
         defer { window.isHidden = true }
 
         let examples = [
+            ("composer-empty", ""),
             ("composer-1-line", "Halo Wen"),
             ("composer-4-lines", "Baris pertama\nBaris kedua\nBaris ketiga\nBaris keempat"),
             (
@@ -44,28 +42,32 @@ final class TanyaAIGrowingTextViewTests: XCTestCase {
             window.layoutIfNeeded()
             heights.append(field.frame.height)
 
-            let renderer = UIGraphicsImageRenderer(bounds: window.bounds)
-            let image = renderer.image { context in
-                window.layer.render(in: context.cgContext)
-            }
-            let attachment = XCTAttachment(image: image)
-            attachment.name = name
-            attachment.lifetime = .keepAlways
-            add(attachment)
+            attachScreenshot(of: window, name: name)
         }
-        XCTAssertEqual(heights.count, 3)
-        XCTAssertGreaterThan(heights[1], heights[0])
-        XCTAssertEqual(heights[2], heights[1], accuracy: 1)
+        XCTAssertEqual(heights.count, 4)
+        XCTAssertGreaterThan(heights[2], heights[1])
+        XCTAssertEqual(heights[3], heights[2], accuracy: 1)
         XCTAssertTrue(findTextView(in: controller.view)?.isScrollEnabled == true)
     }
 
-    private func findTextView(in view: UIView) -> TanyaAIBoundedTextView? {
-        if let textView = view as? TanyaAIBoundedTextView { return textView }
+    private func attachScreenshot(of window: UIWindow, name: String) {
+        let renderer = UIGraphicsImageRenderer(bounds: window.bounds)
+        let image = renderer.image { context in
+            window.layer.render(in: context.cgContext)
+        }
+        let attachment = XCTAttachment(image: image)
+        attachment.name = name
+        attachment.lifetime = .keepAlways
+        add(attachment)
+    }
+
+    private func findTextView(in view: UIView) -> BoundedTextView? {
+        if let textView = view as? BoundedTextView { return textView }
         return view.subviews.lazy.compactMap(findTextView).first
     }
 
     func testComposerGrowsThenScrollsAfterFourLines() {
-        let textView = TanyaAIBoundedTextView(
+        let textView = BoundedTextView(
             frame: CGRect(x: 0, y: 0, width: 240, height: 100)
         )
         textView.font = .systemFont(ofSize: 16)
@@ -91,5 +93,21 @@ final class TanyaAIGrowingTextViewTests: XCTestCase {
         textView.layoutSubviews()
         XCTAssertLessThan(textView.intrinsicContentSize.height, fourLineHeight)
         XCTAssertFalse(textView.isScrollEnabled)
+    }
+}
+
+private struct ComposerFixture: View {
+    @ObservedObject var viewModel: TanyaAIChatViewModel
+
+    var body: some View {
+        VStack(spacing: 0) {
+            Spacer()
+            MessageComposer(
+                text: $viewModel.inputText,
+                placeholder: "Message", sendLabel: "Send", stopLabel: "Stop", isGenerating: false,
+                onSend: {}, onStop: {}
+            )
+        }
+        .background(Color.white)
     }
 }

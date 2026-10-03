@@ -9,31 +9,37 @@ public final class TanyaAIPINViewModel: ObservableObject {
     @Published public private(set) var isSubmitting = false
     @Published public private(set) var errorMessage: String?
 
+    public static let requiredDigitCount = 6
+
     public let approval: ApprovalPayload
     public var onOutput: ((TanyaAIPINOutput) -> Void)?
 
     private let authorizationService: TanyaAIAuthorizationService
     private var activeRequest: TanyaAICancellable?
 
+    private let copy: CopyCatalog
+
     public init(
         approval: ApprovalPayload,
-        authorizationService: TanyaAIAuthorizationService
+        authorizationService: TanyaAIAuthorizationService,
+        copy: CopyCatalog = CopyCatalog()
     ) {
+        self.copy = copy
         self.approval = approval
         self.authorizationService = authorizationService
     }
 
     public var isSubmittable: Bool {
-        pin.count == 6 && pin.allSatisfy { $0.isNumber } && !isSubmitting
+        pin.count == Self.requiredDigitCount && pin.allSatisfy { $0.isNumber } && !isSubmitting
     }
 
     public func appendDigit(_ digit: Int) {
-        guard (0...9).contains(digit), pin.count < 6, !isSubmitting else {
+        guard (0...9).contains(digit), pin.count < Self.requiredDigitCount, !isSubmitting else {
             return
         }
         errorMessage = nil
         pin.append(String(digit))
-        if pin.count == 6 {
+        if pin.count == Self.requiredDigitCount {
             submit()
         }
     }
@@ -48,7 +54,7 @@ public final class TanyaAIPINViewModel: ObservableObject {
 
     public func submit() {
         guard isSubmittable else {
-            errorMessage = "Enter a 6-digit PIN."
+            errorMessage = copy.chat("chat.invalidPIN", values: ["count": String(Self.requiredDigitCount)])
             return
         }
 
@@ -107,7 +113,7 @@ public final class TanyaAIPINViewModel: ObservableObject {
         case .success(let authorizationResult):
             onOutput?(.completed(authorizationResult))
         case .failure:
-            errorMessage = "The PIN was not accepted. Please try again."
+            errorMessage = copy.chat("chat.rejectedPIN")
         }
     }
 

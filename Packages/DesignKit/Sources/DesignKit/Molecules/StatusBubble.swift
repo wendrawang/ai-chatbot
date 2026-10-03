@@ -3,28 +3,30 @@ import SwiftUI
 public struct StatusBubble: View {
     let payload: StatusPayload
     @Environment(\.theme) private var theme
+    @Environment(\.artwork) private var artwork
 
     public init(payload: StatusPayload) {
         self.payload = payload
     }
 
     public var body: some View {
-        HStack(alignment: .top, spacing: 10) {
+        HStack(alignment: .top, spacing: artwork.size(DesignKitMetrics.Spacing.medium)) {
             Image(systemName: iconName)
                 .foregroundColor(accentColor)
 
-            VStack(alignment: .leading, spacing: DesignKitMetrics.Spacing.tight) {
+            VStack(alignment: .leading, spacing: artwork.size(DesignKitMetrics.Spacing.tight)) {
                 Text(payload.title)
-                    .font(Font(theme.fonts.headline))
+                    .designFont(.headline)
                 Text(payload.detail)
-                    .font(Font(theme.fonts.subheadline))
+                    .designFont(.subheadline)
                     .foregroundColor(Color(theme.colors.secondaryText))
             }
         }
-        .padding(DesignKitMetrics.Spacing.wide)
+        .foregroundColor(Color(theme.colors.primaryText))
+        .padding(artwork.size(DesignKitMetrics.Spacing.wide))
         .background(Color(theme.colors.surface))
-        .cornerRadius(DesignKitMetrics.Radius.notice)
-        .frame(maxWidth: 340, alignment: .leading)
+        .cornerRadius(artwork.size(DesignKitMetrics.Radius.notice))
+        .frame(maxWidth: artwork.size(DesignKitMetrics.Size.cardMaximumWidth), alignment: .leading)
     }
 
     private var iconName: String {

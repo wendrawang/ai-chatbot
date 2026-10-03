@@ -9,6 +9,7 @@ final class TanyaAICoordinator: NSObject {
     private let navigationController: UINavigationController
     private let dependencyContainer: TanyaAIDependencyContainer
     private weak var containerController: UIViewController?
+    private let confirmationHandler: ((ConfirmationPayload) -> Void)?
     private let actionHandler: (Action) -> Void
     private weak var chatViewModel: TanyaAIChatViewModel?
     private weak var chatController: UIViewController?
@@ -17,11 +18,13 @@ final class TanyaAICoordinator: NSObject {
         navigationController: UINavigationController,
         dependencyContainer: TanyaAIDependencyContainer,
         containerController: UIViewController,
-        actionHandler: @escaping (Action) -> Void = { _ in }
+        actionHandler: @escaping (Action) -> Void = { _ in },
+        confirmationHandler: ((ConfirmationPayload) -> Void)? = nil
     ) {
         self.navigationController = navigationController
         self.dependencyContainer = dependencyContainer
         self.containerController = containerController
+        self.confirmationHandler = confirmationHandler
         self.actionHandler = actionHandler
         super.init()
         navigationController.delegate = self
@@ -43,13 +46,16 @@ final class TanyaAICoordinator: NSObject {
     }
 
     private func showChat() {
-        let viewModel = dependencyContainer.makeChatViewModel()
+        let viewModel = dependencyContainer.makeChatViewModel(isConfirmationEnabled: confirmationHandler != nil)
         viewModel.onOutput = { [weak self] output in
             self?.handle(output)
         }
         let controller = UIHostingController(
-            rootView: TanyaAIChatView(viewModel: viewModel)
+            rootView: ChatScreen(viewModel: viewModel)
                 .theme(dependencyContainer.theme)
+                .copyCatalog(dependencyContainer.copy)
+                .imageLoader(dependencyContainer.imageLoader)
+                .artworkLayout()
         )
         chatViewModel = viewModel
         chatController = controller
@@ -63,8 +69,11 @@ final class TanyaAICoordinator: NSObject {
     private func showHistory(animated isAnimated: Bool) {
         let viewModel = dependencyContainer.makeHistoryViewModel()
         let controller = UIHostingController(
-            rootView: TanyaAIHistoryView(viewModel: viewModel)
+            rootView: ConversationHistoryScreen(viewModel: viewModel)
                 .theme(dependencyContainer.theme)
+                .copyCatalog(dependencyContainer.copy)
+                .imageLoader(dependencyContainer.imageLoader)
+                .artworkLayout()
         )
         navigationController.pushViewController(
             controller,
@@ -84,9 +93,10 @@ final class TanyaAICoordinator: NSObject {
             self?.handlePIN(output, approval: payload)
             viewModel?.clearSensitiveState()
         }
-        let controller = TanyaAIPINSheetViewController(
+        let controller = AuthorizationSheetViewController(
             viewModel: viewModel,
-            theme: dependencyContainer.theme
+            theme: dependencyContainer.theme,
+            copy: dependencyContainer.copy
         )
         controller.isModalInPresentation = true
         navigationController.present(controller, animated: true)
@@ -105,6 +115,8 @@ final class TanyaAICoordinator: NSObject {
             show(.history)
         case .requestApproval(let payload):
             show(.approval(payload))
+        case .requestConfirmation(let payload):
+            confirmationHandler?(payload)
         case .performAction(let action):
             actionHandler(action)
         }

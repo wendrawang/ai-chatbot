@@ -3,39 +3,41 @@ import SwiftUI
 public struct PortfolioBubble: View {
     let payload: PortfolioPayload
     @Environment(\.theme) private var theme
+    @Environment(\.artwork) private var artwork
 
     public init(payload: PortfolioPayload) {
         self.payload = payload
     }
 
     public var body: some View {
-        VStack(alignment: .leading, spacing: 13) {
+        VStack(alignment: .leading, spacing: artwork.size(DesignKitMetrics.Spacing.section)) {
             header
             Text(payload.totalValue)
-                .font(Font(theme.fonts.amount))
+                .designFont(.amount)
             Text(payload.performanceText)
-                .font(Font(theme.fonts.headline))
+                .designFont(.headline)
                 .foregroundColor(Color(theme.colors.success))
             SegmentedBarView(series: payload.allocations)
             ChartLegendView(series: payload.allocations)
             footnote
         }
-        .padding(DesignKitMetrics.Spacing.wide)
+        .foregroundColor(Color(theme.colors.primaryText))
+        .padding(artwork.size(DesignKitMetrics.Spacing.wide))
         .background(Color(theme.colors.surface))
-        .cornerRadius(DesignKitMetrics.Radius.card)
-        .frame(maxWidth: 340, alignment: .leading)
+        .cornerRadius(artwork.size(DesignKitMetrics.Radius.card))
+        .frame(maxWidth: artwork.size(DesignKitMetrics.Size.cardMaximumWidth), alignment: .leading)
         .accessibilityElement(children: .contain)
         .accessibilityIdentifier("portfolio.summary")
     }
 
     private var header: some View {
-        HStack(spacing: 10) {
+        HStack(spacing: artwork.size(DesignKitMetrics.Spacing.medium)) {
             Image(systemName: "chart.bar")
-                .font(Font(theme.fonts.headline))
+                .designFont(.headline)
                 .foregroundColor(Color(theme.colors.accent))
-                .frame(width: 24)
+                .frame(width: artwork.size(DesignKitMetrics.Size.icon))
             Text(payload.title)
-                .font(Font(theme.fonts.headline))
+                .designFont(.headline)
         }
     }
 
@@ -43,7 +45,7 @@ public struct PortfolioBubble: View {
     private var footnote: some View {
         if let footnote = payload.footnote {
             Text(footnote)
-                .font(Font(theme.fonts.footnote))
+                .designFont(.footnote)
                 .foregroundColor(Color(theme.colors.secondaryText))
         }
     }

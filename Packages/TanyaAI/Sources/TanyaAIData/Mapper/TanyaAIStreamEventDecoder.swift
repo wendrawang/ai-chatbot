@@ -16,6 +16,7 @@ final class TanyaAIStreamEventDecoder {
         guard let event = TanyaAIEventName(wireName: name) else {
             return try decodeUnknown(name: name, json: json)
         }
+        if event == .components { return try decodeComponents(json) }
         if let content = try decodeContent(name: event, json: json) {
             return content
         }
@@ -42,6 +43,8 @@ final class TanyaAIStreamEventDecoder {
         json: Data
     ) throws -> TanyaAIStreamEvent? {
         switch name {
+        case .answer:
+            return try decodeAnswer(json)
         case .image:
             return try decodeImage(json)
         case .choices:
@@ -114,7 +117,6 @@ final class TanyaAIStreamEventDecoder {
             from: json
         )
         let message = payload.fallbackText
-            ?? "This content requires a newer app version."
         return .content(
             messageIdentifier: payload.messageIdentifier,
             content: .unsupported(message)

@@ -26,6 +26,12 @@ fi
 TENCENT_REQUEST_RANDOM=$(od -An -N4 -tu4 /dev/urandom | tr -d '[:space:]')
 TENCENT_MESSAGE_RANDOM=$(od -An -N4 -tu4 /dev/urandom | tr -d '[:space:]')
 
+TENCENT_SCRIPT_DIR=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)
+TENCENT_BODY_FILE=$(mktemp)
+trap 'rm -f "$TENCENT_BODY_FILE"' 0
+export TENCENT_MESSAGE_RANDOM
+python3 "$TENCENT_SCRIPT_DIR/build_test_message.py" "${1:-text}" > "$TENCENT_BODY_FILE"
+
 response=$(curl --silent --show-error --fail-with-body --request POST \
   --url "https://${TENCENT_REST_HOST}/v4/openim/sendmsg" \
   --url-query "sdkappid=${TENCENT_SDK_APP_ID}" \
@@ -34,18 +40,7 @@ response=$(curl --silent --show-error --fail-with-body --request POST \
   --url-query "random=${TENCENT_REQUEST_RANDOM}" \
   --url-query 'contenttype=json' \
   --header 'Content-Type: application/json' \
-  --data-binary @- <<JSON
-{
-  "SyncOtherMachine": 2,
-  "From_Account": "bot_poc",
-  "To_Account": "wen",
-  "MsgRandom": ${TENCENT_MESSAGE_RANDOM},
-  "MsgBody": [{
-    "MsgType": "TIMTextElem",
-    "MsgContent": { "Text": "Halo Wen, ini balasan dari bot_poc." }
-  }]
-}
-JSON
+  --data-binary "@$TENCENT_BODY_FILE"
 )
 
 printf '%s\n' "$response"

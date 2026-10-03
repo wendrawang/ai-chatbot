@@ -1,0 +1,8 @@
+[
+  {
+    "MsgType": "TIMCustomElem",
+    "MsgContent": {
+      "Data": "{\"type\":\"confirmation_card\",\"confirmation_id\":\"conf_7c2ab9\",\"fields\":[{\"key\":\"from\",\"label\":\"Dari\",\"value\":\"Tabungan · 6210\"},{\"key\":\"to\",\"label\":\"Ke\",\"value\":\"Giro · 8842\"},{\"key\":\"amount\",\"label\":\"Jumlah\",\"value\":\"Rp2.000.000\",\"raw_value\":2000000},{\"key\":\"fee\",\"label\":\"Biaya\",\"value\":\"Gratis\"}]}"
+    }
+  }
+]

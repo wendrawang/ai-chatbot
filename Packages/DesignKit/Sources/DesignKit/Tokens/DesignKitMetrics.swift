@@ -13,6 +13,14 @@ public enum DesignKitMetrics {
     /// Space between and inside things. Steps roughly by a quarter each time,
     /// so two values next to each other read as deliberately different.
     public enum Spacing {
+        public static let micro: CGFloat = 2
+        public static let large: CGFloat = 20
+        public static let extraLarge: CGFloat = FigmaSize.spacingExtraLarge
+        public static let doubleExtraLarge: CGFloat = FigmaSize.spacingDoubleExtraLarge
+        public static let pixelGap: CGFloat = 1
+        public static let legend: CGFloat = 9
+        public static let medium: CGFloat = 10
+        public static let section: CGFloat = 13
         /// 4 - between a label and the value directly under it.
         public static let tight: CGFloat = FigmaSize.spacingSmall
         /// 6 - rows of a stack that belong to one another.
@@ -32,6 +40,10 @@ public enum DesignKitMetrics {
     /// Corner rounding. One radius for everything that holds text, so the
     /// conversation reads as one set of shapes.
     public enum Radius {
+        public static let keypad: CGFloat = 14
+        public static let sheet: CGFloat = 20
+        public static let composer: CGFloat = 16
+        public static let swatch: CGFloat = 3
         /// 12 - replies, prompts, hand-off links, image cards.
         public static let bubble: CGFloat = 12
         /// 16 - the small notice cards: status and information.
@@ -47,6 +59,8 @@ public enum DesignKitMetrics {
 
     /// How thick a drawn edge is.
     public enum Stroke {
+        public static let divider: CGFloat = 0.5
+        public static let chart: CGFloat = 2
         /// 1 - the outline around a reply, a prompt, a link.
         public static let hairline: CGFloat = FigmaSize.weightOutline
         /// 1.5 - the prompt's circle, which has to hold its own against text.
@@ -55,6 +69,15 @@ public enum DesignKitMetrics {
 
     /// Sizes that are not spacing.
     public enum Size {
+        public static let composerAction: CGFloat = 32
+        public static let keypadHeight: CGFloat = 54
+        public static let secureDigit: CGFloat = 14
+        public static let estimatedRowHeight: CGFloat = 96
+        public static let icon: CGFloat = 24
+        public static let successIcon: CGFloat = 64
+        public static let cardMaximumWidth: CGFloat = 340
+        public static let chartHeight: CGFloat = 120
+        public static let chartRing: CGFloat = 20
         /// 44 - the smallest a tap target may be, from Apple's guidance.
         public static let minimumTapTarget: CGFloat = 44
         /// 20 - the prompt's circle.
@@ -70,6 +93,7 @@ public enum DesignKitMetrics {
 
     /// Text laid out by hand rather than by the type scale.
     public enum Text {
+        public static let maximumInputLines = 4
         /// 4 - extra leading under a caption, which is set larger than body.
         public static let captionLineSpacing: CGFloat = 4
     }

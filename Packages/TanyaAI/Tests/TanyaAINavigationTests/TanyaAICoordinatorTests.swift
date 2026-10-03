@@ -44,7 +44,7 @@ final class TanyaAICoordinatorTests: XCTestCase {
             coordinator.show(.approval(makeApproval(kind)))
             XCTAssertTrue(
                 navigationController.presentedViewController
-                    is TanyaAIPINSheetViewController
+                    is AuthorizationSheetViewController
             )
             navigationController.dismiss(animated: false)
         }
@@ -104,9 +104,26 @@ final class TanyaAICoordinatorTests: XCTestCase {
         XCTAssertNil(navigationController.presentedViewController)
     }
 
+    func testCustomConfirmationReachesHostPINHandlerWithoutALegacyChallenge() throws {
+        let navigation = UINavigationController()
+        var received: ConfirmationPayload?
+        let coordinator = makeCoordinator(
+            navigationController: navigation, onConfirmation: { received = $0 }
+        )
+        coordinator.start()
+        let payload = try JSONDecoder().decode(ConfirmationPayload.self, from: Data(
+            #"{"confirmation_id":"conf","fields":[{"key":"amount","label":"Amount","value":"100"}]}"#.utf8
+        ))
+        XCTAssertNil(received)
+        coordinator.chatViewModelForTesting?.confirm(payload)
+        XCTAssertEqual(received, payload)
+        XCTAssertNil(navigation.presentedViewController)
+    }
+
     private func makeCoordinator(
         navigationController: UINavigationController,
-        onAction: @escaping (Action) -> Void = { _ in }
+        onAction: @escaping (Action) -> Void = { _ in },
+        onConfirmation: ((ConfirmationPayload) -> Void)? = nil
     ) -> TanyaAICoordinator {
         let dependencies = TanyaAIDependencies(
             chatSession: MockTanyaAIChatSession.sandbox(),
@@ -121,7 +138,7 @@ final class TanyaAICoordinatorTests: XCTestCase {
             navigationController: navigationController,
             dependencyContainer: dependencyContainer,
             containerController: UIViewController(),
-            actionHandler: onAction
+            actionHandler: onAction, confirmationHandler: onConfirmation
         )
     }
 
