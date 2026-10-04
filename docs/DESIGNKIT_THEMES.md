@@ -121,7 +121,7 @@ tidak ditemukan; test memastikan semua font bundled ditemukan tanpa fallback.
 
 `Fonts.branded()` menyimpan resep ukuran asli. `.theme(...)` meresolve ulang font
 saat tema/size category berubah, tanpa menggandakan skala. Ukuran memakai reference
-hardcoded 374×812 dan properti `.sizeInArtwork`. Di UIKit, panggil
+hardcoded 375×812 dan properti `.sizeInArtwork`. Di UIKit, panggil
 `theme.resolved(traits:)` saat ukuran layar atau trait berubah. Palette lama
 berisi `UIFont` langsung tetap snapshot final untuk kompatibilitas.
 

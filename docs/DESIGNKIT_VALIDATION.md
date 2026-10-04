@@ -3,7 +3,7 @@
 Perubahan ini tidak mengubah `Tokens/Generated`. Catatan 2–3 Oktober di bawah
 merekam implementasi container/environment sebelumnya. Pada 4 Oktober, sesuai
 preferensi host, ukuran diubah menjadi properti `.sizeInArtwork` berbasis layar
-dengan reference hardcoded 374×812. Setup root artwork telah dihapus.
+dengan reference hardcoded 375×812 setelah koreksi typo dari host. Setup root artwork telah dihapus.
 
 ## Pemeriksaan yang selesai
 
@@ -136,3 +136,9 @@ row. Observasi kini mengabaikan tinggi yang sama dengan viewport sementara, sehi
 card tidak membesar mengikuti ukuran fitting. Regression test ditambah, seluruh 58
 test DesignKit lulus, dan test UI arrow diulang setelah fix serta lulus. Screenshot
 arrow diperbarui dari rerun; sembilan test UI unik tetap semuanya telah lulus.
+
+Reference awal 374×812 pada run 4 Oktober di atas mengikuti input yang kemudian
+dikoreksi host menjadi **375×812**. Implementasi dan panduan host sekarang memakai
+375×812; properti `.sizeInArtwork` tetap tanpa environment atau setup root.
+Seluruh 58 test DesignKit dijalankan ulang setelah koreksi dan lulus tanpa skipped
+test. Strict style/literal/localization checks juga lulus; generated token tetap utuh.

@@ -42,7 +42,7 @@ Isi DesignKit disusun atomic design:
 | `Support` | Parser, image loading, WebKit dan perhitungan layout; bukan UI atom |
 
 **Angka tampilan ambil dari `DesignKitMetrics`, lalu gunakan properti `.sizeInArtwork`.**
-Referensi hardcoded 374×812, skala dari `UIScreen.main`; tidak ada artwork environment/root modifier.
+Referensi hardcoded 375×812, skala dari `UIScreen.main`; tidak ada artwork environment/root modifier.
 Generated token selalu nilai dasar; konversi tidak mengubah token. Stroke dan area tap menggunakan
 `.strokeInArtwork` / `.tapTargetInArtwork` untuk menjaga batas minimum.
 

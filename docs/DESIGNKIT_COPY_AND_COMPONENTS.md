@@ -153,7 +153,7 @@ Angka layout komponen diambil dari `DesignKitMetrics`, kemudian di-resolve lewat
 belum ada di export Figma berada di file mapping `Tokens/DesignKitMetrics*.swift`.
 **Tidak ada perubahan pada `Tokens/Generated`.**
 
-Reference artwork hardcoded 374×812; properti ukuran membaca lebar layar.
+Reference artwork hardcoded 375×812; properti ukuran membaca lebar layar.
 Tidak perlu artwork environment atau modifier pada root.
 Batas composer empat baris ada di `DesignKitMetrics.Text.maximumInputLines`.
 Motion, opacity, tolerance pengukuran, dan batas HTML juga memiliki token bernama.

@@ -59,14 +59,14 @@ Tidak perlu `.artworkLayout()`, `.artwork(...)`, `GeometryReader`, maupun
 `@Environment(\.artwork)`. Ukuran memakai properti `CGFloat` yang bisa langsung
 dipanggil seperti extension existing host: `value.sizeInArtwork`.
 
-Reference **374 × 812** di-hardcode pada `DesignKitMetrics.Artwork.referenceSize`,
+Reference **375 × 812** di-hardcode pada `DesignKitMetrics.Artwork.referenceSize`,
 di luar generated token. Skala mengikuti lebar `UIScreen.main` saat properti
 dibaca, sehingga tidak menyimpan ukuran layar startup. Tinggi referensi tetap
 metadata; tinggi layar tidak dikalikan terpisah.
 
-Rumusnya `round(nilaiFigma × min(lebarLayar / 374, 1.25))`, mengikuti pembulatan
+Rumusnya `round(nilaiFigma × min(lebarLayar / 375, 1.25))`, mengikuti pembulatan
 point pada extension existing. Batas skala 1.25 tetap menjaga pembesaran pada
-layar lebar. Contoh: 16pt pada layar 374pt → 16pt; layar 414pt → 18pt.
+layar lebar. Contoh: 16pt pada layar 375pt → 16pt; layar 414pt → 18pt.
 Ini merupakan kebijakan ukuran berbasis layar: sheet sempit atau split view
 memakai faktor layar yang sama, tanpa konfigurasi container per subtree.
 
@@ -186,7 +186,7 @@ backend tetap tanggung jawab backend. Animasi typing menghormati Reduce Motion.
 ## Verifikasi sebelum migrasi produksi
 
 Jalankan `Scripts/verify.sh` pada Mac dengan akses simulator. Periksa font yang
-benar, pilihan tema, ukuran 320/374/414pt, split view, Dynamic Type accessibility,
+benar, pilihan tema, ukuran 320/375/414pt, split view, Dynamic Type accessibility,
 choices panjang, dan buka/tutup layar berulang memakai Instruments Allocations/Leaks.
 Static review, compiler, dan unit test tidak membuktikan semua jalur bebas leak
 atau semua device bebas masalah performa. Token hasil export host tidak diubah.
