@@ -3,7 +3,7 @@
 `TanyaAIChatInputView` dari PR input empat baris telah dipindahkan menjadi
 `DesignKit.MessageComposer`. Field di dalamnya memakai `GrowingTextInput`:
 satu sampai empat baris tumbuh mengikuti teks, selanjutnya scroll. Warna, font,
-padding, radius, dan tinggi minimum memakai theme/artwork serta token DesignKit.
+padding, radius, dan tinggi minimum memakai theme serta properti `.sizeInArtwork` pada token DesignKit.
 Tombol kirim berada di dalam kotak pada sisi kanan bawah: abu-abu ketika disabled,
 accent ketika siap kirim. Caller memberi binding teks, placeholder, label aksesibilitas, dan callback.
 Logic sesi/kirim tetap di TanyaAI. Update **DesignKit dan TanyaAI bersama**.
@@ -102,7 +102,7 @@ ResponseContent(
 Nilai contoh berasal dari state/resource host. `presentationOptions` berisi
 `SelectionOption`, `promotionalImage` berupa `ImagePayload?`. Callback hanya
 melaporkan input; caller menentukan pengiriman, navigasi, dan state setelah tap.
-Font dan ukuran mengikuti root `.theme(...)` dan `.artworkLayout(...)` seperti
+Font dan ukuran mengikuti tema root `.theme(...)` dan properti ukuran `.sizeInArtwork` seperti
 komponen DesignKit lainnya. Token generated tidak perlu diedit.
 
 Sandbox `--answers` menampilkan keempat bagian dan dapat dipakai untuk memeriksa

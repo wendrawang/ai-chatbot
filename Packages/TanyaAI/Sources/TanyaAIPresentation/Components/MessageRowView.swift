@@ -3,21 +3,21 @@ import SwiftUI
 import TanyaAIDomain
 
 struct MessageRowView: View {
-    @Environment(\.artwork) private var artwork
+
     @Environment(\.copyCatalog) private var copy
     @ObservedObject var viewModel: TanyaAIMessageItemViewModel
     let handlers: TanyaAIMessageRowHandlers
 
     var body: some View {
-        HStack(spacing: artwork.size(DesignKitMetrics.Spacing.compact)) {
+        HStack(spacing: DesignKitMetrics.Spacing.compact.sizeInArtwork) {
             if viewModel.role == .user {
-                Spacer(minLength: artwork.size(DesignKitMetrics.Spacing.doubleExtraLarge))
+                Spacer(minLength: DesignKitMetrics.Spacing.doubleExtraLarge.sizeInArtwork)
             }
 
             content
 
             if viewModel.role != .user {
-                Spacer(minLength: artwork.size(DesignKitMetrics.Spacing.extraLarge))
+                Spacer(minLength: DesignKitMetrics.Spacing.extraLarge.sizeInArtwork)
             }
         }
         .accessibilityElement(children: .contain)

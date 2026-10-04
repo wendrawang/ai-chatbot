@@ -13,7 +13,7 @@ public extension Fonts {
             amount: brandedFont(.firaBold, FigmaSize.typographySizeHeadingMedium24, .title2),
             button: brandedFont(.firaMedium, FigmaSize.typographySizeButton16, .headline)
         )
-        return fonts.resolved(artwork: ArtworkMetrics(), traits: traits ?? .current)
+        return fonts.resolved(traits: traits ?? .current)
     }
 
     private static func brandedLineHeight(_ style: UIFont.TextStyle) -> CGFloat {

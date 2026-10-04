@@ -20,7 +20,6 @@ struct HTMLWebView: UIViewRepresentable {
     let html: String
     let theme: Theme
     let onHeightChange: (CGFloat) -> Void
-    var artwork = ArtworkMetrics()
     @Environment(\.colorScheme) private var colorScheme
 
     func makeCoordinator() -> Coordinator {
@@ -54,7 +53,7 @@ struct HTMLWebView: UIViewRepresentable {
             webView.traitCollection,
             UITraitCollection(userInterfaceStyle: colorScheme == .dark ? .dark : .light)
         ])
-        let document = Self.document(html: html, theme: theme, traits: traits, artwork: artwork)
+        let document = Self.document(html: html, theme: theme, traits: traits)
         guard context.coordinator.loadedDocument != document else {
             return
         }
@@ -74,8 +73,7 @@ struct HTMLWebView: UIViewRepresentable {
     static func document(
         html: String,
         theme: Theme,
-        traits: UITraitCollection = .current,
-        artwork: ArtworkMetrics = ArtworkMetrics()
+        traits: UITraitCollection = .current
     ) -> String {
         let text = theme.colors.primaryText.cssColor(traits)
         let secondary = theme.colors.secondaryText.cssColor(traits)
@@ -96,9 +94,9 @@ struct HTMLWebView: UIViewRepresentable {
         }
         table { border-collapse: collapse; width: 100%; }
         th, td {
-          padding-block: \(artwork.size(DesignKitMetrics.Spacing.compact))px;
-          padding-inline: \(artwork.size(DesignKitMetrics.Spacing.regular))px;
-          border-bottom: \(artwork.stroke(DesignKitMetrics.Stroke.divider))px solid \(divider);
+          padding-block: \(DesignKitMetrics.Spacing.compact.sizeInArtwork)px;
+          padding-inline: \(DesignKitMetrics.Spacing.regular.sizeInArtwork)px;
+          border-bottom: \(DesignKitMetrics.Stroke.divider.strokeInArtwork)px solid \(divider);
           text-align: left;
         }
         th { color: \(secondary); font-weight: \(DesignKitMetrics.Web.headerWeight); }
@@ -131,10 +129,13 @@ struct HTMLWebView: UIViewRepresentable {
                 \.contentSize,
                 options: [.new]
             ) { [weak self, weak webView] _, change in
-                guard let height = change.newValue?.height, height > 0 else {
+                guard let webView, let height = change.newValue?.height, height > 0,
+                      abs(height - webView.bounds.height) > DesignKitMetrics.Layout.measurementTolerance else {
                     return
                 }
-                webView?.scrollView.isScrollEnabled = height > HTMLSizing.maximumHeight
+                // WebKit also reports the viewport during native fitting. Feeding it back
+                // as content height can permanently inflate a reusable table row.
+                webView.scrollView.isScrollEnabled = height > HTMLSizing.maximumHeight
                 self?.onHeightChange(HTMLSizing.height(height))
             }
         }

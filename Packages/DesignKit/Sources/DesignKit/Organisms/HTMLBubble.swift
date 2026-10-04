@@ -9,7 +9,7 @@ public struct HTMLBubble: View {
     let payload: HTMLPayload
     @Environment(\.copyCatalog) private var copy
     @Environment(\.theme) private var theme
-    @Environment(\.artwork) private var artwork
+
     @State private var height: CGFloat
 
     public init(payload: HTMLPayload) {
@@ -25,14 +25,13 @@ public struct HTMLBubble: View {
         HTMLWebView(
             html: payload.html,
             theme: theme,
-            onHeightChange: adopt,
-            artwork: artwork
+            onHeightChange: adopt
         )
         .frame(height: height)
-        .padding(artwork.size(DesignKitMetrics.Spacing.regular))
+        .padding(DesignKitMetrics.Spacing.regular.sizeInArtwork)
         .background(OutlinedBackground())
         .frame(
-            maxWidth: artwork.size(DesignKitMetrics.Size.bubbleMaximumWidth),
+            maxWidth: DesignKitMetrics.Size.bubbleMaximumWidth.sizeInArtwork,
             alignment: .leading
         )
         .accessibilityElement(children: .ignore)

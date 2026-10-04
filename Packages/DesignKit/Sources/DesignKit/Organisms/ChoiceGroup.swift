@@ -14,7 +14,7 @@ public struct ChoiceGroup: View {
     let onToggle: (String) -> Void
     let onSubmit: () -> Void
     @Environment(\.theme) private var theme
-    @Environment(\.artwork) private var artwork
+
     @State private var availableWidth: CGFloat = 0
 
     public init(
@@ -36,7 +36,7 @@ public struct ChoiceGroup: View {
     public var body: some View {
         VStack(
             alignment: .leading,
-            spacing: artwork.size(DesignKitMetrics.Spacing.regular)
+            spacing: DesignKitMetrics.Spacing.regular.sizeInArtwork
         ) {
             heading
             chips
@@ -44,10 +44,10 @@ public struct ChoiceGroup: View {
                 .background(widthMeasurement)
             submit
         }
-        .padding(artwork.size(DesignKitMetrics.Spacing.wide))
+        .padding(DesignKitMetrics.Spacing.wide.sizeInArtwork)
         .background(OutlinedBackground())
         .frame(
-            maxWidth: artwork.size(DesignKitMetrics.Size.bubbleMaximumWidth),
+            maxWidth: DesignKitMetrics.Size.bubbleMaximumWidth.sizeInArtwork,
             alignment: .leading
         )
         .accessibilityElement(children: .contain)
@@ -73,21 +73,20 @@ public struct ChoiceGroup: View {
             SelectionChip.width(
                 of: $0.title,
                 isSelected: selected.contains($0.identifier),
-                font: theme.fonts.body,
-                artwork: artwork
+                font: theme.fonts.body
             )
         }
         let rows = ChipLayout.rows(
             widths: widths,
             maxWidth: width,
-            spacing: artwork.size(DesignKitMetrics.Spacing.compact)
+            spacing: DesignKitMetrics.Spacing.compact.sizeInArtwork
         )
         return VStack(
             alignment: .leading,
-            spacing: artwork.size(DesignKitMetrics.Spacing.compact)
+            spacing: DesignKitMetrics.Spacing.compact.sizeInArtwork
         ) {
             ForEach(rows.indices, id: \.self) { row in
-                HStack(spacing: artwork.size(DesignKitMetrics.Spacing.compact)) {
+                HStack(spacing: DesignKitMetrics.Spacing.compact.sizeInArtwork) {
                     ForEach(rows[row], id: \.self) { index in
                         chip(at: index)
                     }
@@ -122,7 +121,7 @@ public struct ChoiceGroup: View {
                 .designFont(.button)
                 .frame(
                     maxWidth: .infinity,
-                    minHeight: artwork.tapTarget(DesignKitMetrics.Size.minimumTapTarget)
+                    minHeight: DesignKitMetrics.Size.minimumTapTarget.tapTargetInArtwork
                 )
         }
         .disabled(!isEnabled || !isSubmittable)

@@ -45,7 +45,6 @@ struct AccountPage: View {
     var body: some View {
         AccountContent()
             .theme(manager)
-            .artworkLayout()
     }
 }
 ```
@@ -121,8 +120,9 @@ tokens; tidak ditulis ulang ke loader. UIKit memakai system fallback jika nama f
 tidak ditemukan; test memastikan semua font bundled ditemukan tanpa fallback.
 
 `Fonts.branded()` menyimpan resep ukuran asli. `.theme(...)` meresolve ulang font
-saat artwork/size category berubah, tanpa menggandakan skala. Di UIKit, panggil
-`theme.resolved(artwork:traits:)` saat bounds atau trait berubah. Palette lama
+saat tema/size category berubah, tanpa menggandakan skala. Ukuran memakai reference
+hardcoded 374×812 dan properti `.sizeInArtwork`. Di UIKit, panggil
+`theme.resolved(traits:)` saat ukuran layar atau trait berubah. Palette lama
 berisi `UIFont` langsung tetap snapshot final untuk kompatibilitas.
 
 Panduan lengkap ukuran `sizeInArtwork`, setup root, batas atomic design, dan

@@ -55,7 +55,6 @@ final class TanyaAICoordinator: NSObject {
                 .theme(dependencyContainer.theme)
                 .copyCatalog(dependencyContainer.copy)
                 .imageLoader(dependencyContainer.imageLoader)
-                .artworkLayout()
         )
         chatViewModel = viewModel
         chatController = controller
@@ -73,7 +72,6 @@ final class TanyaAICoordinator: NSObject {
                 .theme(dependencyContainer.theme)
                 .copyCatalog(dependencyContainer.copy)
                 .imageLoader(dependencyContainer.imageLoader)
-                .artworkLayout()
         )
         navigationController.pushViewController(
             controller,

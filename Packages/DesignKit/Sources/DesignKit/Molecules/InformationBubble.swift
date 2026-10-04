@@ -3,14 +3,13 @@ import SwiftUI
 public struct InformationBubble: View {
     let payload: InformationPayload
     @Environment(\.theme) private var theme
-    @Environment(\.artwork) private var artwork
 
     public init(payload: InformationPayload) {
         self.payload = payload
     }
 
     public var body: some View {
-        VStack(alignment: .leading, spacing: artwork.size(DesignKitMetrics.Spacing.regular)) {
+        VStack(alignment: .leading, spacing: DesignKitMetrics.Spacing.regular.sizeInArtwork) {
             if let title = payload.title {
                 Text(title)
                     .designFont(.headline)
@@ -21,10 +20,10 @@ public struct InformationBubble: View {
             }
         }
         .foregroundColor(Color(theme.colors.primaryText))
-        .padding(artwork.size(DesignKitMetrics.Spacing.wide))
+        .padding(DesignKitMetrics.Spacing.wide.sizeInArtwork)
         .background(Color(theme.colors.surface))
-        .cornerRadius(artwork.size(DesignKitMetrics.Radius.notice))
-        .frame(maxWidth: artwork.size(DesignKitMetrics.Size.cardMaximumWidth), alignment: .leading)
+        .cornerRadius(DesignKitMetrics.Radius.notice.sizeInArtwork)
+        .frame(maxWidth: DesignKitMetrics.Size.cardMaximumWidth.sizeInArtwork, alignment: .leading)
         .accessibilityIdentifier("information.card")
     }
 
@@ -44,17 +43,17 @@ public struct InformationBubble: View {
         case .divider:
             Rectangle()
                 .fill(Color(theme.colors.divider))
-                .frame(height: artwork.stroke(DesignKitMetrics.Stroke.divider))
+                .frame(height: DesignKitMetrics.Stroke.divider.strokeInArtwork)
         }
     }
 
     private func keyValueList(_ items: [KeyValue]) -> some View {
-        VStack(spacing: artwork.size(DesignKitMetrics.Spacing.compact)) {
+        VStack(spacing: DesignKitMetrics.Spacing.compact.sizeInArtwork) {
             ForEach(items.indices, id: \.self) { index in
-                HStack(alignment: .firstTextBaseline, spacing: artwork.size(DesignKitMetrics.Spacing.compact)) {
+                HStack(alignment: .firstTextBaseline, spacing: DesignKitMetrics.Spacing.compact.sizeInArtwork) {
                     Text(items[index].label)
                         .foregroundColor(Color(theme.colors.secondaryText))
-                    Spacer(minLength: artwork.size(DesignKitMetrics.Spacing.wide))
+                    Spacer(minLength: DesignKitMetrics.Spacing.wide.sizeInArtwork)
                     Text(items[index].value)
                         .fontWeight(.semibold)
                 }
@@ -64,7 +63,7 @@ public struct InformationBubble: View {
     }
 
     private func bulletList(_ items: [String]) -> some View {
-        VStack(alignment: .leading, spacing: artwork.size(DesignKitMetrics.Spacing.snug)) {
+        VStack(alignment: .leading, spacing: DesignKitMetrics.Spacing.snug.sizeInArtwork) {
             ForEach(items.indices, id: \.self) { index in
                 Text("• \(items[index])")
                     .designFont(.subheadline)

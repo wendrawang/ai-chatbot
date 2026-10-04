@@ -3,7 +3,7 @@ import SwiftUI
 public struct SummaryRow: View {
     private let title: String
     private let detail: String
-    @Environment(\.artwork) private var artwork
+
     @Environment(\.theme) private var theme
 
     public init(title: String, detail: String) {
@@ -12,7 +12,7 @@ public struct SummaryRow: View {
     }
 
     public var body: some View {
-        VStack(alignment: .leading, spacing: artwork.size(DesignKitMetrics.Spacing.tight)) {
+        VStack(alignment: .leading, spacing: DesignKitMetrics.Spacing.tight.sizeInArtwork) {
             Text(title)
                 .designFont(.headline)
                 .foregroundColor(Color(theme.colors.primaryText))
@@ -20,6 +20,6 @@ public struct SummaryRow: View {
                 .designFont(.subheadline)
                 .foregroundColor(Color(theme.colors.secondaryText))
         }
-        .padding(.vertical, artwork.size(DesignKitMetrics.Spacing.tight))
+        .padding(.vertical, DesignKitMetrics.Spacing.tight.sizeInArtwork)
     }
 }

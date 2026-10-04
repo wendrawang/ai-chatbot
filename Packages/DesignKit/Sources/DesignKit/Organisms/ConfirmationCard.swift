@@ -7,7 +7,6 @@ public struct ConfirmationCard: View {
     private let confirmLabel: String
     private let onConfirm: () -> Void
     @Environment(\.theme) private var theme
-    @Environment(\.artwork) private var artwork
 
     public init(title: String, fields: [KeyValue], confirmLabel: String, onConfirm: @escaping () -> Void) {
         self.title = title
@@ -17,12 +16,12 @@ public struct ConfirmationCard: View {
     }
 
     public var body: some View {
-        VStack(alignment: .leading, spacing: artwork.size(DesignKitMetrics.Spacing.wide)) {
+        VStack(alignment: .leading, spacing: DesignKitMetrics.Spacing.wide.sizeInArtwork) {
             Text(title).designFont(.headline)
             ForEach(fields.indices, id: \.self) { index in
-                HStack(alignment: .firstTextBaseline, spacing: artwork.size(DesignKitMetrics.Spacing.regular)) {
+                HStack(alignment: .firstTextBaseline, spacing: DesignKitMetrics.Spacing.regular.sizeInArtwork) {
                     Text(fields[index].label).foregroundColor(Color(theme.colors.secondaryText))
-                    Spacer(minLength: artwork.size(DesignKitMetrics.Spacing.compact))
+                    Spacer(minLength: DesignKitMetrics.Spacing.compact.sizeInArtwork)
                     Text(fields[index].value).multilineTextAlignment(.trailing)
                 }
                 .designFont(.body)
@@ -30,14 +29,14 @@ public struct ConfirmationCard: View {
             }
             Button(action: onConfirm) {
                 Text(confirmLabel).designFont(.button)
-                    .frame(maxWidth: .infinity, minHeight: artwork.tapTarget())
+                    .frame(maxWidth: .infinity, minHeight: DesignKitMetrics.Size.minimumTapTarget.tapTargetInArtwork)
             }
             .buttonStyle(DesignButtonStyle())
         }
         .foregroundColor(Color(theme.colors.primaryText))
-        .padding(artwork.size(DesignKitMetrics.Spacing.wide))
+        .padding(DesignKitMetrics.Spacing.wide.sizeInArtwork)
         .background(Color(theme.colors.surface))
-        .clipShape(RoundedRectangle(cornerRadius: artwork.size(DesignKitMetrics.Radius.card)))
-        .frame(maxWidth: artwork.size(DesignKitMetrics.Size.cardMaximumWidth))
+        .clipShape(RoundedRectangle(cornerRadius: DesignKitMetrics.Radius.card.sizeInArtwork))
+        .frame(maxWidth: DesignKitMetrics.Size.cardMaximumWidth.sizeInArtwork)
     }
 }

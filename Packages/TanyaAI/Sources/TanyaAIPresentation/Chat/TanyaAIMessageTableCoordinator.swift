@@ -17,7 +17,7 @@ extension MessageTableView {
         var scrollRequestIdentifier = 0
         private var copy = CopyCatalog()
         private var theme = Theme.sandbox
-        var artwork = ArtworkMetrics()
+        private var screenMetrics = ArtworkMetrics.screen
         private var imageLoader: ImageLoading = ImageLoader.shared
         private var handlers = TanyaAIMessageRowHandlers.inert
         private var subscriptions: [ObjectIdentifier: AnyCancellable] = [:]
@@ -36,24 +36,24 @@ extension MessageTableView {
             _ state: TanyaAIMessageListState,
             theme: Theme,
             handlers: TanyaAIMessageRowHandlers,
-            artwork: ArtworkMetrics = ArtworkMetrics(),
             imageLoader: ImageLoading = ImageLoader.shared,
             copy: CopyCatalog = CopyCatalog()
         ) {
             let previous = self.state
-            let isThemeChanged = self.theme != theme || self.artwork != artwork
+            let currentMetrics = ArtworkMetrics.screen
+            let isThemeChanged = self.theme != theme || screenMetrics != currentMetrics
                 || self.imageLoader !== imageLoader || self.copy != copy
             self.copy = copy
             self.state = state
             self.theme = theme
-            self.artwork = artwork
+            screenMetrics = currentMetrics
             self.imageLoader = imageLoader
             self.handlers = handlers
             bindMessages(state.messages)
 
             tableView?.backgroundColor = theme.colors.background
-            tableView?.estimatedRowHeight = artwork.size(DesignKitMetrics.Size.estimatedRowHeight)
-            let inset = artwork.size(DesignKitMetrics.Spacing.snug)
+            tableView?.estimatedRowHeight = DesignKitMetrics.Size.estimatedRowHeight.sizeInArtwork
+            let inset = DesignKitMetrics.Spacing.snug.sizeInArtwork
             tableView?.contentInset = UIEdgeInsets(top: inset, left: 0, bottom: inset, right: 0)
             let isRowStructureChanged = state.rowsDiffer(from: previous)
             if isRowStructureChanged || isThemeChanged {
@@ -102,7 +102,6 @@ extension MessageTableView {
                 theme: theme,
                 handlers: handlers,
                 copy: copy,
-                artwork: artwork,
                 imageLoader: imageLoader
             )
         }
@@ -147,6 +146,7 @@ extension MessageTableView {
         }
 
         private func tableLayoutDidChange() {
+            refreshScreenMetrics()
             reportScrollPosition()
             guard isFollowingLatestMessage else {
                 return
@@ -154,5 +154,15 @@ extension MessageTableView {
             scheduleScrollToBottom(animated: false)
         }
 
+        private func refreshScreenMetrics() {
+            let current = ArtworkMetrics.screen
+            guard screenMetrics != current, let tableView else { return }
+            screenMetrics = current
+            theme = theme.resolved(traits: tableView.traitCollection)
+            tableView.estimatedRowHeight = DesignKitMetrics.Size.estimatedRowHeight.sizeInArtwork
+            let inset = DesignKitMetrics.Spacing.snug.sizeInArtwork
+            tableView.contentInset = UIEdgeInsets(top: inset, left: 0, bottom: inset, right: 0)
+            tableView.reloadData()
+        }
     }
 }

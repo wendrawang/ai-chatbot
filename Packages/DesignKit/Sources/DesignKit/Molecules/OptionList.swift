@@ -6,7 +6,6 @@ public struct OptionList: View {
     let options: [SelectionOption]
     let onSelect: (SelectionOption) -> Void
     @Environment(\.theme) private var theme
-    @Environment(\.artwork) private var artwork
 
     public init(
         title: String?,
@@ -21,13 +20,13 @@ public struct OptionList: View {
     public var body: some View {
         VStack(
             alignment: .leading,
-            spacing: artwork.size(DesignKitMetrics.Spacing.regular)
+            spacing: DesignKitMetrics.Spacing.regular.sizeInArtwork
         ) {
             heading
             rows
         }
         .frame(
-            maxWidth: artwork.size(DesignKitMetrics.Size.bubbleMaximumWidth),
+            maxWidth: DesignKitMetrics.Size.bubbleMaximumWidth.sizeInArtwork,
             alignment: .leading
         )
         .frame(maxWidth: .infinity, alignment: .leading)
@@ -49,7 +48,7 @@ public struct OptionList: View {
     private var rows: some View {
         VStack(
             alignment: .leading,
-            spacing: artwork.size(DesignKitMetrics.Spacing.compact)
+            spacing: DesignKitMetrics.Spacing.compact.sizeInArtwork
         ) {
             ForEach(options, id: \.identifier) { option in
                 OptionRow(option: option, onSelect: onSelect)

@@ -16,7 +16,7 @@ public extension Fonts {
     }
 
     /// Legacy UIFont-only palettes are left unchanged because their base scale is unknown.
-    func resolved(artwork: ArtworkMetrics, traits: UITraitCollection) -> Fonts {
+    func resolved(artwork: ArtworkMetrics = .screen, traits: UITraitCollection) -> Fonts {
         guard let recipes else { return self }
         return Fonts(recipes: recipes, artwork: artwork, traits: traits)
     }
@@ -25,7 +25,7 @@ public extension Fonts {
 extension Fonts {
     init(
         recipes: [DesignKitTypography],
-        artwork: ArtworkMetrics = ArtworkMetrics(),
+        artwork: ArtworkMetrics = .screen,
         traits: UITraitCollection? = nil
     ) {
         let values = recipes.map { $0.font(compatibleWith: traits, artwork: artwork) }

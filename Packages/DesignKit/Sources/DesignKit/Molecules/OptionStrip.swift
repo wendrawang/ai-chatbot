@@ -5,7 +5,6 @@ public struct OptionStrip: View {
     let options: [SelectionOption]
     let onSelect: (SelectionOption) -> Void
     @Environment(\.theme) private var theme
-    @Environment(\.artwork) private var artwork
 
     public init(
         options: [SelectionOption],
@@ -17,7 +16,7 @@ public struct OptionStrip: View {
 
     public var body: some View {
         ScrollView(.horizontal, showsIndicators: false) {
-            HStack(spacing: artwork.size(DesignKitMetrics.Spacing.compact)) {
+            HStack(spacing: DesignKitMetrics.Spacing.compact.sizeInArtwork) {
                 ForEach(options, id: \.identifier) { option in
                     Button(
                         action: { onSelect(option) },
@@ -31,8 +30,8 @@ public struct OptionStrip: View {
                     )
                 }
             }
-            .padding(.horizontal, artwork.size(DesignKitMetrics.Spacing.regular))
-            .padding(.vertical, artwork.size(DesignKitMetrics.Spacing.compact))
+            .padding(.horizontal, DesignKitMetrics.Spacing.regular.sizeInArtwork)
+            .padding(.vertical, DesignKitMetrics.Spacing.compact.sizeInArtwork)
         }
         .accessibilityIdentifier("options.strip")
     }
@@ -41,8 +40,8 @@ public struct OptionStrip: View {
         Text(option.title)
             .designFont(.button)
             .lineLimit(1)
-            .padding(.horizontal, artwork.size(DesignKitMetrics.Spacing.wide))
-            .frame(minHeight: artwork.tapTarget(DesignKitMetrics.Size.minimumTapTarget))
+            .padding(.horizontal, DesignKitMetrics.Spacing.wide.sizeInArtwork)
+            .frame(minHeight: DesignKitMetrics.Size.minimumTapTarget.tapTargetInArtwork)
     }
 
     private var pill: some View {
@@ -51,7 +50,7 @@ public struct OptionStrip: View {
             .overlay(
                 Capsule().stroke(
                     Color(theme.colors.divider),
-                    lineWidth: artwork.stroke(DesignKitMetrics.Stroke.hairline)
+                    lineWidth: DesignKitMetrics.Stroke.hairline.strokeInArtwork
                 )
             )
     }

@@ -9,7 +9,7 @@ public struct DesignButtonStyle: ButtonStyle {
 
     private let emphasis: Emphasis
     @Environment(\.theme) private var theme
-    @Environment(\.artwork) private var artwork
+
     @Environment(\.isEnabled) private var isEnabled
 
     public init(_ emphasis: Emphasis = .primary) {
@@ -19,12 +19,15 @@ public struct DesignButtonStyle: ButtonStyle {
     public func makeBody(configuration: Configuration) -> some View {
         configuration.label
             .designFont(.button)
-            .padding(.horizontal, artwork.size(DesignKitMetrics.Spacing.compact))
-            .padding(.vertical, artwork.size(DesignKitMetrics.Spacing.tight))
-            .frame(minWidth: artwork.tapTarget(), minHeight: artwork.tapTarget())
+            .padding(.horizontal, DesignKitMetrics.Spacing.compact.sizeInArtwork)
+            .padding(.vertical, DesignKitMetrics.Spacing.tight.sizeInArtwork)
+            .frame(
+                minWidth: DesignKitMetrics.Size.minimumTapTarget.tapTargetInArtwork,
+                minHeight: DesignKitMetrics.Size.minimumTapTarget.tapTargetInArtwork
+            )
             .foregroundColor(Color(emphasis == .primary ? theme.colors.userBubbleText : theme.colors.primaryText))
             .background(Color(emphasis == .primary ? theme.colors.accent : theme.colors.background))
-            .cornerRadius(artwork.size(DesignKitMetrics.Radius.bubble))
+            .cornerRadius(DesignKitMetrics.Radius.bubble.sizeInArtwork)
             .opacity(isEnabled
                 ? (configuration.isPressed ? DesignKitMetrics.Opacity.pressed : 1)
                 : DesignKitMetrics.Opacity.disabled)

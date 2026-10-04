@@ -5,7 +5,7 @@ struct MessageListView: View {
     @ObservedObject var viewModel: TanyaAIChatViewModel
     @StateObject private var scrollControl = TanyaAIMessageScrollControl()
     @Environment(\.copyCatalog) private var copy
-    @Environment(\.artwork) private var artwork
+
     @Environment(\.theme) private var theme
 
     var body: some View {
@@ -42,7 +42,7 @@ struct MessageListView: View {
             if scrollControl.isAwayFromLatest && !viewModel.isRestoring {
                 ScrollToLatestButton(label: copy.chat("chat.latest"), onTap: scrollControl.returnToLatest)
                     .accessibilityIdentifier("chat.latest")
-                    .padding(.bottom, artwork.size(DesignKitMetrics.Spacing.regular))
+                    .padding(.bottom, DesignKitMetrics.Spacing.regular.sizeInArtwork)
             }
         }
     }

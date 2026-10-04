@@ -29,23 +29,22 @@ public struct MessageComposer: View {
         self.onStop = onStop
     }
     @Environment(\.theme) private var theme
-    @Environment(\.artwork) private var artwork
 
     public var body: some View {
-        HStack(alignment: .bottom, spacing: artwork.size(DesignKitMetrics.Spacing.compact)) {
+        HStack(alignment: .bottom, spacing: DesignKitMetrics.Spacing.compact.sizeInArtwork) {
             field
             actionButton
         }
-        .padding(.horizontal, artwork.size(DesignKitMetrics.Spacing.wide))
-        .padding(.vertical, artwork.size(DesignKitMetrics.Spacing.compact))
+        .padding(.horizontal, DesignKitMetrics.Spacing.wide.sizeInArtwork)
+        .padding(.vertical, DesignKitMetrics.Spacing.compact.sizeInArtwork)
         .background(Color(theme.colors.surface))
-        .clipShape(RoundedRectangle(cornerRadius: artwork.size(DesignKitMetrics.Radius.composer)))
+        .clipShape(RoundedRectangle(cornerRadius: DesignKitMetrics.Radius.composer.sizeInArtwork))
         .overlay(
-            RoundedRectangle(cornerRadius: artwork.size(DesignKitMetrics.Radius.composer))
-                .stroke(Color(theme.colors.divider), lineWidth: artwork.stroke(DesignKitMetrics.Stroke.hairline))
+            RoundedRectangle(cornerRadius: DesignKitMetrics.Radius.composer.sizeInArtwork)
+                .stroke(Color(theme.colors.divider), lineWidth: DesignKitMetrics.Stroke.hairline.strokeInArtwork)
         )
-        .padding(.horizontal, artwork.size(DesignKitMetrics.Spacing.wide))
-        .padding(.vertical, artwork.size(DesignKitMetrics.Spacing.regular))
+        .padding(.horizontal, DesignKitMetrics.Spacing.wide.sizeInArtwork)
+        .padding(.vertical, DesignKitMetrics.Spacing.regular.sizeInArtwork)
         .background(Color(theme.colors.background))
     }
 
@@ -68,7 +67,7 @@ public struct MessageComposer: View {
                     .allowsHitTesting(false)
             }
         }
-        .padding(.vertical, artwork.size(DesignKitMetrics.Spacing.compact))
+        .padding(.vertical, DesignKitMetrics.Spacing.compact.sizeInArtwork)
     }
 
     @ViewBuilder
@@ -99,12 +98,15 @@ public struct MessageComposer: View {
                 .designFont(.button)
                 .foregroundColor(Color(theme.colors.userBubbleText))
                 .frame(
-                    width: artwork.size(DesignKitMetrics.Size.composerAction),
-                    height: artwork.size(DesignKitMetrics.Size.composerAction)
+                    width: DesignKitMetrics.Size.composerAction.sizeInArtwork,
+                    height: DesignKitMetrics.Size.composerAction.sizeInArtwork
                 )
                 .background(Color(isActive ? theme.colors.accent : theme.colors.secondaryText))
                 .clipShape(Circle())
-                .frame(width: artwork.tapTarget(), height: artwork.tapTarget())
+                .frame(
+                    width: DesignKitMetrics.Size.minimumTapTarget.tapTargetInArtwork,
+                    height: DesignKitMetrics.Size.minimumTapTarget.tapTargetInArtwork
+                )
                 .contentShape(Rectangle())
         }
         .buttonStyle(.plain)

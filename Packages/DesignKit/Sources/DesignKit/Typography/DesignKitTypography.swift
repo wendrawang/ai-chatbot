@@ -25,7 +25,7 @@ public struct DesignKitTypography: Equatable {
 
     public func font(
         compatibleWith traits: UITraitCollection? = nil,
-        artwork: ArtworkMetrics = ArtworkMetrics()
+        artwork: ArtworkMetrics = .screen
     ) -> UIFont {
         let size = artwork.size(self.size)
         let baseFont = UIFont(name: postScriptName, size: size)
@@ -35,7 +35,7 @@ public struct DesignKitTypography: Equatable {
 
     public func swiftUIFont(
         relativeTo style: Font.TextStyle? = nil,
-        artwork: ArtworkMetrics = ArtworkMetrics()
+        artwork: ArtworkMetrics = .screen
     ) -> Font {
         .custom(postScriptName, size: artwork.size(size), relativeTo: style ?? swiftUIStyle)
     }

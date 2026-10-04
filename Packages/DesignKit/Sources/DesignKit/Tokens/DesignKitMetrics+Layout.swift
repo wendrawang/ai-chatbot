@@ -3,7 +3,7 @@ import Foundation
 
 public extension DesignKitMetrics {
     enum Artwork {
-        public static let referenceSize = CGSize(width: 375, height: 812)
+        public static let referenceSize = CGSize(width: 374, height: 812)
         public static let maximumScale: CGFloat = 1.25
         public static let defaultDisplayScale: CGFloat = 2
     }

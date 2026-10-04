@@ -7,7 +7,6 @@ struct MessageTableRow: View {
     let theme: Theme
     let handlers: TanyaAIMessageRowHandlers
     var copy = CopyCatalog()
-    var artwork = ArtworkMetrics()
     var imageLoader: ImageLoading = ImageLoader.shared
 
     var body: some View {
@@ -33,10 +32,9 @@ struct MessageTableRow: View {
                 )
             }
         }
-        .padding(.horizontal, artwork.size(DesignKitMetrics.Spacing.wide))
-        .padding(.vertical, artwork.size(DesignKitMetrics.Spacing.snug))
+        .padding(.horizontal, DesignKitMetrics.Spacing.wide.sizeInArtwork)
+        .padding(.vertical, DesignKitMetrics.Spacing.snug.sizeInArtwork)
         .theme(theme)
-        .artwork(artwork)
         .imageLoader(imageLoader)
         .copyCatalog(copy)
     }

@@ -42,7 +42,7 @@ gagal, pilih fallback `Theme.sandbox` secara eksplisit. Font package tidak perlu
 ditambahkan ke `UIAppFonts` host. Simpan satu `ThemeManager` pada pemilik root;
 jangan membuat manager baru di `body`.
 
-## 2. Pasang pada container halaman
+## 2. Tema pada root; ukuran tanpa setup
 
 ```swift
 struct RootScreen: View {
@@ -51,74 +51,56 @@ struct RootScreen: View {
     var body: some View {
         AppContent()
             .theme(themeManager)
-            .artworkLayout()
     }
 }
 ```
 
-`.artworkLayout()` mengukur lebar **container saat ini**, bukan layar global.
-Pasang sekali pada root screen/content area yang mengisi ruang tersedia, bukan
-pada tiap label atau di dalam row dengan tinggi intrinsik. Modifier memakai
-`GeometryReader`; seperti container layout lain, ia mengambil ruang yang tersedia.
-Sheet/kolom split view mandiri dapat memiliki modifier sendiri.
+Tidak perlu `.artworkLayout()`, `.artwork(...)`, `GeometryReader`, maupun
+`@Environment(\.artwork)`. Ukuran memakai properti `CGFloat` yang bisa langsung
+dipanggil seperti extension existing host: `value.sizeInArtwork`.
 
-Urutan penting: `.artworkLayout()` berada di luar `.theme(...)`, sehingga font
-menerima artwork scale sebelum di-resolve. Rotation dan resize menghitung ulang
-nilai environment. Tidak ada observer layar global atau cache ukuran layar statis.
+Reference **374 × 812** di-hardcode pada `DesignKitMetrics.Artwork.referenceSize`,
+di luar generated token. Skala mengikuti lebar `UIScreen.main` saat properti
+dibaca, sehingga tidak menyimpan ukuran layar startup. Tinggi referensi tetap
+metadata; tinggi layar tidak dikalikan terpisah.
 
-Default **375 × 812**, mengikuti angka pada foto kode. Jika frame Figma sebenarnya
-**374 × 812**, cukup atur:
-
-```swift
-AppContent()
-    .theme(themeManager)
-    .artworkLayout(referenceSize: CGSize(width: 374, height: 812))
-```
-
-Rumus ukuran: `nilaiFigma × min(lebarContainer / lebarArtwork, maximumScale)`.
-Pembulatan dilakukan ke piksel fisik berdasarkan `displayScale`, bukan bilangan
-bulat point. Tinggi artwork adalah metadata referensi; tinggi layar tidak dipakai
-sebagai faktor terpisah agar bentuk dan proporsi font tidak terdistorsi.
-
-Default `maximumScale = 1.25` membatasi pembesaran pada iPad/landscape. Host dapat
-memilih batas lain. Contoh 375pt → faktor 1; 414pt → 1.104; iPad 1024pt → 1.25.
-Pada lebar referensi dan Dynamic Type `.large`, nilai dasar font/padding tetap 1:1
-(dengan penyesuaian piksel). Ini bukan janji screenshot identik: font metrics,
-safe area, line wrapping, dan pengaturan aksesibilitas tetap berlaku.
+Rumusnya `round(nilaiFigma × min(lebarLayar / 374, 1.25))`, mengikuti pembulatan
+point pada extension existing. Batas skala 1.25 tetap menjaga pembesaran pada
+layar lebar. Contoh: 16pt pada layar 374pt → 16pt; layar 414pt → 18pt.
+Ini merupakan kebijakan ukuran berbasis layar: sheet sempit atau split view
+memakai faktor layar yang sama, tanpa konfigurasi container per subtree.
 
 ## 3. Ukuran padding, radius, ikon, stroke
 
 ```swift
 struct AccountContent: View {
-    @Environment(\.artwork) private var artwork
+    let title: String
+    let detail: String
     @Environment(\.theme) private var theme
 
     var body: some View {
-        VStack(spacing: FigmaSize.spacingMedium.sizeInArtwork(artwork)) {
-            Text("Rekening")
-                .designFont(.headline)
-            Text("Ringkasan rekening Anda")
-                .designFont(.body)
+        VStack(spacing: DesignKitMetrics.Spacing.compact.sizeInArtwork) {
+            Text(title).designFont(.headline)
+            Text(detail).designFont(.body)
         }
-        .padding(FigmaSize.spacingLarge.sizeInArtwork(artwork))
+        .padding(DesignKitMetrics.Spacing.wide.sizeInArtwork)
         .foregroundColor(Color(theme.colors.primaryText))
         .background(Color(theme.colors.surface))
-        .cornerRadius(CGFloat(12).sizeInArtwork(artwork))
+        .cornerRadius(DesignKitMetrics.Radius.card.sizeInArtwork)
     }
 }
 ```
 
-`sizeInArtwork(_:)` sengaja menerima context. Property global tanpa parameter
-akan bergantung pada screen/window yang belum tentu sedang menampilkan view,
-dan dapat berbenturan dengan extension lama host. Alternatif yang setara:
-`artwork.size(FigmaSize.spacingLarge)`.
-
-- Ukuran biasa: `artwork.size(value)` atau `CGFloat.sizeInArtwork(artwork)`.
-- Stroke: `artwork.stroke(value)` menjaga minimal satu piksel untuk nilai positif.
-- Area tap: `artwork.tapTarget()` menjaga minimal **44pt**, termasuk pada layar kecil.
+- Ukuran biasa: `value.sizeInArtwork`, tanpa argumen atau modifier root.
+- Stroke: `value.strokeInArtwork` menjaga minimal satu piksel untuk nilai positif.
+- Area tap: `value.tapTargetInArtwork` menjaga minimal **44pt**.
 - `.infinity`, rasio gambar, opacity, durasi, dan nilai bisnis tidak ikut diskalakan.
-- Jangan menskalakan angka yang sudah di-resolve untuk kedua kalinya.
-- Generated token tetap ukuran dasar; jangan menyimpan hasil konversi di sana.
+- Jangan menskalakan hasil yang sudah di-resolve untuk kedua kalinya.
+- Generated token tetap ukuran dasar; konversi tidak ditulis ke generated token.
+
+Gunakan satu extension `CGFloat.sizeInArtwork` pada host. Bila host sudah
+mendefinisikan nama yang sama, konsolidasikan implementasinya saat mengadopsi
+DesignKit agar kebijakan ukuran host dan komponen tetap konsisten.
 
 ## 4. Font dan line height
 
@@ -144,12 +126,7 @@ menginginkan skala artwork dan perubahan Dynamic Type otomatis.
 Untuk UIKit:
 
 ```swift
-let artwork = ArtworkMetrics(
-    containerSize: view.bounds.size,
-    displayScale: view.traitCollection.displayScale
-)
 let resolved = themeManager.theme.resolved(
-    artwork: artwork,
     traits: view.traitCollection
 )
 label.font = resolved.fonts.body
@@ -157,8 +134,9 @@ label.textColor = resolved.colors.primaryText
 label.numberOfLines = 0
 ```
 
-Hitung saat bounds valid, dan ulangi ketika bounds/trait yang relevan berubah.
-Jangan mengambil `UIScreen.main.bounds` pada static initializer. Jika memakai
+Resolusi default memakai layar saat ini; ulangi saat ukuran layar atau trait
+yang relevan berubah. `ArtworkMetrics` tetap kalkulator nilai murni untuk test,
+bukan environment object atau state yang harus dipasang oleh host. Jika memakai
 `swiftUIFont(relativeTo:)` langsung, SwiftUI menangani Dynamic Type; jangan
 mengoper UIFont yang sudah diskalakan sebagai ukuran dasarnya.
 
@@ -172,8 +150,8 @@ Seluruh view dalam subtree `.theme(themeManager)` yang memakai semantic colors
 akan mengikuti pilihan. Warna hardcoded di host tentu harus dimigrasikan dahulu.
 `TanyaAIDependencies(theme:)` masih snapshot: oper `themeManager.theme` saat
 membuka chat. Host tetap memakai `.tanyaAIHost(...)`; alur login dan tombol masuk
-chat tidak berubah. Layout artwork sudah terpasang pada root chat/history/PIN.
-Bridge UITableView meneruskan artwork dan image loader ke UIHostingController sel.
+chat tidak berubah. Chat/history/PIN memakai properti ukuran yang sama.
+Bridge UITableView meneruskan theme, copy, dan image loader ke UIHostingController sel.
 
 ## 6. Gambar, HTML, dan lifecycle
 
@@ -208,7 +186,7 @@ backend tetap tanggung jawab backend. Animasi typing menghormati Reduce Motion.
 ## Verifikasi sebelum migrasi produksi
 
 Jalankan `Scripts/verify.sh` pada Mac dengan akses simulator. Periksa font yang
-benar, pilihan tema, ukuran 320/375/414pt, split view, Dynamic Type accessibility,
+benar, pilihan tema, ukuran 320/374/414pt, split view, Dynamic Type accessibility,
 choices panjang, dan buka/tutup layar berulang memakai Instruments Allocations/Leaks.
 Static review, compiler, dan unit test tidak membuktikan semua jalur bebas leak
 atau semua device bebas masalah performa. Token hasil export host tidak diubah.

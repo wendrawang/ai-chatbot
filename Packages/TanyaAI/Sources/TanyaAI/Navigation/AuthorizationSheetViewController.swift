@@ -12,7 +12,6 @@ final class AuthorizationSheetViewController: UIViewController {
                 AuthorizationSheet(viewModel: viewModel)
                     .theme(theme)
                     .copyCatalog(copy)
-                    .artworkLayout()
             )
         )
         super.init(nibName: nil, bundle: nil)

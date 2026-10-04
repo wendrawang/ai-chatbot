@@ -3,14 +3,13 @@ import SwiftUI
 public struct ChartBubble: View {
     let payload: ChartPayload
     @Environment(\.theme) private var theme
-    @Environment(\.artwork) private var artwork
 
     public init(payload: ChartPayload) {
         self.payload = payload
     }
 
     public var body: some View {
-        VStack(alignment: .leading, spacing: artwork.size(DesignKitMetrics.Spacing.section)) {
+        VStack(alignment: .leading, spacing: DesignKitMetrics.Spacing.section.sizeInArtwork) {
             header
             total
             ChartGraphic(type: payload.chartType, series: payload.series)
@@ -18,10 +17,10 @@ public struct ChartBubble: View {
             footnote
         }
         .foregroundColor(Color(theme.colors.primaryText))
-        .padding(artwork.size(DesignKitMetrics.Spacing.wide))
+        .padding(DesignKitMetrics.Spacing.wide.sizeInArtwork)
         .background(Color(theme.colors.surface))
-        .cornerRadius(artwork.size(DesignKitMetrics.Radius.card))
-        .frame(maxWidth: artwork.size(DesignKitMetrics.Size.cardMaximumWidth), alignment: .leading)
+        .cornerRadius(DesignKitMetrics.Radius.card.sizeInArtwork)
+        .frame(maxWidth: DesignKitMetrics.Size.cardMaximumWidth.sizeInArtwork, alignment: .leading)
         .accessibilityElement(children: .contain)
         .accessibilityIdentifier(
             "content.chart.\(payload.chartType.rawValue)"
@@ -29,11 +28,11 @@ public struct ChartBubble: View {
     }
 
     private var header: some View {
-        HStack(spacing: artwork.size(DesignKitMetrics.Spacing.medium)) {
+        HStack(spacing: DesignKitMetrics.Spacing.medium.sizeInArtwork) {
             Image(systemName: "chart.pie")
                 .designFont(.headline)
                 .foregroundColor(Color(theme.colors.accent))
-                .frame(width: artwork.size(DesignKitMetrics.Size.icon))
+                .frame(width: DesignKitMetrics.Size.icon.sizeInArtwork)
             Text(payload.title)
                 .designFont(.headline)
         }
@@ -42,7 +41,7 @@ public struct ChartBubble: View {
     @ViewBuilder
     private var total: some View {
         if let totalValue = payload.totalValue {
-            VStack(alignment: .leading, spacing: artwork.size(DesignKitMetrics.Spacing.tight)) {
+            VStack(alignment: .leading, spacing: DesignKitMetrics.Spacing.tight.sizeInArtwork) {
                 Text(totalValue)
                     .designFont(.amount)
                 subtitle

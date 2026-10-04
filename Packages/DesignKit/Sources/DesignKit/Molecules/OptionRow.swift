@@ -5,7 +5,6 @@ public struct OptionRow: View {
     let option: SelectionOption
     let onSelect: (SelectionOption) -> Void
     @Environment(\.theme) private var theme
-    @Environment(\.artwork) private var artwork
 
     public init(
         option: SelectionOption,
@@ -29,15 +28,15 @@ public struct OptionRow: View {
     }
 
     private var content: some View {
-        HStack(spacing: artwork.size(DesignKitMetrics.Spacing.regular)) {
+        HStack(spacing: DesignKitMetrics.Spacing.regular.sizeInArtwork) {
             Circle()
                 .stroke(
                     Color(theme.colors.primaryText),
-                    lineWidth: artwork.stroke(DesignKitMetrics.Stroke.indicator)
+                    lineWidth: DesignKitMetrics.Stroke.indicator.strokeInArtwork
                 )
                 .frame(
-                    width: artwork.size(DesignKitMetrics.Size.indicator),
-                    height: artwork.size(DesignKitMetrics.Size.indicator)
+                    width: DesignKitMetrics.Size.indicator.sizeInArtwork,
+                    height: DesignKitMetrics.Size.indicator.sizeInArtwork
                 )
             Text(option.title)
                 .designFont(.body)
@@ -47,11 +46,11 @@ public struct OptionRow: View {
         }
         .frame(
             maxWidth: .infinity,
-            minHeight: artwork.tapTarget(DesignKitMetrics.Size.minimumTapTarget),
+            minHeight: DesignKitMetrics.Size.minimumTapTarget.tapTargetInArtwork,
             alignment: .leading
         )
-        .padding(.horizontal, artwork.size(DesignKitMetrics.Spacing.wide))
-        .padding(.vertical, artwork.size(DesignKitMetrics.Spacing.compact))
+        .padding(.horizontal, DesignKitMetrics.Spacing.wide.sizeInArtwork)
+        .padding(.vertical, DesignKitMetrics.Spacing.compact.sizeInArtwork)
         .background(OutlinedBackground())
     }
 }

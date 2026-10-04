@@ -15,7 +15,6 @@ public struct SelectionChip: View {
     let isEnabled: Bool
     let onTap: () -> Void
     @Environment(\.theme) private var theme
-    @Environment(\.artwork) private var artwork
 
     /// The tick and the gap after it, counted only when it is showing.
     static let indicatorWidth = DesignKitMetrics.Size.indicator
@@ -38,21 +37,20 @@ public struct SelectionChip: View {
     public static func width(
         of title: String,
         isSelected: Bool,
-        font: UIFont,
-        artwork: ArtworkMetrics = ArtworkMetrics()
+        font: UIFont
     ) -> CGFloat {
         let text = (title as NSString).size(
             withAttributes: [.font: font]
         ).width
         let tick = isSelected
-            ? artwork.size(indicatorWidth) + artwork.size(DesignKitMetrics.Spacing.compact)
+            ? indicatorWidth.sizeInArtwork + DesignKitMetrics.Spacing.compact.sizeInArtwork
             : 0
-        return ceil(text) + tick + artwork.size(DesignKitMetrics.Spacing.wide) * 2
+        return ceil(text) + tick + DesignKitMetrics.Spacing.wide.sizeInArtwork * 2
     }
 
     public var body: some View {
         Button(action: onTap) {
-            HStack(spacing: artwork.size(DesignKitMetrics.Spacing.compact)) {
+            HStack(spacing: DesignKitMetrics.Spacing.compact.sizeInArtwork) {
                 if isSelected {
                     tick
                 }
@@ -60,8 +58,8 @@ public struct SelectionChip: View {
                     .designFont(.body)
                     .fixedSize(horizontal: false, vertical: true)
             }
-            .padding(.horizontal, artwork.size(DesignKitMetrics.Spacing.wide))
-            .frame(minHeight: artwork.tapTarget(DesignKitMetrics.Size.minimumTapTarget))
+            .padding(.horizontal, DesignKitMetrics.Spacing.wide.sizeInArtwork)
+            .frame(minHeight: DesignKitMetrics.Size.minimumTapTarget.tapTargetInArtwork)
         }
         .disabled(isEnabled == false)
         .foregroundColor(Color(foreground))
@@ -75,7 +73,7 @@ public struct SelectionChip: View {
     private var tick: some View {
         Image(systemName: "checkmark")
             .designFont(.caption)
-            .frame(width: artwork.size(Self.indicatorWidth))
+            .frame(width: Self.indicatorWidth.sizeInArtwork)
     }
 
     private var background: some View {
@@ -88,7 +86,7 @@ public struct SelectionChip: View {
             .overlay(
                 Capsule().stroke(
                     Color(isSelected ? theme.colors.accent : theme.colors.divider),
-                    lineWidth: artwork.stroke(DesignKitMetrics.Stroke.hairline)
+                    lineWidth: DesignKitMetrics.Stroke.hairline.strokeInArtwork
                 )
             )
     }

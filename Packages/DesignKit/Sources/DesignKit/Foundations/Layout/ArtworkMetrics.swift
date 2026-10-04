@@ -1,10 +1,15 @@
-import CoreGraphics
+import UIKit
 
-/// Converts Figma points using the active container, never a cached screen size.
+/// Pure size calculation. Components use the screen-based CGFloat properties below.
 public struct ArtworkMetrics: Equatable {
     public static let referenceSize = DesignKitMetrics.Artwork.referenceSize
     public let scale: CGFloat
     public let displayScale: CGFloat
+
+    /// Read current screen dimensions; no environment, observer or cached window is needed.
+    public static var screen: ArtworkMetrics {
+        ArtworkMetrics(containerSize: UIScreen.main.bounds.size, displayScale: UIScreen.main.scale)
+    }
 
     public init(
         containerSize: CGSize = Self.referenceSize,
@@ -24,9 +29,9 @@ public struct ArtworkMetrics: Equatable {
     /// Uniform width scaling preserves proportions; height never stretches independently.
     public func size(_ value: CGFloat) -> CGFloat {
         guard value.isFinite else { return 0 }
-        let pixels = value * scale * displayScale
-        guard pixels.isFinite else { return 0 }
-        return pixels.rounded() / displayScale
+        let scaled = value * scale
+        guard scaled.isFinite else { return 0 }
+        return scaled.rounded()
     }
 
     public func stroke(_ value: CGFloat) -> CGFloat {
@@ -41,8 +46,12 @@ public struct ArtworkMetrics: Equatable {
 }
 
 public extension CGFloat {
-    /// Explicit context supports multiple windows, rotation and split screen.
-    func sizeInArtwork(_ artwork: ArtworkMetrics) -> CGFloat {
-        artwork.size(self)
-    }
+    /// Figma value scaled from the hardcoded reference width to the main screen, rounded to points.
+    var sizeInArtwork: CGFloat { ArtworkMetrics.screen.size(self) }
+
+    /// Positive strokes retain at least one physical pixel.
+    var strokeInArtwork: CGFloat { ArtworkMetrics.screen.stroke(self) }
+
+    /// Touch areas retain at least 44 points after scaling.
+    var tapTargetInArtwork: CGFloat { ArtworkMetrics.screen.tapTarget(self) }
 }

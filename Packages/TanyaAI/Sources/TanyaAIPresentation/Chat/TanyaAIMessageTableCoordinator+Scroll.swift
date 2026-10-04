@@ -103,7 +103,7 @@ extension MessageTableView.Coordinator {
         let visibleBottom = scrollView.contentOffset.y
             + scrollView.bounds.height
             - scrollView.adjustedContentInset.bottom
-        let threshold = artwork.size(DesignKitMetrics.Layout.scrollFollowThreshold)
+        let threshold = DesignKitMetrics.Layout.scrollFollowThreshold.sizeInArtwork
         return scrollView.contentSize.height - visibleBottom < threshold
     }
 }

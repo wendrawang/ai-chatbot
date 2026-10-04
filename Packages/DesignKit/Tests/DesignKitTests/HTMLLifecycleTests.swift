@@ -31,4 +31,18 @@ final class HTMLLifecycleTests: XCTestCase {
         webView.scrollView.contentSize = CGSize(width: 300, height: 300)
         XCTAssertEqual(secondHeight, 200)
     }
+
+    func testFittingViewportCannotInflateContentHeight() {
+        let webView = WKWebView(frame: CGRect(x: 0, y: 0, width: 300, height: 100_000))
+        var measuredHeights: [CGFloat] = []
+        let coordinator = HTMLWebView.Coordinator { measuredHeights.append($0) }
+        coordinator.observe(webView)
+        webView.scrollView.contentSize = webView.bounds.size
+        XCTAssertTrue(measuredHeights.isEmpty)
+
+        webView.frame.size.height = 180
+        webView.scrollView.contentSize = CGSize(width: 300, height: 220)
+        XCTAssertEqual(measuredHeights, [220])
+        coordinator.stopObserving()
+    }
 }

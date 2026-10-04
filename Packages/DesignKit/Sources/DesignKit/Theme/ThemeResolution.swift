@@ -3,19 +3,17 @@ import UIKit
 
 public extension Theme {
     /// Resolve from original typography descriptors; safe to call repeatedly.
-    func resolved(artwork: ArtworkMetrics, traits: UITraitCollection) -> Theme {
+    func resolved(artwork: ArtworkMetrics = .screen, traits: UITraitCollection) -> Theme {
         Theme(colors: colors, fonts: fonts.resolved(artwork: artwork, traits: traits))
     }
 }
 
 struct ResolvedTheme: ViewModifier {
     let theme: Theme
-    @Environment(\.artwork) private var artwork
     @Environment(\.sizeCategory) private var sizeCategory
 
     func body(content: Content) -> some View {
         let resolved = theme.resolved(
-            artwork: artwork,
             traits: UITraitCollection(preferredContentSizeCategory: sizeCategory.uiKitCategory)
         )
         return content

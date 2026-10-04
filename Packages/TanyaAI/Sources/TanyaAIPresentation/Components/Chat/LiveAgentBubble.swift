@@ -13,7 +13,6 @@ public struct LiveAgentBubble: View {
     let onCancel: () -> Void
     @Environment(\.copyCatalog) private var copy
     @Environment(\.theme) private var theme
-    @Environment(\.artwork) private var artwork
 
     public init(
         payload: LiveAgentPayload,
@@ -28,7 +27,7 @@ public struct LiveAgentBubble: View {
     public var body: some View {
         VStack(
             alignment: .leading,
-            spacing: artwork.size(DesignKitMetrics.Spacing.compact)
+            spacing: DesignKitMetrics.Spacing.compact.sizeInArtwork
         ) {
             Text(payload.title)
                 .designFont(.headline)
@@ -37,10 +36,10 @@ public struct LiveAgentBubble: View {
             detail
             buttons
         }
-        .padding(artwork.size(DesignKitMetrics.Spacing.wide))
+        .padding(DesignKitMetrics.Spacing.wide.sizeInArtwork)
         .background(OutlinedBackground())
         .frame(
-            maxWidth: artwork.size(DesignKitMetrics.Size.bubbleMaximumWidth),
+            maxWidth: DesignKitMetrics.Size.bubbleMaximumWidth.sizeInArtwork,
             alignment: .leading
         )
         .accessibilityElement(children: .contain)
@@ -63,13 +62,13 @@ public struct LiveAgentBubble: View {
             Text(payload.cancelTitle ?? copy.chat("chat.cancel"))
                 .designFont(.footnote)
                 .foregroundColor(Color(theme.colors.secondaryText))
-                .padding(.top, artwork.size(DesignKitMetrics.Spacing.tight))
+                .padding(.top, DesignKitMetrics.Spacing.tight.sizeInArtwork)
         } else {
-            HStack(spacing: artwork.size(DesignKitMetrics.Spacing.compact)) {
+            HStack(spacing: DesignKitMetrics.Spacing.compact.sizeInArtwork) {
                 cancelButton
                 continueButton
             }
-            .padding(.top, artwork.size(DesignKitMetrics.Spacing.tight))
+            .padding(.top, DesignKitMetrics.Spacing.tight.sizeInArtwork)
         }
     }
 
@@ -79,12 +78,12 @@ public struct LiveAgentBubble: View {
         }
         .foregroundColor(Color(theme.colors.primaryText))
         .background(Color(theme.colors.background))
-        .cornerRadius(artwork.size(DesignKitMetrics.Radius.bubble))
+        .cornerRadius(DesignKitMetrics.Radius.bubble.sizeInArtwork)
         .overlay(
-            RoundedRectangle(cornerRadius: artwork.size(DesignKitMetrics.Radius.bubble))
+            RoundedRectangle(cornerRadius: DesignKitMetrics.Radius.bubble.sizeInArtwork)
                 .stroke(
                     Color(theme.colors.divider),
-                    lineWidth: artwork.stroke(DesignKitMetrics.Stroke.hairline)
+                    lineWidth: DesignKitMetrics.Stroke.hairline.strokeInArtwork
                 )
         )
         .accessibilityIdentifier("liveAgent.cancel")
@@ -97,7 +96,7 @@ public struct LiveAgentBubble: View {
         )
         .foregroundColor(Color(theme.colors.userBubbleText))
         .background(Color(theme.colors.accent))
-        .cornerRadius(artwork.size(DesignKitMetrics.Radius.bubble))
+        .cornerRadius(DesignKitMetrics.Radius.bubble.sizeInArtwork)
         .accessibilityIdentifier("liveAgent.continue")
     }
 
@@ -106,7 +105,7 @@ public struct LiveAgentBubble: View {
             .designFont(.button)
             .frame(
                 maxWidth: .infinity,
-                minHeight: artwork.tapTarget(DesignKitMetrics.Size.minimumTapTarget)
+                minHeight: DesignKitMetrics.Size.minimumTapTarget.tapTargetInArtwork
             )
     }
 }

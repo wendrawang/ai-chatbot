@@ -11,9 +11,8 @@ import SwiftUI
 public struct ImageBubble: View {
     let payload: ImagePayload
     @Environment(\.theme) private var theme
-    @Environment(\.artwork) private var artwork
 
-    private var cornerRadius: CGFloat { artwork.size(DesignKitMetrics.Radius.bubble) }
+    private var cornerRadius: CGFloat { DesignKitMetrics.Radius.bubble.sizeInArtwork }
 
     public init(payload: ImagePayload) {
         self.payload = payload
@@ -27,8 +26,8 @@ public struct ImageBubble: View {
                     .designFont(.headline)
                     .foregroundColor(Color(theme.colors.primaryText))
                     .fixedSize(horizontal: false, vertical: true)
-                    .padding(.horizontal, artwork.size(DesignKitMetrics.Spacing.wide))
-                    .padding(.top, artwork.size(DesignKitMetrics.Spacing.roomy))
+                    .padding(.horizontal, DesignKitMetrics.Spacing.wide.sizeInArtwork)
+                    .padding(.top, DesignKitMetrics.Spacing.roomy.sizeInArtwork)
             }
             caption
         }
@@ -38,9 +37,9 @@ public struct ImageBubble: View {
         .clipShape(RoundedRectangle(cornerRadius: cornerRadius))
         .overlay(
             RoundedRectangle(cornerRadius: cornerRadius)
-                .stroke(Color(theme.colors.divider), lineWidth: artwork.stroke(DesignKitMetrics.Stroke.hairline))
+                .stroke(Color(theme.colors.divider), lineWidth: DesignKitMetrics.Stroke.hairline.strokeInArtwork)
         )
-        .frame(maxWidth: artwork.size(DesignKitMetrics.Size.bubbleMaximumWidth), alignment: .leading)
+        .frame(maxWidth: DesignKitMetrics.Size.bubbleMaximumWidth.sizeInArtwork, alignment: .leading)
         .accessibilityElement(children: .combine)
         .accessibilityIdentifier("image.card")
     }
@@ -72,12 +71,12 @@ public struct ImageBubble: View {
         Text(payload.caption)
             .designFont(payload.title == nil ? .headline : .body)
             .foregroundColor(Color(theme.colors.primaryText))
-            .lineSpacing(artwork.size(DesignKitMetrics.Text.captionLineSpacing))
+            .lineSpacing(DesignKitMetrics.Text.captionLineSpacing.sizeInArtwork)
             // Without this a long caption is truncated to one line instead of
             // wrapping: the row has no height to give it yet.
             .fixedSize(horizontal: false, vertical: true)
             .frame(maxWidth: .infinity, alignment: .leading)
-            .padding(.horizontal, artwork.size(DesignKitMetrics.Spacing.wide))
-            .padding(.vertical, artwork.size(DesignKitMetrics.Spacing.roomy))
+            .padding(.horizontal, DesignKitMetrics.Spacing.wide.sizeInArtwork)
+            .padding(.vertical, DesignKitMetrics.Spacing.roomy.sizeInArtwork)
     }
 }

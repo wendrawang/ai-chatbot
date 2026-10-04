@@ -1,7 +1,9 @@
-# Validasi perubahan DesignKit — 2 Oktober 2026
+# Validasi perubahan DesignKit — 2–4 Oktober 2026
 
-Perubahan ini tidak mengubah `Tokens/Generated`. Baseline artwork default 375×812
-mengikuti foto kode; 374×812 dapat dipilih melalui parameter root.
+Perubahan ini tidak mengubah `Tokens/Generated`. Catatan 2–3 Oktober di bawah
+merekam implementasi container/environment sebelumnya. Pada 4 Oktober, sesuai
+preferensi host, ukuran diubah menjadi properti `.sizeInArtwork` berbasis layar
+dengan reference hardcoded 374×812. Setup root artwork telah dihapus.
 
 ## Pemeriksaan yang selesai
 
@@ -110,3 +112,27 @@ Bukti visual: [arrow muncul](../Artifacts/Screenshots/scroll-to-latest-visible.p
 [4 baris](../Artifacts/Screenshots/composer-4-lines.png), dan
 [lebih dari 4 baris](../Artifacts/Screenshots/composer-over-4-lines.png).
 Tidak ada klaim baru tentang hasil Instruments Leaks atau sustained FPS perangkat nyata.
+
+## Properti ukuran langsung — 4 Oktober 2026
+
+- Artwork environment dan seluruh modifier root artwork dihapus. Komponen memakai
+  `value.sizeInArtwork`, `value.strokeInArtwork`, dan `value.tapTargetInArtwork`.
+- Reference hardcoded **374×812** berada di adapter handwritten, di luar generated
+  token. Lebar layar dibaca saat properti dipakai; pembulatan mengikuti point pada
+  extension existing, dengan cap 1.25, stroke minimum satu piksel, dan target tap 44pt.
+- **58 test DesignKit dan 164 test TanyaAI** lulus pada iPhone 17 Pro / iOS 26.5
+  Simulator, tanpa skipped test. Test mencakup properti tanpa setup root, ukuran
+  tidak valid, batas skala, minimum target, dan font yang tidak terskalakan dua kali.
+- **9 test UI** lulus dalam satu run lengkap tanpa skipped test: navigasi/deeplink,
+  radio menjadi prompt, arrow kembali ke latest, seluruh contoh kartu, PIN, dan
+  suggestion yang tidak menutupi jawaban.
+- Build sandbox dan strict style/literal/localization checks lulus. Tidak ada
+  perubahan generated token, kontrak SDK, atau observer/global state baru.
+- Screenshot input kosong, 1, 4, dan lebih dari 4 baris diperbarui dari XCTest
+  setelah perubahan ukuran dan diperiksa visualnya.
+
+Pemeriksaan screenshot juga menemukan feedback tinggi viewport WebKit saat fitting
+row. Observasi kini mengabaikan tinggi yang sama dengan viewport sementara, sehingga
+card tidak membesar mengikuti ukuran fitting. Regression test ditambah, seluruh 58
+test DesignKit lulus, dan test UI arrow diulang setelah fix serta lulus. Screenshot
+arrow diperbarui dari rerun; sembilan test UI unik tetap semuanya telah lulus.

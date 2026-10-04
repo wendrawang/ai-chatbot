@@ -8,7 +8,7 @@ import SwiftUI
 /// bubble, so a heading here would introduce a thing the sentence before it
 /// has already introduced.
 public struct ActionBubble: View {
-    @Environment(\.artwork) private var artwork
+
     let payload: ActionPayload
     let onAction: (Action) -> Void
 
@@ -23,7 +23,7 @@ public struct ActionBubble: View {
     public var body: some View {
         VStack(
             alignment: .leading,
-            spacing: artwork.size(DesignKitMetrics.Spacing.compact)
+            spacing: DesignKitMetrics.Spacing.compact.sizeInArtwork
         ) {
             ForEach(payload.buttons, id: \.identifier) { button in
                 ActionLink(title: button.title, isUnderlined: button.style == .primary) {
@@ -33,7 +33,7 @@ public struct ActionBubble: View {
             }
         }
         .frame(
-            maxWidth: artwork.size(DesignKitMetrics.Size.bubbleMaximumWidth),
+            maxWidth: DesignKitMetrics.Size.bubbleMaximumWidth.sizeInArtwork,
             alignment: .leading
         )
         .accessibilityElement(children: .contain)

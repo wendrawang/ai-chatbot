@@ -5,7 +5,6 @@ struct ChartGraphic: View {
     let type: ChartPayload.ChartType
     let series: [ChartSeries]
     @Environment(\.theme) private var theme
-    @Environment(\.artwork) private var artwork
 
     var body: some View {
         Group {
@@ -27,7 +26,7 @@ struct ChartGraphic: View {
         let values = series.map { $0.value.isFinite ? max(0, $0.value) : 0 }
         let maximum = values.max() ?? 0
         return GeometryReader { proxy in
-            HStack(alignment: .bottom, spacing: artwork.size(DesignKitMetrics.Spacing.compact)) {
+            HStack(alignment: .bottom, spacing: DesignKitMetrics.Spacing.compact.sizeInArtwork) {
                 ForEach(values.indices, id: \.self) { index in
                     Rectangle()
                         .fill(color(index))
@@ -36,7 +35,7 @@ struct ChartGraphic: View {
                 }
             }
         }
-        .frame(height: artwork.size(DesignKitMetrics.Size.chartHeight))
+        .frame(height: DesignKitMetrics.Size.chartHeight.sizeInArtwork)
     }
 
     private var donut: some View {
@@ -46,12 +45,12 @@ struct ChartGraphic: View {
             ForEach(fractions.indices, id: \.self) { index in
                 Circle()
                     .trim(from: ends[index], to: ends[index + 1])
-                    .stroke(color(index), lineWidth: artwork.size(DesignKitMetrics.Size.chartRing))
+                    .stroke(color(index), lineWidth: DesignKitMetrics.Size.chartRing.sizeInArtwork)
                     .rotationEffect(.degrees(-90))
             }
         }
-        .padding(artwork.size(DesignKitMetrics.Size.chartRing) / 2)
-        .frame(height: artwork.size(DesignKitMetrics.Size.chartHeight))
+        .padding(DesignKitMetrics.Size.chartRing.sizeInArtwork / 2)
+        .frame(height: DesignKitMetrics.Size.chartHeight.sizeInArtwork)
         .frame(maxWidth: .infinity)
     }
 
@@ -65,20 +64,20 @@ struct ChartGraphic: View {
                         if index == 0 { path.move(to: point) } else { path.addLine(to: point) }
                     }
                 }
-                .stroke(Color(theme.colors.accent), lineWidth: artwork.stroke(DesignKitMetrics.Stroke.chart))
+                .stroke(Color(theme.colors.accent), lineWidth: DesignKitMetrics.Stroke.chart.strokeInArtwork)
                 ForEach(values.indices, id: \.self) { index in
                     Circle()
                         .fill(Color(theme.colors.accent))
                         .frame(
-                            width: artwork.size(DesignKitMetrics.Size.dot),
-                            height: artwork.size(DesignKitMetrics.Size.dot)
+                            width: DesignKitMetrics.Size.dot.sizeInArtwork,
+                            height: DesignKitMetrics.Size.dot.sizeInArtwork
                         )
                         .position(point(index, values: values, size: proxy.size))
                 }
             }
         }
-        .padding(artwork.size(DesignKitMetrics.Spacing.tight))
-        .frame(height: artwork.size(DesignKitMetrics.Size.chartHeight))
+        .padding(DesignKitMetrics.Spacing.tight.sizeInArtwork)
+        .frame(height: DesignKitMetrics.Size.chartHeight.sizeInArtwork)
     }
 
     private func point(_ index: Int, values: [Double], size: CGSize) -> CGPoint {

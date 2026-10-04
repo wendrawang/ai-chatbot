@@ -7,21 +7,20 @@ import SwiftUI
 struct ChartLegendView: View {
     let series: [ChartSeries]
     @Environment(\.theme) private var theme
-    @Environment(\.artwork) private var artwork
 
     var body: some View {
-        VStack(spacing: artwork.size(DesignKitMetrics.Spacing.legend)) {
+        VStack(spacing: DesignKitMetrics.Spacing.legend.sizeInArtwork) {
             ForEach(series.indices, id: \.self) { index in
-                HStack(spacing: artwork.size(DesignKitMetrics.Spacing.legend)) {
-                    RoundedRectangle(cornerRadius: artwork.size(DesignKitMetrics.Radius.swatch))
+                HStack(spacing: DesignKitMetrics.Spacing.legend.sizeInArtwork) {
+                    RoundedRectangle(cornerRadius: DesignKitMetrics.Radius.swatch.sizeInArtwork)
                         .fill(segmentColor(index))
                         .frame(
-                            width: artwork.size(DesignKitMetrics.Spacing.regular),
-                            height: artwork.size(DesignKitMetrics.Spacing.regular)
+                            width: DesignKitMetrics.Spacing.regular.sizeInArtwork,
+                            height: DesignKitMetrics.Spacing.regular.sizeInArtwork
                         )
                     Text(series[index].label)
                         .designFont(.subheadline)
-                    Spacer(minLength: artwork.size(DesignKitMetrics.Spacing.compact))
+                    Spacer(minLength: DesignKitMetrics.Spacing.compact.sizeInArtwork)
                     Text(series[index].formattedValue)
                         .designFont(.headline)
                 }

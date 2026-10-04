@@ -656,7 +656,7 @@ live in TanyaAIPresentation/Components/Chat. DesignKit has no dependency on the
 feature. Models contain meaning, not layout coordinates or networking details.
 
 See [DesignKit migration](docs/DESIGNKIT_MIGRATION.md) for atomic boundaries,
-container-based artwork sizing, theme selection, typography, and host setup.
+screen-based `.sizeInArtwork` properties, theme selection, typography, and host setup.
 
 ### 4. Add DTO and mapper support
 

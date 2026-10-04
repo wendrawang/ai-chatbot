@@ -7,7 +7,6 @@ public struct TextBubble: View {
     private let runs: [MarkupRun]
     @Environment(\.copyCatalog) private var copy
     @Environment(\.theme) private var theme
-    @Environment(\.artwork) private var artwork
 
     public init(
         text: String,
@@ -21,7 +20,7 @@ public struct TextBubble: View {
     public var body: some View {
         bubble
             .frame(
-                maxWidth: artwork.size(DesignKitMetrics.Size.bubbleMaximumWidth),
+                maxWidth: DesignKitMetrics.Size.bubbleMaximumWidth.sizeInArtwork,
                 alignment: isUser ? .trailing : .leading
             )
     }
@@ -33,8 +32,8 @@ public struct TextBubble: View {
             color: textColor
         )
         .lineSpacing(theme.fonts.lineSpacing(for: .body))
-        .padding(.horizontal, isUser ? artwork.size(DesignKitMetrics.Spacing.wide) : 0)
-        .padding(.vertical, isUser ? artwork.size(DesignKitMetrics.Spacing.regular) : 0)
+        .padding(.horizontal, isUser ? DesignKitMetrics.Spacing.wide.sizeInArtwork : 0)
+        .padding(.vertical, isUser ? DesignKitMetrics.Spacing.regular.sizeInArtwork : 0)
         .background(background)
         .accessibility(
             label: Text(accessibilityText)
@@ -48,7 +47,7 @@ public struct TextBubble: View {
     @ViewBuilder
     private var background: some View {
         if isUser {
-            RoundedRectangle(cornerRadius: artwork.size(DesignKitMetrics.Radius.bubble))
+            RoundedRectangle(cornerRadius: DesignKitMetrics.Radius.bubble.sizeInArtwork)
                 .fill(Color(theme.colors.userBubble))
         }
     }

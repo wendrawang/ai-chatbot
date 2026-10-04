@@ -5,7 +5,6 @@ public struct ScrollToLatestButton: View {
     private let label: String
     private let onTap: () -> Void
     @Environment(\.theme) private var theme
-    @Environment(\.artwork) private var artwork
 
     public init(label: String, onTap: @escaping () -> Void) {
         self.label = label
@@ -17,11 +16,14 @@ public struct ScrollToLatestButton: View {
             Image(systemName: "arrow.down")
                 .designFont(.button)
                 .foregroundColor(Color(theme.colors.accent))
-                .frame(width: artwork.tapTarget(), height: artwork.tapTarget())
+                .frame(
+                    width: DesignKitMetrics.Size.minimumTapTarget.tapTargetInArtwork,
+                    height: DesignKitMetrics.Size.minimumTapTarget.tapTargetInArtwork
+                )
                 .background(Color(theme.colors.surface))
                 .clipShape(Circle())
                 .overlay(Circle().stroke(
-                    Color(theme.colors.divider), lineWidth: artwork.stroke(DesignKitMetrics.Stroke.hairline)
+                    Color(theme.colors.divider), lineWidth: DesignKitMetrics.Stroke.hairline.strokeInArtwork
                 ))
         }
         .buttonStyle(.plain)

@@ -2,7 +2,7 @@ import DesignKit
 import SwiftUI
 
 public struct AuthorizationSheet: View {
-    @Environment(\.artwork) private var artwork
+
     @Environment(\.copyCatalog) private var copy
     @ObservedObject private var viewModel: TanyaAIPINViewModel
     @Environment(\.theme) private var theme
@@ -18,14 +18,14 @@ public struct AuthorizationSheet: View {
 
             sheetContent
                 .background(Color(theme.colors.background))
-                .clipShape(RoundedCorners(radius: artwork.size(DesignKitMetrics.Radius.sheet),
+                .clipShape(RoundedCorners(radius: DesignKitMetrics.Radius.sheet.sizeInArtwork,
                                           corners: [.topLeft, .topRight]))
         }
         .accessibilityIdentifier("pin.sheet")
     }
 
     private var sheetContent: some View {
-        VStack(alignment: .leading, spacing: artwork.size(DesignKitMetrics.Spacing.wide)) {
+        VStack(alignment: .leading, spacing: DesignKitMetrics.Spacing.wide.sizeInArtwork) {
             header
             SecureCodeIndicator(
                 enteredDigitCount: viewModel.pin.count,
@@ -43,12 +43,12 @@ public struct AuthorizationSheet: View {
             )
 
         }
-        .padding(artwork.size(DesignKitMetrics.Spacing.large))
+        .padding(DesignKitMetrics.Spacing.large.sizeInArtwork)
     }
 
     private var header: some View {
-        HStack(spacing: artwork.size(DesignKitMetrics.Spacing.compact)) {
-            VStack(alignment: .leading, spacing: artwork.size(DesignKitMetrics.Spacing.tight)) {
+        HStack(spacing: DesignKitMetrics.Spacing.compact.sizeInArtwork) {
+            VStack(alignment: .leading, spacing: DesignKitMetrics.Spacing.tight.sizeInArtwork) {
                 Text(copy.chat("chat.authorizeTitle"))
                     .font(Font(theme.fonts.title))
                 Text(copy.chat("chat.pinInstruction", values: [
@@ -57,12 +57,15 @@ public struct AuthorizationSheet: View {
                     .font(Font(theme.fonts.footnote))
                     .foregroundColor(Color(theme.colors.secondaryText))
             }
-            Spacer(minLength: artwork.size(DesignKitMetrics.Spacing.compact))
+            Spacer(minLength: DesignKitMetrics.Spacing.compact.sizeInArtwork)
             Button(action: viewModel.cancel) {
                 Image(systemName: "xmark.circle.fill")
                     .font(Font(theme.fonts.title))
                     .foregroundColor(Color(theme.colors.secondaryText))
-                    .frame(width: artwork.tapTarget(), height: artwork.tapTarget())
+                    .frame(
+                        width: DesignKitMetrics.Size.minimumTapTarget.tapTargetInArtwork,
+                        height: DesignKitMetrics.Size.minimumTapTarget.tapTargetInArtwork
+                    )
             }
             .disabled(viewModel.isSubmitting)
             .accessibility(label: Text(copy.chat("chat.cancelAuthorization")))
@@ -81,10 +84,10 @@ public struct AuthorizationSheet: View {
     @ViewBuilder
     private var authorizationStatus: some View {
         if viewModel.isSubmitting {
-            HStack(spacing: artwork.size(DesignKitMetrics.Spacing.compact)) {
+            HStack(spacing: DesignKitMetrics.Spacing.compact.sizeInArtwork) {
                 ProgressView().tint(Color(theme.colors.accent))
-                    .frame(width: artwork.size(DesignKitMetrics.Size.indicator),
-                           height: artwork.size(DesignKitMetrics.Size.indicator))
+                    .frame(width: DesignKitMetrics.Size.indicator.sizeInArtwork,
+                           height: DesignKitMetrics.Size.indicator.sizeInArtwork)
                 Text(copy.chat("chat.authorizing"))
                     .font(Font(theme.fonts.footnote))
                     .foregroundColor(Color(theme.colors.secondaryText))

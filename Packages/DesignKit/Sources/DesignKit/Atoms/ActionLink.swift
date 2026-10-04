@@ -9,7 +9,6 @@ public struct ActionLink: View {
     let isUnderlined: Bool
     let onTap: () -> Void
     @Environment(\.theme) private var theme
-    @Environment(\.artwork) private var artwork
 
     public init(
         title: String,
@@ -37,8 +36,8 @@ public struct ActionLink: View {
     private var label: some View {
         text
             .designFont(.button)
-            .padding(.horizontal, artwork.size(DesignKitMetrics.Spacing.wide))
-            .frame(minHeight: artwork.tapTarget(DesignKitMetrics.Size.minimumTapTarget))
+            .padding(.horizontal, DesignKitMetrics.Spacing.wide.sizeInArtwork)
+            .frame(minHeight: DesignKitMetrics.Size.minimumTapTarget.tapTargetInArtwork)
             .fixedSize(horizontal: false, vertical: true)
     }
 

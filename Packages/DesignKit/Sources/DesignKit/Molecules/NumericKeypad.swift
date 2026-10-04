@@ -1,7 +1,7 @@
 import SwiftUI
 
 public struct NumericKeypad: View {
-    @Environment(\.artwork) private var artwork
+
     let onDigit: (Int) -> Void
     let onDelete: () -> Void
     let isDisabled: Bool
@@ -18,7 +18,7 @@ public struct NumericKeypad: View {
     private let digitRows = [[1, 2, 3], [4, 5, 6], [7, 8, 9]]
 
     public var body: some View {
-        VStack(spacing: artwork.size(DesignKitMetrics.Spacing.medium)) {
+        VStack(spacing: DesignKitMetrics.Spacing.medium.sizeInArtwork) {
             ForEach(digitRows.indices, id: \.self) { index in
                 digitRow(digitRows[index])
             }
@@ -28,7 +28,7 @@ public struct NumericKeypad: View {
     }
 
     private func digitRow(_ digits: [Int]) -> some View {
-        HStack(spacing: artwork.size(DesignKitMetrics.Spacing.regular)) {
+        HStack(spacing: DesignKitMetrics.Spacing.regular.sizeInArtwork) {
             ForEach(digits, id: \.self) { digit in
                 digitButton(digit)
             }
@@ -36,7 +36,7 @@ public struct NumericKeypad: View {
     }
 
     private var finalRow: some View {
-        HStack(spacing: artwork.size(DesignKitMetrics.Spacing.regular)) {
+        HStack(spacing: DesignKitMetrics.Spacing.regular.sizeInArtwork) {
             keypadSpacer
             digitButton(0)
             deleteButton
@@ -51,9 +51,9 @@ public struct NumericKeypad: View {
                     .font(Font(theme.fonts.title))
                     .foregroundColor(Color(theme.colors.primaryText))
                     .frame(maxWidth: .infinity)
-                    .frame(minHeight: artwork.tapTarget(DesignKitMetrics.Size.keypadHeight))
+                    .frame(minHeight: DesignKitMetrics.Size.keypadHeight.tapTargetInArtwork)
                     .background(Color(theme.colors.surface))
-                    .cornerRadius(artwork.size(DesignKitMetrics.Radius.keypad))
+                    .cornerRadius(DesignKitMetrics.Radius.keypad.sizeInArtwork)
             }
         )
         .buttonStyle(PlainButtonStyle())
@@ -67,7 +67,7 @@ public struct NumericKeypad: View {
                 .font(Font(theme.fonts.headline))
                 .foregroundColor(Color(theme.colors.secondaryText))
                 .frame(maxWidth: .infinity)
-                .frame(minHeight: artwork.tapTarget(DesignKitMetrics.Size.keypadHeight))
+                .frame(minHeight: DesignKitMetrics.Size.keypadHeight.tapTargetInArtwork)
         }
         .buttonStyle(PlainButtonStyle())
         .accessibility(label: Text(copy.design("design.deleteDigit")))
@@ -77,7 +77,7 @@ public struct NumericKeypad: View {
     private var keypadSpacer: some View {
         Color.clear
             .frame(maxWidth: .infinity)
-            .frame(minHeight: artwork.tapTarget(DesignKitMetrics.Size.keypadHeight))
+            .frame(minHeight: DesignKitMetrics.Size.keypadHeight.tapTargetInArtwork)
             .accessibility(hidden: true)
     }
 }

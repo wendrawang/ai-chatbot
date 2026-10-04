@@ -8,7 +8,6 @@ public struct ResponseContent<ActionContent: View>: View {
     private let image: ImagePayload?
     private let onSelect: (SelectionOption) -> Void
     private let actionContent: ActionContent
-    @Environment(\.artwork) private var artwork
 
     public init(
         text: String? = nil,
@@ -25,7 +24,7 @@ public struct ResponseContent<ActionContent: View>: View {
     }
 
     public var body: some View {
-        VStack(alignment: .leading, spacing: artwork.size(DesignKitMetrics.Spacing.roomy)) {
+        VStack(alignment: .leading, spacing: DesignKitMetrics.Spacing.roomy.sizeInArtwork) {
             if let text, text.isEmpty == false {
                 TextBubble(text: text, isUser: false)
             }
@@ -37,7 +36,7 @@ public struct ResponseContent<ActionContent: View>: View {
             }
             actionContent
         }
-        .frame(maxWidth: artwork.size(DesignKitMetrics.Size.bubbleMaximumWidth), alignment: .leading)
+        .frame(maxWidth: DesignKitMetrics.Size.bubbleMaximumWidth.sizeInArtwork, alignment: .leading)
         .accessibilityElement(children: .contain)
     }
 }

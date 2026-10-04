@@ -9,7 +9,6 @@ import SwiftUI
 /// swapped in afterwards would start from a zero frame instead.
 public struct LoadingStateView: View {
     @Environment(\.theme) private var theme
-    @Environment(\.artwork) private var artwork
 
     private let label: String
 
@@ -18,7 +17,7 @@ public struct LoadingStateView: View {
     }
 
     public var body: some View {
-        VStack(spacing: artwork.size(DesignKitMetrics.Spacing.regular)) {
+        VStack(spacing: DesignKitMetrics.Spacing.regular.sizeInArtwork) {
             ProgressView()
             Text(label)
                 .designFont(.footnote)

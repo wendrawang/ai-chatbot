@@ -1,3 +1,4 @@
+import UIKit
 import XCTest
 @testable import DesignKit
 
@@ -5,14 +6,14 @@ final class ArtworkMetricsTests: XCTestCase {
     func testReferenceArtworkKeepsDesignMeasurements() {
         let artwork = ArtworkMetrics()
         XCTAssertEqual(artwork.scale, 1)
-        XCTAssertEqual(CGFloat(16).sizeInArtwork(artwork), 16)
+        XCTAssertEqual(artwork.size(16), 16)
         XCTAssertEqual(artwork.size(44), 44)
     }
 
-    func testUsesContainerWidthAndAlignsToPhysicalPixels() {
+    func testWidthScalingRoundsPointsLikeLegacySizing() {
         let artwork = ArtworkMetrics(containerSize: CGSize(width: 414, height: 896), displayScale: 3)
-        XCTAssertEqual(artwork.scale, 414 / 375, accuracy: 0.0001)
-        XCTAssertEqual(artwork.size(16), (16 * 414 / 375 * 3).rounded() / 3, accuracy: 0.0001)
+        XCTAssertEqual(artwork.scale, 414 / 374, accuracy: 0.0001)
+        XCTAssertEqual(artwork.size(16), 18)
         let short = ArtworkMetrics(containerSize: CGSize(width: 414, height: 300), displayScale: 3)
         XCTAssertEqual(short.size(16), artwork.size(16))
     }
@@ -24,7 +25,7 @@ final class ArtworkMetricsTests: XCTestCase {
         XCTAssertEqual(custom.scale, 1)
         let tablet = ArtworkMetrics(containerSize: CGSize(width: 1_024, height: 768))
         XCTAssertEqual(tablet.scale, 1.25)
-        let uncapped = ArtworkMetrics(containerSize: CGSize(width: 750, height: 812), maximumScale: 2)
+        let uncapped = ArtworkMetrics(containerSize: CGSize(width: 748, height: 812), maximumScale: 2)
         XCTAssertEqual(uncapped.scale, 2)
     }
 
@@ -38,5 +39,15 @@ final class ArtworkMetricsTests: XCTestCase {
         XCTAssertEqual(narrow.stroke(0), 0)
         XCTAssertEqual(narrow.stroke(.infinity), 0)
         XCTAssertLessThan(narrow.size(16), 16)
+    }
+
+    func testScreenPropertiesWorkWithoutRootSetup() {
+        let current = ArtworkMetrics.screen
+        XCTAssertEqual(ArtworkMetrics.referenceSize, CGSize(width: 374, height: 812))
+        XCTAssertEqual(current.displayScale, UIScreen.main.scale)
+        XCTAssertEqual(CGFloat(16).sizeInArtwork, current.size(16))
+        XCTAssertEqual(CGFloat(0.1).strokeInArtwork, current.stroke(0.1))
+        XCTAssertGreaterThanOrEqual(CGFloat(32).tapTargetInArtwork, 44)
+        XCTAssertEqual(CGFloat.nan.sizeInArtwork, 0)
     }
 }

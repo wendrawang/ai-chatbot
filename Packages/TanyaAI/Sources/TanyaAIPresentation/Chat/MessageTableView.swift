@@ -10,7 +10,7 @@ struct MessageTableView: UIViewRepresentable {
     @ObservedObject var scrollControl: TanyaAIMessageScrollControl
     let handlers: TanyaAIMessageRowHandlers
     @Environment(\.copyCatalog) private var copy
-    @Environment(\.artwork) private var artwork
+
     @Environment(\.imageLoader) private var imageLoader
 
     func makeCoordinator() -> Coordinator {
@@ -24,11 +24,11 @@ struct MessageTableView: UIViewRepresentable {
         tableView.separatorStyle = .none
         tableView.backgroundColor = theme.colors.background
         tableView.rowHeight = UITableView.automaticDimension
-        tableView.estimatedRowHeight = artwork.size(DesignKitMetrics.Size.estimatedRowHeight)
+        tableView.estimatedRowHeight = DesignKitMetrics.Size.estimatedRowHeight.sizeInArtwork
         tableView.keyboardDismissMode = .interactive
         tableView.contentInset = UIEdgeInsets(
-            top: artwork.size(DesignKitMetrics.Spacing.snug), left: 0,
-            bottom: artwork.size(DesignKitMetrics.Spacing.snug), right: 0
+            top: DesignKitMetrics.Spacing.snug.sizeInArtwork, left: 0,
+            bottom: DesignKitMetrics.Spacing.snug.sizeInArtwork, right: 0
         )
         tableView.accessibilityIdentifier = "chat.messageTable"
         tableView.register(
@@ -42,7 +42,7 @@ struct MessageTableView: UIViewRepresentable {
     func updateUIView(_ tableView: UITableView, context: Context) {
         context.coordinator.updateScrollControl(scrollControl)
         context.coordinator.update(
-            state, theme: theme, handlers: handlers, artwork: artwork, imageLoader: imageLoader, copy: copy
+            state, theme: theme, handlers: handlers, imageLoader: imageLoader, copy: copy
         )
     }
 }

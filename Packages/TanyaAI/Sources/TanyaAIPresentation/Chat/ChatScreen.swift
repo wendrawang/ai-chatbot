@@ -3,7 +3,7 @@ import SwiftUI
 import TanyaAIDomain
 
 public struct ChatScreen: View {
-    @Environment(\.artwork) private var artwork
+
     @Environment(\.copyCatalog) private var copy
     @ObservedObject private var viewModel: TanyaAIChatViewModel
     @Environment(\.theme) private var theme
@@ -45,15 +45,18 @@ public struct ChatScreen: View {
     }
 
     private var header: some View {
-        HStack(spacing: artwork.size(DesignKitMetrics.Spacing.wide)) {
+        HStack(spacing: DesignKitMetrics.Spacing.wide.sizeInArtwork) {
             Button(action: viewModel.close) {
                 Image(systemName: "xmark")
                     .font(Font(theme.fonts.headline))
-                    .frame(width: artwork.tapTarget(), height: artwork.tapTarget())
+                    .frame(
+                        width: DesignKitMetrics.Size.minimumTapTarget.tapTargetInArtwork,
+                        height: DesignKitMetrics.Size.minimumTapTarget.tapTargetInArtwork
+                    )
             }
             .accessibility(label: Text(copy.chat("chat.close")))
 
-            VStack(alignment: .leading, spacing: artwork.size(DesignKitMetrics.Spacing.micro)) {
+            VStack(alignment: .leading, spacing: DesignKitMetrics.Spacing.micro.sizeInArtwork) {
                 Text(copy.chat("chat.title"))
                     .font(Font(theme.fonts.headline))
                     .foregroundColor(Color(theme.colors.primaryText))
@@ -64,17 +67,20 @@ public struct ChatScreen: View {
                 }
             }
 
-            Spacer(minLength: artwork.size(DesignKitMetrics.Spacing.compact))
+            Spacer(minLength: DesignKitMetrics.Spacing.compact.sizeInArtwork)
 
             Button(action: viewModel.openHistory) {
                 Image(systemName: "clock")
                     .font(Font(theme.fonts.headline))
-                    .frame(width: artwork.tapTarget(), height: artwork.tapTarget())
+                    .frame(
+                        width: DesignKitMetrics.Size.minimumTapTarget.tapTargetInArtwork,
+                        height: DesignKitMetrics.Size.minimumTapTarget.tapTargetInArtwork
+                    )
             }
             .accessibility(label: Text(copy.chat("chat.history")))
         }
-        .padding(.horizontal, artwork.size(DesignKitMetrics.Spacing.compact))
-        .padding(.top, artwork.size(DesignKitMetrics.Spacing.compact))
+        .padding(.horizontal, DesignKitMetrics.Spacing.compact.sizeInArtwork)
+        .padding(.top, DesignKitMetrics.Spacing.compact.sizeInArtwork)
         .foregroundColor(Color(theme.colors.accent))
     }
 
@@ -85,8 +91,8 @@ public struct ChatScreen: View {
                 .font(Font(theme.fonts.footnote))
                 .foregroundColor(Color(theme.colors.error))
                 .frame(maxWidth: .infinity, alignment: .leading)
-                .padding(.horizontal, artwork.size(DesignKitMetrics.Spacing.wide))
-                .padding(.vertical, artwork.size(DesignKitMetrics.Spacing.compact))
+                .padding(.horizontal, DesignKitMetrics.Spacing.wide.sizeInArtwork)
+                .padding(.vertical, DesignKitMetrics.Spacing.compact.sizeInArtwork)
         }
     }
 
@@ -107,6 +113,6 @@ public struct ChatScreen: View {
     private var separator: some View {
         Rectangle()
             .fill(Color(theme.colors.divider))
-            .frame(height: artwork.stroke(DesignKitMetrics.Stroke.divider))
+            .frame(height: DesignKitMetrics.Stroke.divider.strokeInArtwork)
     }
 }

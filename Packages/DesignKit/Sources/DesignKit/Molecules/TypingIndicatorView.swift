@@ -8,7 +8,7 @@ import SwiftUI
 /// gets when the table first places it - which reads as a stray slide.
 public struct TypingIndicatorView: View {
     @Environment(\.theme) private var theme
-    @Environment(\.artwork) private var artwork
+
     @Environment(\.accessibilityReduceMotion) private var isReduceMotion
     @State private var isAnimating = false
 
@@ -36,13 +36,13 @@ public struct TypingIndicatorView: View {
     }
 
     private var dots: some View {
-        HStack(spacing: artwork.size(DesignKitMetrics.Spacing.snug)) {
+        HStack(spacing: DesignKitMetrics.Spacing.snug.sizeInArtwork) {
             ForEach(0..<dotCount, id: \.self) { index in
                 Circle()
                     .fill(Color(theme.colors.secondaryText))
                     .frame(
-                        width: artwork.size(DesignKitMetrics.Size.dot),
-                        height: artwork.size(DesignKitMetrics.Size.dot)
+                        width: DesignKitMetrics.Size.dot.sizeInArtwork,
+                        height: DesignKitMetrics.Size.dot.sizeInArtwork
                     )
                     .opacity(isAnimating ? 1 : DesignKitMetrics.Opacity.restingDot)
                     .animation(
@@ -53,6 +53,6 @@ public struct TypingIndicatorView: View {
                     )
             }
         }
-        .padding(.vertical, artwork.size(DesignKitMetrics.Spacing.roomy))
+        .padding(.vertical, DesignKitMetrics.Spacing.roomy.sizeInArtwork)
     }
 }

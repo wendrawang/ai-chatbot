@@ -6,16 +6,15 @@ import SwiftUI
 /// in the same conversation.
 public struct OutlinedBackground: View {
     @Environment(\.theme) private var theme
-    @Environment(\.artwork) private var artwork
 
     public init() {}
 
     public var body: some View {
-        RoundedRectangle(cornerRadius: artwork.size(DesignKitMetrics.Radius.bubble))
+        RoundedRectangle(cornerRadius: DesignKitMetrics.Radius.bubble.sizeInArtwork)
             .fill(Color(theme.colors.assistantBubble))
             .overlay(
-                RoundedRectangle(cornerRadius: artwork.size(DesignKitMetrics.Radius.bubble))
-                    .stroke(Color(theme.colors.divider), lineWidth: artwork.stroke(DesignKitMetrics.Stroke.hairline))
+                RoundedRectangle(cornerRadius: DesignKitMetrics.Radius.bubble.sizeInArtwork)
+                    .stroke(Color(theme.colors.divider), lineWidth: DesignKitMetrics.Stroke.hairline.strokeInArtwork)
             )
     }
 }

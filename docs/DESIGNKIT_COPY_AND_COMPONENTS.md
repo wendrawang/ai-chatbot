@@ -74,7 +74,6 @@ struct ProfileScreen: View {
         ProfileContent()
             .copyCatalog(copy)
             .theme(selectedTheme)
-            .artworkLayout()
     }
 }
 ```
@@ -149,12 +148,13 @@ dimasukkan otomatis oleh package produksi. Default title adalah “Chat”/
 ## Ukuran dan tipografi
 
 Angka layout komponen diambil dari `DesignKitMetrics`, kemudian di-resolve lewat
-`artwork.size`, `artwork.stroke`, atau `artwork.tapTarget`. Font memakai role
+`value.sizeInArtwork`, `value.strokeInArtwork`, atau `value.tapTargetInArtwork`. Font memakai role
 `theme.fonts` / `.designFont`, bukan angka ukuran pada view. Token tambahan yang
 belum ada di export Figma berada di file mapping `Tokens/DesignKitMetrics*.swift`.
 **Tidak ada perubahan pada `Tokens/Generated`.**
 
-Token reference artwork default 375×812 dapat dioverride menjadi 374×812 di root.
+Reference artwork hardcoded 374×812; properti ukuran membaca lebar layar.
+Tidak perlu artwork environment atau modifier pada root.
 Batas composer empat baris ada di `DesignKitMetrics.Text.maximumInputLines`.
 Motion, opacity, tolerance pengukuran, dan batas HTML juga memiliki token bernama.
 Lihat [setup font dan artwork](DESIGNKIT_MIGRATION.md) untuk skala dan Dynamic Type.
