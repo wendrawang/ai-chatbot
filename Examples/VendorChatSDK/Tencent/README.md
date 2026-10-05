@@ -65,32 +65,42 @@ Tencent tersedia, jalankan `connectTencent`:
 ```swift
 @Published private(set) var isTencentReady = false
 @Published private(set) var tanyaAIHost: TanyaAIHost?
-@Published var pendingTanyaAIDeeplink: URL?
+@Published private(set) var pendingChatDeeplink: URL?
+@Published private(set) var tencentLoginError: Error?
 
-func prepareTanyaAI() {
+func prepareTanyaAI(theme: TanyaAITheme = .sandbox) {
+    guard tanyaAIHost == nil else { return }
     let composition = TencentTanyaAIComposition(
         botUserID: AppConfig.tencentBotUserID,
         deeplinkScheme: "ocbcid",
         deeplinkHost: "mobile"
     )
-    tanyaAIHost = composition.makeHost(theme: .host) { [weak self] url in
-        self?.pendingTanyaAIDeeplink = url
+    tanyaAIHost = composition.makeHost(theme: theme) { [weak self] url in
+        self?.pendingChatDeeplink = url
     }
 }
 
 func connectTencent(userID: String, userSig: String) {
+    isTencentReady = false
+    tencentLoginError = nil
     TencentChatLifecycle.shared.login(userID: userID, userSig: userSig) { [weak self] result in
         DispatchQueue.main.async {
-            guard let self else { return }
+            guard let self, self.state == .loggedIn else { return }
             switch result {
             case .success:
                 self.isTencentReady = true
-            case .failure:
+            case .failure(let error):
                 self.isTencentReady = false
-                // Tampilkan retry/error lewat state host app Anda.
+                self.tencentLoginError = error
             }
         }
     }
+}
+
+func consumeDeeplink() -> URL? {
+    let url = pendingChatDeeplink
+    pendingChatDeeplink = nil
+    return url
 }
 ```
 
@@ -98,11 +108,38 @@ Panggil `prepareTanyaAI()` tepat sebelum `state = .loggedIn`, lalu
 `connectTencent` sekali per sesi login yang berhasil setelah mengambil UserSig
 dari console (PoC) atau backend (produksi). Bila UserSig kedaluwarsa atau akun
 ter-kick, ambil UserSig
-baru dan login ulang melalui state aplikasi. Saat logout, kosongkan
-`tanyaAIHost`, `isTencentReady`, dan `pendingTanyaAIDeeplink`, lalu panggil
-`TencentChatLifecycle.shared.logout(completion:)`. Tunggu callback logout
-sebelum login Tencent dengan akun berikutnya. Menutup layar TanyaAI **tidak**
-memanggil logout SDK.
+baru dan login ulang melalui state aplikasi. Pemanggilan dari `login()` AppState
+aman ketika login host sudah berhasil, SDK sudah diinisialisasi, dan method ini
+dijalankan pada main thread. Mengubah state ke `.loggedIn` tidak membuka chat;
+entry point Main menunggu `isTencentReady` sebelum memanggil `present()`.
+`theme:` dapat menerima snapshot tema host; `.sandbox` hanya default contoh PoC.
+
+Saat logout, tutup chat, reset readiness/error/pending URL, lalu logout SDK:
+
+```swift
+func clearTanyaAI(completion: @escaping () -> Void = {}) {
+    isTencentReady = false
+    tencentLoginError = nil
+    pendingChatDeeplink = nil
+    let host = tanyaAIHost
+    tanyaAIHost = nil
+    let logoutTencent = {
+        TencentChatLifecycle.shared.logout {
+            DispatchQueue.main.async(execute: completion)
+        }
+    }
+    if let host {
+        host.dismiss(completion: logoutTencent)
+    } else {
+        logoutTencent()
+    }
+}
+```
+
+Tunggu completion ini sebelum login Tencent dengan akun berikutnya. Menutup
+layar TanyaAI biasa **tidak** memanggil logout SDK. Callback login juga memeriksa
+state aplikasi, sehingga hasil yang tiba setelah logout tidak mengaktifkan tombol
+di halaman prelogin.
 
 ### MainCoordinator: tap entry point baru membuka chat
 
@@ -113,19 +150,12 @@ memanggil logout SDK.
 @EnvironmentObject var appState: AppState
 
 var body: some View {
-    Group {
-        if let host = appState.tanyaAIHost {
-            mainContent.tanyaAIHost(host)
-        } else {
-            mainContent
+    mainContent
+        .tanyaAIHost(appState.tanyaAIHost)
+        .onReceive(appState.$pendingChatDeeplink) { pending in
+            guard pending != nil, let url = appState.consumeDeeplink() else { return }
+            openExistingDeeplink(url)
         }
-    }
-    .onChange(of: appState.pendingTanyaAIDeeplink) { url in
-        guard let url else { return }
-        appState.pendingTanyaAIDeeplink = nil
-        // Panggil method deeplink host yang sudah ada di Main.
-        openExistingDeeplink(url)
-    }
 }
 
 private var mainContent: some View {
@@ -136,6 +166,11 @@ private var mainContent: some View {
     }
 }
 ```
+
+Modifier menerima `TanyaAIHost?` langsung; tidak perlu `!`, unwrap manual, atau
+memindahkan NavigationView ke dua cabang. Nil hanya menghilangkan anchor chat,
+sementara konten dan state Main tetap pada identitas yang sama. Method
+`openExistingDeeplink` pada contoh adalah router milik host, bukan API package.
 
 `TanyaAIHost` menutup fitur sebelum callback deeplink. Callback hanya menaruh
 URL di `AppState`; `MainCoordinator` yang menjalankan router existing, sesuai

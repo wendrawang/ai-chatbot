@@ -40,9 +40,19 @@ public extension View {
     /// presented as its own controller, so the host's own navigation stack is
     /// never involved and cannot be disturbed by it.
     func tanyaAIHost(_ host: TanyaAIHost) -> some View {
+        tanyaAIHost(Optional(host))
+    }
+
+    /// Accepts a host owned by an app's signed-in state. Nil removes only the
+    /// presentation anchor; the main content keeps its identity and state.
+    func tanyaAIHost(_ host: TanyaAIHost?) -> some View {
         background(
-            ChatHostAnchor(host: host)
-                .frame(width: 0, height: 0)
+            Group {
+                if let host {
+                    ChatHostAnchor(host: host)
+                        .frame(width: 0, height: 0)
+                }
+            }
         )
     }
 }

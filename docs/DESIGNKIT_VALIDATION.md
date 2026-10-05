@@ -1,4 +1,4 @@
-# Validasi perubahan DesignKit — 2–4 Oktober 2026
+# Validasi perubahan DesignKit — 2–5 Oktober 2026
 
 Perubahan ini tidak mengubah `Tokens/Generated`. Catatan 2–3 Oktober di bawah
 merekam implementasi container/environment sebelumnya. Pada 4 Oktober, sesuai
@@ -142,3 +142,17 @@ dikoreksi host menjadi **375×812**. Implementasi dan panduan host sekarang mema
 375×812; properti `.sizeInArtwork` tetap tanpa environment atau setup root.
 Seluruh 58 test DesignKit dijalankan ulang setelah koreksi dan lulus tanpa skipped
 test. Strict style/literal/localization checks juga lulus; generated token tetap utuh.
+
+## Host optional dan setup AppState — 5 Oktober 2026
+
+- `.tanyaAIHost` menerima `TanyaAIHost?` langsung; overload non-optional tetap
+  tersedia. Nil hanya menghapus anchor presentasi, tanpa mengganti konten Main.
+- **166 test TanyaAI** lulus dalam satu run lengkap pada iPhone 17 Pro / iOS 26.5
+  Simulator, tanpa skipped test. Test tambahan memeriksa anchor dibuat/dilepas
+  pada `nil → host → nil`, instance field dan input Main tetap bertahan, serta
+  controller dan host non-optional dilepas setelah teardown.
+- Build sandbox, strict lint, batas file/method, literal/dependency/localization
+  checks, dan `git diff --check` lulus. Generated token tidak berubah.
+- Panduan Tencent memakai modifier langsung di Main. AppState menyiapkan host
+  sebelum `.loggedIn`, login Tencent sekali per sesi, dan reset readiness/error
+  serta logout SDK setelah chat ditutup. Router deeplink tetap berada di Main.
