@@ -156,3 +156,18 @@ test. Strict style/literal/localization checks juga lulus; generated token tetap
 - Panduan Tencent memakai modifier langsung di Main. AppState menyiapkan host
   sebelum `.loggedIn`, login Tencent sekali per sesi, dan reset readiness/error
   serta logout SDK setelah chat ditutup. Router deeplink tetap berada di Main.
+
+
+### 5 Oktober: composer lebih sederhana dan token spacing langsung
+
+Composer memisahkan margin luar, isi input, dan dekorasi permukaan; send/stop memakai
+satu tombol. Padding horizontal luar/dalam memakai FigmaSize 16, lingkaran tombol 24,
+radius 8, background putih dengan stroke dan shadow. Spacing generated dipakai langsung
+di komponen; nilai token dan rumus artwork tidak berubah.
+
+Validasi: 58 test DesignKit lulus tanpa skip. Tiga test UI lulus untuk input 1/4/6 baris,
+radio consumption, dan scroll-to-latest. Test suggestion-safe-layout gagal satu kali pada
+`isHittable` teks statis, lalu lulus pada rerun tanpa perubahan kode; screenshot memperlihatkan
+teks tidak tertutup. Strict lint 0 violation, guard design-system dan whitespace lulus.
+Screenshot composer satu/empat/lebih dari empat baris diperbarui dari XCTest.
+Tidak ada klaim benchmark performa atau Instruments baru untuk perubahan ini.

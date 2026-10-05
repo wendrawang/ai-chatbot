@@ -19,8 +19,8 @@ public struct DesignButtonStyle: ButtonStyle {
     public func makeBody(configuration: Configuration) -> some View {
         configuration.label
             .designFont(.button)
-            .padding(.horizontal, DesignKitMetrics.Spacing.compact.sizeInArtwork)
-            .padding(.vertical, DesignKitMetrics.Spacing.tight.sizeInArtwork)
+            .padding(.horizontal, FigmaSize.spacing8.sizeInArtwork)
+            .padding(.vertical, FigmaSize.spacing4.sizeInArtwork)
             .frame(
                 minWidth: DesignKitMetrics.Size.minimumTapTarget.tapTargetInArtwork,
                 minHeight: DesignKitMetrics.Size.minimumTapTarget.tapTargetInArtwork

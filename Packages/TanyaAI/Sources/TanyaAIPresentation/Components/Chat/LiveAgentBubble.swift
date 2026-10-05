@@ -27,7 +27,7 @@ public struct LiveAgentBubble: View {
     public var body: some View {
         VStack(
             alignment: .leading,
-            spacing: DesignKitMetrics.Spacing.compact.sizeInArtwork
+            spacing: FigmaSize.spacing8.sizeInArtwork
         ) {
             Text(payload.title)
                 .designFont(.headline)
@@ -36,7 +36,7 @@ public struct LiveAgentBubble: View {
             detail
             buttons
         }
-        .padding(DesignKitMetrics.Spacing.wide.sizeInArtwork)
+        .padding(FigmaSize.spacing16.sizeInArtwork)
         .background(OutlinedBackground())
         .frame(
             maxWidth: DesignKitMetrics.Size.bubbleMaximumWidth.sizeInArtwork,
@@ -62,13 +62,13 @@ public struct LiveAgentBubble: View {
             Text(payload.cancelTitle ?? copy.chat("chat.cancel"))
                 .designFont(.footnote)
                 .foregroundColor(Color(theme.colors.secondaryText))
-                .padding(.top, DesignKitMetrics.Spacing.tight.sizeInArtwork)
+                .padding(.top, FigmaSize.spacing4.sizeInArtwork)
         } else {
-            HStack(spacing: DesignKitMetrics.Spacing.compact.sizeInArtwork) {
+            HStack(spacing: FigmaSize.spacing8.sizeInArtwork) {
                 cancelButton
                 continueButton
             }
-            .padding(.top, DesignKitMetrics.Spacing.tight.sizeInArtwork)
+            .padding(.top, FigmaSize.spacing4.sizeInArtwork)
         }
     }
 

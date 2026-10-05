@@ -16,12 +16,12 @@ public struct ConfirmationCard: View {
     }
 
     public var body: some View {
-        VStack(alignment: .leading, spacing: DesignKitMetrics.Spacing.wide.sizeInArtwork) {
+        VStack(alignment: .leading, spacing: FigmaSize.spacing16.sizeInArtwork) {
             Text(title).designFont(.headline)
             ForEach(fields.indices, id: \.self) { index in
                 HStack(alignment: .firstTextBaseline, spacing: DesignKitMetrics.Spacing.regular.sizeInArtwork) {
                     Text(fields[index].label).foregroundColor(Color(theme.colors.secondaryText))
-                    Spacer(minLength: DesignKitMetrics.Spacing.compact.sizeInArtwork)
+                    Spacer(minLength: FigmaSize.spacing8.sizeInArtwork)
                     Text(fields[index].value).multilineTextAlignment(.trailing)
                 }
                 .designFont(.body)
@@ -34,7 +34,7 @@ public struct ConfirmationCard: View {
             .buttonStyle(DesignButtonStyle())
         }
         .foregroundColor(Color(theme.colors.primaryText))
-        .padding(DesignKitMetrics.Spacing.wide.sizeInArtwork)
+        .padding(FigmaSize.spacing16.sizeInArtwork)
         .background(Color(theme.colors.surface))
         .clipShape(RoundedRectangle(cornerRadius: DesignKitMetrics.Radius.card.sizeInArtwork))
         .frame(maxWidth: DesignKitMetrics.Size.cardMaximumWidth.sizeInArtwork)

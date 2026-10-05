@@ -10,8 +10,8 @@ import CoreGraphics
 /// host supplies so a bank's own palette wins. These are the values that stay
 /// the same whoever is using it.
 public enum DesignKitMetrics {
-    /// Space between and inside things. Steps roughly by a quarter each time,
-    /// so two values next to each other read as deliberately different.
+    /// Spacing absent from the generated scale, plus compatibility aliases.
+    /// Components use FigmaSize directly whenever that token already exists.
     public enum Spacing {
         public static let micro: CGFloat = 2
         public static let large: CGFloat = 20
@@ -42,7 +42,7 @@ public enum DesignKitMetrics {
     public enum Radius {
         public static let keypad: CGFloat = 14
         public static let sheet: CGFloat = 20
-        public static let composer: CGFloat = 16
+        public static let composer: CGFloat = 8
         public static let swatch: CGFloat = 3
         /// 12 - replies, prompts, hand-off links, image cards.
         public static let bubble: CGFloat = 12
@@ -69,7 +69,7 @@ public enum DesignKitMetrics {
 
     /// Sizes that are not spacing.
     public enum Size {
-        public static let composerAction: CGFloat = 32
+        public static let composerAction: CGFloat = 24
         public static let keypadHeight: CGFloat = 54
         public static let secureDigit: CGFloat = 14
         public static let estimatedRowHeight: CGFloat = 96

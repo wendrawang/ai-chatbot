@@ -35,7 +35,7 @@ public struct FinancialListBubble: View {
                 .designFont(.headline)
                 .foregroundColor(Color(theme.colors.primaryText))
         }
-        .padding(DesignKitMetrics.Spacing.wide.sizeInArtwork)
+        .padding(FigmaSize.spacing16.sizeInArtwork)
     }
 
     private var rows: some View {
@@ -44,7 +44,7 @@ public struct FinancialListBubble: View {
                 row(payload.rows[index])
             }
         }
-        .padding(DesignKitMetrics.Spacing.wide.sizeInArtwork)
+        .padding(FigmaSize.spacing16.sizeInArtwork)
     }
 
     private func row(_ item: FinancialListRow) -> some View {
@@ -54,7 +54,7 @@ public struct FinancialListBubble: View {
                     .designFont(.subheadline)
                 optionalText(item.subtitle)
             }
-            Spacer(minLength: DesignKitMetrics.Spacing.compact.sizeInArtwork)
+            Spacer(minLength: FigmaSize.spacing8.sizeInArtwork)
             VStack(alignment: .trailing, spacing: DesignKitMetrics.Radius.swatch.sizeInArtwork) {
                 Text(item.value)
                     .designFont(.headline)
@@ -78,16 +78,16 @@ public struct FinancialListBubble: View {
         if let label = payload.totalLabel, let value = payload.totalValue {
             VStack(spacing: DesignKitMetrics.Spacing.regular.sizeInArtwork) {
                 cardDivider
-                HStack(alignment: .firstTextBaseline, spacing: DesignKitMetrics.Spacing.compact.sizeInArtwork) {
+                HStack(alignment: .firstTextBaseline, spacing: FigmaSize.spacing8.sizeInArtwork) {
                     Text(label)
-                    Spacer(minLength: DesignKitMetrics.Spacing.compact.sizeInArtwork)
+                    Spacer(minLength: FigmaSize.spacing8.sizeInArtwork)
                     VStack(alignment: .trailing, spacing: DesignKitMetrics.Spacing.micro.sizeInArtwork) {
                         Text(value).designFont(.headline)
                         optionalText(payload.totalCaption)
                     }
                 }
                 .designFont(.subheadline)
-                .padding(.horizontal, DesignKitMetrics.Spacing.wide.sizeInArtwork)
+                .padding(.horizontal, FigmaSize.spacing16.sizeInArtwork)
             }
         }
     }
@@ -98,7 +98,7 @@ public struct FinancialListBubble: View {
             Text(footnote)
                 .designFont(.footnote)
                 .foregroundColor(Color(theme.colors.secondaryText))
-                .padding(DesignKitMetrics.Spacing.wide.sizeInArtwork)
+                .padding(FigmaSize.spacing16.sizeInArtwork)
         }
     }
 

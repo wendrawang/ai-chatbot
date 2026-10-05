@@ -23,7 +23,7 @@ public struct ActionBubble: View {
     public var body: some View {
         VStack(
             alignment: .leading,
-            spacing: DesignKitMetrics.Spacing.compact.sizeInArtwork
+            spacing: FigmaSize.spacing8.sizeInArtwork
         ) {
             ForEach(payload.buttons, id: \.identifier) { button in
                 ActionLink(title: button.title, isUnderlined: button.style == .primary) {

@@ -48,7 +48,7 @@ public struct OptionList: View {
     private var rows: some View {
         VStack(
             alignment: .leading,
-            spacing: DesignKitMetrics.Spacing.compact.sizeInArtwork
+            spacing: FigmaSize.spacing8.sizeInArtwork
         ) {
             ForEach(options, id: \.identifier) { option in
                 OptionRow(option: option, onSelect: onSelect)

@@ -41,7 +41,8 @@ Isi DesignKit disusun atomic design:
 | `Organisms` | Chart, receipt, portfolio, financial list dan HTML card |
 | `Support` | Parser, image loading, WebKit dan perhitungan layout; bukan UI atom |
 
-**Angka tampilan ambil dari `DesignKitMetrics`, lalu gunakan properti `.sizeInArtwork`.**
+**Padding/spacing pakai `FigmaSize` langsung jika token tersedia; ukuran khusus dari `DesignKitMetrics`.**
+Gunakan properti `.sizeInArtwork` pada nilai dasar tersebut.
 Referensi hardcoded 375×812, skala dari `UIScreen.main`; tidak ada artwork environment/root modifier.
 Generated token selalu nilai dasar; konversi tidak mengubah token. Stroke dan area tap menggunakan
 `.strokeInArtwork` / `.tapTargetInArtwork` untuk menjaga batas minimum.

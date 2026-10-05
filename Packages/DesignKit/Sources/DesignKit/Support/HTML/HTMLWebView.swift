@@ -94,7 +94,7 @@ struct HTMLWebView: UIViewRepresentable {
         }
         table { border-collapse: collapse; width: 100%; }
         th, td {
-          padding-block: \(DesignKitMetrics.Spacing.compact.sizeInArtwork)px;
+          padding-block: \(FigmaSize.spacing8.sizeInArtwork)px;
           padding-inline: \(DesignKitMetrics.Spacing.regular.sizeInArtwork)px;
           border-bottom: \(DesignKitMetrics.Stroke.divider.strokeInArtwork)px solid \(divider);
           text-align: left;

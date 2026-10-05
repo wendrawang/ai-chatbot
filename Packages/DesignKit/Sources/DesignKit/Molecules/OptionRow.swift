@@ -49,8 +49,8 @@ public struct OptionRow: View {
             minHeight: DesignKitMetrics.Size.minimumTapTarget.tapTargetInArtwork,
             alignment: .leading
         )
-        .padding(.horizontal, DesignKitMetrics.Spacing.wide.sizeInArtwork)
-        .padding(.vertical, DesignKitMetrics.Spacing.compact.sizeInArtwork)
+        .padding(.horizontal, FigmaSize.spacing16.sizeInArtwork)
+        .padding(.vertical, FigmaSize.spacing8.sizeInArtwork)
         .background(OutlinedBackground())
     }
 }

@@ -8,6 +8,12 @@ public extension DesignKitMetrics {
         public static let defaultDisplayScale: CGFloat = 2
     }
 
+    enum Shadow {
+        public static let composerOpacity: Double = 0.12
+        public static let composerRadius: CGFloat = 4
+        public static let composerOffset: CGFloat = 2
+    }
+
     enum Layout {
         public static let measurementTolerance: CGFloat = 0.5
         public static let scrollFollowThreshold: CGFloat = 80

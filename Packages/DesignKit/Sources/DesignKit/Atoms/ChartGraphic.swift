@@ -26,7 +26,7 @@ struct ChartGraphic: View {
         let values = series.map { $0.value.isFinite ? max(0, $0.value) : 0 }
         let maximum = values.max() ?? 0
         return GeometryReader { proxy in
-            HStack(alignment: .bottom, spacing: DesignKitMetrics.Spacing.compact.sizeInArtwork) {
+            HStack(alignment: .bottom, spacing: FigmaSize.spacing8.sizeInArtwork) {
                 ForEach(values.indices, id: \.self) { index in
                     Rectangle()
                         .fill(color(index))
@@ -76,7 +76,7 @@ struct ChartGraphic: View {
                 }
             }
         }
-        .padding(DesignKitMetrics.Spacing.tight.sizeInArtwork)
+        .padding(FigmaSize.spacing4.sizeInArtwork)
         .frame(height: DesignKitMetrics.Size.chartHeight.sizeInArtwork)
     }
 

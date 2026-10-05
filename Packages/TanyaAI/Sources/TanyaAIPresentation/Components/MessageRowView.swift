@@ -9,15 +9,15 @@ struct MessageRowView: View {
     let handlers: TanyaAIMessageRowHandlers
 
     var body: some View {
-        HStack(spacing: DesignKitMetrics.Spacing.compact.sizeInArtwork) {
+        HStack(spacing: FigmaSize.spacing8.sizeInArtwork) {
             if viewModel.role == .user {
-                Spacer(minLength: DesignKitMetrics.Spacing.doubleExtraLarge.sizeInArtwork)
+                Spacer(minLength: FigmaSize.spacing48.sizeInArtwork)
             }
 
             content
 
             if viewModel.role != .user {
-                Spacer(minLength: DesignKitMetrics.Spacing.extraLarge.sizeInArtwork)
+                Spacer(minLength: FigmaSize.spacing32.sizeInArtwork)
             }
         }
         .accessibilityElement(children: .contain)

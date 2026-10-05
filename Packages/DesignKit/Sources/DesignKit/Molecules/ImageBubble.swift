@@ -26,7 +26,7 @@ public struct ImageBubble: View {
                     .designFont(.headline)
                     .foregroundColor(Color(theme.colors.primaryText))
                     .fixedSize(horizontal: false, vertical: true)
-                    .padding(.horizontal, DesignKitMetrics.Spacing.wide.sizeInArtwork)
+                    .padding(.horizontal, FigmaSize.spacing16.sizeInArtwork)
                     .padding(.top, DesignKitMetrics.Spacing.roomy.sizeInArtwork)
             }
             caption
@@ -76,7 +76,7 @@ public struct ImageBubble: View {
             // wrapping: the row has no height to give it yet.
             .fixedSize(horizontal: false, vertical: true)
             .frame(maxWidth: .infinity, alignment: .leading)
-            .padding(.horizontal, DesignKitMetrics.Spacing.wide.sizeInArtwork)
+            .padding(.horizontal, FigmaSize.spacing16.sizeInArtwork)
             .padding(.vertical, DesignKitMetrics.Spacing.roomy.sizeInArtwork)
     }
 }

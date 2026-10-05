@@ -181,3 +181,31 @@ Lihat [hasil dan batas validasi](DESIGNKIT_VALIDATION.md). Jalankan verification
 runtime iOS sebelum migrasi produksi luas.
 
 Komposisi jawaban empat bagian dan integrasi host: [ANSWER_CONTENT.md](ANSWER_CONTENT.md).
+
+
+### Composer dan spacing (5 Oktober 2026)
+
+`MessageComposer` memakai `FigmaSize.spacing16.sizeInArtwork` untuk margin horizontal
+luar dan padding horizontal dalam. Spacing yang sudah tersedia di generated `FigmaSize`
+dipakai langsung oleh komponen, tanpa alias `DesignKitMetrics.Spacing`. Alias publik lama
+masih tersedia agar host tidak langsung rusak. Ukuran yang belum tersedia tetap di
+handwritten `DesignKitMetrics`; generated token tidak diedit.
+
+Composer terdiri dari `inputSurface` (field + tombol + padding dalam), `surface`
+(background putih, stroke, shadow), dan `body` (margin luar). Pemisahan ini memperjelas
+padding mana yang ikut background. Send/stop memakai satu tombol dengan state dan action
+berbeda. Radius artwork 8, lingkaran tombol artwork 24; area sentuh minimal 44 point.
+Shadow memakai opacity 0.12, radius artwork 4, offset vertikal artwork 2. Teks dinamis
+resolved untuk permukaan terang karena background composer memang selalu putih.
+
+Rumus ukuran adalah `round(value * min(deviceWidth / 375, 1.25))`.
+Rumus existing `round(value / (375 / deviceWidth))` menghasilkan rasio yang sama sebelum
+batas skala. Batas 1.25 merupakan kebijakan tampilan, bukan peningkatan akurasi. Tinggi
+812 tidak dipakai untuk stretch vertikal; scaling seragam mengikuti lebar. Penggunaan
+`UIScreen.main` cocok untuk asumsi layar penuh, tidak mengukur lebar split view/window.
+
+Theme komponen menggunakan nilai `@Environment(\.theme)`, bukan `@EnvironmentObject`.
+`.theme(theme)` memasang nilai; `.theme(manager)` mengamati `ThemeManager` di root lalu
+meneruskan nilai theme. Singleton biasa tidak memberi notifikasi perubahan ke SwiftUI.
+Singleton observable tetap memerlukan observation dan membuat state global dibagi semua
+window/test. Environment memungkinkan override halaman tanpa mengubah halaman lainnya.

@@ -9,7 +9,7 @@ public struct ReceiptBubble: View {
     }
 
     public var body: some View {
-        VStack(spacing: DesignKitMetrics.Spacing.wide.sizeInArtwork) {
+        VStack(spacing: FigmaSize.spacing16.sizeInArtwork) {
             successHeader
             summary
             footnote
@@ -54,7 +54,7 @@ public struct ReceiptBubble: View {
                 HStack(alignment: .firstTextBaseline, spacing: DesignKitMetrics.Spacing.regular.sizeInArtwork) {
                     Text(payload.summary[index].label)
                         .foregroundColor(Color(theme.colors.secondaryText))
-                    Spacer(minLength: DesignKitMetrics.Spacing.compact.sizeInArtwork)
+                    Spacer(minLength: FigmaSize.spacing8.sizeInArtwork)
                     Text(payload.summary[index].value)
                         .designFont(.headline)
                         .multilineTextAlignment(.trailing)

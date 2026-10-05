@@ -79,11 +79,11 @@ struct AccountContent: View {
     @Environment(\.theme) private var theme
 
     var body: some View {
-        VStack(spacing: DesignKitMetrics.Spacing.compact.sizeInArtwork) {
+        VStack(spacing: FigmaSize.spacing8.sizeInArtwork) {
             Text(title).designFont(.headline)
             Text(detail).designFont(.body)
         }
-        .padding(DesignKitMetrics.Spacing.wide.sizeInArtwork)
+        .padding(FigmaSize.spacing16.sizeInArtwork)
         .foregroundColor(Color(theme.colors.primaryText))
         .background(Color(theme.colors.surface))
         .cornerRadius(DesignKitMetrics.Radius.card.sizeInArtwork)

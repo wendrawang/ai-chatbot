@@ -25,7 +25,7 @@ public struct AuthorizationSheet: View {
     }
 
     private var sheetContent: some View {
-        VStack(alignment: .leading, spacing: DesignKitMetrics.Spacing.wide.sizeInArtwork) {
+        VStack(alignment: .leading, spacing: FigmaSize.spacing16.sizeInArtwork) {
             header
             SecureCodeIndicator(
                 enteredDigitCount: viewModel.pin.count,
@@ -47,8 +47,8 @@ public struct AuthorizationSheet: View {
     }
 
     private var header: some View {
-        HStack(spacing: DesignKitMetrics.Spacing.compact.sizeInArtwork) {
-            VStack(alignment: .leading, spacing: DesignKitMetrics.Spacing.tight.sizeInArtwork) {
+        HStack(spacing: FigmaSize.spacing8.sizeInArtwork) {
+            VStack(alignment: .leading, spacing: FigmaSize.spacing4.sizeInArtwork) {
                 Text(copy.chat("chat.authorizeTitle"))
                     .font(Font(theme.fonts.title))
                 Text(copy.chat("chat.pinInstruction", values: [
@@ -57,7 +57,7 @@ public struct AuthorizationSheet: View {
                     .font(Font(theme.fonts.footnote))
                     .foregroundColor(Color(theme.colors.secondaryText))
             }
-            Spacer(minLength: DesignKitMetrics.Spacing.compact.sizeInArtwork)
+            Spacer(minLength: FigmaSize.spacing8.sizeInArtwork)
             Button(action: viewModel.cancel) {
                 Image(systemName: "xmark.circle.fill")
                     .font(Font(theme.fonts.title))
@@ -84,7 +84,7 @@ public struct AuthorizationSheet: View {
     @ViewBuilder
     private var authorizationStatus: some View {
         if viewModel.isSubmitting {
-            HStack(spacing: DesignKitMetrics.Spacing.compact.sizeInArtwork) {
+            HStack(spacing: FigmaSize.spacing8.sizeInArtwork) {
                 ProgressView().tint(Color(theme.colors.accent))
                     .frame(width: DesignKitMetrics.Size.indicator.sizeInArtwork,
                            height: DesignKitMetrics.Size.indicator.sizeInArtwork)

@@ -43,14 +43,14 @@ public struct SelectionChip: View {
             withAttributes: [.font: font]
         ).width
         let tick = isSelected
-            ? indicatorWidth.sizeInArtwork + DesignKitMetrics.Spacing.compact.sizeInArtwork
+            ? indicatorWidth.sizeInArtwork + FigmaSize.spacing8.sizeInArtwork
             : 0
-        return ceil(text) + tick + DesignKitMetrics.Spacing.wide.sizeInArtwork * 2
+        return ceil(text) + tick + FigmaSize.spacing16.sizeInArtwork * 2
     }
 
     public var body: some View {
         Button(action: onTap) {
-            HStack(spacing: DesignKitMetrics.Spacing.compact.sizeInArtwork) {
+            HStack(spacing: FigmaSize.spacing8.sizeInArtwork) {
                 if isSelected {
                     tick
                 }
@@ -58,7 +58,7 @@ public struct SelectionChip: View {
                     .designFont(.body)
                     .fixedSize(horizontal: false, vertical: true)
             }
-            .padding(.horizontal, DesignKitMetrics.Spacing.wide.sizeInArtwork)
+            .padding(.horizontal, FigmaSize.spacing16.sizeInArtwork)
             .frame(minHeight: DesignKitMetrics.Size.minimumTapTarget.tapTargetInArtwork)
         }
         .disabled(isEnabled == false)

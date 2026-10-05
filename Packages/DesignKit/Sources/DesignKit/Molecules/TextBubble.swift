@@ -32,7 +32,7 @@ public struct TextBubble: View {
             color: textColor
         )
         .lineSpacing(theme.fonts.lineSpacing(for: .body))
-        .padding(.horizontal, isUser ? DesignKitMetrics.Spacing.wide.sizeInArtwork : 0)
+        .padding(.horizontal, isUser ? FigmaSize.spacing16.sizeInArtwork : 0)
         .padding(.vertical, isUser ? DesignKitMetrics.Spacing.regular.sizeInArtwork : 0)
         .background(background)
         .accessibility(

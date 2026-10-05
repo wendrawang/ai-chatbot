@@ -31,21 +31,36 @@ public struct MessageComposer: View {
     @Environment(\.theme) private var theme
 
     public var body: some View {
-        HStack(alignment: .bottom, spacing: DesignKitMetrics.Spacing.compact.sizeInArtwork) {
+        inputSurface
+            .padding(.horizontal, FigmaSize.spacing16.sizeInArtwork)
+            .padding(.vertical, FigmaSize.spacing8.sizeInArtwork)
+    }
+
+    private var inputSurface: some View {
+        HStack(alignment: .bottom, spacing: FigmaSize.spacing8.sizeInArtwork) {
             field
             actionButton
         }
-        .padding(.horizontal, DesignKitMetrics.Spacing.wide.sizeInArtwork)
-        .padding(.vertical, DesignKitMetrics.Spacing.compact.sizeInArtwork)
-        .background(Color(theme.colors.surface))
-        .clipShape(RoundedRectangle(cornerRadius: DesignKitMetrics.Radius.composer.sizeInArtwork))
-        .overlay(
-            RoundedRectangle(cornerRadius: DesignKitMetrics.Radius.composer.sizeInArtwork)
-                .stroke(Color(theme.colors.divider), lineWidth: DesignKitMetrics.Stroke.hairline.strokeInArtwork)
-        )
-        .padding(.horizontal, DesignKitMetrics.Spacing.wide.sizeInArtwork)
-        .padding(.vertical, DesignKitMetrics.Spacing.regular.sizeInArtwork)
-        .background(Color(theme.colors.background))
+        .padding(.horizontal, FigmaSize.spacing16.sizeInArtwork)
+        .padding(.vertical, FigmaSize.spacing8.sizeInArtwork)
+        .background(surface)
+    }
+
+    private var surface: some View {
+        RoundedRectangle(cornerRadius: DesignKitMetrics.Radius.composer.sizeInArtwork)
+            .fill(Color.white)
+            .shadow(
+                color: Color.black.opacity(DesignKitMetrics.Shadow.composerOpacity),
+                radius: DesignKitMetrics.Shadow.composerRadius.sizeInArtwork,
+                y: DesignKitMetrics.Shadow.composerOffset.sizeInArtwork
+            )
+            .overlay(
+                RoundedRectangle(cornerRadius: DesignKitMetrics.Radius.composer.sizeInArtwork)
+                    .strokeBorder(
+                        Color(theme.colors.divider),
+                        lineWidth: DesignKitMetrics.Stroke.hairline.strokeInArtwork
+                    )
+            )
     }
 
     private var field: some View {
@@ -53,7 +68,7 @@ public struct MessageComposer: View {
             GrowingTextInput(
                 text: $text,
                 font: theme.fonts.body,
-                textColor: theme.colors.primaryText,
+                textColor: theme.colors.primaryText.resolvedColor(with: UITraitCollection(userInterfaceStyle: .light)),
                 accessibilityLabel: placeholder
             )
             .fixedSize(horizontal: false, vertical: true)
@@ -62,47 +77,29 @@ public struct MessageComposer: View {
             if text.isEmpty {
                 Text(placeholder)
                     .font(Font(theme.fonts.body))
-                    .foregroundColor(Color(theme.colors.secondaryText))
+                    .foregroundColor(Color(theme.colors.secondaryText.resolvedColor(
+                        with: UITraitCollection(userInterfaceStyle: .light)
+                    )))
                     .accessibilityHidden(true)
                     .allowsHitTesting(false)
             }
         }
-        .padding(.vertical, DesignKitMetrics.Spacing.compact.sizeInArtwork)
+        .padding(.vertical, FigmaSize.spacing8.sizeInArtwork)
     }
 
-    @ViewBuilder
     private var actionButton: some View {
-        if isGenerating {
-            circularButton(
-                symbol: "stop.fill",
-                label: stopLabel,
-                isActive: true, action: onStop
-            )
-        } else {
-            circularButton(
-                symbol: "arrow.up",
-                label: sendLabel,
-                isActive: isSendEnabled, action: onSend
-            )
-            .disabled(isSendEnabled == false)
-        }
-    }
-
-    private func circularButton(
-        symbol: String,
-        label: String,
-        isActive: Bool, action: @escaping () -> Void
-    ) -> some View {
-        Button(action: action) {
-            Image(systemName: symbol)
+        let isActive = isGenerating || isSendEnabled
+        return Button(action: isGenerating ? onStop : onSend) {
+            Image(systemName: isGenerating ? "stop.fill" : "arrow.up")
                 .designFont(.button)
                 .foregroundColor(Color(theme.colors.userBubbleText))
                 .frame(
                     width: DesignKitMetrics.Size.composerAction.sizeInArtwork,
                     height: DesignKitMetrics.Size.composerAction.sizeInArtwork
                 )
-                .background(Color(isActive ? theme.colors.accent : theme.colors.secondaryText))
-                .clipShape(Circle())
+                .background(
+                    Circle().fill(Color(isActive ? theme.colors.accent : theme.colors.secondaryText))
+                )
                 .frame(
                     width: DesignKitMetrics.Size.minimumTapTarget.tapTargetInArtwork,
                     height: DesignKitMetrics.Size.minimumTapTarget.tapTargetInArtwork
@@ -110,7 +107,8 @@ public struct MessageComposer: View {
                 .contentShape(Rectangle())
         }
         .buttonStyle(.plain)
-        .accessibility(label: Text(label))
+        .disabled(!isActive)
+        .accessibilityLabel(isGenerating ? stopLabel : sendLabel)
     }
 
     private var isSendEnabled: Bool {

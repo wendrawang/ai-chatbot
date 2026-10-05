@@ -36,7 +36,7 @@ public struct ActionLink: View {
     private var label: some View {
         text
             .designFont(.button)
-            .padding(.horizontal, DesignKitMetrics.Spacing.wide.sizeInArtwork)
+            .padding(.horizontal, FigmaSize.spacing16.sizeInArtwork)
             .frame(minHeight: DesignKitMetrics.Size.minimumTapTarget.tapTargetInArtwork)
             .fixedSize(horizontal: false, vertical: true)
     }

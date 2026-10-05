@@ -16,7 +16,7 @@ public struct OptionStrip: View {
 
     public var body: some View {
         ScrollView(.horizontal, showsIndicators: false) {
-            HStack(spacing: DesignKitMetrics.Spacing.compact.sizeInArtwork) {
+            HStack(spacing: FigmaSize.spacing8.sizeInArtwork) {
                 ForEach(options, id: \.identifier) { option in
                     Button(
                         action: { onSelect(option) },
@@ -31,7 +31,7 @@ public struct OptionStrip: View {
                 }
             }
             .padding(.horizontal, DesignKitMetrics.Spacing.regular.sizeInArtwork)
-            .padding(.vertical, DesignKitMetrics.Spacing.compact.sizeInArtwork)
+            .padding(.vertical, FigmaSize.spacing8.sizeInArtwork)
         }
         .accessibilityIdentifier("options.strip")
     }
@@ -40,7 +40,7 @@ public struct OptionStrip: View {
         Text(option.title)
             .designFont(.button)
             .lineLimit(1)
-            .padding(.horizontal, DesignKitMetrics.Spacing.wide.sizeInArtwork)
+            .padding(.horizontal, FigmaSize.spacing16.sizeInArtwork)
             .frame(minHeight: DesignKitMetrics.Size.minimumTapTarget.tapTargetInArtwork)
     }
 

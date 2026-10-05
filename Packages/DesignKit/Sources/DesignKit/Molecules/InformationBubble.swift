@@ -20,7 +20,7 @@ public struct InformationBubble: View {
             }
         }
         .foregroundColor(Color(theme.colors.primaryText))
-        .padding(DesignKitMetrics.Spacing.wide.sizeInArtwork)
+        .padding(FigmaSize.spacing16.sizeInArtwork)
         .background(Color(theme.colors.surface))
         .cornerRadius(DesignKitMetrics.Radius.notice.sizeInArtwork)
         .frame(maxWidth: DesignKitMetrics.Size.cardMaximumWidth.sizeInArtwork, alignment: .leading)
@@ -48,12 +48,12 @@ public struct InformationBubble: View {
     }
 
     private func keyValueList(_ items: [KeyValue]) -> some View {
-        VStack(spacing: DesignKitMetrics.Spacing.compact.sizeInArtwork) {
+        VStack(spacing: FigmaSize.spacing8.sizeInArtwork) {
             ForEach(items.indices, id: \.self) { index in
-                HStack(alignment: .firstTextBaseline, spacing: DesignKitMetrics.Spacing.compact.sizeInArtwork) {
+                HStack(alignment: .firstTextBaseline, spacing: FigmaSize.spacing8.sizeInArtwork) {
                     Text(items[index].label)
                         .foregroundColor(Color(theme.colors.secondaryText))
-                    Spacer(minLength: DesignKitMetrics.Spacing.wide.sizeInArtwork)
+                    Spacer(minLength: FigmaSize.spacing16.sizeInArtwork)
                     Text(items[index].value)
                         .fontWeight(.semibold)
                 }

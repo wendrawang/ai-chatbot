@@ -44,7 +44,7 @@ public struct ChoiceGroup: View {
                 .background(widthMeasurement)
             submit
         }
-        .padding(DesignKitMetrics.Spacing.wide.sizeInArtwork)
+        .padding(FigmaSize.spacing16.sizeInArtwork)
         .background(OutlinedBackground())
         .frame(
             maxWidth: DesignKitMetrics.Size.bubbleMaximumWidth.sizeInArtwork,
@@ -79,14 +79,14 @@ public struct ChoiceGroup: View {
         let rows = ChipLayout.rows(
             widths: widths,
             maxWidth: width,
-            spacing: DesignKitMetrics.Spacing.compact.sizeInArtwork
+            spacing: FigmaSize.spacing8.sizeInArtwork
         )
         return VStack(
             alignment: .leading,
-            spacing: DesignKitMetrics.Spacing.compact.sizeInArtwork
+            spacing: FigmaSize.spacing8.sizeInArtwork
         ) {
             ForEach(rows.indices, id: \.self) { row in
-                HStack(spacing: DesignKitMetrics.Spacing.compact.sizeInArtwork) {
+                HStack(spacing: FigmaSize.spacing8.sizeInArtwork) {
                     ForEach(rows[row], id: \.self) { index in
                         chip(at: index)
                     }

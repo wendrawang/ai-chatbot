@@ -20,7 +20,7 @@ struct ChartLegendView: View {
                         )
                     Text(series[index].label)
                         .designFont(.subheadline)
-                    Spacer(minLength: DesignKitMetrics.Spacing.compact.sizeInArtwork)
+                    Spacer(minLength: FigmaSize.spacing8.sizeInArtwork)
                     Text(series[index].formattedValue)
                         .designFont(.headline)
                 }

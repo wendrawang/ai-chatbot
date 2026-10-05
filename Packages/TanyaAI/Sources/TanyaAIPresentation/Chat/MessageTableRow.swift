@@ -32,7 +32,7 @@ struct MessageTableRow: View {
                 )
             }
         }
-        .padding(.horizontal, DesignKitMetrics.Spacing.wide.sizeInArtwork)
+        .padding(.horizontal, FigmaSize.spacing16.sizeInArtwork)
         .padding(.vertical, DesignKitMetrics.Spacing.snug.sizeInArtwork)
         .theme(theme)
         .imageLoader(imageLoader)

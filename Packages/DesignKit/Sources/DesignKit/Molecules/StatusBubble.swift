@@ -13,7 +13,7 @@ public struct StatusBubble: View {
             Image(systemName: iconName)
                 .foregroundColor(accentColor)
 
-            VStack(alignment: .leading, spacing: DesignKitMetrics.Spacing.tight.sizeInArtwork) {
+            VStack(alignment: .leading, spacing: FigmaSize.spacing4.sizeInArtwork) {
                 Text(payload.title)
                     .designFont(.headline)
                 Text(payload.detail)
@@ -22,7 +22,7 @@ public struct StatusBubble: View {
             }
         }
         .foregroundColor(Color(theme.colors.primaryText))
-        .padding(DesignKitMetrics.Spacing.wide.sizeInArtwork)
+        .padding(FigmaSize.spacing16.sizeInArtwork)
         .background(Color(theme.colors.surface))
         .cornerRadius(DesignKitMetrics.Radius.notice.sizeInArtwork)
         .frame(maxWidth: DesignKitMetrics.Size.cardMaximumWidth.sizeInArtwork, alignment: .leading)

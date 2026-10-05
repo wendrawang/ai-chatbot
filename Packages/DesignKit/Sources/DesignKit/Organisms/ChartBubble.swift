@@ -17,7 +17,7 @@ public struct ChartBubble: View {
             footnote
         }
         .foregroundColor(Color(theme.colors.primaryText))
-        .padding(DesignKitMetrics.Spacing.wide.sizeInArtwork)
+        .padding(FigmaSize.spacing16.sizeInArtwork)
         .background(Color(theme.colors.surface))
         .cornerRadius(DesignKitMetrics.Radius.card.sizeInArtwork)
         .frame(maxWidth: DesignKitMetrics.Size.cardMaximumWidth.sizeInArtwork, alignment: .leading)
@@ -41,7 +41,7 @@ public struct ChartBubble: View {
     @ViewBuilder
     private var total: some View {
         if let totalValue = payload.totalValue {
-            VStack(alignment: .leading, spacing: DesignKitMetrics.Spacing.tight.sizeInArtwork) {
+            VStack(alignment: .leading, spacing: FigmaSize.spacing4.sizeInArtwork) {
                 Text(totalValue)
                     .designFont(.amount)
                 subtitle

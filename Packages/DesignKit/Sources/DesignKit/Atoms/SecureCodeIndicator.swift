@@ -23,7 +23,7 @@ public struct SecureCodeIndicator: View {
             }
         }
         .frame(maxWidth: .infinity)
-        .padding(.vertical, DesignKitMetrics.Spacing.compact.sizeInArtwork)
+        .padding(.vertical, FigmaSize.spacing8.sizeInArtwork)
         .accessibilityElement(children: .ignore)
         .accessibility(
             label: Text(label)

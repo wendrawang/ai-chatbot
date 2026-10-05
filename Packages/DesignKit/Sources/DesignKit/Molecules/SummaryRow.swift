@@ -12,7 +12,7 @@ public struct SummaryRow: View {
     }
 
     public var body: some View {
-        VStack(alignment: .leading, spacing: DesignKitMetrics.Spacing.tight.sizeInArtwork) {
+        VStack(alignment: .leading, spacing: FigmaSize.spacing4.sizeInArtwork) {
             Text(title)
                 .designFont(.headline)
                 .foregroundColor(Color(theme.colors.primaryText))
@@ -20,6 +20,6 @@ public struct SummaryRow: View {
                 .designFont(.subheadline)
                 .foregroundColor(Color(theme.colors.secondaryText))
         }
-        .padding(.vertical, DesignKitMetrics.Spacing.tight.sizeInArtwork)
+        .padding(.vertical, FigmaSize.spacing4.sizeInArtwork)
     }
 }

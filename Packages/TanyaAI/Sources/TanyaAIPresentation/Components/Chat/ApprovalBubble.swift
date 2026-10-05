@@ -51,7 +51,7 @@ public struct ApprovalBubble: View {
                 .foregroundColor(Color(theme.colors.primaryText))
         }
         .foregroundColor(Color(theme.colors.primaryText))
-        .padding(DesignKitMetrics.Spacing.wide.sizeInArtwork)
+        .padding(FigmaSize.spacing16.sizeInArtwork)
     }
 
     private var summary: some View {
@@ -60,7 +60,7 @@ public struct ApprovalBubble: View {
                 HStack(alignment: .firstTextBaseline, spacing: DesignKitMetrics.Spacing.regular.sizeInArtwork) {
                     Text(payload.summary[index].label)
                         .foregroundColor(Color(theme.colors.secondaryText))
-                    Spacer(minLength: DesignKitMetrics.Spacing.compact.sizeInArtwork)
+                    Spacer(minLength: FigmaSize.spacing8.sizeInArtwork)
                     Text(payload.summary[index].value)
                         .designFont(.headline)
                         .multilineTextAlignment(.trailing)
@@ -68,7 +68,7 @@ public struct ApprovalBubble: View {
                 .designFont(.subheadline)
             }
         }
-        .padding(DesignKitMetrics.Spacing.wide.sizeInArtwork)
+        .padding(FigmaSize.spacing16.sizeInArtwork)
     }
 
     @ViewBuilder
@@ -77,7 +77,7 @@ public struct ApprovalBubble: View {
             Text(notice)
                 .designFont(.footnote)
                 .foregroundColor(Color(theme.colors.secondaryText))
-                .padding(.horizontal, DesignKitMetrics.Spacing.wide.sizeInArtwork)
+                .padding(.horizontal, FigmaSize.spacing16.sizeInArtwork)
                 .padding(.bottom, DesignKitMetrics.Spacing.regular.sizeInArtwork)
         }
     }
@@ -88,7 +88,7 @@ public struct ApprovalBubble: View {
             Text(statusText)
                 .designFont(.footnote)
                 .foregroundColor(statusColor)
-                .padding(.horizontal, DesignKitMetrics.Spacing.wide.sizeInArtwork)
+                .padding(.horizontal, FigmaSize.spacing16.sizeInArtwork)
                 .padding(.bottom, DesignKitMetrics.Spacing.regular.sizeInArtwork)
         }
     }
@@ -96,7 +96,7 @@ public struct ApprovalBubble: View {
     @ViewBuilder
     private var actions: some View {
         if payload.state == .awaitingApproval {
-            HStack(spacing: DesignKitMetrics.Spacing.compact.sizeInArtwork) {
+            HStack(spacing: FigmaSize.spacing8.sizeInArtwork) {
                 actionButton(copy.chat("chat.edit"), action: onEdit)
                 actionButton(copy.chat("chat.cancel"), action: onCancel)
                 Button(action: onApprove) {

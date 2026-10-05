@@ -45,7 +45,7 @@ public struct ChatScreen: View {
     }
 
     private var header: some View {
-        HStack(spacing: DesignKitMetrics.Spacing.wide.sizeInArtwork) {
+        HStack(spacing: FigmaSize.spacing16.sizeInArtwork) {
             Button(action: viewModel.close) {
                 Image(systemName: "xmark")
                     .font(Font(theme.fonts.headline))
@@ -67,7 +67,7 @@ public struct ChatScreen: View {
                 }
             }
 
-            Spacer(minLength: DesignKitMetrics.Spacing.compact.sizeInArtwork)
+            Spacer(minLength: FigmaSize.spacing8.sizeInArtwork)
 
             Button(action: viewModel.openHistory) {
                 Image(systemName: "clock")
@@ -79,8 +79,8 @@ public struct ChatScreen: View {
             }
             .accessibility(label: Text(copy.chat("chat.history")))
         }
-        .padding(.horizontal, DesignKitMetrics.Spacing.compact.sizeInArtwork)
-        .padding(.top, DesignKitMetrics.Spacing.compact.sizeInArtwork)
+        .padding(.horizontal, FigmaSize.spacing8.sizeInArtwork)
+        .padding(.top, FigmaSize.spacing8.sizeInArtwork)
         .foregroundColor(Color(theme.colors.accent))
     }
 
@@ -91,8 +91,8 @@ public struct ChatScreen: View {
                 .font(Font(theme.fonts.footnote))
                 .foregroundColor(Color(theme.colors.error))
                 .frame(maxWidth: .infinity, alignment: .leading)
-                .padding(.horizontal, DesignKitMetrics.Spacing.wide.sizeInArtwork)
-                .padding(.vertical, DesignKitMetrics.Spacing.compact.sizeInArtwork)
+                .padding(.horizontal, FigmaSize.spacing16.sizeInArtwork)
+                .padding(.vertical, FigmaSize.spacing8.sizeInArtwork)
         }
     }
 

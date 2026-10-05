@@ -41,6 +41,26 @@ final class TanyaAIAnswerUITests: XCTestCase {
         capture("scroll-to-latest-completed")
     }
 
+    func testComposerGrowsToFourLinesThenKeepsItsHeight() {
+        let application = XCUIApplication()
+        application.launchArguments = ["--answers"]
+        application.launch()
+        let input = application.textViews.firstMatch
+        XCTAssertTrue(input.waitForExistence(timeout: 10))
+        input.tap()
+        input.typeText("First line")
+        let singleHeight = input.frame.height
+        capture("composer-review-one-line")
+        input.typeText("\nSecond line\nThird line\nFourth line")
+        let fourLineHeight = input.frame.height
+        XCTAssertGreaterThan(fourLineHeight, singleHeight)
+        capture("composer-review-four-lines")
+        input.typeText("\nFifth line\nSixth line")
+        XCTAssertEqual(input.frame.height, fourLineHeight, accuracy: 1)
+        XCTAssertTrue((input.value as? String)?.contains("Sixth line") == true)
+        capture("composer-review-over-four-lines")
+    }
+
     private func capture(_ name: String) {
         let attachment = XCTAttachment(screenshot: XCUIScreen.main.screenshot())
         attachment.name = name

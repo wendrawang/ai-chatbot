@@ -21,7 +21,7 @@ public struct PortfolioBubble: View {
             footnote
         }
         .foregroundColor(Color(theme.colors.primaryText))
-        .padding(DesignKitMetrics.Spacing.wide.sizeInArtwork)
+        .padding(FigmaSize.spacing16.sizeInArtwork)
         .background(Color(theme.colors.surface))
         .cornerRadius(DesignKitMetrics.Radius.card.sizeInArtwork)
         .frame(maxWidth: DesignKitMetrics.Size.cardMaximumWidth.sizeInArtwork, alignment: .leading)
