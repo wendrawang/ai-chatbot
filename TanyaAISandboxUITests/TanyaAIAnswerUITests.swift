@@ -61,6 +61,24 @@ final class TanyaAIAnswerUITests: XCTestCase {
         capture("composer-review-over-four-lines")
     }
 
+    func testLongWordKeepsSendButtonInsideComposer() {
+        let application = XCUIApplication()
+        application.launchArguments = ["--answers"]
+        application.launch()
+        let input = application.textViews.firstMatch
+        let send = application.buttons["Send message"]
+        XCTAssertTrue(input.waitForExistence(timeout: 10))
+        XCTAssertTrue(send.exists)
+        input.tap()
+        let initialWidth = input.frame.width
+        input.typeText(String(repeating: "m", count: 128))
+        capture("composer-long-word")
+        XCTAssertTrue(send.isHittable)
+        XCTAssertEqual(input.frame.width, initialWidth, accuracy: 1)
+        XCTAssertLessThanOrEqual(input.frame.maxX, send.frame.minX + 1)
+        XCTAssertLessThanOrEqual(send.frame.maxX, application.frame.maxX)
+    }
+
     private func capture(_ name: String) {
         let attachment = XCTAttachment(screenshot: XCUIScreen.main.screenshot())
         attachment.name = name

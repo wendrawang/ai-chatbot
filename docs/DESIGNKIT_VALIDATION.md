@@ -171,3 +171,17 @@ radio consumption, dan scroll-to-latest. Test suggestion-safe-layout gagal satu 
 teks tidak tertutup. Strict lint 0 violation, guard design-system dan whitespace lulus.
 Screenshot composer satu/empat/lebih dari empat baris diperbarui dari XCTest.
 Tidak ada klaim benchmark performa atau Instruments baru untuk perubahan ini.
+
+
+### 7 Oktober: lebar composer dan area sentuh
+
+Test UI baru memakai 128 huruf tanpa spasi dan memeriksa lebar field tidak berubah,
+field tidak melewati area tombol, serta tombol tetap berada di layar dan bisa ditekan.
+Baseline package, ikon resizable, dan SVG lokal dalam asset catalog lulus tanpa priority.
+Eksperimen ukuran tap 4, diameter 24, padding ikon 6, spacing token 16 mereproduksi
+field/tombol keluar dari container: rumus spacing/trailing menjadi -36 sebelum scaling.
+Mengubah area tap ke 44 saja membuat test lulus. Untuk gap visual 16, kompensasi area
+tap di tiap sisi adalah `(tapWidth - visualWidth) / 2`; lakukan perhitungan pada ukuran
+final yang sama dengan frame. Eksperimen resource/ukuran tidak disertakan dalam source.
+Pemeriksaan ini dijalankan pada iPhone 17 Pro/iOS 26.5 Simulator; implementasi host
+privat dan SVG aktual tidak tersedia untuk diperiksa langsung.
