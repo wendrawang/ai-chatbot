@@ -13,6 +13,9 @@ printf 'Testing on %s\n' "$TEST_DESTINATION"
 
 ruby "$PROJECT_ROOT/Scripts/generate_project.rb"
 "$PROJECT_ROOT/Scripts/check_style.sh"
+sh "$PROJECT_ROOT/Scripts/test_tencent_group_adapter.sh"
+python3 -m unittest discover \
+  -s "$PROJECT_ROOT/Examples/VendorChatSDK/Tencent/Tests" -p 'test_*.py' -v
 
 xcodebuild \
   -project "$PROJECT_ROOT/TanyaAISandbox.xcodeproj" \

@@ -3,12 +3,12 @@ import TanyaAI
 
 /// Build once per signed-in host session; keep the returned host alive.
 final class TencentTanyaAIComposition {
-    private let botUserID: String
+    private let groupID: String
     private let deeplinkScheme: String
     private let deeplinkHost: String?
 
-    init(botUserID: String, deeplinkScheme: String, deeplinkHost: String? = nil) {
-        self.botUserID = botUserID
+    init(groupID: String, deeplinkScheme: String, deeplinkHost: String? = nil) {
+        self.groupID = groupID
         self.deeplinkScheme = deeplinkScheme
         self.deeplinkHost = deeplinkHost
     }
@@ -23,8 +23,8 @@ final class TencentTanyaAIComposition {
             theme: theme,
             deeplinkScheme: deeplinkScheme,
             deeplinkHost: deeplinkHost,
-            makeSession: { [botUserID] in
-                TencentChatSessionAdapter(botUserID: botUserID)
+            makeSession: { [groupID] in
+                TencentChatSessionAdapter(groupID: groupID)
             },
             onDestination: onDestination,
             onConfirmation: onConfirmation,
