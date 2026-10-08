@@ -1,3 +1,4 @@
+import DesignKit
 import UIKit
 
 /// Makes the feature arrive like a pushed page instead of a sheet rising from
@@ -30,8 +31,8 @@ final class TanyaAIPushTransition: NSObject, UIViewControllerTransitioningDelega
 final class TanyaAIPushAnimator: NSObject, UIViewControllerAnimatedTransitioning {
     /// How far the outgoing page travels, as a fraction of the incoming one.
     /// `UINavigationController` uses roughly a third.
-    private static let parallax: CGFloat = 0.3
-    private static let duration: TimeInterval = 0.35
+    private static let parallax: CGFloat = DesignKitMetrics.Motion.navigationParallax
+    private static let duration: TimeInterval = DesignKitMetrics.Motion.navigationDuration
 
     private let isPresenting: Bool
 

@@ -37,17 +37,25 @@ public final class TanyaAIChatViewModel: ObservableObject {
 
     /// Whether the host injected an authorization service, and so whether a
     /// confirmation without a hand-off can be completed in the chat.
+    var isConfirmationRequested = false
+    let isConfirmationEnabled: Bool
     let isAuthorizationEnabled: Bool
 
     /// Ways in, supplied by the host and unchanged by use. Unlike the prompts
     /// a reply offers, these answer no question and so never go away.
     public let shortcuts: [Suggestion]
 
+    private let copy: CopyCatalog
+
     public init(
         useCase: TanyaAIChatUseCaseProtocol,
         isAuthorizationEnabled: Bool = true,
-        shortcuts: [Suggestion] = []
+        isConfirmationEnabled: Bool = false,
+        shortcuts: [Suggestion] = [],
+        copy: CopyCatalog = CopyCatalog()
     ) {
+        self.isConfirmationEnabled = isConfirmationEnabled
+        self.copy = copy
         self.useCase = useCase
         self.isAuthorizationEnabled = isAuthorizationEnabled
         self.shortcuts = shortcuts
@@ -81,6 +89,8 @@ public final class TanyaAIChatViewModel: ObservableObject {
     }
 
     public func sendSuggestion(_ suggestion: Suggestion) {
+        guard !isGenerating, !isRestoring,
+              !suggestion.prompt.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else { return }
         suggestions = []
         suggestionsTitle = nil
         sendMessage(suggestion.prompt)
@@ -143,13 +153,14 @@ public final class TanyaAIChatViewModel: ObservableObject {
         }
         messages = restored.suffix(TanyaAIMessage.historyLimit)
             .map(TanyaAIMessageItemViewModel.init)
+        messages.dropLast().forEach { $0.consumeOptions() }
     }
 
     /// A confirmation arrived that this app cannot complete, because no
     /// authorization service was injected. Says so instead of leaving the
     /// customer with a Confirm button that does nothing.
     func reportUnauthorizableApproval() {
-        errorMessage = "This confirmation has to be completed in the app."
+        errorMessage = copy.chat("chat.authorizationRequired")
     }
 
     public func close() {
@@ -166,6 +177,7 @@ public final class TanyaAIChatViewModel: ObservableObject {
     }
 
     func appendMessage(_ message: TanyaAIMessageItemViewModel) {
+        messages.last?.consumeOptions()
         messages.append(message)
         let overflow = messages.count - TanyaAIMessage.historyLimit
         guard overflow > 0 else { return }
@@ -214,7 +226,7 @@ public final class TanyaAIChatViewModel: ObservableObject {
         isGenerating = false
         isAgentTyping = false
         if case .failure = result {
-            errorMessage = "The response was interrupted. Please try again."
+            errorMessage = copy.chat("chat.interrupted")
         }
     }
 

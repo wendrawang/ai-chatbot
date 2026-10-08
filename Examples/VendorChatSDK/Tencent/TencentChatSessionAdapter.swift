@@ -11,7 +11,8 @@ final class TencentChatSessionAdapter: TanyaAIChatSession {
     private var isActive = false
     private var isLoadingHistory = false
     private var pendingMessages: [V2TIMMessage] = []
-    private var knownIdentifiers = Set<String>()
+    var knownIdentifiers = Set<String>()
+    var orderedIdentifiers: [String] = []
 
     init(botUserID: String) {
         self.botUserID = botUserID
@@ -27,6 +28,8 @@ final class TencentChatSessionAdapter: TanyaAIChatSession {
             onEvent?(.failed(TencentChatError.notLoggedIn))
             return
         }
+        knownIdentifiers.removeAll()
+        orderedIdentifiers.removeAll()
         isActive = true
         isLoadingHistory = true
         manager.addAdvancedMsgListener(listener: self)
@@ -76,22 +79,18 @@ final class TencentChatSessionAdapter: TanyaAIChatSession {
         manager.removeAdvancedMsgListener(listener: self)
         pendingMessages.removeAll()
         knownIdentifiers.removeAll()
+        orderedIdentifiers.removeAll()
         onEvent = nil
     }
 
     private func finishHistory(_ messages: [V2TIMMessage]) {
         guard isActive else { return }
-        let ordered = messages.sorted { $0.timestamp < $1.timestamp }
+        // The SDK returns newest first; preserve its order even when timestamps are equal.
+        let ordered = Array(messages.reversed())
         let history = ordered.compactMap { message -> TanyaAIChatSessionMessage? in
-            guard message.userID == botUserID,
-                  let text = message.textElem?.text,
-                  !text.isEmpty else { return nil }
-            knownIdentifiers.insert(message.msgID)
-            return TanyaAIChatSessionMessage(
-                identifier: message.msgID,
-                author: message.isSelf ? .customer : .assistant,
-                text: text
-            )
+            guard message.userID == botUserID else { return nil }
+            remember(message.msgID)
+            return contractMessage(message)
         }
         onEvent?(.history(history))
         isLoadingHistory = false
@@ -103,12 +102,9 @@ final class TencentChatSessionAdapter: TanyaAIChatSession {
 
     private func handleIncoming(_ message: V2TIMMessage) {
         guard isActive, message.userID == botUserID,
-              !message.isSelf, !knownIdentifiers.contains(message.msgID),
-              let text = message.textElem?.text, !text.isEmpty else { return }
-        knownIdentifiers.insert(message.msgID)
-        onEvent?(.messageStarted(messageIdentifier: message.msgID))
-        onEvent?(.messageDelta(messageIdentifier: message.msgID, text: text))
-        onEvent?(.messageCompleted(messageIdentifier: message.msgID))
+              !message.isSelf, !knownIdentifiers.contains(message.msgID) else { return }
+        remember(message.msgID)
+        contractMessage(message)?.contentEvents.forEach { onEvent?($0) }
     }
 }
 
@@ -117,6 +113,7 @@ extension TencentChatSessionAdapter: V2TIMAdvancedMsgListener {
         DispatchQueue.main.async { [weak self] in
             guard let self, self.isActive, msg.userID == self.botUserID else { return }
             if self.isLoadingHistory {
+                if self.pendingMessages.count >= 100 { self.pendingMessages.removeFirst() }
                 self.pendingMessages.append(msg)
             } else {
                 self.handleIncoming(msg)

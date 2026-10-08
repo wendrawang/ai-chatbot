@@ -1,0 +1,8 @@
+[
+  {
+    "MsgType": "TIMCustomElem",
+    "MsgContent": {
+      "Data": "{\"type\":\"link_button\",\"label\":\"Bicara dengan Agent\",\"target\":\"ocbcid://mobile?type=live-chat&identifier=investasi&message=Saya%20tertarik%20untuk%20akses%20likuiditas%20dari%20obligasi%20saya%20melalui%20Investment%20Backed%20Loan\",\"destination_type\":\"deeplink\"}"
+    }
+  }
+]

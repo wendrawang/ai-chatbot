@@ -1,18 +1,11 @@
 import SwiftUI
 
-/// One message bubble.
-///
-/// The customer's own words sit in an accent bubble on the right; a reply sits
-/// in an outlined bubble on the left, and may carry inline styling so a
-/// labelled list reads as one answer instead of several bubbles.
-///
-/// The reply is outlined rather than filled, and carries no attribution
-/// above it. Two filled colours facing each other made every
-/// exchange look like two shouting sides; the outline lets the customer's own
-/// turns be the only thing with weight.
+/// Outgoing text uses an accent bubble; incoming text is an unboxed response.
 public struct TextBubble: View {
     let text: String
     let isUser: Bool
+    private let runs: [MarkupRun]
+    @Environment(\.copyCatalog) private var copy
     @Environment(\.theme) private var theme
 
     public init(
@@ -21,37 +14,41 @@ public struct TextBubble: View {
     ) {
         self.text = text
         self.isUser = isUser
+        runs = MarkupParser.runs(from: text.isEmpty ? "…" : text)
     }
 
     public var body: some View {
         bubble
             .frame(
-                maxWidth: DesignKitMetrics.Size.bubbleMaximumWidth,
+                maxWidth: DesignKitMetrics.Size.bubbleMaximumWidth.sizeInArtwork,
                 alignment: isUser ? .trailing : .leading
             )
     }
 
     private var bubble: some View {
         RichText(
-            text: text.isEmpty ? "…" : text,
+            runs: runs,
             font: Font(theme.fonts.body),
             color: textColor
         )
-        .padding(.horizontal, DesignKitMetrics.Spacing.wide)
-        .padding(.vertical, DesignKitMetrics.Spacing.regular)
+        .lineSpacing(theme.fonts.lineSpacing(for: .body))
+        .padding(.horizontal, isUser ? FigmaSize.spacing16.sizeInArtwork : 0)
+        .padding(.vertical, isUser ? DesignKitMetrics.Spacing.regular.sizeInArtwork : 0)
         .background(background)
         .accessibility(
-            label: Text(text.isEmpty ? "Assistant is responding" : text)
+            label: Text(accessibilityText)
         )
+    }
+
+    private var accessibilityText: String {
+        text.isEmpty ? copy.design("design.responding") : runs.map(\.text).joined()
     }
 
     @ViewBuilder
     private var background: some View {
         if isUser {
-            RoundedRectangle(cornerRadius: DesignKitMetrics.Radius.bubble)
+            RoundedRectangle(cornerRadius: DesignKitMetrics.Radius.bubble.sizeInArtwork)
                 .fill(Color(theme.colors.userBubble))
-        } else {
-            OutlinedBackground()
         }
     }
 

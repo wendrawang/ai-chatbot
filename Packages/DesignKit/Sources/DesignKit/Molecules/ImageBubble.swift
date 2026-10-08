@@ -12,7 +12,7 @@ public struct ImageBubble: View {
     let payload: ImagePayload
     @Environment(\.theme) private var theme
 
-    private var cornerRadius: CGFloat { DesignKitMetrics.Radius.bubble }
+    private var cornerRadius: CGFloat { DesignKitMetrics.Radius.bubble.sizeInArtwork }
 
     public init(payload: ImagePayload) {
         self.payload = payload
@@ -21,6 +21,14 @@ public struct ImageBubble: View {
     public var body: some View {
         VStack(alignment: .leading, spacing: 0) {
             picture
+            if let title = payload.title, !title.isEmpty {
+                Text(title)
+                    .designFont(.headline)
+                    .foregroundColor(Color(theme.colors.primaryText))
+                    .fixedSize(horizontal: false, vertical: true)
+                    .padding(.horizontal, FigmaSize.spacing16.sizeInArtwork)
+                    .padding(.top, DesignKitMetrics.Spacing.roomy.sizeInArtwork)
+            }
             caption
         }
         .background(Color(theme.colors.assistantBubble))
@@ -29,9 +37,9 @@ public struct ImageBubble: View {
         .clipShape(RoundedRectangle(cornerRadius: cornerRadius))
         .overlay(
             RoundedRectangle(cornerRadius: cornerRadius)
-                .stroke(Color(theme.colors.divider), lineWidth: DesignKitMetrics.Stroke.hairline)
+                .stroke(Color(theme.colors.divider), lineWidth: DesignKitMetrics.Stroke.hairline.strokeInArtwork)
         )
-        .frame(maxWidth: DesignKitMetrics.Size.bubbleMaximumWidth, alignment: .leading)
+        .frame(maxWidth: DesignKitMetrics.Size.bubbleMaximumWidth.sizeInArtwork, alignment: .leading)
         .accessibilityElement(children: .combine)
         .accessibilityIdentifier("image.card")
     }
@@ -61,14 +69,14 @@ public struct ImageBubble: View {
 
     private var captionText: some View {
         Text(payload.caption)
-            .font(Font(theme.fonts.headline))
+            .designFont(payload.title == nil ? .headline : .body)
             .foregroundColor(Color(theme.colors.primaryText))
-            .lineSpacing(DesignKitMetrics.Text.captionLineSpacing)
+            .lineSpacing(DesignKitMetrics.Text.captionLineSpacing.sizeInArtwork)
             // Without this a long caption is truncated to one line instead of
             // wrapping: the row has no height to give it yet.
             .fixedSize(horizontal: false, vertical: true)
             .frame(maxWidth: .infinity, alignment: .leading)
-            .padding(.horizontal, DesignKitMetrics.Spacing.wide)
-            .padding(.vertical, DesignKitMetrics.Spacing.roomy)
+            .padding(.horizontal, FigmaSize.spacing16.sizeInArtwork)
+            .padding(.vertical, DesignKitMetrics.Spacing.roomy.sizeInArtwork)
     }
 }

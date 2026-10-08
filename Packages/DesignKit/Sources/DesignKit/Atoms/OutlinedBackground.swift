@@ -4,15 +4,17 @@ import SwiftUI
 ///
 /// One place, so the three never drift apart: they appear next to each other
 /// in the same conversation.
-struct OutlinedBackground: View {
+public struct OutlinedBackground: View {
     @Environment(\.theme) private var theme
 
-    var body: some View {
-        RoundedRectangle(cornerRadius: DesignKitMetrics.Radius.bubble)
+    public init() {}
+
+    public var body: some View {
+        RoundedRectangle(cornerRadius: DesignKitMetrics.Radius.bubble.sizeInArtwork)
             .fill(Color(theme.colors.assistantBubble))
             .overlay(
-                RoundedRectangle(cornerRadius: DesignKitMetrics.Radius.bubble)
-                    .stroke(Color(theme.colors.divider), lineWidth: DesignKitMetrics.Stroke.hairline)
+                RoundedRectangle(cornerRadius: DesignKitMetrics.Radius.bubble.sizeInArtwork)
+                    .stroke(Color(theme.colors.divider), lineWidth: DesignKitMetrics.Stroke.hairline.strokeInArtwork)
             )
     }
 }

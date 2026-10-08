@@ -9,17 +9,20 @@ struct ChartLegendView: View {
     @Environment(\.theme) private var theme
 
     var body: some View {
-        VStack(spacing: 9) {
+        VStack(spacing: DesignKitMetrics.Spacing.legend.sizeInArtwork) {
             ForEach(series.indices, id: \.self) { index in
-                HStack(spacing: 9) {
-                    RoundedRectangle(cornerRadius: 3)
+                HStack(spacing: DesignKitMetrics.Spacing.legend.sizeInArtwork) {
+                    RoundedRectangle(cornerRadius: DesignKitMetrics.Radius.swatch.sizeInArtwork)
                         .fill(segmentColor(index))
-                        .frame(width: 12, height: 12)
+                        .frame(
+                            width: DesignKitMetrics.Spacing.regular.sizeInArtwork,
+                            height: DesignKitMetrics.Spacing.regular.sizeInArtwork
+                        )
                     Text(series[index].label)
-                        .font(Font(theme.fonts.subheadline))
-                    Spacer(minLength: 8)
+                        .designFont(.subheadline)
+                    Spacer(minLength: FigmaSize.spacing8.sizeInArtwork)
                     Text(series[index].formattedValue)
-                        .font(Font(theme.fonts.headline))
+                        .designFont(.headline)
                 }
                 .accessibilityElement(children: .ignore)
                 .accessibility(
@@ -30,10 +33,11 @@ struct ChartLegendView: View {
                 )
             }
         }
+        .foregroundColor(Color(theme.colors.primaryText))
     }
 
     private func segmentColor(_ index: Int) -> Color {
         let colors = theme.colors.chartColors
-        return Color(colors[index % colors.count])
+        return Color(colors.isEmpty ? theme.colors.accent : colors[index % colors.count])
     }
 }

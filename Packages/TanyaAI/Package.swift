@@ -4,6 +4,7 @@ import PackageDescription
 
 let package = Package(
     name: "TanyaAI",
+    defaultLocalization: "en",
     platforms: [
         .iOS(.v15)
     ],
@@ -41,7 +42,8 @@ let package = Package(
                 "TanyaAIContracts",
                 "TanyaAIDomain",
                 .product(name: "DesignKit", package: "DesignKit")
-            ]
+            ],
+            resources: [.process("Resources")]
         ),
         .target(
             name: "TanyaAI",

@@ -6,7 +6,7 @@ private struct ManagedTheme: ViewModifier {
     let isDefaultForced: Bool
 
     func body(content: Content) -> some View {
-        content.environment(\.theme, manager.resolve(isDefaultForced: isDefaultForced))
+        content.modifier(ResolvedTheme(theme: manager.resolve(isDefaultForced: isDefaultForced)))
     }
 }
 

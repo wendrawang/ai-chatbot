@@ -15,6 +15,8 @@ final class TencentTanyaAIComposition {
 
     func makeHost(
         theme: TanyaAITheme,
+        onDestination: ((TanyaAIAction, URL) -> Void)? = nil,
+        onConfirmation: ((TanyaAIConfirmationPayload) -> Void)? = nil,
         onDeeplink: @escaping (URL) -> Void
     ) -> TanyaAIHost {
         TanyaAIHost(
@@ -24,6 +26,8 @@ final class TencentTanyaAIComposition {
             makeSession: { [botUserID] in
                 TencentChatSessionAdapter(botUserID: botUserID)
             },
+            onDestination: onDestination,
+            onConfirmation: onConfirmation,
             onDeeplink: onDeeplink
         )
     }

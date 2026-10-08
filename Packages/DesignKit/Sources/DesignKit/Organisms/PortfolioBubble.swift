@@ -9,33 +9,34 @@ public struct PortfolioBubble: View {
     }
 
     public var body: some View {
-        VStack(alignment: .leading, spacing: 13) {
+        VStack(alignment: .leading, spacing: DesignKitMetrics.Spacing.section.sizeInArtwork) {
             header
             Text(payload.totalValue)
-                .font(Font(theme.fonts.amount))
+                .designFont(.amount)
             Text(payload.performanceText)
-                .font(Font(theme.fonts.headline))
+                .designFont(.headline)
                 .foregroundColor(Color(theme.colors.success))
             SegmentedBarView(series: payload.allocations)
             ChartLegendView(series: payload.allocations)
             footnote
         }
-        .padding(DesignKitMetrics.Spacing.wide)
+        .foregroundColor(Color(theme.colors.primaryText))
+        .padding(FigmaSize.spacing16.sizeInArtwork)
         .background(Color(theme.colors.surface))
-        .cornerRadius(DesignKitMetrics.Radius.card)
-        .frame(maxWidth: 340, alignment: .leading)
+        .cornerRadius(DesignKitMetrics.Radius.card.sizeInArtwork)
+        .frame(maxWidth: DesignKitMetrics.Size.cardMaximumWidth.sizeInArtwork, alignment: .leading)
         .accessibilityElement(children: .contain)
         .accessibilityIdentifier("portfolio.summary")
     }
 
     private var header: some View {
-        HStack(spacing: 10) {
+        HStack(spacing: DesignKitMetrics.Spacing.medium.sizeInArtwork) {
             Image(systemName: "chart.bar")
-                .font(Font(theme.fonts.headline))
+                .designFont(.headline)
                 .foregroundColor(Color(theme.colors.accent))
-                .frame(width: 24)
+                .frame(width: DesignKitMetrics.Size.icon.sizeInArtwork)
             Text(payload.title)
-                .font(Font(theme.fonts.headline))
+                .designFont(.headline)
         }
     }
 
@@ -43,7 +44,7 @@ public struct PortfolioBubble: View {
     private var footnote: some View {
         if let footnote = payload.footnote {
             Text(footnote)
-                .font(Font(theme.fonts.footnote))
+                .designFont(.footnote)
                 .foregroundColor(Color(theme.colors.secondaryText))
         }
     }

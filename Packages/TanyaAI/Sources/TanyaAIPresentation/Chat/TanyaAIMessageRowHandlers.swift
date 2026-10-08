@@ -39,6 +39,8 @@ struct TanyaAIMessageRowHandlers {
     let choices: Choices
     let onAction: (Action) -> Void
     let onSuggestion: (Suggestion) -> Void
+    var onConfirmation: (ConfirmationPayload) -> Void = { _ in }
+    var onAnswerOption: (String, String) -> Void = { _, _ in }
     /// Declining a live-agent offer. Accepting it is `onAction`, because it
     /// is the same hand-off any deeplink takes.
     let onDeclineLiveAgent: (LiveAgentPayload) -> Void

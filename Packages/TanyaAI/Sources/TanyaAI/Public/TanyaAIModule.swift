@@ -1,4 +1,5 @@
 import DesignKit
+import TanyaAIDomain
 import UIKit
 
 public enum TanyaAIModule {
@@ -16,15 +17,16 @@ public enum TanyaAIModule {
     public static func makeViewController(
         configuration: TanyaAIConfiguration = TanyaAIConfiguration(),
         dependencies: TanyaAIDependencies,
+        onConfirmation: ((ConfirmationPayload) -> Void)? = nil,
         onAction: @escaping (Action) -> Void = { _ in }
     ) -> UIViewController {
         let dependencyContainer = TanyaAIDependencyContainer(
             configuration: configuration,
             dependencies: dependencies
         )
-        return TanyaAIContainerViewController(
+        return ChatContainerViewController(
             dependencyContainer: dependencyContainer,
-            actionHandler: onAction
+            actionHandler: onAction, confirmationHandler: onConfirmation
         )
     }
 }

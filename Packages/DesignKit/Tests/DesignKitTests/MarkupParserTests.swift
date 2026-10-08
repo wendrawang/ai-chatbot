@@ -4,6 +4,15 @@ import XCTest
 /// The wire format is a closed tag set, so these tests pin both what it
 /// supports and what it refuses to do.
 final class MarkupParserTests: XCTestCase {
+    func testDeepMarkupFallsBackToPlainTextWithoutLosingContent() {
+        let source = String(repeating: "[bold]", count: 4_000)
+            + "Hello" + String(repeating: "[/bold]", count: 4_000)
+        let runs = MarkupParser.runs(from: source)
+        XCTAssertEqual(runs.map(\.text).joined(), "Hello")
+        XCTAssertEqual(runs.count, 1)
+        XCTAssertTrue(runs[0].style.isPlain)
+    }
+
     func testManyUnclosedBracketsRemainLiteral() {
         let source = String(repeating: "[ordinary ", count: 5_000)
 

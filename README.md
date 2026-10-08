@@ -33,6 +33,7 @@ Build, install, and launch on a simulator in one step:
 ```
 
 Any argument is forwarded to the app. `--showcase` renders every bubble, and
+`--answers` shows the four-part response and immediate radio selection.
 `--deeplink` opens on the legacy host and streams an action card plus a
 confirmation that hands off: **Open legacy detail → Open Tanya AI → Open
 transfer form**. The feature closes, the stack returns to Legacy Home, and the
@@ -46,6 +47,10 @@ Run all local verification:
 DEVELOPER_DIR=/Applications/Xcode.app/Contents/Developer \
   ./Scripts/verify.sh
 ```
+
+The verifier selects the newest installed iOS runtime containing `iPhone 17 Pro`.
+Set `TANYA_AI_SIMULATOR` to another installed model, or provide an explicit
+`TANYA_AI_TEST_DESTINATION` (for example, `platform=iOS Simulator,id=<UDID>`).
 
 ## Architecture
 
@@ -61,11 +66,11 @@ Host application
 TanyaAIModule.makeViewController
           │
           ▼
-TanyaAIContainerViewController
+ChatContainerViewController
 └── UINavigationController
-    ├── UIHostingController<TanyaAIChatView>
-    ├── UIHostingController<TanyaAIHistoryView>
-    └── TanyaAIPINSheetViewController
+    ├── UIHostingController<ChatScreen>
+    ├── UIHostingController<ConversationHistoryScreen>
+    └── AuthorizationSheetViewController
           │
           ▼
 View → ViewModel → UseCase → Repository → injected transport
@@ -153,7 +158,8 @@ This avoids both extremes:
 | `html` | Static formatted result | JavaScript disabled; navigation restricted to the app's initial load |
 | `actions` | Host-owned deeplink hand-off | Underlined action links |
 | `liveAgent` | Offer to continue with a person | Accept hands off; decline settles the card |
-| `choices` | Pick options, then explicitly submit | Single or multiple selection |
+| `answer` | Combine text, radio options, image, and actions | Any nonempty subset; radio sends on tap |
+| `choices` | Radio sends on tap; options then disappear | Explicit multi-selection retains submit |
 | `information` | Safe generic text and key-value information | Allowlisted blocks |
 | `chart` | Standalone data visualization | `bar`, `line`, `donut`, `progress` |
 | `portfolio` | Portfolio total, performance, allocation, disclaimer | Reuses chart primitives |
@@ -608,7 +614,7 @@ presenter into the existing coordinator or ViewModel action boundary:
 Legacy NavigationView screen
     → button action
     → scene-owned presentation gateway
-    → present TanyaAIContainerViewController full screen
+    → present ChatContainerViewController full screen
 ```
 
 The sandbox UI test verifies that the legacy navigation position and local
@@ -644,9 +650,13 @@ Add a small value type under:
 Packages/DesignKit/Sources/DesignKit/Models
 ```
 
-Shared bubble payloads live in DesignKit so its renderers do not depend back
-on TanyaAI. Feature-only message and stream models stay in TanyaAIDomain.
-Models contain meaning, not layout coordinates or networking details.
+Reusable presentation data lives in DesignKit. Chat-specific approval, action,
+choices, suggestion, and handoff contracts live in TanyaAIDomain; their views
+live in TanyaAIPresentation/Components/Chat. DesignKit has no dependency on the
+feature. Models contain meaning, not layout coordinates or networking details.
+
+See [DesignKit migration](docs/DESIGNKIT_MIGRATION.md) for atomic boundaries,
+screen-based `.sizeInArtwork` properties, theme selection, typography, and host setup.
 
 ### 4. Add DTO and mapper support
 
@@ -658,7 +668,7 @@ string directly into UI behavior.
 ### 5. Add presentation
 
 Add a focused renderer under `TanyaAIPresentation/Components` and one case in
-`TanyaAIMessageRowView`. Keep the view declarative. It may emit a typed user
+`MessageRowView`. Keep the view declarative. It may emit a typed user
 intent but may not call repositories, services, or routers.
 
 ### 6. Add business logic at the correct layer
@@ -924,3 +934,5 @@ Panduan tema Default/Premier/Private, override per halaman, dan registrasi font:
 Mulai integrasi host dengan [panduan langkah demi langkah](docs/HOST_INTEGRATION.md),
 atau jalankan `./Scripts/run_sandbox.sh --showcase` untuk review bubble.
 [Kontrak JSON](docs/BUBBLE_SCHEMA.md) dilengkapi [file contoh per bubble](Examples/BubbleResponses/).
+
+Panduan copy multilanguage, token ukuran, dan komponen generik: [DesignKit copy & components](docs/DESIGNKIT_COPY_AND_COMPONENTS.md).

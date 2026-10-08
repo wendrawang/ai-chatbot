@@ -31,7 +31,7 @@ final class TanyaAIStreamEventDecoderTests: XCTestCase {
         guard case .content(_, .unsupported(let message)) = result else {
             return XCTFail("Expected unsupported content")
         }
-        XCTAssertEqual(message, "This content requires a newer app version.")
+        XCTAssertNil(message)
     }
 
     func testUnknownNonContentEventIsIgnored() throws {

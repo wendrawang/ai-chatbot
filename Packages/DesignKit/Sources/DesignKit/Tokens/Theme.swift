@@ -61,14 +61,13 @@ public extension Theme {
     private static func scaledFont(
         style: UIFont.TextStyle,
         weight: UIFont.Weight
-    ) -> UIFont {
+    ) -> DesignKitTypography {
         let descriptor = UIFontDescriptor.preferredFontDescriptor(
-            withTextStyle: style
+            withTextStyle: style,
+            compatibleWith: UITraitCollection(preferredContentSizeCategory: .large)
         )
-        let baseFont = UIFont.systemFont(
-            ofSize: descriptor.pointSize,
-            weight: weight
+        return DesignKitTypography(
+            postScriptName: "", size: descriptor.pointSize, style: style, fallbackWeight: weight
         )
-        return UIFontMetrics(forTextStyle: style).scaledFont(for: baseFont)
     }
 }

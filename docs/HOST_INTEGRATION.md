@@ -82,6 +82,14 @@ baru bekerja setelah root tampil. Fitur dipresentasikan sebagai controller sendi
 bukan di-push ke NavigationView host. `@StateObject` mempertahankan identitas host;
 jangan membuat instance baru pada setiap evaluasi `body`.
 
+Jika host disimpan sebagai optional di AppState, gunakan langsung
+`.tanyaAIHost(appState.tanyaAIHost)`, tanpa `!`. Nil hanya menghilangkan anchor
+presentasi, sehingga konten dan state NavigationView tetap dipertahankan.
+Siapkan host sekali per sesi login sebelum `state = .loggedIn`; login SDK boleh
+dimulai dari method login AppState. Tombol chat menunggu login SDK berhasil.
+Contoh AppState dan cleanup Tencent ada di
+[panduan Tencent](../Examples/VendorChatSDK/Tencent/README.md).
+
 ## 3. Cek bubble tertentu
 
 Hapus `initialPrompt: "showcase"` jika ingin mengetik manual.

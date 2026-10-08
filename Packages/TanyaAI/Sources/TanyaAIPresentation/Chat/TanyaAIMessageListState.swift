@@ -1,4 +1,5 @@
 import DesignKit
+import TanyaAIDomain
 import Foundation
 
 /// What the message table should be showing.

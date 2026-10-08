@@ -9,22 +9,23 @@ public struct StatusBubble: View {
     }
 
     public var body: some View {
-        HStack(alignment: .top, spacing: 10) {
+        HStack(alignment: .top, spacing: DesignKitMetrics.Spacing.medium.sizeInArtwork) {
             Image(systemName: iconName)
                 .foregroundColor(accentColor)
 
-            VStack(alignment: .leading, spacing: DesignKitMetrics.Spacing.tight) {
+            VStack(alignment: .leading, spacing: FigmaSize.spacing4.sizeInArtwork) {
                 Text(payload.title)
-                    .font(Font(theme.fonts.headline))
+                    .designFont(.headline)
                 Text(payload.detail)
-                    .font(Font(theme.fonts.subheadline))
+                    .designFont(.subheadline)
                     .foregroundColor(Color(theme.colors.secondaryText))
             }
         }
-        .padding(DesignKitMetrics.Spacing.wide)
+        .foregroundColor(Color(theme.colors.primaryText))
+        .padding(FigmaSize.spacing16.sizeInArtwork)
         .background(Color(theme.colors.surface))
-        .cornerRadius(DesignKitMetrics.Radius.notice)
-        .frame(maxWidth: 340, alignment: .leading)
+        .cornerRadius(DesignKitMetrics.Radius.notice.sizeInArtwork)
+        .frame(maxWidth: DesignKitMetrics.Size.cardMaximumWidth.sizeInArtwork, alignment: .leading)
     }
 
     private var iconName: String {

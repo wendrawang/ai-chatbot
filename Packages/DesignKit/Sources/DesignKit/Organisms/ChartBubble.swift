@@ -9,17 +9,18 @@ public struct ChartBubble: View {
     }
 
     public var body: some View {
-        VStack(alignment: .leading, spacing: 13) {
+        VStack(alignment: .leading, spacing: DesignKitMetrics.Spacing.section.sizeInArtwork) {
             header
             total
-            SegmentedBarView(series: payload.series)
+            ChartGraphic(type: payload.chartType, series: payload.series)
             ChartLegendView(series: payload.series)
             footnote
         }
-        .padding(DesignKitMetrics.Spacing.wide)
+        .foregroundColor(Color(theme.colors.primaryText))
+        .padding(FigmaSize.spacing16.sizeInArtwork)
         .background(Color(theme.colors.surface))
-        .cornerRadius(DesignKitMetrics.Radius.card)
-        .frame(maxWidth: 340, alignment: .leading)
+        .cornerRadius(DesignKitMetrics.Radius.card.sizeInArtwork)
+        .frame(maxWidth: DesignKitMetrics.Size.cardMaximumWidth.sizeInArtwork, alignment: .leading)
         .accessibilityElement(children: .contain)
         .accessibilityIdentifier(
             "content.chart.\(payload.chartType.rawValue)"
@@ -27,22 +28,22 @@ public struct ChartBubble: View {
     }
 
     private var header: some View {
-        HStack(spacing: 10) {
+        HStack(spacing: DesignKitMetrics.Spacing.medium.sizeInArtwork) {
             Image(systemName: "chart.pie")
-                .font(Font(theme.fonts.headline))
+                .designFont(.headline)
                 .foregroundColor(Color(theme.colors.accent))
-                .frame(width: 24)
+                .frame(width: DesignKitMetrics.Size.icon.sizeInArtwork)
             Text(payload.title)
-                .font(Font(theme.fonts.headline))
+                .designFont(.headline)
         }
     }
 
     @ViewBuilder
     private var total: some View {
         if let totalValue = payload.totalValue {
-            VStack(alignment: .leading, spacing: DesignKitMetrics.Spacing.tight) {
+            VStack(alignment: .leading, spacing: FigmaSize.spacing4.sizeInArtwork) {
                 Text(totalValue)
-                    .font(Font(theme.fonts.amount))
+                    .designFont(.amount)
                 subtitle
             }
         } else {
@@ -54,7 +55,7 @@ public struct ChartBubble: View {
     private var subtitle: some View {
         if let subtitle = payload.subtitle {
             Text(subtitle)
-                .font(Font(theme.fonts.subheadline))
+                .designFont(.subheadline)
                 .foregroundColor(Color(theme.colors.secondaryText))
         }
     }
@@ -63,7 +64,7 @@ public struct ChartBubble: View {
     private var footnote: some View {
         if let footnote = payload.footnote {
             Text(footnote)
-                .font(Font(theme.fonts.footnote))
+                .designFont(.footnote)
                 .foregroundColor(Color(theme.colors.secondaryText))
         }
     }
