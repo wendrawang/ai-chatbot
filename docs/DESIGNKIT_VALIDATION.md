@@ -1,4 +1,4 @@
-# Validasi perubahan DesignKit — 2–5 Oktober 2026
+# Validasi DesignKit/TanyaAI — 2–8 Oktober 2026
 
 Perubahan ini tidak mengubah `Tokens/Generated`. Catatan 2–3 Oktober di bawah
 merekam implementasi container/environment sebelumnya. Pada 4 Oktober, sesuai
@@ -185,3 +185,30 @@ tap di tiap sisi adalah `(tapWidth - visualWidth) / 2`; lakukan perhitungan pada
 final yang sama dengan frame. Eksperimen resource/ukuran tidak disertakan dalam source.
 Pemeriksaan ini dijalankan pada iPhone 17 Pro/iOS 26.5 Simulator; implementasi host
 privat dan SVG aktual tidak tersedia untuk diperiksa langsung.
+
+
+### 8 Oktober: adapter Tencent memakai group
+
+Empat file Swift root contoh Tencent tetap host-side. Composition menerima GroupId;
+SDK memakai group history, group send dengan receiver nil, serta filter groupID untuk
+history/live. Body TIMTextElem/TIMCustomElem dan package UI tidak berubah. History
+customer dipertahankan, self live echo diabaikan, peer bot/agent menjadi assistant.
+
+- Empat contoh Swift typecheck terhadap framework ImSDK_Plus_Swift 9.1.7818 asli,
+  target arm64 iOS 15 Simulator.
+- Runner adapter offline: 21 assertion lulus untuk group routing, history ordering,
+  cross-group/C2C isolation, peer/self messages, group tips, queue 100, duplicate IDs
+  512, failure send, callback setelah close, listener removal, dan adapter release.
+  Runner memakai contracts asli dan SDK double; ini bukan pengujian runtime Tencent.
+- Lima tes Python lulus, termasuk semua enam fixture, provisioning owner/bot,
+  mandatory GroupId, dry-run, endpoint create/send group dan penolakan JSON/API.
+  Curl double memastikan tes tidak membuat group atau mengirim pesan sungguhan.
+  Provisioning PoC memakai Public dengan DisableApply/DisableInvite untuk menjaga
+  membership lewat backend dan memungkinkan pesan pembuka tanpa aktivasi owner.
+  Kedua runner juga terpasang pada `Scripts/verify.sh`.
+- Strict lint 0 violation, batas file/method, guard design system dan whitespace lulus.
+
+Group/membership, SDK login, webhook backend, serta pengiriman dan history di device
+nyata tetap perlu diuji pada aplikasi host. Package unit/UI tests tidak diulang karena
+source package tidak berubah dalam migrasi transport ini. PoC tetap fallback history
+kosong bila fetch gagal; ia tidak menyediakan pagination atau daftar group lintas sesi.

@@ -2,11 +2,11 @@ import Foundation
 import ImSDK_Plus_Swift
 import TanyaAI
 
-/// One instance per Tanya AI presentation; SDK login remains app-wide.
+/// One instance per group presentation; membership is provisioned by the host backend.
 final class TencentChatSessionAdapter: TanyaAIChatSession {
     var onEvent: ((TanyaAIChatSessionEvent) -> Void)?
 
-    private let botUserID: String
+    private let groupID: String
     private let manager = V2TIMManager.shared
     private var isActive = false
     private var isLoadingHistory = false
@@ -14,8 +14,8 @@ final class TencentChatSessionAdapter: TanyaAIChatSession {
     var knownIdentifiers = Set<String>()
     var orderedIdentifiers: [String] = []
 
-    init(botUserID: String) {
-        self.botUserID = botUserID
+    init(groupID: String) {
+        self.groupID = groupID
     }
 
     deinit {
@@ -33,8 +33,8 @@ final class TencentChatSessionAdapter: TanyaAIChatSession {
         isActive = true
         isLoadingHistory = true
         manager.addAdvancedMsgListener(listener: self)
-        manager.getC2CHistoryMessageList(
-            userID: botUserID,
+        manager.getGroupHistoryMessageList(
+            groupID: groupID,
             count: 20,
             lastMsg: nil,
             succ: { [weak self] messages in
@@ -58,8 +58,8 @@ final class TencentChatSessionAdapter: TanyaAIChatSession {
         // Do not insert either into visible message text.
         _ = manager.sendMessage(
             message: message,
-            receiver: botUserID,
-            groupID: nil,
+            receiver: nil,
+            groupID: groupID,
             priority: .V2TIM_PRIORITY_NORMAL,
             onlineUserOnly: false,
             offlinePushInfo: nil,
@@ -88,7 +88,7 @@ final class TencentChatSessionAdapter: TanyaAIChatSession {
         // The SDK returns newest first; preserve its order even when timestamps are equal.
         let ordered = Array(messages.reversed())
         let history = ordered.compactMap { message -> TanyaAIChatSessionMessage? in
-            guard message.userID == botUserID else { return nil }
+            guard message.groupID == groupID else { return nil }
             remember(message.msgID)
             return contractMessage(message)
         }
@@ -101,7 +101,7 @@ final class TencentChatSessionAdapter: TanyaAIChatSession {
     }
 
     private func handleIncoming(_ message: V2TIMMessage) {
-        guard isActive, message.userID == botUserID,
+        guard isActive, message.groupID == groupID,
               !message.isSelf, !knownIdentifiers.contains(message.msgID) else { return }
         remember(message.msgID)
         contractMessage(message)?.contentEvents.forEach { onEvent?($0) }
@@ -111,7 +111,7 @@ final class TencentChatSessionAdapter: TanyaAIChatSession {
 extension TencentChatSessionAdapter: V2TIMAdvancedMsgListener {
     func onRecvNewMessage(msg: V2TIMMessage) {
         DispatchQueue.main.async { [weak self] in
-            guard let self, self.isActive, msg.userID == self.botUserID else { return }
+            guard let self, self.isActive, msg.groupID == self.groupID else { return }
             if self.isLoadingHistory {
                 if self.pendingMessages.count >= 100 { self.pendingMessages.removeFirst() }
                 self.pendingMessages.append(msg)
