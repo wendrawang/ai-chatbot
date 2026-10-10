@@ -2,6 +2,7 @@ import Foundation
 import TanyaAI
 
 /// Build once per signed-in host session; keep the returned host alive.
+@MainActor
 final class TencentTanyaAIComposition {
     private let groupID: String
     private let deeplinkScheme: String

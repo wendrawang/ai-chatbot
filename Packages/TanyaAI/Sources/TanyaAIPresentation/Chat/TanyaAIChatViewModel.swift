@@ -6,15 +6,24 @@ import TanyaAIDomain
 /// Screen workflow and channel state. The editor owns its draft locally.
 @MainActor
 public final class TanyaAIChatViewModel: ObservableObject {
-    @Published public internal(set) var messages: [TanyaAIMessageItemViewModel] = []
-    @Published public internal(set) var connection = TanyaAIConnectionState.connecting
-    @Published public internal(set) var isRestoring = true
-    @Published public internal(set) var isAgentTyping = false
-    @Published public internal(set) var isHistoryUnavailable = false
-    @Published public internal(set) var errorMessage: String?
-    @Published public internal(set) var suggestions: [Suggestion] = []
-    @Published public internal(set) var suggestionsTitle: String?
-    @Published public internal(set) var draftRequest: TanyaAIDraftRequest?
+    @Published
+    public internal(set) var messages: [TanyaAIMessageItemViewModel] = []
+    @Published
+    public internal(set) var connection = TanyaAIConnectionState.connecting
+    @Published
+    public internal(set) var isRestoring = true
+    @Published
+    public internal(set) var isAgentTyping = false
+    @Published
+    public internal(set) var isHistoryUnavailable = false
+    @Published
+    public internal(set) var errorMessage: String?
+    @Published
+    public internal(set) var suggestions: [Suggestion] = []
+    @Published
+    public internal(set) var suggestionsTitle: String?
+    @Published
+    public internal(set) var draftRequest: TanyaAIDraftRequest?
 
     public let shortcuts: [Suggestion]
     public var onOutput: ((TanyaAIChatOutput) -> Void)?
@@ -69,7 +78,8 @@ public final class TanyaAIChatViewModel: ObservableObject {
 
     public func retryMessage(_ identifier: String) {
         guard isSendEnabled, let message = message(identifier: identifier),
-              message.delivery == .failed else { return }
+            message.delivery == .failed
+        else { return }
         messages.last?.consumeOptions()
         errorMessage = nil
         submit(message)

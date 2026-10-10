@@ -1,5 +1,6 @@
 import UIKit
 import XCTest
+
 @testable import TanyaAI
 
 /// How the feature arrives. It is presented rather than pushed - staying out
@@ -9,14 +10,16 @@ import XCTest
 final class TanyaAIPushTransitionTests: XCTestCase {
     func testPresentingAndDismissingUseOppositeDirections() {
         let transition = TanyaAIPushTransition()
-        let presenting = transition.animationController(
-            forPresented: UIViewController(),
-            presenting: UIViewController(),
-            source: UIViewController()
-        ) as? TanyaAIPushAnimator
-        let dismissing = transition.animationController(
-            forDismissed: UIViewController()
-        ) as? TanyaAIPushAnimator
+        let presenting =
+            transition.animationController(
+                forPresented: UIViewController(),
+                presenting: UIViewController(),
+                source: UIViewController()
+            ) as? TanyaAIPushAnimator
+        let dismissing =
+            transition.animationController(
+                forDismissed: UIViewController()
+            ) as? TanyaAIPushAnimator
 
         XCTAssertNotNil(presenting)
         XCTAssertNotNil(dismissing)
@@ -67,7 +70,8 @@ final class TanyaAIPushTransitionTests: XCTestCase {
 
 /// Enough of `UIViewControllerContextTransitioning` for the animator to run.
 private final class TanyaAITransitionContextSpy:
-    NSObject, UIViewControllerContextTransitioning {
+    NSObject, UIViewControllerContextTransitioning
+{
     let containerView: UIView
     private(set) var isCompleted: Bool?
     private let leaving: UIViewController

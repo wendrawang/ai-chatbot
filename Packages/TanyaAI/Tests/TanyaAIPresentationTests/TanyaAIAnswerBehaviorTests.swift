@@ -2,6 +2,7 @@ import DesignKit
 import Foundation
 import TanyaAIDomain
 import XCTest
+
 @testable import TanyaAIPresentation
 
 @MainActor
@@ -61,9 +62,10 @@ final class TanyaAIAnswerBehaviorTests: XCTestCase {
         let model = TanyaAIChatViewModel(repository: repository)
         var restored = answer
         restored.isAnswered = true
-        repository.sendUnsolicited(.history([
-            TanyaAIMessage(identifier: "answer", role: .assistant, content: .answer(restored))
-        ]))
+        repository.sendUnsolicited(
+            .history([
+                TanyaAIMessage(identifier: "answer", role: .assistant, content: .answer(restored))
+            ]))
         model.selectAnswerOption("answer", "help")
         XCTAssertNil(repository.receivedText)
     }
@@ -83,9 +85,11 @@ final class TanyaAIAnswerBehaviorTests: XCTestCase {
     func testLegacySingleChoicesSendImmediatelyAndStayConsumed() {
         let repository = TanyaAIRepositoryStub()
         let model = makeModel(repository)
-        let choices = ChoicesPayload(identifier: "radio", title: "Question", choices: [
-            .init(identifier: "help", title: "Help", prompt: "Contact support")
-        ])
+        let choices = ChoicesPayload(
+            identifier: "radio", title: "Question",
+            choices: [
+                .init(identifier: "help", title: "Help", prompt: "Contact support")
+            ])
         repository.sendUnsolicited(.content(messageIdentifier: "radio", content: .choices(choices)))
         model.toggleChoice(choices, "help")
         repository.complete(.success(()))
@@ -102,9 +106,11 @@ final class TanyaAIAnswerBehaviorTests: XCTestCase {
             text: "Choose a service",
             options: [.init(identifier: "help", title: "Help", prompt: "Contact support")],
             image: ImagePayload(imageURL: nil, caption: "Promotion"),
-            actions: ActionPayload(buttons: [.init(
-                title: "Open", action: .init(identifier: "open", deeplink: "host://open")
-            )])
+            actions: ActionPayload(buttons: [
+                .init(
+                    title: "Open", action: .init(identifier: "open", deeplink: "host://open")
+                )
+            ])
         )
     }
 

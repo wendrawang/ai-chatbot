@@ -5,6 +5,8 @@ import SwiftUI
 /// The submit button is what separates this from `OptionList`, where a tap
 /// reports a selection immediately. This group allows changes before submission.
 public struct ChoiceGroup: View {
+    @Environment(\.theme)
+    private var theme
     let title: String?
     let options: [SelectionOption]
     let selected: Set<String>
@@ -13,9 +15,9 @@ public struct ChoiceGroup: View {
     let submitTitle: String
     let onToggle: (String) -> Void
     let onSubmit: () -> Void
-    @Environment(\.theme) private var theme
 
-    @State private var availableWidth: CGFloat = 0
+    @State
+    private var availableWidth: CGFloat = 0
 
     public init(
         title: String?, options: [SelectionOption], selected: Set<String>,

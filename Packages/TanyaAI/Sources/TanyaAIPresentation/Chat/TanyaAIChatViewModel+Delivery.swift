@@ -13,7 +13,8 @@ extension TanyaAIChatViewModel {
 
     func finishSubmission(_ identifier: String, remoteIdentifier: String?, isSuccessful: Bool) {
         guard let rowIdentifier = pendingSubmissions.removeValue(forKey: identifier),
-              let message = message(identifier: rowIdentifier) else { return }
+            let message = message(identifier: rowIdentifier)
+        else { return }
         if let remoteIdentifier { message.setRemoteIdentifier(remoteIdentifier) }
         message.setDelivery(isSuccessful ? .sent : .failed)
         if !isSuccessful { errorMessage = copy.chat("chat.sendFailed") }

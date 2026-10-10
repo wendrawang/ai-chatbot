@@ -1,5 +1,6 @@
 import TanyaAIDomain
 import XCTest
+
 @testable import TanyaAIPresentation
 
 @MainActor
@@ -8,10 +9,11 @@ final class TanyaAIMessageRetentionTests: XCTestCase {
         let repository = TanyaAIRepositoryStub()
         let viewModel = TanyaAIChatViewModel(repository: repository)
         for index in 0..<150 {
-            repository.sendUnsolicited(.content(
-                messageIdentifier: "message-\(index)",
-                content: .text("Reply \(index)")
-            ))
+            repository.sendUnsolicited(
+                .content(
+                    messageIdentifier: "message-\(index)",
+                    content: .text("Reply \(index)")
+                ))
         }
 
         XCTAssertEqual(viewModel.messages.count, 100)
@@ -28,9 +30,10 @@ final class TanyaAIMessageRetentionTests: XCTestCase {
         viewModel.redirectedIdentifiers["original"] = "old"
 
         for index in 0..<100 {
-            repository.sendUnsolicited(.content(
-                messageIdentifier: "new-\(index)", content: .text("New")
-            ))
+            repository.sendUnsolicited(
+                .content(
+                    messageIdentifier: "new-\(index)", content: .text("New")
+                ))
         }
 
         XCTAssertNil(evicted)

@@ -2,6 +2,7 @@ import Foundation
 import TanyaAIContracts
 import TanyaAIDomain
 import XCTest
+
 @testable import TanyaAIData
 
 /// Reopening a conversation has to show both sides of it. Only the channel
@@ -13,10 +14,11 @@ final class TanyaAISessionHistoryTests: XCTestCase {
         let recorder = SessionRecorder()
         recorder.attach(repository)
 
-        session.emit(.history([
-            message(identifier: "1", author: .customer, text: "Halo"),
-            message(identifier: "2", author: .assistant, text: "Ada yang bisa dibantu?")
-        ]))
+        session.emit(
+            .history([
+                message(identifier: "1", author: .customer, text: "Halo"),
+                message(identifier: "2", author: .assistant, text: "Ada yang bisa dibantu?")
+            ]))
 
         recorder.waitUntil(in: self) { recorder.history != nil }
         guard let restored = recorder.history else {
@@ -36,13 +38,15 @@ final class TanyaAISessionHistoryTests: XCTestCase {
         let recorder = SessionRecorder()
         recorder.attach(repository)
 
-        session.emit(.history((0..<150).map { index in
-            message(
-                identifier: "m-\(index)",
-                author: .customer,
-                text: "Pesan \(index)"
-            )
-        }))
+        session.emit(
+            .history(
+                (0..<150).map { index in
+                    message(
+                        identifier: "m-\(index)",
+                        author: .customer,
+                        text: "Pesan \(index)"
+                    )
+                }))
 
         recorder.waitUntil(in: self) { recorder.history != nil }
         guard let restored = recorder.history else {
@@ -60,19 +64,21 @@ final class TanyaAISessionHistoryTests: XCTestCase {
         let recorder = SessionRecorder()
         recorder.attach(repository)
 
-        session.emit(.history([
-            TanyaAIChatSessionMessage(
-                identifier: "3",
-                author: .assistant,
-                text: "Status",
-                structuredName: "content.status",
-                structuredJSON: statusJSON
-            )
-        ]))
+        session.emit(
+            .history([
+                TanyaAIChatSessionMessage(
+                    identifier: "3",
+                    author: .assistant,
+                    text: "Status",
+                    structuredName: "content.status",
+                    structuredJSON: statusJSON
+                )
+            ]))
 
         recorder.waitUntil(in: self) { recorder.history != nil }
         guard let restored = recorder.history,
-              case .status(let payload)? = restored.first?.content else {
+            case .status(let payload)? = restored.first?.content
+        else {
             return XCTFail("Expected a typed status bubble")
         }
         XCTAssertEqual(payload.title, "Selesai")
@@ -87,19 +93,21 @@ final class TanyaAISessionHistoryTests: XCTestCase {
         let recorder = SessionRecorder()
         recorder.attach(repository)
 
-        session.emit(.history([
-            TanyaAIChatSessionMessage(
-                identifier: "4",
-                author: .assistant,
-                text: "Kartu",
-                structuredName: "content.status",
-                structuredJSON: Data("not-json".utf8)
-            )
-        ]))
+        session.emit(
+            .history([
+                TanyaAIChatSessionMessage(
+                    identifier: "4",
+                    author: .assistant,
+                    text: "Kartu",
+                    structuredName: "content.status",
+                    structuredJSON: Data("not-json".utf8)
+                )
+            ]))
 
         recorder.waitUntil(in: self) { recorder.history != nil }
         guard let restored = recorder.history,
-              case .unsupported? = restored.first?.content else {
+            case .unsupported? = restored.first?.content
+        else {
             return XCTFail("Expected the unsupported fallback")
         }
         XCTAssertEqual(restored.count, 1)
@@ -137,9 +145,10 @@ final class TanyaAISessionHistoryTests: XCTestCase {
     }
 
     private var statusJSON: Data {
-        Data("""
-        {"messageIdentifier":"st-1","title":"Selesai",
-         "detail":"Permintaan diproses.","level":"success"}
-        """.utf8)
+        Data(
+            """
+            {"messageIdentifier":"st-1","title":"Selesai",
+             "detail":"Permintaan diproses.","level":"success"}
+            """.utf8)
     }
 }

@@ -3,6 +3,7 @@ import Foundation
 import TanyaAIContracts
 import TanyaAIDomain
 import XCTest
+
 @testable import TanyaAIPresentation
 
 @MainActor
@@ -61,11 +62,14 @@ final class TanyaAIChatViewModelTests: XCTestCase {
         let repository = TanyaAIRepositoryStub()
         let viewModel = TanyaAIChatViewModel(repository: repository)
         repository.sendUnsolicited(.history([]))
-        repository.sendUnsolicited(.suggestions(title: nil, items: [
-            TanyaAISuggestionPayload(
-                identifier: "next-question", title: "Next question", prompt: "Show next answer"
-            )
-        ]))
+        repository.sendUnsolicited(
+            .suggestions(
+                title: nil,
+                items: [
+                    TanyaAISuggestionPayload(
+                        identifier: "next-question", title: "Next question", prompt: "Show next answer"
+                    )
+                ]))
         let suggestion = viewModel.suggestions[0]
 
         viewModel.sendSuggestion(suggestion)
@@ -80,13 +84,15 @@ final class TanyaAIChatViewModelTests: XCTestCase {
         viewModel.sendMessage("Show spending")
 
         repository.send(
-            .suggestions(title: "Pilih satu", items: [
-                TanyaAISuggestionPayload(
-                    identifier: "next-question",
-                    title: "Next question",
-                    prompt: "Show the next answer"
-                )
-            ])
+            .suggestions(
+                title: "Pilih satu",
+                items: [
+                    TanyaAISuggestionPayload(
+                        identifier: "next-question",
+                        title: "Next question",
+                        prompt: "Show the next answer"
+                    )
+                ])
         )
         repository.send(.responseCompleted(messageIdentifier: "assistant-1"))
 
@@ -128,8 +134,10 @@ final class TanyaAIChatViewModelTests: XCTestCase {
             state: .completed
         )
 
-        guard case .approval(let updatedApproval) =
-                viewModel.messages.last?.content else {
+        guard
+            case .approval(let updatedApproval) =
+                viewModel.messages.last?.content
+        else {
             return XCTFail("Expected approval message")
         }
         XCTAssertEqual(updatedApproval.state, .completed)

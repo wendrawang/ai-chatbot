@@ -23,6 +23,26 @@ final class TanyaAIRepositoryFixture: TanyaAIRepository {
         onEvent?(.sendSucceeded(requestIdentifier: requestIdentifier, messageIdentifier: requestIdentifier))
         return requestIdentifier
     }
+    func appendMixedMessages() {
+        onEvent?(.content(messageIdentifier: "text", content: .text("A multiline reply.\nSecond line.")))
+        onEvent?(.content(messageIdentifier: "image", content: .image(ImagePayload(imageURL: nil, caption: "Image"))))
+        onEvent?(
+            .content(
+                messageIdentifier: "html",
+                content: .html(
+                    HTMLPayload(
+                        identifier: "html", html: "<p>Static result</p>", declaredHeight: 80,
+                        accessibilityText: "Static result"
+                    ))))
+        onEvent?(
+            .content(
+                messageIdentifier: "status",
+                content: .status(
+                    StatusPayload(
+                        title: "Status", detail: "Sanitized result", level: .neutral
+                    ))))
+    }
+
     func appendStatusMessages(count: Int) {
         for index in 0..<count {
             let payload = StatusPayload(
@@ -40,9 +60,10 @@ final class TanyaAIAuthorizationFixture: TanyaAIAuthorizationService {
     func authorize(
         request: TanyaAIAuthorizationRequest,
         pin: String,
-        completion: @escaping (
-            Result<TanyaAIAuthorizationResult, Error>
-        ) -> Void
+        completion:
+            @escaping (
+                Result<TanyaAIAuthorizationResult, Error>
+            ) -> Void
     ) -> TanyaAICancellable {
         cancellationProbe
     }

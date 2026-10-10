@@ -3,6 +3,7 @@ import TanyaAI
 import imi_dolphin_livechat_ios
 
 /// Retain one composition per signed-in user; configure the SDK before using it.
+@MainActor
 final class ThreeDolphinsTanyaAIComposition {
     private let profile: DolphinProfile
     private let mapMessage: ThreeDolphinsChatSessionAdapter.MessageMapper

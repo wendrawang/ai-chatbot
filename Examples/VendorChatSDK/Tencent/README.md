@@ -309,8 +309,8 @@ Script membutuhkan Python 3; sender default `bot_poc`, target wajib `TENCENT_GRO
   backend harus menetapkan jalurnya. Teks radio menggunakan label sebagai prompt;
   `value` dipertahankan sebagai ID pilihan.
 - History tetap 20 pesan group terakhir. Pagination membutuhkan backend/host policy.
-- Bila history gagal, contoh memulihkan batch kosong; kegagalan send SDK diteruskan
-  sebagai `.failed`. Pastikan group/membership sudah disiapkan sebelum presentasi.
+- Bila history gagal, adapter melaporkan `.historyFailed` lalu `.connected`; kegagalan send SDK diteruskan
+  sebagai `.sendFailed(requestIdentifier:error:)`. Pastikan group/membership sudah disiapkan sebelum presentasi.
 - Konfirmasi baru mengirim confirmation ID/fields ke flow PIN host, tanpa
   memalsukan challenge atau menjalankan transaksi di package.
 - Runtime Tencent/login dan pengiriman REST tetap diuji pada host/device Anda.
@@ -333,3 +333,7 @@ runtime Tencent di runner ini. File root Swift juga harus typecheck terhadap fra
 Tencent asli sesuai versi host; validasi perubahan ini memakai 9.1.7818 pada target iOS 15.
 Tes Python memeriksa envelope, endpoint, payload dan respons REST dengan curl double;
 tidak mengirim pesan atau membuat group nyata. Folder `Tests` tidak dimasukkan ke target host.
+
+### Current send/session contract
+
+Update DesignKit/TanyaAI and all root adapter files together. See [migration](../../../docs/SESSION_AND_PARTIAL_MIGRATION.md). `.sendSucceeded` / `.sendFailed` identify SDK submissions, not bot answers. A new prompt is allowed while the bot is replying. There is no Stop and no backend reply correlation. Retry guards old history/send callbacks by connection generation.

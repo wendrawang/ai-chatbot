@@ -1,0 +1,18 @@
+{
+  "version": 1,
+  "lineLength": 120,
+  "indentation": {
+    "spaces": 4
+  },
+  "maximumBlankLines": 1,
+  "respectsExistingLineBreaks": true,
+  "lineBreakBeforeEachArgument": false,
+  "lineBreakBetweenDeclarationAttributes": true,
+  "multiElementCollectionTrailingCommas": false,
+  "rules": {
+    "OrderedImports": true,
+    "ReplaceForEachWithForLoop": false,
+    "NoAccessLevelOnExtensionDeclaration": false,
+    "UseExplicitNilCheckInConditions": false
+  }
+}

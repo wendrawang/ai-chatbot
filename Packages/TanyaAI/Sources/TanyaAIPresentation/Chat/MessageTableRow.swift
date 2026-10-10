@@ -20,6 +20,7 @@ struct MessageTableRow: View {
                 .id(message.identifier)
             case .typing:
                 TypingIndicatorView(label: copy.chat("chat.responding"))
+                    .accessibilityIdentifier("chat.typing")
             case .suggestions(let title, let suggestions):
                 OptionList(
                     title: title,

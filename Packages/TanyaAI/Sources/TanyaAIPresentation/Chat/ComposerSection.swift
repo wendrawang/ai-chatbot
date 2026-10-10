@@ -3,8 +3,10 @@ import SwiftUI
 
 /// Editing is local: keystrokes do not invalidate the screen or message table.
 struct ComposerSection: View {
-    @Environment(\.copyCatalog) private var copy
-    @State private var text = ""
+    @Environment(\.copyCatalog)
+    private var copy
+    @State
+    private var text = ""
     let isEnabled: Bool
     let draftRequest: TanyaAIDraftRequest?
     let onSend: (String) -> Bool

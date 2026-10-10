@@ -12,6 +12,7 @@ final class ThreeDolphinsChatSessionAdapter: TanyaAIChatSession {
     private let mapMessage: MessageMapper
     private let silentGreeting: String?
     private var observers: [NSObjectProtocol] = []
+    private var generation = 0
     private var isActive = false
     private var isGreetingSent = false
     private var isConnectionReported = false
@@ -29,12 +30,16 @@ final class ThreeDolphinsChatSessionAdapter: TanyaAIChatSession {
     func connect() {
         onMain { [self] in
             guard isActive == false else { return }
+            generation += 1
+            let epoch = generation
             isActive = true
             observe(notificationConnectionStatus) { [weak self] notification in
-                self?.receiveStatus(notification)
+                guard let self, self.generation == epoch else { return }
+                self.receiveStatus(notification)
             }
             observe(notificationMessage) { [weak self] notification in
-                self?.receiveMessage(notification)
+                guard let self, self.generation == epoch else { return }
+                self.receiveMessage(notification)
             }
             Connector.shared.constructConnector(profile: profile)
         }
@@ -55,6 +60,7 @@ final class ThreeDolphinsChatSessionAdapter: TanyaAIChatSession {
     func disconnect() {
         onMain { [self] in
             guard isActive else { return }
+            generation += 1
             isActive = false
             observers.forEach(NotificationCenter.default.removeObserver)
             observers.removeAll()
@@ -90,7 +96,8 @@ final class ThreeDolphinsChatSessionAdapter: TanyaAIChatSession {
         isConnectionReported = true
         onEvent?(.connected)
         guard isActive, isGreetingSent == false, let silentGreeting,
-              silentGreeting.isEmpty == false else { return }
+            silentGreeting.isEmpty == false
+        else { return }
         isGreetingSent = true
         Connector.shared.onSendMessage(messages: silentGreeting)
     }

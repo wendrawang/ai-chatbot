@@ -1,7 +1,8 @@
-@testable import DesignKit
 import SwiftUI
 import UIKit
 import XCTest
+
+@testable import DesignKit
 @testable import TanyaAIPresentation
 
 @MainActor
@@ -98,7 +99,8 @@ final class TanyaAIGrowingTextViewTests: XCTestCase {
 }
 
 private struct ComposerFixture: View {
-    @ObservedObject var viewModel: DraftFixture
+    @ObservedObject
+    var viewModel: DraftFixture
 
     var body: some View {
         VStack(spacing: 0) {
@@ -114,5 +116,6 @@ private struct ComposerFixture: View {
 }
 
 private final class DraftFixture: ObservableObject {
-    @Published var inputText = ""
+    @Published
+    var inputText = ""
 }

@@ -23,6 +23,8 @@ final class SendbirdChatSessionAdapter: NSObject, TanyaAIChatSession {
     private(set) var channel: GroupChannel?
     /// True once a channel is being opened, so a burst of sends does not
     /// create several channels for one conversation.
+    private var generation = 0
+    private var isActive = false
     private var isOpeningChannel = false
     /// Messages typed before the channel finished opening.
     ///
@@ -55,6 +57,11 @@ final class SendbirdChatSessionAdapter: NSObject, TanyaAIChatSession {
     /// conversation still defers `createChannel` to the first message, so
     /// opening the chat and closing it again leaves no empty channel behind.
     func connect() {
+        lock.lock()
+        generation += 1
+        let epoch = generation
+        isActive = true
+        lock.unlock()
         SendbirdChat.addChannelDelegate(self, identifier: delegateIdentifier)
 
         guard let existingChannelURL else {
@@ -66,13 +73,14 @@ final class SendbirdChatSessionAdapter: NSObject, TanyaAIChatSession {
         lock.unlock()
 
         GroupChannel.getChannel(url: existingChannelURL) { [weak self] channel, _ in
+            guard let self, self.isCurrentGeneration(epoch) else { return }
             guard let channel else {
                 // A stored channel that no longer exists must not dead-end the
                 // customer: fall back to a new conversation.
-                self?.openNewChannel()
+                self.createChannel(epoch: epoch)
                 return
             }
-            self?.adopt(channel)
+            self.adopt(channel, epoch: epoch)
         }
     }
 
@@ -83,6 +91,8 @@ final class SendbirdChatSessionAdapter: NSObject, TanyaAIChatSession {
     func send(text: String, context: TanyaAIContext?, requestIdentifier: String) -> String? {
         lock.lock()
         let channel = self.channel
+        let epoch = generation
+        guard isActive else { lock.unlock(); return nil }
         var isChannelStartNeeded = false
         if channel == nil {
             queuedMessages.append((text, requestIdentifier))
@@ -93,23 +103,25 @@ final class SendbirdChatSessionAdapter: NSObject, TanyaAIChatSession {
 
         guard let channel else {
             if isChannelStartNeeded {
-                createChannel()
+                createChannel(epoch: epoch)
             }
             return nil
         }
-        sendNow(text, identifier: requestIdentifier, on: channel)
+        sendNow(text, identifier: requestIdentifier, on: channel, epoch: epoch)
         return nil
     }
 
-    private func sendNow(_ text: String, identifier: String, on channel: GroupChannel) {
+    private func sendNow(_ text: String, identifier: String, on channel: GroupChannel, epoch: Int) {
         channel.sendUserMessage(text) { [weak self] message, error in
+            guard let self, self.isCurrentGeneration(epoch) else { return }
             if let error {
-                self?.onEvent?(.sendFailed(requestIdentifier: identifier, error: error))
+                self.onEvent?(.sendFailed(requestIdentifier: identifier, error: error))
             } else {
-                self?.onEvent?(.sendSucceeded(
-                    requestIdentifier: identifier,
-                    messageIdentifier: message.map { String($0.messageId) }
-                ))
+                self.onEvent?(
+                    .sendSucceeded(
+                        requestIdentifier: identifier,
+                        messageIdentifier: message.map { String($0.messageId) }
+                    ))
             }
         }
     }
@@ -120,6 +132,8 @@ final class SendbirdChatSessionAdapter: NSObject, TanyaAIChatSession {
         // notifications and presence down for the whole app.
         SendbirdChat.removeChannelDelegate(forIdentifier: delegateIdentifier)
         lock.lock()
+        generation += 1
+        isActive = false
         channel = nil
         isOpeningChannel = false
         queuedMessages = []
@@ -128,12 +142,7 @@ final class SendbirdChatSessionAdapter: NSObject, TanyaAIChatSession {
 
     // MARK: - Channel
 
-    /// Retry path after a stored channel turned out to be gone.
-    private func openNewChannel() {
-        createChannel()
-    }
-
-    private func createChannel() {
+    private func createChannel(epoch: Int) {
         let params = GroupChannelCreateParams()
         params.name = "Tanya AI"
         // The sample app only ever adds `[User]` objects, which this adapter
@@ -146,15 +155,16 @@ final class SendbirdChatSessionAdapter: NSObject, TanyaAIChatSession {
         }
         params.userIds = memberIds
         GroupChannel.createChannel(params: params) { [weak self] channel, error in
+            guard let self, self.isCurrentGeneration(epoch) else { return }
             guard let channel else {
-                self?.failToOpen(error ?? SendbirdAdapterError.channelUnavailable)
+                self.failToOpen(error ?? SendbirdAdapterError.channelUnavailable)
                 return
             }
-            self?.adopt(channel)
+            self.adopt(channel, epoch: epoch)
         }
     }
 
-    private func adopt(_ channel: GroupChannel) {
+    private func adopt(_ channel: GroupChannel, epoch: Int) {
         lock.lock()
         self.channel = channel
         isOpeningChannel = false
@@ -162,13 +172,17 @@ final class SendbirdChatSessionAdapter: NSObject, TanyaAIChatSession {
         queuedMessages = []
         lock.unlock()
 
-        onChannelReady?(channel.channelURL)
-        pending.forEach { sendNow($0.0, identifier: $0.1, on: channel) }
+        DispatchQueue.main.async { [weak self] in
+            guard let self, self.isCurrentGeneration(epoch) else { return }
+            self.onChannelReady?(channel.channelURL)
+        }
+        pending.forEach { sendNow($0.0, identifier: $0.1, on: channel, epoch: epoch) }
         // `.connected` goes last, once history has been read: it is what tells
         // the package the conversation is settled, so sending it first would
         // put a greeting on screen that history is about to replace.
-        loadHistory(from: channel) { [weak self] in
-            self?.onEvent?(.connected)
+        loadHistory(from: channel, epoch: epoch) { [weak self] in
+            guard let self, self.isCurrentGeneration(epoch) else { return }
+            self.onEvent?(.connected)
         }
     }
 
@@ -182,4 +196,10 @@ final class SendbirdChatSessionAdapter: NSObject, TanyaAIChatSession {
         lock.unlock()
         onEvent?(.failed(error))
     }
+    func isCurrentGeneration(_ epoch: Int) -> Bool {
+        lock.lock()
+        defer { lock.unlock() }
+        return isActive && generation == epoch
+    }
+
 }

@@ -8,7 +8,8 @@ import SwiftUI
 /// conversation is drawn in one piece, already at its latest message - a list
 /// swapped in afterwards would start from a zero frame instead.
 public struct LoadingStateView: View {
-    @Environment(\.theme) private var theme
+    @Environment(\.theme)
+    private var theme
 
     private let label: String
 
@@ -27,6 +28,6 @@ public struct LoadingStateView: View {
         .background(Color(theme.colors.background))
         .accessibilityElement(children: .ignore)
         .accessibility(label: Text(label))
-        .accessibility(identifier: "chat.restoring")
+        .accessibility(identifier: "loading.state")
     }
 }

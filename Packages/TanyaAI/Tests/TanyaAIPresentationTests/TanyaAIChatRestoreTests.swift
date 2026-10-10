@@ -2,6 +2,7 @@ import Foundation
 import TanyaAIContracts
 import TanyaAIDomain
 import XCTest
+
 @testable import TanyaAIPresentation
 
 /// What a reopened chat shows, and when. The screen stays empty until the
@@ -13,10 +14,11 @@ final class TanyaAIChatRestoreTests: XCTestCase {
         let repository = TanyaAIRepositoryStub()
         let viewModel = TanyaAIChatViewModel(repository: repository)
 
-        repository.sendUnsolicited(.history([
-            TanyaAIMessage(identifier: "1", role: .user, content: .text("Halo")),
-            TanyaAIMessage(identifier: "2", role: .assistant, content: .text("Hai"))
-        ]))
+        repository.sendUnsolicited(
+            .history([
+                TanyaAIMessage(identifier: "1", role: .user, content: .text("Halo")),
+                TanyaAIMessage(identifier: "2", role: .assistant, content: .text("Hai"))
+            ]))
 
         XCTAssertEqual(viewModel.messages.map(\.identifier), ["1", "2"])
     }

@@ -1,3 +1,7 @@
+The current session flow and partial integration API are documented in
+[Session and partial migration](docs/SESSION_AND_PARTIAL_MIGRATION.md).
+Component conventions: [Component style](docs/COMPONENT_STYLE.md).
+
 # Tanya AI Sandbox
 
 A sanitized iOS 15 reference implementation for a modular conversational
@@ -73,7 +77,7 @@ ChatContainerViewController
     └── AuthorizationSheetViewController
           │
           ▼
-View → ViewModel → UseCase → Repository → injected transport
+View → screen ViewModel → session Repository → host SDK adapter
 ```
 
 Internal destinations are created only when the UIKit coordinator receives a
@@ -677,7 +681,7 @@ intent but may not call repositories, services, or routers.
 | --- | --- |
 | Layout and user gesture | View |
 | UI state and typed output | ViewModel |
-| Feature orchestration and policy | UseCase |
+| Feature orchestration and policy | Screen ViewModel |
 | Domain-facing data operations | Repository protocol |
 | JSON decoding and remote mapping | Data layer |
 | mTLS, token, pinning, secure execution | Host adapter |

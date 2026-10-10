@@ -5,6 +5,7 @@ import TanyaAIDomain
 import TanyaAITestSupport
 import UIKit
 import XCTest
+
 @testable import TanyaAI
 @testable import TanyaAIPresentation
 
@@ -15,7 +16,9 @@ final class TanyaAILifecycleTests: XCTestCase {
             weak var releasedModel: TanyaAIChatViewModel?
             weak var releasedController: UIViewController?
             autoreleasepool {
-                let viewModel = TanyaAIChatViewModel(repository: TanyaAIRepositoryFixture())
+                let repository = TanyaAIRepositoryFixture()
+                let viewModel = TanyaAIChatViewModel(repository: repository)
+                repository.appendMixedMessages()
                 let controller = UIHostingController(rootView: ChatScreen(viewModel: viewModel))
                 let window = UIWindow(frame: UIScreen.main.bounds)
                 window.rootViewController = controller

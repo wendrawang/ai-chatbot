@@ -14,17 +14,20 @@ extension SendbirdChatSessionAdapter {
     /// Reads the conversation back, so reopening the chat is not an empty
     /// screen. Sent before anything else, and only when there is something.
     func loadHistory(
-        from channel: GroupChannel,
+        from channel: GroupChannel, epoch: Int,
         completion: @escaping () -> Void
     ) {
         let params = MessageListParams()
         params.previousResultSize = Self.historyLimit
-        channel.getMessagesByTimestamp(.max, params: params) { [weak self] messages, _ in
-            guard let self, let messages, messages.isEmpty == false else {
+        channel.getMessagesByTimestamp(.max, params: params) { [weak self] messages, error in
+            guard let self, self.isCurrentGeneration(epoch) else { return }
+            if let error { self.onEvent?(.historyFailed(error)) }
+            guard let messages, messages.isEmpty == false else {
                 completion()
                 return
             }
-            let restored = messages
+            let restored =
+                messages
                 .sorted { $0.messageId < $1.messageId }
                 .compactMap(self.makeHistoryMessage)
             guard restored.isEmpty == false else {
@@ -39,7 +42,8 @@ extension SendbirdChatSessionAdapter {
     func makeHistoryMessage(
         _ message: BaseMessage
     ) -> TanyaAIChatSessionMessage? {
-        let isCustomer = message.sender?.userId
+        let isCustomer =
+            message.sender?.userId
             == SendbirdChat.getCurrentUser()?.userId
         let author: TanyaAIChatSessionMessage.Author =
             isCustomer ? .customer : .assistant
@@ -47,13 +51,15 @@ extension SendbirdChatSessionAdapter {
         let text = (message as? UserMessage)?.message ?? ""
 
         if let name = message.customType, !name.isEmpty,
-           !TanyaAIEventName.isContentName(name) {
+            !TanyaAIEventName.isContentName(name)
+        {
             return nil
         }
         if let name = message.customType,
-           TanyaAIEventName.isContentName(name),
-           let json = message.data.data(using: .utf8),
-           json.isEmpty == false {
+            TanyaAIEventName.isContentName(name),
+            let json = message.data.data(using: .utf8),
+            json.isEmpty == false
+        {
             return TanyaAIChatSessionMessage(
                 identifier: identifier,
                 author: author,

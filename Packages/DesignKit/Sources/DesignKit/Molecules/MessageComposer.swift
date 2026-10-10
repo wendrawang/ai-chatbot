@@ -5,8 +5,10 @@ import SwiftUI
 /// A rounded container holds both the growing field and its trailing action.
 /// The action stays at the bottom as the field grows to four lines.
 public struct MessageComposer: View {
-    @Environment(\.theme) private var theme
-    @Binding private var text: String
+    @Environment(\.theme)
+    private var theme
+    @Binding
+    private var text: String
     private let placeholder: String
     private let sendLabel: String
     private let isEnabled: Bool
@@ -61,6 +63,7 @@ public struct MessageComposer: View {
                 text: $text,
                 font: theme.fonts.body,
                 textColor: theme.colors.primaryText.resolvedColor(with: UITraitCollection(userInterfaceStyle: .light)),
+                lineSpacing: theme.fonts.lineSpacing(for: .body),
                 accessibilityLabel: placeholder
             )
             .fixedSize(horizontal: false, vertical: true)
@@ -68,10 +71,13 @@ public struct MessageComposer: View {
 
             if text.isEmpty {
                 Text(placeholder)
-                    .font(Font(theme.fonts.body))
-                    .foregroundColor(Color(theme.colors.secondaryText.resolvedColor(
-                        with: UITraitCollection(userInterfaceStyle: .light)
-                    )))
+                    .designFont(.body)
+                    .foregroundColor(
+                        Color(
+                            theme.colors.secondaryText.resolvedColor(
+                                with: UITraitCollection(userInterfaceStyle: .light)
+                            ))
+                    )
                     .accessibilityHidden(true)
                     .allowsHitTesting(false)
             }
@@ -103,8 +109,9 @@ public struct MessageComposer: View {
     }
 
     private var isSendEnabled: Bool {
-        isEnabled && text.trimmingCharacters(
-            in: .whitespacesAndNewlines
-        ).isEmpty == false
+        isEnabled
+            && text.trimmingCharacters(
+                in: .whitespacesAndNewlines
+            ).isEmpty == false
     }
 }

@@ -27,11 +27,13 @@ extension TanyaAISessionRepository {
         _ message: TanyaAIChatSessionMessage
     ) -> TanyaAIMessageContent {
         guard let name = message.structuredName,
-              let json = message.structuredJSON else {
+            let json = message.structuredJSON
+        else {
             return .text(message.text)
         }
         guard let event = try? decoder.decode(name: name, json: json),
-              case .content(_, let content) = event else {
+            case .content(_, let content) = event
+        else {
             return .unsupported(nil)
         }
         return content

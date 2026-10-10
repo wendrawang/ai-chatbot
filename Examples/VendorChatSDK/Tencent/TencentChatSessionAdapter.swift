@@ -76,18 +76,20 @@ final class TencentChatSessionAdapter: TanyaAIChatSession {
             succ: { [weak self] in
                 DispatchQueue.main.async {
                     guard let self, self.isActive, self.generation == epoch else { return }
-                    self.onEvent?(.sendSucceeded(
-                        requestIdentifier: requestIdentifier, messageIdentifier: message.msgID
-                    ))
+                    self.onEvent?(
+                        .sendSucceeded(
+                            requestIdentifier: requestIdentifier, messageIdentifier: message.msgID
+                        ))
                 }
             },
             fail: { [weak self] code, description in
                 DispatchQueue.main.async {
                     guard let self, self.isActive, self.generation == epoch else { return }
-                    self.onEvent?(.sendFailed(
-                        requestIdentifier: requestIdentifier,
-                        error: TencentChatError.sdk(code: Int(code), message: description)
-                    ))
+                    self.onEvent?(
+                        .sendFailed(
+                            requestIdentifier: requestIdentifier,
+                            error: TencentChatError.sdk(code: Int(code), message: description)
+                        ))
                 }
             }
         )
@@ -123,7 +125,8 @@ final class TencentChatSessionAdapter: TanyaAIChatSession {
 
     private func handleIncoming(_ message: V2TIMMessage) {
         guard isActive, message.groupID == groupID,
-              !message.isSelf, !knownIdentifiers.contains(message.msgID) else { return }
+            !message.isSelf, !knownIdentifiers.contains(message.msgID)
+        else { return }
         remember(message.msgID)
         contractMessage(message)?.contentEvents.forEach { onEvent?($0) }
     }

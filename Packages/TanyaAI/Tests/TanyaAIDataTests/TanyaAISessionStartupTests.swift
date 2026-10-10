@@ -1,6 +1,7 @@
 import TanyaAIContracts
 import TanyaAIDomain
 import XCTest
+
 @testable import TanyaAIData
 
 final class TanyaAISessionStartupTests: XCTestCase {
@@ -14,7 +15,10 @@ final class TanyaAISessionStartupTests: XCTestCase {
         recorder.attach(repository)
         recorder.wait(.connectionChanged(.ready), in: self)
         XCTAssertEqual(recorder.history?.map(\.identifier), ["old"])
-        XCTAssertEqual(recorder.events.filter { if case .history = $0 { return true }; return false }.count, 1)
+        XCTAssertEqual(
+            recorder.events.filter {
+                if case .history = $0 { return true }; return false
+            }.count, 1)
     }
 
     func testSynchronousConnectionWithoutHistoryProducesOneEmptySnapshot() {

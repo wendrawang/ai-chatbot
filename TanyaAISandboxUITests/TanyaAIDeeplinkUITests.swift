@@ -107,12 +107,9 @@ final class TanyaAIDeeplinkUITests: XCTestCase {
     }
 
     private func waitForStreamToFinish() {
-        let stopButton = application.buttons["Stop response"]
-        let deadline = Date().addingTimeInterval(12)
-        while stopButton.exists, Date() < deadline {
-            RunLoop.current.run(until: Date().addingTimeInterval(0.1))
-        }
-        XCTAssertFalse(stopButton.exists)
+        let send = application.buttons["Send message"]
+        XCTAssertTrue(send.waitForExistence(timeout: 12))
+        XCTAssertFalse(application.buttons["Stop response"].exists)
     }
 
     private func capture(name: String) {

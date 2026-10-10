@@ -2,6 +2,7 @@ import Foundation
 import TanyaAIContracts
 import TanyaAIDomain
 import XCTest
+
 @testable import TanyaAIData
 
 final class TanyaAISessionRepositoryTests: XCTestCase {
@@ -27,7 +28,10 @@ final class TanyaAISessionRepositoryTests: XCTestCase {
         session.emit(.messageDelta(messageIdentifier: "late-A", text: "Late"))
         session.emit(.messageCompleted(messageIdentifier: "late-A"))
         recorder.wait(.responseCompleted(messageIdentifier: "late-A"), in: self)
-        XCTAssertFalse(recorder.events.contains { if case .sendSucceeded = $0 { return true }; return false })
+        XCTAssertFalse(
+            recorder.events.contains {
+                if case .sendSucceeded = $0 { return true }; return false
+            })
         session.emit(.sendSucceeded(requestIdentifier: "B", messageIdentifier: "sdk-B"))
         recorder.wait(.sendSucceeded(requestIdentifier: "B", messageIdentifier: "sdk-B"), in: self)
         XCTAssertEqual(session.sentTexts, ["A", "B"])
@@ -127,6 +131,9 @@ final class TanyaAISessionRepositoryTests: XCTestCase {
         session.emit(.structuredPayload(name: "content.approval", json: Data("bad".utf8)))
         session.emit(.messageCompleted(messageIdentifier: "barrier"))
         recorder.wait(.responseCompleted(messageIdentifier: "barrier"), in: self)
-        XCTAssertTrue(recorder.events.contains { if case .content(_, .unsupported) = $0 { return true }; return false })
+        XCTAssertTrue(
+            recorder.events.contains {
+                if case .content(_, .unsupported) = $0 { return true }; return false
+            })
     }
 }

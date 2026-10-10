@@ -3,14 +3,16 @@ import TanyaAIDomain
 
 @MainActor
 public final class TanyaAIMessageItemViewModel:
-    ObservableObject {
+    ObservableObject
+{
 
     public let identifier: String
     public let role: TanyaAIMessage.Role
 
     @Published
     public private(set) var content: TanyaAIMessageContent
-    @Published public private(set) var delivery: TanyaAIMessageDelivery?
+    @Published
+    public private(set) var delivery: TanyaAIMessageDelivery?
     public private(set) var remoteIdentifier: String?
     private var isOptionsConsumed = false
 

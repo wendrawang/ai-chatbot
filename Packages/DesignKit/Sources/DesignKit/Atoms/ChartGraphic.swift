@@ -2,9 +2,10 @@ import SwiftUI
 
 /// Decorative geometry; the adjacent legend provides the accessible values.
 struct ChartGraphic: View {
+    @Environment(\.theme)
+    private var theme
     let type: ChartPayload.ChartType
     let series: [ChartSeries]
-    @Environment(\.theme) private var theme
 
     var body: some View {
         Group {

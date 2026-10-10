@@ -1,8 +1,9 @@
 import SwiftUI
 
 public struct InformationBubble: View {
+    @Environment(\.theme)
+    private var theme
     let payload: InformationPayload
-    @Environment(\.theme) private var theme
 
     public init(payload: InformationPayload) {
         self.payload = payload

@@ -3,9 +3,11 @@ import SwiftUI
 import TanyaAIDomain
 
 struct MessageRowView: View {
+    @Environment(\.copyCatalog)
+    private var copy
 
-    @Environment(\.copyCatalog) private var copy
-    @ObservedObject var viewModel: TanyaAIMessageItemViewModel
+    @ObservedObject
+    var viewModel: TanyaAIMessageItemViewModel
     let handlers: TanyaAIMessageRowHandlers
 
     var body: some View {
@@ -14,8 +16,10 @@ struct MessageRowView: View {
                 Spacer(minLength: FigmaSize.spacing48.sizeInArtwork)
             }
 
-            VStack(alignment: viewModel.role == .user ? .trailing : .leading,
-                   spacing: FigmaSize.spacing4.sizeInArtwork) {
+            VStack(
+                alignment: viewModel.role == .user ? .trailing : .leading,
+                spacing: FigmaSize.spacing4.sizeInArtwork
+            ) {
                 content
                 deliveryStatus
             }
@@ -86,9 +90,11 @@ struct MessageRowView: View {
     }
 
     private func unsupported(_ message: String?) -> some View {
-        StatusBubble(payload: StatusPayload(
-            title: copy.chat("chat.updateRequired"), detail: message ?? copy.chat("chat.unsupported"), level: .warning
-        ))
+        StatusBubble(
+            payload: StatusPayload(
+                title: copy.chat("chat.updateRequired"), detail: message ?? copy.chat("chat.unsupported"),
+                level: .warning
+            ))
     }
 
     private func confirmation(_ payload: ConfirmationPayload) -> some View {

@@ -3,9 +3,11 @@ import SwiftUI
 import TanyaAIDomain
 
 public struct ConversationHistoryScreen: View {
-    @Environment(\.copyCatalog) private var copy
+    @Environment(\.copyCatalog)
+    private var copy
+    @Environment(\.theme)
+    private var theme
     private let items: [ConversationSummary]
-    @Environment(\.theme) private var theme
 
     public init(items: [ConversationSummary]) {
         self.items = items

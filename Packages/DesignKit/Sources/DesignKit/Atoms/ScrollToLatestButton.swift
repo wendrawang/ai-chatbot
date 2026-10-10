@@ -2,9 +2,10 @@ import SwiftUI
 
 /// A reusable control for returning to the newest content in a scrolling view.
 public struct ScrollToLatestButton: View {
+    @Environment(\.theme)
+    private var theme
     private let label: String
     private let onTap: () -> Void
-    @Environment(\.theme) private var theme
 
     public init(label: String, onTap: @escaping () -> Void) {
         self.label = label
@@ -22,9 +23,10 @@ public struct ScrollToLatestButton: View {
                 )
                 .background(Color(theme.colors.surface))
                 .clipShape(Circle())
-                .overlay(Circle().stroke(
-                    Color(theme.colors.divider), lineWidth: DesignKitMetrics.Stroke.hairline.strokeInArtwork
-                ))
+                .overlay(
+                    Circle().stroke(
+                        Color(theme.colors.divider), lineWidth: DesignKitMetrics.Stroke.hairline.strokeInArtwork
+                    ))
         }
         .buttonStyle(.plain)
         .accessibilityLabel(Text(label))

@@ -185,16 +185,13 @@ Komposisi jawaban empat bagian dan integrasi host: [ANSWER_CONTENT.md](ANSWER_CO
 
 ### Composer dan spacing (5 Oktober 2026)
 
-`MessageComposer` memakai `FigmaSize.spacing16.sizeInArtwork` untuk margin horizontal
-luar dan padding horizontal dalam. Spacing yang sudah tersedia di generated `FigmaSize`
-dipakai langsung oleh komponen, tanpa alias `DesignKitMetrics.Spacing`. Alias publik lama
-masih tersedia agar host tidak langsung rusak. Ukuran yang belum tersedia tetap di
-handwritten `DesignKitMetrics`; generated token tidak diedit.
+`ChatScreen` memiliki margin luar horizontal 16 dan vertikal 8. `MessageComposer`
+memiliki padding dalam horizontal 16 dan vertikal 8. Gunakan nilai `FigmaSize`
+langsung jika tersedia; ukuran khusus tetap di handwritten `DesignKitMetrics`.
 
-Composer terdiri dari `inputSurface` (field + tombol + padding dalam), `surface`
-(background putih, stroke, shadow), dan `body` (margin luar). Pemisahan ini memperjelas
-padding mana yang ikut background. Send/stop memakai satu tombol dengan state dan action
-berbeda. Radius artwork 8, lingkaran tombol artwork 24; area sentuh minimal 44 point.
+Composer terdiri dari field, actionButton, dan surface putih dengan stroke/shadow.
+Draft dimiliki subview SwiftUI lokal. Tombol selalu Kirim karena backend tidak
+mendukung Stop. Radius artwork 8, lingkaran tombol artwork 24; area sentuh minimal 44 point.
 Shadow memakai opacity 0.12, radius artwork 4, offset vertikal artwork 2. Teks dinamis
 resolved untuk permukaan terang karena background composer memang selalu putih.
 
@@ -209,3 +206,5 @@ Theme komponen menggunakan nilai `@Environment(\.theme)`, bukan `@EnvironmentObj
 meneruskan nilai theme. Singleton biasa tidak memberi notifikasi perubahan ke SwiftUI.
 Singleton observable tetap memerlukan observation dan membuat state global dibagi semua
 window/test. Environment memungkinkan override halaman tanpa mengubah halaman lainnya.
+
+Current conventions and constructor migration are in [COMPONENT_STYLE.md](COMPONENT_STYLE.md) and [SESSION_AND_PARTIAL_MIGRATION.md](SESSION_AND_PARTIAL_MIGRATION.md). The component owns inner padding; the screen owns outer margins. Stop parameters are removed.

@@ -1,8 +1,9 @@
 import SwiftUI
 
 struct SegmentedBarView: View {
+    @Environment(\.theme)
+    private var theme
     let series: [ChartSeries]
-    @Environment(\.theme) private var theme
 
     var body: some View {
         let fractions = ChartGeometry.fractions(series.map(\.value))

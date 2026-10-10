@@ -1,14 +1,16 @@
 import DesignKit
-import TanyaAIDomain
 import SwiftUI
+import TanyaAIDomain
 
 public struct ApprovalBubble: View {
+    @Environment(\.copyCatalog)
+    private var copy
+    @Environment(\.theme)
+    private var theme
     let payload: ApprovalPayload
     let onEdit: () -> Void
     let onCancel: () -> Void
     let onApprove: () -> Void
-    @Environment(\.copyCatalog) private var copy
-    @Environment(\.theme) private var theme
 
     public init(
         payload: ApprovalPayload,

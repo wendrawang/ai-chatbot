@@ -75,3 +75,7 @@ Initial history blocks submission until the channel is ready. A configured `star
 Outgoing rows have pending/sent/failed status. Retry reuses the failed row with a new local submission ID. Local IDs never imply backend reply correlation. If delivery is uncertain, retry may produce another server message; backend idempotency is outside the current contract.
 
 History screens now use `ConversationHistoryScreen(items:)`. These are host-provided summaries; cross-group history selection and New Chat provisioning are not added by this migration.
+
+## Validation and team conventions
+
+See [COMPONENT_STYLE.md](COMPONENT_STYLE.md) for naming/state/layout rules and [SESSION_VALIDATION.md](SESSION_VALIDATION.md) for tested behavior and device gates. UITableView is retained; cells use native UIHostingConfiguration when available and a contained hosting controller on iOS 15.

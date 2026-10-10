@@ -82,9 +82,11 @@ final class TanyaAICoordinator: NSObject {
     private func showApproval(_ payload: ApprovalPayload) {
         // Unreachable when no authorization service was injected: the
         // ViewModel refuses the confirmation before it gets here.
-        guard let viewModel = dependencyContainer.makePINViewModel(
-            approval: payload
-        ) else {
+        guard
+            let viewModel = dependencyContainer.makePINViewModel(
+                approval: payload
+            )
+        else {
             return
         }
         viewModel.onOutput = { [weak self, weak viewModel] output in
@@ -150,16 +152,16 @@ final class TanyaAICoordinator: NSObject {
 }
 
 #if DEBUG
-extension TanyaAICoordinator {
-    /// Test seam: the chat's own output path, without a rendered view.
-    func handleForTesting(_ output: TanyaAIChatOutput) {
-        handle(output)
-    }
+    extension TanyaAICoordinator {
+        /// Test seam: the chat's own output path, without a rendered view.
+        func handleForTesting(_ output: TanyaAIChatOutput) {
+            handle(output)
+        }
 
-    var chatViewModelForTesting: TanyaAIChatViewModel? {
-        chatViewModel
+        var chatViewModelForTesting: TanyaAIChatViewModel? {
+            chatViewModel
+        }
     }
-}
 #endif
 
 extension TanyaAICoordinator: UINavigationControllerDelegate {

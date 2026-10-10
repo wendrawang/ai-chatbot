@@ -1,8 +1,9 @@
 import SwiftUI
 
 public struct StatusBubble: View {
+    @Environment(\.theme)
+    private var theme
     let payload: StatusPayload
-    @Environment(\.theme) private var theme
 
     public init(payload: StatusPayload) {
         self.payload = payload

@@ -81,8 +81,14 @@ private func verifySendAndFailure() {
     defer { adapter.disconnect() }
     manager.historyFailure?(10007, "Membership required")
     drain()
-    check(events.contains { if case .historyFailed = $0 { return true }; return false }, "Report history error")
-    check(events.contains { if case .connected = $0 { return true }; return false }, "Channel remains usable")
+    check(
+        events.contains {
+            if case .historyFailed = $0 { return true }; return false
+        }, "Report history error")
+    check(
+        events.contains {
+            if case .connected = $0 { return true }; return false
+        }, "Channel remains usable")
     adapter.send(text: "Hello", context: nil, requestIdentifier: "request-a")
     check(manager.sentGroups == ["group-a"], "Send to group")
     check(manager.sentReceivers.count == 1 && manager.sentReceivers[0] == nil, "No C2C receiver")
@@ -90,11 +96,12 @@ private func verifySendAndFailure() {
     check(manager.sentMessages.first?.textElem?.text == "Hello", "Use native text element")
     manager.sendFailure?(10007, "Membership required")
     drain()
-    check(events.contains {
-        if case .sendFailed(let identifier, _) = $0 { return identifier == "request-a" }
-        return false
-    },
-          "Forward request-scoped SDK send error")
+    check(
+        events.contains {
+            if case .sendFailed(let identifier, _) = $0 { return identifier == "request-a" }
+            return false
+        },
+        "Forward request-scoped SDK send error")
 }
 
 private func verifyRetryRejectsOldCallbacks() {
@@ -106,16 +113,20 @@ private func verifyRetryRejectsOldCallbacks() {
     oldHistory?([message("stale", group: "group-a")])
     manager.historySuccess?([])
     drain()
-    check(!events.contains {
-        if case .history(let items) = $0 { return items.contains { $0.identifier == "stale" } }
-        return false
-    }, "Retry ignores old history")
+    check(
+        !events.contains {
+            if case .history(let items) = $0 { return items.contains { $0.identifier == "stale" } }
+            return false
+        }, "Retry ignores old history")
     adapter.send(text: "A", context: nil, requestIdentifier: "A")
     manager.sendSuccess?()
     drain()
-    check(events.contains { if case .sendSucceeded(let identifier, let remote) = $0 {
-        return identifier == "A" && remote == "sent-message"
-    }; return false }, "SDK acknowledgement reports only the matching submission")
+    check(
+        events.contains {
+            if case .sendSucceeded(let identifier, let remote) = $0 {
+                return identifier == "A" && remote == "sent-message"
+            }; return false
+        }, "SDK acknowledgement reports only the matching submission")
     adapter.disconnect()
 }
 

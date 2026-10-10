@@ -3,11 +3,14 @@ import UIKit
 
 /// All states reserve the same space. A view-owned task cancels on removal.
 struct RemoteImage: View {
+    @Environment(\.theme)
+    private var theme
+    @Environment(\.imageLoader)
+    private var loader
     let url: URL?
     let aspectRatio: Double
-    @Environment(\.theme) private var theme
-    @Environment(\.imageLoader) private var loader
-    @State private var loaded: LoadedImage?
+    @State
+    private var loaded: LoadedImage?
 
     var body: some View {
         Color.clear

@@ -21,7 +21,8 @@ extension TanyaAIChatViewModel {
     func appendAssistantPlaceholder(identifier: String) {
         let target = resolvedIdentifier(for: identifier)
         if let existing = message(identifier: target),
-           isSettledApproval(existing.content) == false {
+            isSettledApproval(existing.content) == false
+        {
             return
         }
         appendContent(identifier: identifier, content: .text(""))
@@ -32,7 +33,8 @@ extension TanyaAIChatViewModel {
         // through `appendContent` gives the delta a fresh bubble.
         let target = resolvedIdentifier(for: identifier)
         guard let message = message(identifier: target),
-              isSettledApproval(message.content) == false else {
+            isSettledApproval(message.content) == false
+        else {
             appendContent(identifier: identifier, content: .text(text))
             return
         }
@@ -40,13 +42,15 @@ extension TanyaAIChatViewModel {
         if case .text(let value) = message.content {
             existingText = value
         } else if case .answer(let payload) = message.content {
-            message.update(content: .answer(AnswerPayload(
-                text: (payload.text ?? "") + text,
-                options: payload.options,
-                image: payload.image,
-                actions: payload.actions,
-                isAnswered: payload.isAnswered
-            )))
+            message.update(
+                content: .answer(
+                    AnswerPayload(
+                        text: (payload.text ?? "") + text,
+                        options: payload.options,
+                        image: payload.image,
+                        actions: payload.actions,
+                        isAnswered: payload.isAnswered
+                    )))
             return
         } else {
             existingText = ""

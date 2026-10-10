@@ -2,11 +2,13 @@ import SwiftUI
 
 /// Outgoing text uses an accent bubble; incoming text is an unboxed response.
 public struct TextBubble: View {
+    @Environment(\.copyCatalog)
+    private var copy
+    @Environment(\.theme)
+    private var theme
     let text: String
     let isUser: Bool
     private let runs: [MarkupRun]
-    @Environment(\.copyCatalog) private var copy
-    @Environment(\.theme) private var theme
 
     public init(
         text: String,

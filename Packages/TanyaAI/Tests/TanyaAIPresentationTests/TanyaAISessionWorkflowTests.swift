@@ -1,6 +1,7 @@
 import DesignKit
 import TanyaAIDomain
 import XCTest
+
 @testable import TanyaAIPresentation
 
 @MainActor
@@ -44,10 +45,11 @@ final class TanyaAISessionWorkflowTests: XCTestCase {
         let delivered = model.messages[0]
         model.sendMessage("Failed")
         repository.send(.sendFailed(requestIdentifier: repository.requestIdentifiers[1]))
-        repository.send(.history([
-            TanyaAIMessage(identifier: "sdk-" + firstRequest, role: .user, content: .text("Delivered")),
-            TanyaAIMessage(identifier: "sdk-" + firstRequest, role: .user, content: .text("Delivered"))
-        ]))
+        repository.send(
+            .history([
+                TanyaAIMessage(identifier: "sdk-" + firstRequest, role: .user, content: .text("Delivered")),
+                TanyaAIMessage(identifier: "sdk-" + firstRequest, role: .user, content: .text("Delivered"))
+            ]))
         XCTAssertEqual(model.messages.count, 2)
         XCTAssertTrue(model.messages[0] === delivered)
         XCTAssertEqual(model.messages[0].delivery, .sent)
@@ -66,9 +68,11 @@ final class TanyaAISessionWorkflowTests: XCTestCase {
     func testMultipleChoiceIsNotConsumedWhileUnavailableAndSendsWhileTyping() {
         let repository = TanyaAIRepositoryStub()
         let model = TanyaAIChatViewModel(repository: repository)
-        let payload = ChoicesPayload(identifier: "choices", title: nil, choices: [
-            .init(identifier: "one", title: "One", prompt: "One")
-        ], isMultipleSelectionAllowed: true, selected: ["one"])
+        let payload = ChoicesPayload(
+            identifier: "choices", title: nil,
+            choices: [
+                .init(identifier: "one", title: "One", prompt: "One")
+            ], isMultipleSelectionAllowed: true, selected: ["one"])
         repository.send(.content(messageIdentifier: "choices", content: .choices(payload)))
         repository.send(.connectionChanged(.failed))
         model.submitChoices(payload)

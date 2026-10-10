@@ -1,3 +1,4 @@
+import DesignKit
 import TanyaAI
 import UIKit
 
@@ -12,42 +13,68 @@ extension TanyaAITheme {
     }
 
     private static var hostColors: TanyaAIColors {
-        TanyaAIColors(
-            background: UIColor(named: "Background")!,
-            surface: UIColor(named: "Surface")!,
-            primaryText: UIColor(named: "TextPrimary")!,
-            secondaryText: UIColor(named: "TextSecondary")!,
-            accent: UIColor(named: "Accent")!,
-            userBubble: UIColor(named: "BubbleOutgoing")!,
-            userBubbleText: UIColor(named: "OnAccent")!,
-            assistantBubble: UIColor(named: "BubbleIncoming")!,
-            assistantBubbleText: UIColor(named: "TextPrimary")!,
-            divider: UIColor(named: "Divider")!,
-            chartTrack: UIColor(named: "ChartTrack")!,
+        let fallback = TanyaAITheme.sandbox.colors
+        return TanyaAIColors(
+            background: UIColor(named: "Background") ?? fallback.background,
+            surface: UIColor(named: "Surface") ?? fallback.surface,
+            primaryText: UIColor(named: "TextPrimary") ?? fallback.primaryText,
+            secondaryText: UIColor(named: "TextSecondary") ?? fallback.secondaryText,
+            accent: UIColor(named: "Accent") ?? fallback.accent,
+            userBubble: UIColor(named: "BubbleOutgoing") ?? fallback.userBubble,
+            userBubbleText: UIColor(named: "OnAccent") ?? fallback.userBubbleText,
+            assistantBubble: UIColor(named: "BubbleIncoming") ?? fallback.assistantBubble,
+            assistantBubbleText: UIColor(named: "TextPrimary") ?? fallback.primaryText,
+            divider: UIColor(named: "Divider") ?? fallback.divider,
+            chartTrack: UIColor(named: "ChartTrack") ?? fallback.chartTrack,
             chartColors: [
-                UIColor(named: "ChartSeries1")!,
-                UIColor(named: "ChartSeries2")!,
-                UIColor(named: "ChartSeries3")!,
-                UIColor(named: "ChartSeries4")!,
-                UIColor(named: "ChartSeries5")!
+                UIColor(named: "ChartSeries1") ?? fallback.chartColors[0],
+                UIColor(named: "ChartSeries2") ?? fallback.chartColors[1],
+                UIColor(named: "ChartSeries3") ?? fallback.chartColors[2],
+                UIColor(named: "ChartSeries4") ?? fallback.chartColors[3],
+                UIColor(named: "ChartSeries5") ?? fallback.chartColors[4]
             ],
-            success: UIColor(named: "Success")!,
-            warning: UIColor(named: "Warning")!,
-            error: UIColor(named: "Error")!,
-            overlay: UIColor.black.withAlphaComponent(0.45)
+            success: UIColor(named: "Success") ?? fallback.success,
+            warning: UIColor(named: "Warning") ?? fallback.warning,
+            error: UIColor(named: "Error") ?? fallback.error,
+            overlay: UIColor(named: "Overlay") ?? fallback.overlay
         )
     }
 
     private static var hostFonts: TanyaAIFonts {
         TanyaAIFonts(
-            title: UIFont(name: "HostSans-Bold", size: 28)!,
-            headline: UIFont(name: "HostSans-Semibold", size: 17)!,
-            body: UIFont(name: "HostSans-Regular", size: 17)!,
-            subheadline: UIFont(name: "HostSans-Regular", size: 15)!,
-            footnote: UIFont(name: "HostSans-Regular", size: 13)!,
-            caption: UIFont(name: "HostSans-Regular", size: 12)!,
-            amount: UIFont(name: "HostSans-Bold", size: 22)!,
-            button: UIFont(name: "HostSans-Semibold", size: 17)!
+            title: hostFont(
+                "HostSans-Bold", FigmaSize.typographySizeHeadingLarge32, .title1,
+                FigmaSize.typographyLineHeightHeadingLarge32, .bold),
+            headline: hostFont(
+                "HostSans-Semibold", FigmaSize.typographySizeHeadingSmall20, .headline,
+                FigmaSize.typographyLineHeightHeadingSmall20, .semibold),
+            body: hostFont(
+                "HostSans-Regular", FigmaSize.typographySizeDisplayNormal16, .body,
+                FigmaSize.typographyLineHeightDisplayNormal16),
+            subheadline: hostFont(
+                "HostSans-Regular", FigmaSize.typographySizeDisplaySmall14, .subheadline,
+                FigmaSize.typographyLineHeightDisplaySmall14),
+            footnote: hostFont(
+                "HostSans-Regular", FigmaSize.typographySizeDisplayTiny12, .footnote,
+                FigmaSize.typographyLineHeightDisplayTiny12),
+            caption: hostFont(
+                "HostSans-Regular", FigmaSize.typographySizeDisplayTiny12, .caption1,
+                FigmaSize.typographyLineHeightDisplayTiny12),
+            amount: hostFont(
+                "HostSans-Bold", FigmaSize.typographySizeHeadingMedium24, .title2,
+                FigmaSize.typographyLineHeightHeadingMedium24, .bold),
+            button: hostFont(
+                "HostSans-Semibold", FigmaSize.typographySizeButton16, .headline,
+                FigmaSize.typographyLineHeightButton16, .semibold)
         )
+    }
+
+    private static func hostFont(
+        _ name: String, _ size: CGFloat, _ style: UIFont.TextStyle,
+        _ lineHeight: CGFloat, _ weight: UIFont.Weight = .regular
+    ) -> DesignKitTypography {
+        DesignKitTypography(
+            postScriptName: name, size: size, style: style,
+            fallbackWeight: weight, lineHeight: lineHeight)
     }
 }

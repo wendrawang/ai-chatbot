@@ -1,5 +1,6 @@
 import TanyaAIDomain
 import XCTest
+
 @testable import TanyaAIPresentation
 
 @MainActor
@@ -24,9 +25,11 @@ final class TanyaAILatestOptionsTests: XCTestCase {
     }
 
     func testConfirmationRequiresHostHandlerAndOnlyTapRequestsPIN() throws {
-        let payload = try JSONDecoder().decode(ConfirmationPayload.self, from: Data(
-            #"{"confirmation_id":"conf","fields":[{"key":"amount","label":"Amount","value":"100"}]}"#.utf8
-        ))
+        let payload = try JSONDecoder().decode(
+            ConfirmationPayload.self,
+            from: Data(
+                #"{"confirmation_id":"conf","fields":[{"key":"amount","label":"Amount","value":"100"}]}"#.utf8
+            ))
         let repository = TanyaAIRepositoryStub()
         let model = TanyaAIChatViewModel(repository: repository, isConfirmationEnabled: true)
         var received: ConfirmationPayload?
@@ -41,9 +44,12 @@ final class TanyaAILatestOptionsTests: XCTestCase {
     }
 
     private func message(_ identifier: String) -> TanyaAIMessage {
-        TanyaAIMessage(identifier: identifier, role: .assistant, content: .answer(AnswerPayload(
-            text: "Choose", options: [.init(identifier: "promo", title: "Promotion", prompt: "Promotion")]
-        )))
+        TanyaAIMessage(
+            identifier: identifier, role: .assistant,
+            content: .answer(
+                AnswerPayload(
+                    text: "Choose", options: [.init(identifier: "promo", title: "Promotion", prompt: "Promotion")]
+                )))
     }
 
     private func isAnswered(_ message: TanyaAIMessageItemViewModel) -> Bool {

@@ -2,11 +2,12 @@ import SwiftUI
 
 /// A generic summary with an explicit confirmation intent; authorization belongs to the caller.
 public struct ConfirmationCard: View {
+    @Environment(\.theme)
+    private var theme
     private let title: String
     private let fields: [KeyValue]
     private let confirmLabel: String
     private let onConfirm: () -> Void
-    @Environment(\.theme) private var theme
 
     public init(title: String, fields: [KeyValue], confirmLabel: String, onConfirm: @escaping () -> Void) {
         self.title = title

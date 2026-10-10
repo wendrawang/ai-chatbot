@@ -2,10 +2,11 @@ import SwiftUI
 
 /// A vertical list of options; each tap reports the selected value.
 public struct OptionList: View {
+    @Environment(\.theme)
+    private var theme
     let title: String?
     let options: [SelectionOption]
     let onSelect: (SelectionOption) -> Void
-    @Environment(\.theme) private var theme
 
     public init(
         title: String?,

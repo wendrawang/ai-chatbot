@@ -213,12 +213,7 @@ final class TanyaAISandboxScreenshotTests: XCTestCase {
     }
 
     private func waitForShowcaseToFinish() {
-        let stopButton = application.buttons["Stop response"]
-        let deadline = Date().addingTimeInterval(12)
-        while stopButton.exists, Date() < deadline {
-            RunLoop.current.run(until: Date().addingTimeInterval(0.1))
-        }
-        XCTAssertFalse(stopButton.exists)
+        XCTAssertTrue(application.buttons["Currency"].waitForExistence(timeout: 12))
     }
 
     private func capture(name: String) {

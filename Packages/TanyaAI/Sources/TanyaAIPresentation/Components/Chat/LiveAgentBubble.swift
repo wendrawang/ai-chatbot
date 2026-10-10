@@ -1,6 +1,6 @@
 import DesignKit
-import TanyaAIDomain
 import SwiftUI
+import TanyaAIDomain
 
 /// Offers to hand the conversation to a person.
 ///
@@ -8,11 +8,13 @@ import SwiftUI
 /// gets. A link is somewhere to go; this is a question with an answer, and the
 /// answer includes saying no.
 public struct LiveAgentBubble: View {
+    @Environment(\.copyCatalog)
+    private var copy
+    @Environment(\.theme)
+    private var theme
     let payload: LiveAgentPayload
     let onContinue: (Action) -> Void
     let onCancel: () -> Void
-    @Environment(\.copyCatalog) private var copy
-    @Environment(\.theme) private var theme
 
     public init(
         payload: LiveAgentPayload,

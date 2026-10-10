@@ -44,3 +44,9 @@ custom_rules:
     regex: '\b(?!is[A-Z])\w+\s*:\s*Bool\b|\b(?:let|var)\s+(?!is[A-Z])\w+\s*=\s*(?:true|false)\b'
     message: "Boolean variables must start with is."
     severity: error
+
+# Match the Xcode formatter for multiline headers; single-line braces remain checked.
+opening_brace:
+  ignore_multiline_type_headers: true
+  ignore_multiline_statement_conditions: true
+  ignore_multiline_function_signatures: true

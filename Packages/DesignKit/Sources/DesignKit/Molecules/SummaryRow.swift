@@ -1,10 +1,10 @@
 import SwiftUI
 
 public struct SummaryRow: View {
+    @Environment(\.theme)
+    private var theme
     private let title: String
     private let detail: String
-
-    @Environment(\.theme) private var theme
 
     public init(title: String, detail: String) {
         self.title = title

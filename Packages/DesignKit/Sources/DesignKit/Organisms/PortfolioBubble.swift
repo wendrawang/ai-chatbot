@@ -1,8 +1,9 @@
 import SwiftUI
 
 public struct PortfolioBubble: View {
+    @Environment(\.theme)
+    private var theme
     let payload: PortfolioPayload
-    @Environment(\.theme) private var theme
 
     public init(payload: PortfolioPayload) {
         self.payload = payload

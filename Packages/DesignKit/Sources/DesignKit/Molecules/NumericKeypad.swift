@@ -1,13 +1,14 @@
 import SwiftUI
 
 public struct NumericKeypad: View {
+    @Environment(\.theme)
+    private var theme
+    @Environment(\.copyCatalog)
+    private var copy
 
     let onDigit: (Int) -> Void
     let onDelete: () -> Void
     let isDisabled: Bool
-    @Environment(\.theme) private var theme
-
-    @Environment(\.copyCatalog) private var copy
 
     public init(onDigit: @escaping (Int) -> Void, onDelete: @escaping () -> Void, isDisabled: Bool = false) {
         self.onDigit = onDigit
@@ -48,7 +49,7 @@ public struct NumericKeypad: View {
             action: { onDigit(digit) },
             label: {
                 Text(String(digit))
-                    .font(Font(theme.fonts.title))
+                    .designFont(.title)
                     .foregroundColor(Color(theme.colors.primaryText))
                     .frame(maxWidth: .infinity)
                     .frame(minHeight: DesignKitMetrics.Size.keypadHeight.tapTargetInArtwork)
@@ -64,7 +65,7 @@ public struct NumericKeypad: View {
     private var deleteButton: some View {
         Button(action: onDelete) {
             Image(systemName: "delete.left")
-                .font(Font(theme.fonts.headline))
+                .designFont(.headline)
                 .foregroundColor(Color(theme.colors.secondaryText))
                 .frame(maxWidth: .infinity)
                 .frame(minHeight: DesignKitMetrics.Size.keypadHeight.tapTargetInArtwork)

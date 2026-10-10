@@ -13,6 +13,7 @@ public enum DesignKitMetrics {
     /// Spacing absent from the generated scale, plus compatibility aliases.
     /// Components use FigmaSize directly whenever that token already exists.
     public enum Spacing {
+        public static let detail: CGFloat = 3
         public static let micro: CGFloat = 2
         public static let large: CGFloat = 20
         public static let extraLarge: CGFloat = FigmaSize.spacingExtraLarge
@@ -37,8 +38,7 @@ public enum DesignKitMetrics {
         public static let card: CGFloat = 18
     }
 
-    /// Corner rounding. One radius for everything that holds text, so the
-    /// conversation reads as one set of shapes.
+    /// Radius values are named by visual role, independently of spacing tokens.
     public enum Radius {
         public static let keypad: CGFloat = 14
         public static let sheet: CGFloat = 20
@@ -50,10 +50,6 @@ public enum DesignKitMetrics {
         public static let notice: CGFloat = 16
         /// 18 - the large cards: approval, receipt, chart, portfolio, list.
         ///
-        /// Three radii rather than one is drift from before the design
-        /// review, not a decision. Naming them is how it stops being
-        /// invisible; collapsing them is a visual change and belongs to
-        /// whoever owns the design, not to this file.
         public static let card: CGFloat = 18
     }
 

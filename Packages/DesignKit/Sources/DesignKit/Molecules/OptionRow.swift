@@ -2,9 +2,10 @@ import SwiftUI
 
 /// A tappable option with a circular affordance and a wrapping label.
 public struct OptionRow: View {
+    @Environment(\.theme)
+    private var theme
     let option: SelectionOption
     let onSelect: (SelectionOption) -> Void
-    @Environment(\.theme) private var theme
 
     public init(
         option: SelectionOption,

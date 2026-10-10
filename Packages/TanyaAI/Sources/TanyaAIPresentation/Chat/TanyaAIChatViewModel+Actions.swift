@@ -34,9 +34,10 @@ public extension TanyaAIChatViewModel {
     /// Radio options send on tap; explicitly requested multi-selection waits for submit.
     func toggleChoice(_ payload: ChoicesPayload, _ identifier: String) {
         guard payload.isSubmitted == false,
-              let message = choicesMessage(identifier: payload.identifier),
-              case .choices(let current) = message.content,
-              current.isSubmitted == false else {
+            let message = choicesMessage(identifier: payload.identifier),
+            case .choices(let current) = message.content,
+            current.isSubmitted == false
+        else {
             return
         }
         guard let choice = current.choices.first(where: { $0.identifier == identifier }) else { return }
@@ -44,7 +45,8 @@ public extension TanyaAIChatViewModel {
             message.update(content: .choices(current.toggling(identifier)))
         } else {
             guard isSendEnabled,
-                  !choice.prompt.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else { return }
+                !choice.prompt.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
+            else { return }
             message.update(content: .choices(current.toggling(identifier)))
             message.consumeOptions()
             sendMessage(choice.prompt)
@@ -54,8 +56,9 @@ public extension TanyaAIChatViewModel {
     /// Submit on a choices bubble. Sends the answer and settles the card.
     func submitChoices(_ payload: ChoicesPayload) {
         guard isSendEnabled, let message = choicesMessage(identifier: payload.identifier),
-              case .choices(var current) = message.content,
-              current.isSubmittable else {
+            case .choices(var current) = message.content,
+            current.isSubmittable
+        else {
             return
         }
         current.isSubmitted = true
@@ -72,8 +75,9 @@ public extension TanyaAIChatViewModel {
     /// comes back may want to connect again.
     func declineLiveAgent(_ payload: LiveAgentPayload) {
         guard let message = liveAgentMessage(identifier: payload.identifier),
-              case .liveAgent(var current) = message.content,
-              current.isDeclined == false else {
+            case .liveAgent(var current) = message.content,
+            current.isDeclined == false
+        else {
             return
         }
         current.isDeclined = true
@@ -107,8 +111,9 @@ public extension TanyaAIChatViewModel {
         state: ApprovalPayload.State
     ) {
         guard let message = approvalMessage(identifier: identifier),
-              case .approval(var payload) = message.content,
-              payload.state.isSettled == false else {
+            case .approval(var payload) = message.content,
+            payload.state.isSettled == false
+        else {
             // A late callback - a PIN sheet dismissed after the customer
             // already cancelled - must not revive a closed confirmation.
             return

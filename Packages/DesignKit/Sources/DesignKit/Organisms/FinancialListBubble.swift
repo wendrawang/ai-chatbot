@@ -1,8 +1,9 @@
 import SwiftUI
 
 public struct FinancialListBubble: View {
+    @Environment(\.theme)
+    private var theme
     let payload: FinancialListPayload
-    @Environment(\.theme) private var theme
 
     public init(payload: FinancialListPayload) {
         self.payload = payload
@@ -49,13 +50,13 @@ public struct FinancialListBubble: View {
 
     private func row(_ item: FinancialListRow) -> some View {
         HStack(alignment: .firstTextBaseline, spacing: DesignKitMetrics.Spacing.regular.sizeInArtwork) {
-            VStack(alignment: .leading, spacing: DesignKitMetrics.Radius.swatch.sizeInArtwork) {
+            VStack(alignment: .leading, spacing: DesignKitMetrics.Spacing.detail.sizeInArtwork) {
                 Text(item.title)
                     .designFont(.subheadline)
                 optionalText(item.subtitle)
             }
             Spacer(minLength: FigmaSize.spacing8.sizeInArtwork)
-            VStack(alignment: .trailing, spacing: DesignKitMetrics.Radius.swatch.sizeInArtwork) {
+            VStack(alignment: .trailing, spacing: DesignKitMetrics.Spacing.detail.sizeInArtwork) {
                 Text(item.value)
                     .designFont(.headline)
                     .foregroundColor(valueColor(item))

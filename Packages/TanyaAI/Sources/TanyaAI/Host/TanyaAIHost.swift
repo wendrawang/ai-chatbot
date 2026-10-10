@@ -1,8 +1,8 @@
 import Combine
 import DesignKit
-import TanyaAIDomain
 import Foundation
 import TanyaAIContracts
+import TanyaAIDomain
 import UIKit
 
 /// The whole of the host's integration surface.
@@ -35,6 +35,7 @@ import UIKit
 @MainActor
 public final class TanyaAIHost: ObservableObject {
     private let theme: Theme
+    private let themeProvider: (() -> Theme)?
     private let authorizationService: TanyaAIAuthorizationService?
     private let deeplinkScheme: String
     private let deeplinkHost: String?
@@ -77,6 +78,7 @@ public final class TanyaAIHost: ObservableObject {
     ///     feature has finished dismissing.
     public init(
         theme: Theme,
+        themeProvider: (() -> Theme)? = nil,
         authorizationService: TanyaAIAuthorizationService? = nil,
         deeplinkScheme: String,
         deeplinkHost: String? = nil,
@@ -92,6 +94,7 @@ public final class TanyaAIHost: ObservableObject {
         self.onDestination = onDestination
         self.onConfirmation = onConfirmation
         self.theme = theme
+        self.themeProvider = themeProvider
         self.authorizationService = authorizationService
         self.deeplinkScheme = deeplinkScheme
         self.deeplinkHost = deeplinkHost
@@ -102,6 +105,9 @@ public final class TanyaAIHost: ObservableObject {
         self.makeSession = makeSession
         self.onDeeplink = onDeeplink
     }
+
+    /// A presentation is a theme snapshot; changing the app theme applies on the next opening.
+    var presentationTheme: Theme { themeProvider?() ?? theme }
 
     /// Opens the feature over the screen carrying `tanyaAIHost(_:)`.
     ///
@@ -121,7 +127,7 @@ public final class TanyaAIHost: ObservableObject {
             dependencies: TanyaAIDependencies(
                 chatSession: makeSession(),
                 authorizationService: authorizationService,
-                theme: theme
+                theme: presentationTheme
             ),
             onConfirmation: confirmationCallback,
             onAction: { [weak self] action in self?.handle(action) }
@@ -176,11 +182,13 @@ public final class TanyaAIHost: ObservableObject {
     func accepted(_ action: Action) -> URL? {
         if action.destinationType != .deeplink {
             guard onDestination != nil, let url = URL(string: action.deeplink),
-                  url.scheme == "https", url.host != nil, url.user == nil, url.password == nil else { return nil }
+                url.scheme == "https", url.host != nil, url.user == nil, url.password == nil
+            else { return nil }
             return url
         }
         guard let url = URL(string: action.deeplink),
-              url.scheme == deeplinkScheme else {
+            url.scheme == deeplinkScheme
+        else {
             return nil
         }
         guard let deeplinkHost else {

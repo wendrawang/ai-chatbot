@@ -1,6 +1,7 @@
 import DesignKit
 import TanyaAIDomain
 import XCTest
+
 @testable import TanyaAIPresentation
 
 @MainActor
@@ -33,11 +34,15 @@ final class TanyaAIRowRefreshTests: XCTestCase {
         heading: String? = nil,
         messageText: String? = nil
     ) -> TanyaAIMessageListState {
-        let messages = messageText.map { text in
-            [TanyaAIMessageItemViewModel(message: TanyaAIMessage(
-                identifier: "same-message", role: .assistant, content: .text(text)
-            ))]
-        } ?? []
+        let messages =
+            messageText.map { text in
+                [
+                    TanyaAIMessageItemViewModel(
+                        message: TanyaAIMessage(
+                            identifier: "same-message", role: .assistant, content: .text(text)
+                        ))
+                ]
+            } ?? []
         return TanyaAIMessageListState(
             messages: messages,
             isRestoring: false,

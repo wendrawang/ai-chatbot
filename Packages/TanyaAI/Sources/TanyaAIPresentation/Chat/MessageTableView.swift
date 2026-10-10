@@ -4,21 +4,25 @@ import SwiftUI
 import TanyaAIDomain
 import UIKit
 
-struct MessageTableView: UIViewRepresentable {
+struct MessageTableView: UIViewControllerRepresentable {
+    @Environment(\.copyCatalog)
+    private var copy
+    @Environment(\.imageLoader)
+    private var imageLoader
     let state: TanyaAIMessageListState
     let theme: Theme
-    @ObservedObject var scrollControl: TanyaAIMessageScrollControl
+    @ObservedObject
+    var scrollControl: TanyaAIMessageScrollControl
     let handlers: TanyaAIMessageRowHandlers
-    @Environment(\.copyCatalog) private var copy
-
-    @Environment(\.imageLoader) private var imageLoader
 
     func makeCoordinator() -> Coordinator {
         Coordinator()
     }
 
-    func makeUIView(context: Context) -> UITableView {
+    func makeUIViewController(context: Context) -> UITableViewController {
+        let controller = UITableViewController(style: .plain)
         let tableView = LayoutTrackingTableView(frame: .zero, style: .plain)
+        controller.tableView = tableView
         tableView.dataSource = context.coordinator
         tableView.delegate = context.coordinator
         tableView.separatorStyle = .none
@@ -35,14 +39,18 @@ struct MessageTableView: UIViewRepresentable {
             MessageHostingCell.self,
             forCellReuseIdentifier: MessageHostingCell.reuseIdentifier
         )
-        context.coordinator.attach(tableView)
-        return tableView
+        context.coordinator.attach(tableView, parent: controller)
+        return controller
     }
 
-    func updateUIView(_ tableView: UITableView, context: Context) {
+    func updateUIViewController(_ controller: UITableViewController, context: Context) {
         context.coordinator.updateScrollControl(scrollControl)
         context.coordinator.update(
             state, theme: theme, handlers: handlers, imageLoader: imageLoader, copy: copy
         )
     }
+    static func dismantleUIViewController(_ controller: UITableViewController, coordinator: Coordinator) {
+        coordinator.detach()
+    }
+
 }

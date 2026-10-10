@@ -5,9 +5,10 @@ extension TanyaAIChatViewModel {
         textDeltaBuffer.flushAll()
         isRestoring = false
         isHistoryUnavailable = false
-        let existing = Dictionary(messages.compactMap { message in
-            message.remoteIdentifier.map { ($0, message) }
-        }, uniquingKeysWith: { first, _ in first })
+        let existing = Dictionary(
+            messages.compactMap { message in
+                message.remoteIdentifier.map { ($0, message) }
+            }, uniquingKeysWith: { first, _ in first })
         var identifiers = Set<String>()
         let snapshot = restored.suffix(TanyaAIMessage.historyLimit).compactMap { item in
             let remoteIdentifier = item.remoteIdentifier ?? item.identifier

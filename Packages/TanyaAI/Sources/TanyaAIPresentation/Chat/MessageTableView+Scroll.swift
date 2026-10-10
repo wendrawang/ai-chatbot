@@ -57,7 +57,8 @@ extension MessageTableView.Coordinator {
         var lastHeight: CGFloat = -1
         var passes = 0
         while passes < Self.maximumParkingPasses,
-              tableView.contentSize.height != lastHeight {
+            tableView.contentSize.height != lastHeight
+        {
             lastHeight = tableView.contentSize.height
             tableView.layoutIfNeeded()
             scrollToBottom(animated: false)
@@ -70,7 +71,8 @@ extension MessageTableView.Coordinator {
         let requestIdentifier = scrollRequestIdentifier
         DispatchQueue.main.async { [weak self] in
             guard self?.scrollRequestIdentifier == requestIdentifier,
-                  self?.isFollowingLatestMessage == true else {
+                self?.isFollowingLatestMessage == true
+            else {
                 return
             }
             self?.scrollToBottom(animated: isAnimated)
@@ -100,7 +102,8 @@ extension MessageTableView.Coordinator {
     }
 
     func isNearBottom(_ scrollView: UIScrollView) -> Bool {
-        let visibleBottom = scrollView.contentOffset.y
+        let visibleBottom =
+            scrollView.contentOffset.y
             + scrollView.bounds.height
             - scrollView.adjustedContentInset.bottom
         let threshold = DesignKitMetrics.Layout.scrollFollowThreshold.sizeInArtwork
