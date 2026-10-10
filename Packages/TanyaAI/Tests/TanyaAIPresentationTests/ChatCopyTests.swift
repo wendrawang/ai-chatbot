@@ -3,30 +3,22 @@ import TanyaAIDomain
 import XCTest
 @testable import TanyaAIPresentation
 
+@MainActor
 final class ChatCopyTests: XCTestCase {
-    func testDefaultHistoryIsEmpty() {
-        XCTAssertTrue(TanyaAIHistoryViewModel().items.isEmpty)
-    }
-
-    func testHistoryDisplaysOnlyHostSuppliedSummaries() {
-        let items = [ConversationSummary(identifier: "host-id", title: "From host", detail: "Detail")]
-        XCTAssertEqual(TanyaAIHistoryViewModel(items: items).items, items)
-    }
-
     func testFailureUsesSelectedLanguage() {
         let viewModel = TanyaAIChatViewModel(
-            useCase: TanyaAIChatUseCaseStub(), copy: CopyCatalog(localeIdentifier: "id")
+            repository: TanyaAIRepositoryStub(), copy: CopyCatalog(localeIdentifier: "id")
         )
-        viewModel.handleCompletion(.failure(TestError.interrupted))
-        XCTAssertEqual(viewModel.errorMessage, "Respons terputus. Silakan coba lagi.")
+        viewModel.handle(.connectionChanged(.failed))
+        XCTAssertEqual(viewModel.errorMessage, "Chat belum tersedia. Silakan coba lagi.")
     }
 
     func testFailureUsesHostOverride() {
         let viewModel = TanyaAIChatViewModel(
-            useCase: TanyaAIChatUseCaseStub(),
-            copy: CopyCatalog(overrides: ["chat.interrupted": "Please retry from host"])
+            repository: TanyaAIRepositoryStub(),
+            copy: CopyCatalog(overrides: ["chat.connectionFailed": "Please retry from host"])
         )
-        viewModel.handleCompletion(.failure(TestError.interrupted))
+        viewModel.handle(.connectionChanged(.failed))
         XCTAssertEqual(viewModel.errorMessage, "Please retry from host")
     }
 
@@ -37,5 +29,4 @@ final class ChatCopyTests: XCTestCase {
         XCTAssertEqual(copy.chat("chat.invalidPIN", values: ["count": "6"]), "Masukkan PIN 6 digit.")
     }
 
-    private enum TestError: Error { case interrupted }
 }

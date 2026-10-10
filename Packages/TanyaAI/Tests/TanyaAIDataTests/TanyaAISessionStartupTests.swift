@@ -4,36 +4,26 @@ import XCTest
 @testable import TanyaAIData
 
 final class TanyaAISessionStartupTests: XCTestCase {
-    func testSynchronousHistoryDuringConnectReachesTheObserver() {
+    func testSynchronousHistoryIsNotOverwrittenByAnEmptyBatch() {
         let session = SessionSpy()
         session.connectionEvents = [
-            .history([TanyaAIChatSessionMessage(
-                identifier: "existing", author: .assistant, text: "Welcome back"
-            )]),
-            .connected
+            .history([TanyaAIChatSessionMessage(identifier: "old", author: .customer, text: "Old")]), .connected
         ]
         let repository = TanyaAISessionRepository(session: session)
-        var restored: [TanyaAIMessage] = []
-
-        repository.observeUnsolicitedEvents { event in
-            if case .history(let messages) = event { restored = messages }
-        }
-
-        XCTAssertEqual(restored.map(\.identifier), ["existing"])
-        withExtendedLifetime(repository) {}
+        let recorder = SessionRecorder()
+        recorder.attach(repository)
+        recorder.wait(.connectionChanged(.ready), in: self)
+        XCTAssertEqual(recorder.history?.map(\.identifier), ["old"])
+        XCTAssertEqual(recorder.events.filter { if case .history = $0 { return true }; return false }.count, 1)
     }
 
-    func testSynchronousConnectionEndsTheRestoringState() {
+    func testSynchronousConnectionWithoutHistoryProducesOneEmptySnapshot() {
         let session = SessionSpy()
         session.connectionEvents = [.connected]
         let repository = TanyaAISessionRepository(session: session)
-        var historyCount = 0
-
-        repository.observeUnsolicitedEvents { event in
-            if case .history = event { historyCount += 1 }
-        }
-
-        XCTAssertEqual(historyCount, 1)
-        withExtendedLifetime(repository) {}
+        let recorder = SessionRecorder()
+        recorder.attach(repository)
+        recorder.wait(.connectionChanged(.ready), in: self)
+        XCTAssertEqual(recorder.history?.count, 0)
     }
 }

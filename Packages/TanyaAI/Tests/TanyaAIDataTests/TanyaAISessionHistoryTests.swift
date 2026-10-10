@@ -10,15 +10,16 @@ final class TanyaAISessionHistoryTests: XCTestCase {
     func testHistoryKeepsBothSidesOfTheConversation() {
         let session = SessionSpy()
         let repository = TanyaAISessionRepository(session: session)
-        var events: [TanyaAIStreamEvent] = []
-        repository.observeUnsolicitedEvents { events.append($0) }
+        let recorder = SessionRecorder()
+        recorder.attach(repository)
 
         session.emit(.history([
             message(identifier: "1", author: .customer, text: "Halo"),
             message(identifier: "2", author: .assistant, text: "Ada yang bisa dibantu?")
         ]))
 
-        guard case .history(let restored)? = events.first else {
+        recorder.waitUntil(in: self) { recorder.history != nil }
+        guard let restored = recorder.history else {
             return XCTFail("Expected a history event")
         }
         XCTAssertEqual(restored.map(\.role), [.user, .assistant])
@@ -32,8 +33,8 @@ final class TanyaAISessionHistoryTests: XCTestCase {
     func testHistoryIsCappedAtTheNewestHundred() {
         let session = SessionSpy()
         let repository = TanyaAISessionRepository(session: session)
-        var events: [TanyaAIStreamEvent] = []
-        repository.observeUnsolicitedEvents { events.append($0) }
+        let recorder = SessionRecorder()
+        recorder.attach(repository)
 
         session.emit(.history((0..<150).map { index in
             message(
@@ -43,7 +44,8 @@ final class TanyaAISessionHistoryTests: XCTestCase {
             )
         }))
 
-        guard case .history(let restored)? = events.first else {
+        recorder.waitUntil(in: self) { recorder.history != nil }
+        guard let restored = recorder.history else {
             return XCTFail("Expected a history event")
         }
         XCTAssertEqual(restored.count, 100)
@@ -55,8 +57,8 @@ final class TanyaAISessionHistoryTests: XCTestCase {
     func testHistoryCardDecodesToItsTypedContent() {
         let session = SessionSpy()
         let repository = TanyaAISessionRepository(session: session)
-        var events: [TanyaAIStreamEvent] = []
-        repository.observeUnsolicitedEvents { events.append($0) }
+        let recorder = SessionRecorder()
+        recorder.attach(repository)
 
         session.emit(.history([
             TanyaAIChatSessionMessage(
@@ -68,7 +70,8 @@ final class TanyaAISessionHistoryTests: XCTestCase {
             )
         ]))
 
-        guard case .history(let restored)? = events.first,
+        recorder.waitUntil(in: self) { recorder.history != nil }
+        guard let restored = recorder.history,
               case .status(let payload)? = restored.first?.content else {
             return XCTFail("Expected a typed status bubble")
         }
@@ -81,8 +84,8 @@ final class TanyaAISessionHistoryTests: XCTestCase {
     func testUnreadableHistoryCardDegradesInsteadOfVanishing() {
         let session = SessionSpy()
         let repository = TanyaAISessionRepository(session: session)
-        var events: [TanyaAIStreamEvent] = []
-        repository.observeUnsolicitedEvents { events.append($0) }
+        let recorder = SessionRecorder()
+        recorder.attach(repository)
 
         session.emit(.history([
             TanyaAIChatSessionMessage(
@@ -94,7 +97,8 @@ final class TanyaAISessionHistoryTests: XCTestCase {
             )
         ]))
 
-        guard case .history(let restored)? = events.first,
+        recorder.waitUntil(in: self) { recorder.history != nil }
+        guard let restored = recorder.history,
               case .unsupported? = restored.first?.content else {
             return XCTFail("Expected the unsupported fallback")
         }
@@ -107,12 +111,13 @@ final class TanyaAISessionHistoryTests: XCTestCase {
     func testConnectingWithoutHistoryReportsAnEmptyOne() {
         let session = SessionSpy()
         let repository = TanyaAISessionRepository(session: session)
-        var events: [TanyaAIStreamEvent] = []
-        repository.observeUnsolicitedEvents { events.append($0) }
+        let recorder = SessionRecorder()
+        recorder.attach(repository)
 
         session.emit(.connected)
 
-        guard case .history(let restored)? = events.first else {
+        recorder.waitUntil(in: self) { recorder.history != nil }
+        guard let restored = recorder.history else {
             return XCTFail("Expected an empty history event")
         }
         XCTAssertTrue(restored.isEmpty)

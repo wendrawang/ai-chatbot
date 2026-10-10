@@ -6,6 +6,7 @@ import UIKit
 import XCTest
 @testable import TanyaAI
 
+@MainActor
 final class TanyaAICoordinatorTests: XCTestCase {
     func testStartCreatesOnlyChatDestination() {
         let navigationController = UINavigationController()

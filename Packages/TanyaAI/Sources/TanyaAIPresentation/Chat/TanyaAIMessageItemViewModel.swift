@@ -1,6 +1,7 @@
 import Combine
 import TanyaAIDomain
 
+@MainActor
 public final class TanyaAIMessageItemViewModel:
     ObservableObject {
 
@@ -9,18 +10,26 @@ public final class TanyaAIMessageItemViewModel:
 
     @Published
     public private(set) var content: TanyaAIMessageContent
+    @Published public private(set) var delivery: TanyaAIMessageDelivery?
+    public private(set) var remoteIdentifier: String?
     private var isOptionsConsumed = false
 
     public init(message: TanyaAIMessage) {
         identifier = message.identifier
         role = message.role
         content = message.content
+        delivery = message.delivery
+        remoteIdentifier = message.remoteIdentifier ?? (message.role == .user ? nil : message.identifier)
         switch message.content {
         case .answer(let payload): isOptionsConsumed = payload.isAnswered
         case .choices(let payload): isOptionsConsumed = payload.isSubmitted
         default: break
         }
     }
+
+    func setDelivery(_ delivery: TanyaAIMessageDelivery) { self.delivery = delivery }
+
+    func setRemoteIdentifier(_ identifier: String) { remoteIdentifier = identifier }
 
     public func update(content: TanyaAIMessageContent) {
         let next = preservingSelection(in: content)
@@ -47,6 +56,11 @@ public final class TanyaAIMessageItemViewModel:
             isOptionsConsumed = isOptionsConsumed || payload.isSubmitted
             payload.isSubmitted = isOptionsConsumed
             return .choices(payload)
+        case .liveAgent(var payload):
+            if case .liveAgent(let previous) = self.content {
+                payload.isDeclined = payload.isDeclined || previous.isDeclined
+            }
+            return .liveAgent(payload)
         default:
             return content
         }

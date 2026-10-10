@@ -43,7 +43,7 @@ public extension TanyaAIChatViewModel {
         if current.isMultipleSelectionAllowed {
             message.update(content: .choices(current.toggling(identifier)))
         } else {
-            guard !isGenerating, !isRestoring,
+            guard isSendEnabled,
                   !choice.prompt.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else { return }
             message.update(content: .choices(current.toggling(identifier)))
             message.consumeOptions()
@@ -53,7 +53,7 @@ public extension TanyaAIChatViewModel {
 
     /// Submit on a choices bubble. Sends the answer and settles the card.
     func submitChoices(_ payload: ChoicesPayload) {
-        guard let message = choicesMessage(identifier: payload.identifier),
+        guard isSendEnabled, let message = choicesMessage(identifier: payload.identifier),
               case .choices(var current) = message.content,
               current.isSubmittable else {
             return
@@ -88,7 +88,7 @@ public extension TanyaAIChatViewModel {
     /// Edit on an approval bubble: seeds the input so the customer can restate
     /// the request in chat.
     func editApproval(_ payload: ApprovalPayload) {
-        inputText = "Change \(payload.title.lowercased()): "
+        draftRequest = TanyaAIDraftRequest(text: copy.chat("chat.editPrompt", values: ["title": payload.title]))
     }
 
     /// Cancel on an approval bubble. Local state only: nothing is sent.

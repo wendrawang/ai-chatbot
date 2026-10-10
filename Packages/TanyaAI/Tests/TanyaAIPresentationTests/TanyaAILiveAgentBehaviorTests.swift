@@ -6,22 +6,23 @@ import XCTest
 
 /// Handing the conversation to a person is a question, not a link, so the
 /// answer includes saying no - and the two answers behave differently.
+@MainActor
 final class TanyaAILiveAgentBehaviorTests: XCTestCase {
     func testDecliningSettlesTheCardAndSendsNothing() {
-        let useCase = TanyaAIChatUseCaseStub()
-        let viewModel = makeViewModel(useCase: useCase)
+        let repository = TanyaAIRepositoryStub()
+        let viewModel = makeViewModel(repository: repository)
 
         viewModel.declineLiveAgent(payload)
 
-        XCTAssertNil(useCase.receivedText)
+        XCTAssertNil(repository.receivedText)
         XCTAssertTrue(isDeclined(in: viewModel))
     }
 
     /// Accepting is the same hand-off any deeplink takes: it reports an
     /// action and nothing else.
     func testAcceptingReportsTheDeeplink() {
-        let useCase = TanyaAIChatUseCaseStub()
-        let viewModel = makeViewModel(useCase: useCase)
+        let repository = TanyaAIRepositoryStub()
+        let viewModel = makeViewModel(repository: repository)
         var performed: Action?
         viewModel.onOutput = { output in
             if case .performAction(let action) = output {
@@ -32,14 +33,14 @@ final class TanyaAILiveAgentBehaviorTests: XCTestCase {
         viewModel.perform(payload.action)
 
         XCTAssertEqual(performed?.identifier, "open-agent")
-        XCTAssertNil(useCase.receivedText)
+        XCTAssertNil(repository.receivedText)
     }
 
     /// A customer who comes back from the agent screen may want to connect
     /// again, and the hand-off costs nothing to repeat.
     func testAcceptingLeavesTheOfferOpen() {
-        let useCase = TanyaAIChatUseCaseStub()
-        let viewModel = makeViewModel(useCase: useCase)
+        let repository = TanyaAIRepositoryStub()
+        let viewModel = makeViewModel(repository: repository)
 
         viewModel.perform(payload.action)
 
@@ -47,8 +48,8 @@ final class TanyaAILiveAgentBehaviorTests: XCTestCase {
     }
 
     func testDecliningTwiceChangesNothing() {
-        let useCase = TanyaAIChatUseCaseStub()
-        let viewModel = makeViewModel(useCase: useCase)
+        let repository = TanyaAIRepositoryStub()
+        let viewModel = makeViewModel(repository: repository)
 
         viewModel.declineLiveAgent(payload)
         viewModel.declineLiveAgent(payload)
@@ -71,10 +72,10 @@ final class TanyaAILiveAgentBehaviorTests: XCTestCase {
     }
 
     private func makeViewModel(
-        useCase: TanyaAIChatUseCaseStub
+        repository: TanyaAIRepositoryStub
     ) -> TanyaAIChatViewModel {
-        let viewModel = TanyaAIChatViewModel(useCase: useCase)
-        useCase.sendUnsolicited(
+        let viewModel = TanyaAIChatViewModel(repository: repository)
+        repository.sendUnsolicited(
             .content(
                 messageIdentifier: "agent-1",
                 content: .liveAgent(payload)

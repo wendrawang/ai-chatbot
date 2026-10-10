@@ -5,46 +5,45 @@ import TanyaAIDomain
 import XCTest
 @testable import TanyaAIPresentation
 
+@MainActor
 final class TanyaAIChatViewModelTests: XCTestCase {
     func testSendingMessageAddsUserAndStreamedAssistantMessages() {
-        let useCase = TanyaAIChatUseCaseStub()
-        let viewModel = TanyaAIChatViewModel(useCase: useCase)
-        viewModel.inputText = "Hello"
-
-        viewModel.sendCurrentMessage()
-        useCase.send(.responseStarted(messageIdentifier: "assistant-1"))
-        useCase.send(
+        let repository = TanyaAIRepositoryStub()
+        let viewModel = TanyaAIChatViewModel(repository: repository)
+        viewModel.sendMessage("Hello")
+        repository.send(.responseStarted(messageIdentifier: "assistant-1"))
+        repository.send(
             .textDelta(messageIdentifier: "assistant-1", text: "Hi there")
         )
-        useCase.complete(.success(()))
+        repository.complete(.success(()))
 
         XCTAssertEqual(viewModel.messages.count, 2)
         XCTAssertEqual(viewModel.messages[0].content, .text("Hello"))
         XCTAssertEqual(viewModel.messages[1].content, .text("Hi there"))
-        XCTAssertFalse(viewModel.isGenerating)
+        XCTAssertFalse(viewModel.isAgentTyping)
     }
 
     /// A bot that greets first, or any reply arriving between turns, still
     /// belongs on screen. The session reports these outside a turn, and
     /// nothing consumed them before.
     func testUnpromptedReplyIsRendered() {
-        let useCase = TanyaAIChatUseCaseStub()
-        let viewModel = TanyaAIChatViewModel(useCase: useCase)
+        let repository = TanyaAIRepositoryStub()
+        let viewModel = TanyaAIChatViewModel(repository: repository)
         let before = viewModel.messages.count
 
-        useCase.sendUnsolicited(.responseStarted(messageIdentifier: "greet"))
-        useCase.sendUnsolicited(
+        repository.sendUnsolicited(.responseStarted(messageIdentifier: "greet"))
+        repository.sendUnsolicited(
             .textDelta(messageIdentifier: "greet", text: "Halo!")
         )
-        useCase.sendUnsolicited(.responseCompleted(messageIdentifier: "greet"))
+        repository.sendUnsolicited(.responseCompleted(messageIdentifier: "greet"))
 
         XCTAssertEqual(viewModel.messages.count, before + 1)
-        XCTAssertFalse(viewModel.isGenerating)
+        XCTAssertFalse(viewModel.isAgentTyping)
     }
 
     func testApprovalActionProducesTypedOutput() {
-        let useCase = TanyaAIChatUseCaseStub()
-        let viewModel = TanyaAIChatViewModel(useCase: useCase)
+        let repository = TanyaAIRepositoryStub()
+        let viewModel = TanyaAIChatViewModel(repository: repository)
         let approval = makeApproval()
         var receivedApproval: ApprovalPayload?
         viewModel.onOutput = { output in
@@ -59,10 +58,10 @@ final class TanyaAIChatViewModelTests: XCTestCase {
     }
 
     func testSelectingSuggestionSendsItsPrompt() {
-        let useCase = TanyaAIChatUseCaseStub()
-        let viewModel = TanyaAIChatViewModel(useCase: useCase)
-        useCase.sendUnsolicited(.history([]))
-        useCase.sendUnsolicited(.suggestions(title: nil, items: [
+        let repository = TanyaAIRepositoryStub()
+        let viewModel = TanyaAIChatViewModel(repository: repository)
+        repository.sendUnsolicited(.history([]))
+        repository.sendUnsolicited(.suggestions(title: nil, items: [
             TanyaAISuggestionPayload(
                 identifier: "next-question", title: "Next question", prompt: "Show next answer"
             )
@@ -71,16 +70,16 @@ final class TanyaAIChatViewModelTests: XCTestCase {
 
         viewModel.sendSuggestion(suggestion)
 
-        XCTAssertEqual(useCase.receivedText, suggestion.prompt)
+        XCTAssertEqual(repository.receivedText, suggestion.prompt)
         XCTAssertFalse(viewModel.isSuggestionRowVisible)
     }
 
     func testBackendResponseShowsSuggestions() {
-        let useCase = TanyaAIChatUseCaseStub()
-        let viewModel = TanyaAIChatViewModel(useCase: useCase)
+        let repository = TanyaAIRepositoryStub()
+        let viewModel = TanyaAIChatViewModel(repository: repository)
         viewModel.sendMessage("Show spending")
 
-        useCase.send(
+        repository.send(
             .suggestions(title: "Pilih satu", items: [
                 TanyaAISuggestionPayload(
                     identifier: "next-question",
@@ -89,15 +88,15 @@ final class TanyaAIChatViewModelTests: XCTestCase {
                 )
             ])
         )
-        useCase.send(.responseCompleted(messageIdentifier: "assistant-1"))
+        repository.send(.responseCompleted(messageIdentifier: "assistant-1"))
 
         XCTAssertTrue(viewModel.isSuggestionRowVisible)
         XCTAssertEqual(viewModel.suggestions.map(\.title), ["Next question"])
     }
 
     func testEveryConfirmationKindProducesApprovalOutput() {
-        let useCase = TanyaAIChatUseCaseStub()
-        let viewModel = TanyaAIChatViewModel(useCase: useCase)
+        let repository = TanyaAIRepositoryStub()
+        let viewModel = TanyaAIChatViewModel(repository: repository)
         var receivedKinds: [ApprovalPayload.Kind] = []
         viewModel.onOutput = { output in
             if case .requestApproval(let payload) = output {
@@ -113,12 +112,11 @@ final class TanyaAIChatViewModelTests: XCTestCase {
     }
 
     func testApprovalStateUpdatesExistingMessage() {
-        let useCase = TanyaAIChatUseCaseStub()
-        let viewModel = TanyaAIChatViewModel(useCase: useCase)
+        let repository = TanyaAIRepositoryStub()
+        let viewModel = TanyaAIChatViewModel(repository: repository)
         let approval = makeApproval()
-        viewModel.inputText = "Create transfer"
-        viewModel.sendCurrentMessage()
-        useCase.send(
+        viewModel.sendMessage("Create transfer")
+        repository.send(
             .content(
                 messageIdentifier: "approval-message",
                 content: .approval(approval)

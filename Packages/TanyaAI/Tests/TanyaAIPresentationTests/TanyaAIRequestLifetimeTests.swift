@@ -1,69 +1,49 @@
-import TanyaAIContracts
 import TanyaAIDomain
 import XCTest
 @testable import TanyaAIPresentation
 
+@MainActor
 final class TanyaAIRequestLifetimeTests: XCTestCase {
-    func testSynchronousCompletionDoesNotRetainTheFinishedRequest() {
-        let useCase = RequestLifetimeStub()
-        useCase.isSynchronous = true
-        let viewModel = TanyaAIChatViewModel(useCase: useCase)
-
-        viewModel.sendMessage("Hello")
-
-        XCTAssertFalse(viewModel.isGenerating)
-        XCTAssertNil(useCase.lastTask)
+    func testAcknowledgementOnlyUpdatesTheMatchingSubmission() {
+        let repository = TanyaAIRepositoryStub()
+        repository.isAutomaticAcknowledgement = false
+        let model = TanyaAIChatViewModel(repository: repository)
+        model.sendMessage("First")
+        model.sendMessage("Second")
+        repository.send(.sendSucceeded(requestIdentifier: repository.requestIdentifiers[0], messageIdentifier: "first"))
+        XCTAssertEqual(model.messages[0].delivery, .sent)
+        XCTAssertEqual(model.messages[1].delivery, .pending)
+        repository.send(.sendFailed(requestIdentifier: repository.requestIdentifiers[1]))
+        XCTAssertEqual(model.messages[1].delivery, .failed)
     }
 
-    func testCancelledCallbacksCannotEndTheNextRequest() {
-        let useCase = RequestLifetimeStub()
-        let viewModel = TanyaAIChatViewModel(useCase: useCase)
-        viewModel.sendMessage("First")
-        viewModel.cancelGeneration()
-        viewModel.sendMessage("Second")
-
-        useCase.eventHandlers[0](.textDelta(messageIdentifier: "stale", text: "Late"))
-        useCase.completions[0](.success(()))
-
-        XCTAssertTrue(viewModel.isGenerating)
-        XCTAssertFalse(viewModel.messages.contains { $0.identifier == "stale" })
-        useCase.completions[1](.success(()))
-        XCTAssertFalse(viewModel.isGenerating)
-        XCTAssertNil(useCase.lastTask)
+    func testRetryUsesTheSameRowAndIgnoresTheOldAcknowledgement() {
+        let repository = TanyaAIRepositoryStub()
+        repository.isAutomaticAcknowledgement = false
+        let model = TanyaAIChatViewModel(repository: repository)
+        model.sendMessage("First")
+        let oldIdentifier = repository.requestIdentifiers[0]
+        let row = model.messages[0]
+        repository.send(.sendFailed(requestIdentifier: oldIdentifier))
+        model.retryMessage(row.identifier)
+        XCTAssertTrue(model.messages[0] === row)
+        XCTAssertEqual(row.delivery, .pending)
+        repository.send(.sendSucceeded(requestIdentifier: oldIdentifier, messageIdentifier: "old"))
+        XCTAssertEqual(row.delivery, .pending)
+        repository.send(.sendSucceeded(requestIdentifier: repository.requestIdentifiers[1], messageIdentifier: "retry"))
+        XCTAssertEqual(row.delivery, .sent)
+        XCTAssertEqual(model.messages.count, 1)
     }
 
-    func testSavedCallbacksDoNotKeepTheViewModelAlive() {
-        let useCase = RequestLifetimeStub()
+    func testEventCallbackDoesNotKeepViewModelAlive() {
+        let repository = TanyaAIRepositoryStub()
         weak var released: TanyaAIChatViewModel?
         autoreleasepool {
-            let viewModel = TanyaAIChatViewModel(useCase: useCase)
-            viewModel.sendMessage("Hello")
-            released = viewModel
+            let model = TanyaAIChatViewModel(repository: repository)
+            released = model
         }
-
         XCTAssertNil(released)
-        XCTAssertNil(useCase.lastTask)
-        useCase.completions[0](.success(()))
-    }
-}
-
-private final class RequestLifetimeStub: TanyaAIChatUseCaseProtocol {
-    var isSynchronous = false
-    var completions: [(Result<Void, Error>) -> Void] = []
-    var eventHandlers: [(TanyaAIStreamEvent) -> Void] = []
-    weak var lastTask: TanyaAINoOpCancellable?
-
-    func sendMessage(
-        conversationIdentifier: String?,
-        text: String,
-        onEvent: @escaping (TanyaAIStreamEvent) -> Void,
-        completion: @escaping (Result<Void, Error>) -> Void
-    ) -> TanyaAICancellable {
-        let task = TanyaAINoOpCancellable()
-        lastTask = task
-        eventHandlers.append(onEvent)
-        completions.append(completion)
-        if isSynchronous { completion(.success(())) }
-        return task
+        XCTAssertNil(repository.onEvent)
+        XCTAssertEqual(repository.disconnectCount, 1)
     }
 }

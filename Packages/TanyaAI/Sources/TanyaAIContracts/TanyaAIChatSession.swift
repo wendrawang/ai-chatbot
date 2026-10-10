@@ -22,15 +22,15 @@ public protocol TanyaAIChatSession: AnyObject {
     ///   - context: where the chat was opened from, or nil once the customer
     ///     clears it. Pass it to the vendor as metadata - most SDKs have a
     ///     custom-data field for exactly this - never as visible chat text.
-    ///   - requestIdentifier: correlates the reply with this turn when the
-    ///     vendor echoes an identifier back. Adapters that cannot correlate
-    ///     may ignore it: the package falls back to the message identifier the
-    ///     vendor supplies.
+    ///   - requestIdentifier: identifies this local submission, not the bot's reply.
+    ///     Report its result through `sendSucceeded` or `sendFailed`.
+    /// - Returns: the SDK message ID when assigned synchronously, otherwise nil.
+    @discardableResult
     func send(
         text: String,
         context: TanyaAIContext?,
         requestIdentifier: String
-    )
+    ) -> String?
 
     /// Closes the channel. Called when the feature is released.
     func disconnect()
@@ -54,7 +54,7 @@ public enum TanyaAIChatSessionEvent {
     /// messages send one delta and then `messageCompleted`.
     case messageDelta(messageIdentifier: String, text: String)
 
-    /// A reply finished. Ends the turn the package is waiting on.
+    /// Rendering of this particular incoming message finished.
     case messageCompleted(messageIdentifier: String)
 
     /// A typed card, in the package's own event schema.
@@ -79,8 +79,14 @@ public enum TanyaAIChatSessionEvent {
     /// whichever side the action came from.
     case hostAction(identifier: String, deeplink: String)
 
-    /// The session failed. Ends the current turn with an error.
+    /// The channel failed; separate from failure of a single submission.
     case failed(Error)
+
+    case sendSucceeded(requestIdentifier: String, messageIdentifier: String?)
+    case sendFailed(requestIdentifier: String, error: Error)
+
+    /// History was unavailable. The adapter may still report `.connected` afterwards.
+    case historyFailed(Error)
 
     /// What the channel already held when it reopened, oldest first.
     ///

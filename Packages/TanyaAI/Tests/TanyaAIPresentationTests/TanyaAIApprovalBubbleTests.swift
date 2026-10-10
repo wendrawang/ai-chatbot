@@ -8,14 +8,15 @@ import XCTest
 /// A confirmation the customer already closed is a record of what happened.
 /// Nothing may edit it afterwards - not a repeated message from the backend,
 /// and not a late callback from a sheet that was already dismissed.
+@MainActor
 final class TanyaAIApprovalBubbleTests: XCTestCase {
     func testRepeatedApprovalOpensANewBubbleInsteadOfReopeningTheOldOne() {
-        let useCase = UseCaseStub()
-        let viewModel = makeViewModel(useCase: useCase)
+        let repository = TanyaAIRepositoryStub()
+        let viewModel = makeViewModel(repository: repository)
 
-        useCase.send(approvalEvent())
+        repository.send(approvalEvent())
         viewModel.cancelApproval(makeApproval())
-        useCase.send(approvalEvent())
+        repository.send(approvalEvent())
 
         let approvals = approvalPayloads(in: viewModel)
         XCTAssertEqual(approvals.count, 2)
@@ -26,12 +27,12 @@ final class TanyaAIApprovalBubbleTests: XCTestCase {
     /// The reopened bubble is the one that receives further state, so
     /// authorizing the new request cannot alter the cancelled record.
     func testStateUpdatesReachTheNewBubbleOnly() {
-        let useCase = UseCaseStub()
-        let viewModel = makeViewModel(useCase: useCase)
+        let repository = TanyaAIRepositoryStub()
+        let viewModel = makeViewModel(repository: repository)
 
-        useCase.send(approvalEvent())
+        repository.send(approvalEvent())
         viewModel.cancelApproval(makeApproval())
-        useCase.send(approvalEvent())
+        repository.send(approvalEvent())
         viewModel.updateApproval(
             identifier: "approval-demo",
             state: .completed
@@ -45,10 +46,10 @@ final class TanyaAIApprovalBubbleTests: XCTestCase {
     /// A PIN sheet dismissed after the customer already cancelled must not
     /// revive the confirmation.
     func testSettledApprovalIgnoresLateStateUpdates() {
-        let useCase = UseCaseStub()
-        let viewModel = makeViewModel(useCase: useCase)
+        let repository = TanyaAIRepositoryStub()
+        let viewModel = makeViewModel(repository: repository)
 
-        useCase.send(approvalEvent())
+        repository.send(approvalEvent())
         viewModel.cancelApproval(makeApproval())
         viewModel.updateApproval(
             identifier: "approval-demo",
@@ -61,11 +62,11 @@ final class TanyaAIApprovalBubbleTests: XCTestCase {
     /// The guard is specific to settled approvals: an in-flight one still
     /// updates in place rather than growing a second bubble.
     func testApprovalStillUpdatesInPlaceWhileItIsOpen() {
-        let useCase = UseCaseStub()
-        let viewModel = makeViewModel(useCase: useCase)
+        let repository = TanyaAIRepositoryStub()
+        let viewModel = makeViewModel(repository: repository)
 
-        useCase.send(approvalEvent())
-        useCase.send(approvalEvent())
+        repository.send(approvalEvent())
+        repository.send(approvalEvent())
 
         XCTAssertEqual(approvalPayloads(in: viewModel).count, 1)
     }
@@ -74,15 +75,15 @@ final class TanyaAIApprovalBubbleTests: XCTestCase {
     /// needs the same guard: a reply about the cancelled transfer must not
     /// overwrite the record of it.
     func testTextDeltaAfterASettledApprovalOpensANewBubble() {
-        let useCase = UseCaseStub()
-        let viewModel = makeViewModel(useCase: useCase)
+        let repository = TanyaAIRepositoryStub()
+        let viewModel = makeViewModel(repository: repository)
 
-        useCase.send(approvalEvent())
+        repository.send(approvalEvent())
         viewModel.cancelApproval(makeApproval())
-        useCase.send(
+        repository.send(
             .textDelta(messageIdentifier: "approval-card", text: "Baik, ")
         )
-        useCase.send(.responseCompleted(messageIdentifier: "approval-card"))
+        repository.send(.responseCompleted(messageIdentifier: "approval-card"))
 
         XCTAssertEqual(approvalPayloads(in: viewModel).map(\.state), [.cancelled])
         XCTAssertEqual(texts(in: viewModel).last, "Baik, ")
@@ -91,20 +92,20 @@ final class TanyaAIApprovalBubbleTests: XCTestCase {
     /// The replacement is remembered, so the rest of the turn lands in the
     /// bubble the first delta opened instead of one bubble per chunk.
     func testFurtherDeltasReachTheReplacementBubble() {
-        let useCase = UseCaseStub()
-        let viewModel = makeViewModel(useCase: useCase)
+        let repository = TanyaAIRepositoryStub()
+        let viewModel = makeViewModel(repository: repository)
 
-        useCase.send(approvalEvent())
+        repository.send(approvalEvent())
         viewModel.cancelApproval(makeApproval())
-        useCase.send(
+        repository.send(
             .textDelta(messageIdentifier: "approval-card", text: "Baik, ")
         )
         // Flush one batch while the request is still open.
         viewModel.textDeltaBuffer.flushAll()
-        useCase.send(
+        repository.send(
             .textDelta(messageIdentifier: "approval-card", text: "dibatalkan.")
         )
-        useCase.send(.responseCompleted(messageIdentifier: "approval-card"))
+        repository.send(.responseCompleted(messageIdentifier: "approval-card"))
 
         XCTAssertEqual(texts(in: viewModel).last, "Baik, dibatalkan.")
         XCTAssertEqual(viewModel.messages.count, 3)
@@ -114,15 +115,14 @@ final class TanyaAIApprovalBubbleTests: XCTestCase {
 
     /// Opens a turn, which is what registers the event handler.
     private func makeViewModel(
-        useCase: UseCaseStub,
+        repository: TanyaAIRepositoryStub,
         isAuthorizationEnabled: Bool = true
     ) -> TanyaAIChatViewModel {
         let viewModel = TanyaAIChatViewModel(
-            useCase: useCase,
+            repository: repository,
             isAuthorizationEnabled: isAuthorizationEnabled
         )
-        viewModel.inputText = "konfirmasi"
-        viewModel.sendCurrentMessage()
+        viewModel.sendMessage("konfirmasi")
         return viewModel
     }
 
@@ -130,15 +130,15 @@ final class TanyaAIApprovalBubbleTests: XCTestCase {
     /// confirmation that would need the PIN sheet must then be refused where
     /// the customer can see it, and the bubble left untouched.
     func testConfirmationIsRefusedWhenNothingCanAuthorizeIt() {
-        let useCase = UseCaseStub()
+        let repository = TanyaAIRepositoryStub()
         let viewModel = makeViewModel(
-            useCase: useCase,
+            repository: repository,
             isAuthorizationEnabled: false
         )
         var outputs: [TanyaAIChatOutput] = []
         viewModel.onOutput = { outputs.append($0) }
 
-        useCase.send(approvalEvent())
+        repository.send(approvalEvent())
         viewModel.approve(makeApproval())
 
         XCTAssertNotNil(viewModel.errorMessage)
@@ -148,9 +148,9 @@ final class TanyaAIApprovalBubbleTests: XCTestCase {
 
     /// A hand-off never needs the PIN sheet, so it still leaves for the host.
     func testHandoffStillReachesTheHostWithoutAnAuthorizationService() {
-        let useCase = UseCaseStub()
+        let repository = TanyaAIRepositoryStub()
         let viewModel = makeViewModel(
-            useCase: useCase,
+            repository: repository,
             isAuthorizationEnabled: false
         )
         var actions: [Action] = []
@@ -223,23 +223,5 @@ final class TanyaAIApprovalBubbleTests: XCTestCase {
             expiresAt: Date().addingTimeInterval(300),
             state: .awaitingApproval
         )
-    }
-}
-
-private final class UseCaseStub: TanyaAIChatUseCaseProtocol {
-    private var eventHandler: ((TanyaAIStreamEvent) -> Void)?
-
-    func sendMessage(
-        conversationIdentifier: String?,
-        text: String,
-        onEvent: @escaping (TanyaAIStreamEvent) -> Void,
-        completion: @escaping (Result<Void, Error>) -> Void
-    ) -> TanyaAICancellable {
-        eventHandler = onEvent
-        return TanyaAINoOpCancellable()
-    }
-
-    func send(_ event: TanyaAIStreamEvent) {
-        eventHandler?(event)
     }
 }

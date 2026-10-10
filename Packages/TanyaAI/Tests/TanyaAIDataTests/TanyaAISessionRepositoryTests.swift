@@ -1,248 +1,132 @@
-import DesignKit
 import Foundation
 import TanyaAIContracts
 import TanyaAIDomain
 import XCTest
 @testable import TanyaAIData
 
-/// The session repository has to look identical to a request-shaped one from
-/// repository boundary upward, so these tests assert the mapping and the turn
-/// bookkeeping rather than any vendor behaviour.
 final class TanyaAISessionRepositoryTests: XCTestCase {
-    /// The channel has to be listening before anyone speaks. A bot that
-    /// greets first, an agent reaching out, and a reopened conversation all
-    /// arrive unprompted; connecting on the first customer message would drop
-    /// every one of them.
-    func testSessionConnectsWhenTheFeatureAppears() {
+    func testStartupFailureIsReportedWithoutSendingAnything() {
         let session = SessionSpy()
+        session.connectionEvents = [.failed(SessionError.dropped)]
         let repository = TanyaAISessionRepository(session: session)
-
-        XCTAssertFalse(session.isConnected)
-        repository.observeUnsolicitedEvents { _ in }
-        XCTAssertTrue(session.isConnected)
+        let recorder = SessionRecorder()
+        recorder.attach(repository)
+        recorder.wait(.connectionChanged(.failed), in: self)
         XCTAssertTrue(session.sentTexts.isEmpty)
-        // The repository closes the session in deinit, so it has to outlive
-        // the assertions - releasing it here would disconnect before they run.
-        withExtendedLifetime(repository) {}
     }
 
-    /// The other half of the same rule: closing the feature closes the
-    /// channel, so a released graph leaves no delegate registered.
-    func testReleasingTheRepositoryClosesTheSession() {
+    func testTextReplyAndSDKSubmissionHaveIndependentCompletions() {
+        let session = SessionSpy()
+        session.connectionEvents = [.connected]
+        let repository = TanyaAISessionRepository(session: session)
+        let recorder = SessionRecorder()
+        recorder.attach(repository)
+        recorder.wait(.connectionChanged(.ready), in: self)
+        repository.sendMessage(text: "A", requestIdentifier: "A")
+        repository.sendMessage(text: "B", requestIdentifier: "B")
+        session.emit(.messageDelta(messageIdentifier: "late-A", text: "Late"))
+        session.emit(.messageCompleted(messageIdentifier: "late-A"))
+        recorder.wait(.responseCompleted(messageIdentifier: "late-A"), in: self)
+        XCTAssertFalse(recorder.events.contains { if case .sendSucceeded = $0 { return true }; return false })
+        session.emit(.sendSucceeded(requestIdentifier: "B", messageIdentifier: "sdk-B"))
+        recorder.wait(.sendSucceeded(requestIdentifier: "B", messageIdentifier: "sdk-B"), in: self)
+        XCTAssertEqual(session.sentTexts, ["A", "B"])
+    }
+
+    func testSendFailureDoesNotCloseTheChannel() {
+        let session = SessionSpy()
+        session.connectionEvents = [.connected]
+        let repository = TanyaAISessionRepository(session: session)
+        let recorder = SessionRecorder()
+        recorder.attach(repository)
+        recorder.wait(.connectionChanged(.ready), in: self)
+        session.emit(.sendFailed(requestIdentifier: "A", error: SessionError.dropped))
+        recorder.wait(.sendFailed(requestIdentifier: "A"), in: self)
+        repository.sendMessage(text: "B", requestIdentifier: "B")
+        XCTAssertEqual(session.sentTexts, ["B"])
+        XCTAssertFalse(recorder.events.contains(.connectionChanged(.failed)))
+    }
+
+    func testRetryRejectsCallbacksFromTheOldConnection() {
+        let session = SessionSpy()
+        session.connectionEvents = [.connected]
+        let repository = TanyaAISessionRepository(session: session)
+        let recorder = SessionRecorder()
+        recorder.attach(repository)
+        recorder.wait(.connectionChanged(.ready), in: self)
+        let oldCallback = session.onEvent
+        repository.disconnect()
+        repository.connect()
+        oldCallback?(.history([TanyaAIChatSessionMessage(identifier: "stale", author: .assistant, text: "Stale")]))
+        session.emit(.messageCompleted(messageIdentifier: "new"))
+        recorder.wait(.responseCompleted(messageIdentifier: "new"), in: self)
+        XCTAssertFalse(recorder.history?.contains { $0.identifier == "stale" } == true)
+    }
+
+    func testLiveMessagesWaitForTheHistorySnapshot() {
+        let session = SessionSpy()
+        let repository = TanyaAISessionRepository(session: session)
+        let recorder = SessionRecorder()
+        recorder.attach(repository)
+        session.emit(.messageDelta(messageIdentifier: "live", text: "New"))
+        session.emit(.history([TanyaAIChatSessionMessage(identifier: "old", author: .customer, text: "Old")]))
+        session.emit(.connected)
+        recorder.wait(.connectionChanged(.ready), in: self)
+        let relevant = recorder.events.filter {
+            if case .history = $0 { return true }
+            if case .textDelta = $0 { return true }
+            return false
+        }
+        guard case .history = relevant.first else { return XCTFail("History must precede live content") }
+        XCTAssertEqual(relevant.last, .textDelta(messageIdentifier: "live", text: "New"))
+    }
+
+    func testHistoryFailureStillAllowsConnectedChannelToSend() {
+        let session = SessionSpy()
+        session.connectionEvents = [.historyFailed(SessionError.dropped), .connected]
+        let repository = TanyaAISessionRepository(session: session)
+        let recorder = SessionRecorder()
+        recorder.attach(repository)
+        recorder.wait(.connectionChanged(.ready), in: self)
+        XCTAssertTrue(recorder.events.contains(.historyFailed))
+        XCTAssertNil(recorder.history)
+        repository.sendMessage(text: "Hello", requestIdentifier: "A")
+        XCTAssertEqual(session.sentTexts, ["Hello"])
+    }
+
+    func testReleasingRepositoryDisconnectsAndClearsTheCallback() {
         let session = SessionSpy()
         autoreleasepool {
             let repository = TanyaAISessionRepository(session: session)
-            repository.observeUnsolicitedEvents { _ in }
-            XCTAssertTrue(session.isConnected)
+            repository.connect()
         }
-
         XCTAssertFalse(session.isConnected)
+        XCTAssertNil(session.onEvent)
     }
 
-    func testUnpromptedReplyReachesTheObserverBeforeAnyTurn() {
+    func testContextTravelsWithSubmissionsUntilCleared() {
         let session = SessionSpy()
-        let repository = TanyaAISessionRepository(session: session)
-        var unsolicited: [TanyaAIStreamEvent] = []
-        repository.observeUnsolicitedEvents { unsolicited.append($0) }
-
-        session.emit(.messageStarted(messageIdentifier: "greeting"))
-        session.emit(
-            .messageDelta(messageIdentifier: "greeting", text: "Halo!")
-        )
-
-        XCTAssertEqual(unsolicited.count, 2)
-        withExtendedLifetime(repository) {}
-    }
-
-    func testTextRepliesMapToStreamEventsAndEndTheTurn() {
-        let session = SessionSpy()
-        let repository = TanyaAISessionRepository(session: session)
-        var events: [TanyaAIStreamEvent] = []
-        var completions: [Result<Void, Error>] = []
-
-        repository.sendMessage(
-            conversationIdentifier: nil,
-            text: "Halo",
-            onEvent: { events.append($0) },
-            completion: { completions.append($0) }
-        )
-        session.emit(.messageStarted(messageIdentifier: "m1"))
-        session.emit(.messageDelta(messageIdentifier: "m1", text: "Hai"))
-        session.emit(.messageCompleted(messageIdentifier: "m1"))
-
-        XCTAssertTrue(session.isConnected)
-        XCTAssertEqual(session.sentTexts, ["Halo"])
-        XCTAssertEqual(events.count, 3)
-        XCTAssertEqual(completions.count, 1)
-        guard case .success = completions[0] else {
-            return XCTFail("Expected the turn to succeed")
-        }
-    }
-
-    func testStructuredPayloadRendersATypedCard() {
-        let session = SessionSpy()
-        let repository = TanyaAISessionRepository(session: session)
-        var events: [TanyaAIStreamEvent] = []
-
-        repository.sendMessage(
-            conversationIdentifier: nil,
-            text: "Transfer",
-            onEvent: { events.append($0) },
-            completion: { _ in }
-        )
-        session.emit(
-            .structuredPayload(name: "content.actions", json: actionCardJSON)
-        )
-
-        let buttons = events.compactMap { event -> [ActionButton]? in
-            guard case .content(_, .actions(let payload)) = event else {
-                return nil
-            }
-            return payload.buttons
-        }.flatMap { $0 }
-        XCTAssertEqual(buttons.count, 1)
-        XCTAssertEqual(
-            buttons.first?.action.deeplink,
-            "ocbcid://mobile?type=transfer"
-        )
-    }
-
-    func testMalformedPayloadDegradesInsteadOfFailingTheTurn() {
-        let session = SessionSpy()
-        let repository = TanyaAISessionRepository(session: session)
-        var events: [TanyaAIStreamEvent] = []
-        var completions: [Result<Void, Error>] = []
-
-        repository.sendMessage(
-            conversationIdentifier: nil,
-            text: "Transfer",
-            onEvent: { events.append($0) },
-            completion: { completions.append($0) }
-        )
-        session.emit(
-            .structuredPayload(
-                name: "content.approval",
-                json: Data("{\"broken\":true}".utf8)
-            )
-        )
-
-        XCTAssertTrue(completions.isEmpty)
-        XCTAssertTrue(events.contains { event in
-            if case .content(_, .unsupported) = event { return true }
-            return false
-        })
-    }
-
-    func testChannelSourcedHandoffBecomesAHostAction() {
-        let session = SessionSpy()
-        let repository = TanyaAISessionRepository(session: session)
-        var events: [TanyaAIStreamEvent] = []
-
-        repository.sendMessage(
-            conversationIdentifier: nil,
-            text: "Transfer",
-            onEvent: { events.append($0) },
-            completion: { _ in }
-        )
-        session.emit(
-            .hostAction(
-                identifier: "vendor-handoff",
-                deeplink: "ocbcid://mobile?type=transfer"
-            )
-        )
-
-        let actions = events.compactMap { event -> Action? in
-            guard case .hostAction(let action) = event else {
-                return nil
-            }
-            return action
-        }
-        XCTAssertEqual(actions.count, 1)
-        XCTAssertEqual(actions.first?.deeplink, "ocbcid://mobile?type=transfer")
-    }
-
-    func testContextTravelsWithEveryMessageUntilItIsCleared() {
-        let session = SessionSpy()
-        let repository = TanyaAISessionRepository(
-            session: session,
-            context: TanyaAIContext(
-                screen: "transfer.form",
-                parameters: ["amount": "1250000"],
-                summary: "About: transfer"
-            )
-        )
-
-        repository.sendMessage(
-            conversationIdentifier: nil,
-            text: "Halo",
-            onEvent: { _ in },
-            completion: { _ in }
-        )
+        session.connectionEvents = [.connected]
+        let repository = TanyaAISessionRepository(session: session, context: TanyaAIContext(screen: "transfer"))
+        let recorder = SessionRecorder()
+        recorder.attach(repository)
+        recorder.wait(.connectionChanged(.ready), in: self)
+        repository.sendMessage(text: "A", requestIdentifier: "A")
         repository.updateContext(nil)
-        repository.sendMessage(
-            conversationIdentifier: nil,
-            text: "Lagi",
-            onEvent: { _ in },
-            completion: { _ in }
-        )
-
-        XCTAssertEqual(session.sentContexts.count, 2)
-        XCTAssertEqual(session.sentContexts[0]?.screen, "transfer.form")
-        XCTAssertEqual(
-            session.sentContexts[0]?.parameters["amount"],
-            "1250000"
-        )
-        XCTAssertNil(session.sentContexts[1] ?? nil)
+        repository.sendMessage(text: "B", requestIdentifier: "B")
+        XCTAssertEqual(session.sentContexts[0]?.screen, "transfer")
+        XCTAssertNil(session.sentContexts[1])
     }
 
-    func testEventsOutsideATurnReachTheUnsolicitedObserver() {
+    func testMalformedPayloadBecomesAnUnsupportedCard() {
         let session = SessionSpy()
+        session.connectionEvents = [.connected]
         let repository = TanyaAISessionRepository(session: session)
-        var unsolicited: [TanyaAIStreamEvent] = []
-        repository.observeUnsolicitedEvents { unsolicited.append($0) }
-
-        session.emit(.typing(true))
-        session.emit(.messageStarted(messageIdentifier: "agent-1"))
-
-        XCTAssertEqual(unsolicited.count, 2)
-    }
-
-    func testSessionFailureEndsTheTurnWithAnError() {
-        let session = SessionSpy()
-        let repository = TanyaAISessionRepository(session: session)
-        var completions: [Result<Void, Error>] = []
-
-        repository.sendMessage(
-            conversationIdentifier: nil,
-            text: "Halo",
-            onEvent: { _ in },
-            completion: { completions.append($0) }
-        )
-        session.emit(.failed(SessionError.dropped))
-
-        XCTAssertEqual(completions.count, 1)
-        guard case .failure = completions[0] else {
-            return XCTFail("Expected the turn to fail")
-        }
-    }
-
-    private var actionCardJSON: Data {
-        let payload: [String: Any] = [
-            "messageIdentifier": "card-1",
-            "title": "Continue in the app",
-            "actions": [
-                [
-                    "title": "Open transfer",
-                    "action": [
-                        "identifier": "open-transfer",
-                        "deeplink": "ocbcid://mobile?type=transfer"
-                    ]
-                ]
-            ]
-        ]
-        return (try? JSONSerialization.data(
-            withJSONObject: payload,
-            options: [.sortedKeys]
-        )) ?? Data()
+        let recorder = SessionRecorder()
+        recorder.attach(repository)
+        session.emit(.structuredPayload(name: "content.approval", json: Data("bad".utf8)))
+        session.emit(.messageCompleted(messageIdentifier: "barrier"))
+        recorder.wait(.responseCompleted(messageIdentifier: "barrier"), in: self)
+        XCTAssertTrue(recorder.events.contains { if case .content(_, .unsupported) = $0 { return true }; return false })
     }
 }

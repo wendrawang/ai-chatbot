@@ -3,6 +3,7 @@ import TanyaAIDomain
 import XCTest
 @testable import TanyaAIPresentation
 
+@MainActor
 final class TanyaAIRowRefreshTests: XCTestCase {
     func testSameSuggestionIdentifierWithNewContentRefreshesTheRow() {
         let original = makeState(title: "Old", prompt: "Old prompt")

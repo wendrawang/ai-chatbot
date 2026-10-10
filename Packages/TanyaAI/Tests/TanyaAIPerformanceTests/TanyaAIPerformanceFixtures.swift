@@ -11,34 +11,26 @@ final class TanyaAICancellationProbe: TanyaAICancellable {
     }
 }
 
-final class TanyaAIChatUseCaseFixture: TanyaAIChatUseCaseProtocol {
-    let cancellationProbe = TanyaAICancellationProbe()
-    private var eventHandler: ((TanyaAIStreamEvent) -> Void)?
-
-    func sendMessage(
-        conversationIdentifier: String?,
-        text: String,
-        onEvent: @escaping (TanyaAIStreamEvent) -> Void,
-        completion: @escaping (Result<Void, Error>) -> Void
-    ) -> TanyaAICancellable {
-        eventHandler = onEvent
-        return cancellationProbe
+final class TanyaAIRepositoryFixture: TanyaAIRepository {
+    var onEvent: ((TanyaAIStreamEvent) -> Void)?
+    private(set) var isDisconnected = false
+    func connect() {
+        onEvent?(.history([]))
+        onEvent?(.connectionChanged(.ready))
     }
-
+    func disconnect() { isDisconnected = true }
+    func sendMessage(text: String, requestIdentifier: String) -> String? {
+        onEvent?(.sendSucceeded(requestIdentifier: requestIdentifier, messageIdentifier: requestIdentifier))
+        return requestIdentifier
+    }
     func appendStatusMessages(count: Int) {
         for index in 0..<count {
             let payload = StatusPayload(
-                title: "Status \(index)",
-                detail: "Sanitized performance fixture",
-                level: .neutral
+                title: "Status \(index)", detail: "Sanitized performance fixture", level: .neutral
             )
-            eventHandler?(
-                .content(
-                    messageIdentifier: "performance-\(index)",
-                    content: .status(payload)
-                )
-            )
+            onEvent?(.content(messageIdentifier: "performance-\(index)", content: .status(payload)))
         }
+        onEvent?(.typing(true))
     }
 }
 

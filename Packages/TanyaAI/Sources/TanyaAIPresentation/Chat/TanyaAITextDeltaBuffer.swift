@@ -16,6 +16,8 @@ final class TanyaAITextDeltaBuffer {
         self.flushHandler = flushHandler
     }
 
+    deinit { cancel() }
+
     func append(messageIdentifier: String, text: String) {
         pendingText[messageIdentifier, default: ""].append(text)
         guard pendingWork[messageIdentifier] == nil else {
@@ -43,7 +45,7 @@ final class TanyaAITextDeltaBuffer {
         pendingText.removeAll()
     }
 
-    private func flush(messageIdentifier: String) {
+    func flush(messageIdentifier: String) {
         pendingWork[messageIdentifier]?.cancel()
         pendingWork[messageIdentifier] = nil
         guard let text = pendingText.removeValue(

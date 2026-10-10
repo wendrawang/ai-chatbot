@@ -34,3 +34,10 @@
 "chat.subtitle" = "";
 "chat.latest" = "Ke pesan terbaru";
 "chat.confirmation" = "Konfirmasi rincian";
+"chat.connectionFailed" = "Chat belum tersedia. Silakan coba lagi.";
+"chat.historyUnavailable" = "Riwayat percakapan belum dapat dimuat. Anda tetap bisa mengirim pesan.";
+"chat.sendFailed" = "Pesan gagal dikirim. Coba kirim lagi melalui pesan tersebut.";
+"chat.retry" = "Coba lagi";
+"chat.retrySend" = "Kirim ulang pesan";
+"chat.sending" = "Mengirim…";
+"chat.editPrompt" = "Ubah {title}: ";

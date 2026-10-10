@@ -1,233 +1,132 @@
 import Combine
 import DesignKit
 import Foundation
-import TanyaAIContracts
 import TanyaAIDomain
 
+/// Screen workflow and channel state. The editor owns its draft locally.
+@MainActor
 public final class TanyaAIChatViewModel: ObservableObject {
-    @Published public private(set) var messages: [TanyaAIMessageItemViewModel]
-    @Published public private(set) var isGenerating = false
-    /// The agent or bot is composing between turns, reported by the channel
-    /// rather than by a turn the customer started.
-    @Published public private(set) var isAgentTyping = false
-    /// True until the channel reports what it already held. The conversation
-    /// stays empty meanwhile, so no temporary message is shown and then replaced.
-    @Published public private(set) var isRestoring = true
-    @Published public private(set) var errorMessage: String?
-    @Published public private(set) var suggestions: [Suggestion]
-    /// The question the prompts answer, when the reply sent one.
-    @Published public private(set) var suggestionsTitle: String?
-    @Published public var inputText = ""
+    @Published public internal(set) var messages: [TanyaAIMessageItemViewModel] = []
+    @Published public internal(set) var connection = TanyaAIConnectionState.connecting
+    @Published public internal(set) var isRestoring = true
+    @Published public internal(set) var isAgentTyping = false
+    @Published public internal(set) var isHistoryUnavailable = false
+    @Published public internal(set) var errorMessage: String?
+    @Published public internal(set) var suggestions: [Suggestion] = []
+    @Published public internal(set) var suggestionsTitle: String?
+    @Published public internal(set) var draftRequest: TanyaAIDraftRequest?
 
+    public let shortcuts: [Suggestion]
     public var onOutput: ((TanyaAIChatOutput) -> Void)?
-
-    let useCase: TanyaAIChatUseCaseProtocol
-    /// Maps a message identifier the backend reuses onto the bubble that
-    /// replaced a settled confirmation. See `appendContent`.
-    var redirectedIdentifiers: [String: String] = [:]
-    var activeRequest: TanyaAICancellable?
-    var activeRequestIdentifier: String?
-    var conversationIdentifier: String?
-    lazy var textDeltaBuffer = TanyaAITextDeltaBuffer { [weak self] identifier, text in
-        self?.appendTextDeltaNow(
-            identifier: identifier,
-            text: text
-        )
-    }
-
-    /// Whether the host injected an authorization service, and so whether a
-    /// confirmation without a hand-off can be completed in the chat.
-    var isConfirmationRequested = false
+    let repository: TanyaAIRepository
+    let copy: CopyCatalog
     let isConfirmationEnabled: Bool
     let isAuthorizationEnabled: Bool
-
-    /// Ways in, supplied by the host and unchanged by use. Unlike the prompts
-    /// a reply offers, these answer no question and so never go away.
-    public let shortcuts: [Suggestion]
-
-    private let copy: CopyCatalog
+    var isConfirmationRequested = false
+    var redirectedIdentifiers: [String: String] = [:]
+    var pendingSubmissions: [String: String] = [:]
+    private var queuedInitialPrompt: String?
+    private var isInitialPromptSent = false
+    lazy var textDeltaBuffer = TanyaAITextDeltaBuffer { [weak self] identifier, text in
+        self?.appendTextDeltaNow(identifier: identifier, text: text)
+    }
 
     public init(
-        useCase: TanyaAIChatUseCaseProtocol,
+        repository: TanyaAIRepository,
         isAuthorizationEnabled: Bool = true,
         isConfirmationEnabled: Bool = false,
         shortcuts: [Suggestion] = [],
         copy: CopyCatalog = CopyCatalog()
     ) {
-        self.isConfirmationEnabled = isConfirmationEnabled
-        self.copy = copy
-        self.useCase = useCase
+        self.repository = repository
         self.isAuthorizationEnabled = isAuthorizationEnabled
+        self.isConfirmationEnabled = isConfirmationEnabled
         self.shortcuts = shortcuts
-        messages = []
-        suggestions = []
-        // A reply nobody asked for still belongs on screen. Without this the
-        // channel delivers it and the graph drops it on the floor.
-        useCase.observeUnsolicitedEvents { [weak self] event in
-            self?.performOnMain { [weak self] in
-                self?.handle(event)
-            }
-        }
+        self.copy = copy
+        repository.onEvent = { [weak self] event in self?.handle(event) }
+        repository.connect()
     }
 
-    public func sendCurrentMessage() {
-        let message = inputText.trimmingCharacters(
-            in: .whitespacesAndNewlines
-        )
-        guard !message.isEmpty, !isGenerating else {
-            return
-        }
+    public var isSendEnabled: Bool { connection == .ready && !isRestoring }
+    public var isTypingRowVisible: Bool { isAgentTyping }
+    public var isShortcutRowVisible: Bool { isSendEnabled && !shortcuts.isEmpty }
+    public var isSuggestionRowVisible: Bool { isSendEnabled && !suggestions.isEmpty }
+    public var isSessionRetryAvailable: Bool {
+        connection == .failed || connection == .closed || isHistoryUnavailable
+    }
 
-        inputText = ""
+    /// Returns false without changing the draft or options if the channel is not ready.
+    @discardableResult
+    public func sendMessage(_ text: String) -> Bool {
+        let prompt = text.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard isSendEnabled, !prompt.isEmpty else { return false }
         errorMessage = nil
         suggestions = []
         suggestionsTitle = nil
-        isRestoring = false
-        isGenerating = true
-        appendUserMessage(message)
-        startRequest(message)
+        submit(appendUserMessage(prompt))
+        return true
     }
 
-    public func sendSuggestion(_ suggestion: Suggestion) {
-        guard !isGenerating, !isRestoring,
-              !suggestion.prompt.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else { return }
-        suggestions = []
-        suggestionsTitle = nil
-        sendMessage(suggestion.prompt)
+    public func retryMessage(_ identifier: String) {
+        guard isSendEnabled, let message = message(identifier: identifier),
+              message.delivery == .failed else { return }
+        messages.last?.consumeOptions()
+        errorMessage = nil
+        submit(message)
     }
 
-    public func sendMessage(_ text: String) {
-        inputText = text
-        sendCurrentMessage()
+    public func retrySession() {
+        guard isSessionRetryAvailable, connection != .connecting else { return }
+        isRestoring = true
+        isHistoryUnavailable = false
+        errorMessage = nil
+        repository.disconnect()
+        repository.connect()
     }
 
-    /// Hidden while a reply is arriving. Tapping one then would do nothing -
-    /// a turn is already open - and a control that ignores a tap is worse
-    /// than one that is not there.
-    public var isShortcutRowVisible: Bool {
-        shortcuts.isEmpty == false && !isGenerating && !isRestoring
+    public func startInitialPrompt(_ text: String) {
+        guard !isInitialPromptSent, queuedInitialPrompt == nil else { return }
+        queuedInitialPrompt = text
+        sendInitialPromptIfReady()
     }
 
-    /// Sends a shortcut. The list itself does not change: it is a way in, not
-    /// an answer to anything.
-    public func sendShortcut(_ shortcut: Suggestion) {
-        sendMessage(shortcut.prompt)
+    func sendInitialPromptIfReady() {
+        guard let text = queuedInitialPrompt, isSendEnabled else { return }
+        queuedInitialPrompt = nil
+        isInitialPromptSent = true
+        sendMessage(text)
     }
 
-    public var isSuggestionRowVisible: Bool {
-        !isGenerating && !isRestoring && !suggestions.isEmpty
-    }
+    public func sendSuggestion(_ suggestion: Suggestion) { sendMessage(suggestion.prompt) }
+    public func sendShortcut(_ shortcut: Suggestion) { sendMessage(shortcut.prompt) }
+    public func close() { onOutput?(.close) }
+    public func openHistory() { onOutput?(.openHistory) }
 
-    /// Whether the waiting bubble belongs at the end of the conversation.
-    ///
-    /// Separate from `isGenerating`, which also drives the send/stop button: an
-    /// agent typing between turns should show the dots without turning the
-    /// send button into a stop button for a turn nobody started.
-    ///
-    /// Restoring is not one of these: it has its own loading state, and dots
-    /// promising a reply that nobody asked for would be a lie.
-    public var isTypingRowVisible: Bool {
-        isGenerating || isAgentTyping
-    }
-
-    public func cancelGeneration() {
-        activeRequestIdentifier = nil
-        activeRequest?.cancel()
-        activeRequest = nil
-        textDeltaBuffer.flushAll()
-        isGenerating = false
-        isAgentTyping = false
-    }
-
-    /// Puts a reopened conversation on screen.
-    ///
-    /// Replaces rather than appends: a returning customer should see where
-    /// they left off. An empty batch leaves the conversation empty.
-    private func restore(_ restored: [TanyaAIMessage]) {
-        isRestoring = false
-        // The customer may have typed before the channel answered. What they
-        // sent is newer than what it holds, so replacing here would delete
-        // their message, and the reply on its way to it.
-        guard messages.isEmpty else {
-            return
-        }
-        messages = restored.suffix(TanyaAIMessage.historyLimit)
-            .map(TanyaAIMessageItemViewModel.init)
-        messages.dropLast().forEach { $0.consumeOptions() }
-    }
-
-    /// A confirmation arrived that this app cannot complete, because no
-    /// authorization service was injected. Says so instead of leaving the
-    /// customer with a Confirm button that does nothing.
     func reportUnauthorizableApproval() {
         errorMessage = copy.chat("chat.authorizationRequired")
-    }
-
-    public func close() {
-        onOutput?(.close)
-    }
-
-    public func openHistory() {
-        onOutput?(.openHistory)
-    }
-
-    deinit {
-        activeRequest?.cancel()
-        textDeltaBuffer.cancel()
     }
 
     func appendMessage(_ message: TanyaAIMessageItemViewModel) {
         messages.last?.consumeOptions()
         messages.append(message)
+        trimMessages()
+    }
+
+    func trimMessages() {
         let overflow = messages.count - TanyaAIMessage.historyLimit
-        guard overflow > 0 else { return }
-        messages.removeFirst(overflow)
+        if overflow > 0 { messages.removeFirst(overflow) }
         let identifiers = Set(messages.map(\.identifier))
-        redirectedIdentifiers = redirectedIdentifiers.filter {
-            identifiers.contains($0.value)
-        }
+        redirectedIdentifiers = redirectedIdentifiers.filter { identifiers.contains($0.value) }
+        pendingSubmissions = pendingSubmissions.filter { identifiers.contains($0.value) }
     }
 
-    func handle(_ event: TanyaAIStreamEvent) {
-        switch event {
-        case .responseStarted(let messageIdentifier):
-            appendAssistantPlaceholder(identifier: messageIdentifier)
-        case .textDelta(let messageIdentifier, let text):
-            textDeltaBuffer.append(
-                messageIdentifier: messageIdentifier,
-                text: text
-            )
-        case .content(let messageIdentifier, let content):
-            appendContent(identifier: messageIdentifier, content: content)
-        case .suggestions(let title, let payloads):
-            suggestionsTitle = title
-            suggestions = payloads.map(makeSuggestion)
-        case .responseCompleted:
-            textDeltaBuffer.flushAll()
-            isGenerating = false
-            isAgentTyping = false
-            activeRequest = nil
-            activeRequestIdentifier = nil
-        case .hostAction(let action):
-            onOutput?(.performAction(action))
-        case .typing(let isTyping):
-            isAgentTyping = isTyping
-        case .history(let restored):
-            restore(restored)
-        case .heartbeat:
-            break
-        }
+    deinit {
+        repository.onEvent = nil
+        repository.disconnect()
     }
+}
 
-    func handleCompletion(_ result: Result<Void, Error>) {
-        activeRequest = nil
-        activeRequestIdentifier = nil
-        textDeltaBuffer.flushAll()
-        isGenerating = false
-        isAgentTyping = false
-        if case .failure = result {
-            errorMessage = copy.chat("chat.interrupted")
-        }
-    }
-
+public struct TanyaAIDraftRequest: Equatable {
+    public let identifier = UUID()
+    public let text: String
 }

@@ -40,12 +40,16 @@ final class ThreeDolphinsChatSessionAdapter: TanyaAIChatSession {
         }
     }
 
-    func send(text: String, context: TanyaAIContext?, requestIdentifier: String) {
+    @discardableResult
+    func send(text: String, context: TanyaAIContext?, requestIdentifier: String) -> String? {
         onMain { [self] in
             guard isActive else { return }
             // The guide does not define dataUser or correlation semantics.
             Connector.shared.onSendMessage(messages: text)
+            // This API acknowledges local submission only; it exposes no delivery receipt.
+            onEvent?(.sendSucceeded(requestIdentifier: requestIdentifier, messageIdentifier: nil))
         }
+        return nil
     }
 
     func disconnect() {
@@ -54,6 +58,7 @@ final class ThreeDolphinsChatSessionAdapter: TanyaAIChatSession {
             isActive = false
             observers.forEach(NotificationCenter.default.removeObserver)
             observers.removeAll()
+            onEvent = nil
             Connector.shared.endActiveSession()
             isConnectionReported = false
             isGreetingSent = false

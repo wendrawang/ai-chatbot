@@ -4,9 +4,10 @@ import UIKit
 import XCTest
 @testable import TanyaAIPresentation
 
+@MainActor
 final class TanyaAIGrowingTextViewTests: XCTestCase {
     func testCaptureComposerLineCounts() {
-        let viewModel = TanyaAIChatViewModel(useCase: TanyaAIChatUseCaseStub())
+        let viewModel = DraftFixture()
         let content = ComposerFixture(viewModel: viewModel)
         let controller = UIHostingController(rootView: content)
         let window = UIWindow(frame: CGRect(x: 0, y: 0, width: 393, height: 280))
@@ -97,17 +98,21 @@ final class TanyaAIGrowingTextViewTests: XCTestCase {
 }
 
 private struct ComposerFixture: View {
-    @ObservedObject var viewModel: TanyaAIChatViewModel
+    @ObservedObject var viewModel: DraftFixture
 
     var body: some View {
         VStack(spacing: 0) {
             Spacer()
             MessageComposer(
                 text: $viewModel.inputText,
-                placeholder: "Message", sendLabel: "Send", stopLabel: "Stop", isGenerating: false,
-                onSend: {}, onStop: {}
+                placeholder: "Message", sendLabel: "Send",
+                onSend: {}
             )
         }
         .background(Color.white)
     }
+}
+
+private final class DraftFixture: ObservableObject {
+    @Published var inputText = ""
 }

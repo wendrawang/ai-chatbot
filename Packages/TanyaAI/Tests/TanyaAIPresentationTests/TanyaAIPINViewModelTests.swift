@@ -6,6 +6,7 @@ import TanyaAITestSupport
 import XCTest
 @testable import TanyaAIPresentation
 
+@MainActor
 final class TanyaAIPINViewModelTests: XCTestCase {
     func testValidDemoPINCompletesAuthorization() {
         let completionExpectation = expectation(description: "authorization completes")

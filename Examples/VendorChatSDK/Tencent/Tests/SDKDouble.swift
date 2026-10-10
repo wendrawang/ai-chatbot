@@ -44,6 +44,7 @@ public final class V2TIMManager {
     public var historyLast: V2TIMMessage?
     public var historySuccess: (([V2TIMMessage]) -> Void)?
     public var historyFailure: ((Int, String) -> Void)?
+    public var sendSuccess: (() -> Void)?
     public var sendFailure: ((Int, String) -> Void)?
     public var sentMessages: [V2TIMMessage] = []
     public var sentGroups: [String?] = []
@@ -90,8 +91,10 @@ public final class V2TIMManager {
         sentGroups.append(groupID)
         sentReceivers.append(receiver)
         isOnlineOnly = isOnlineUserOnly
+        message.msgID = "sent-message"
+        sendSuccess = succ
         sendFailure = fail
-        return "sent-message"
+        return message.msgID
     }
 
     public func reset() {
@@ -102,6 +105,7 @@ public final class V2TIMManager {
         historyLast = nil
         historySuccess = nil
         historyFailure = nil
+        sendSuccess = nil
         sendFailure = nil
         sentMessages = []
         sentGroups = []

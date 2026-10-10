@@ -1,6 +1,10 @@
 import DesignKit
 
 public enum TanyaAIStreamEvent: Equatable {
+    case connectionChanged(TanyaAIConnectionState)
+    case historyFailed
+    case sendSucceeded(requestIdentifier: String, messageIdentifier: String?)
+    case sendFailed(requestIdentifier: String)
     case responseStarted(messageIdentifier: String)
     case textDelta(messageIdentifier: String, text: String)
     case content(messageIdentifier: String, content: TanyaAIMessageContent)
@@ -16,8 +20,7 @@ public enum TanyaAIStreamEvent: Equatable {
 
     /// The agent or bot is composing. Only a session transport raises this.
     case typing(Bool)
-    /// The conversation as it stood when it reopened, oldest first. Replaces
-    /// what is on screen rather than adding to it.
+    /// A snapshot in SDK order; local outbox rows survive a reload.
     case history([TanyaAIMessage])
 
     case heartbeat

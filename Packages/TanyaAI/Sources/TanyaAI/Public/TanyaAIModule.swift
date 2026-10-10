@@ -2,6 +2,7 @@ import DesignKit
 import TanyaAIDomain
 import UIKit
 
+@MainActor
 public enum TanyaAIModule {
     /// Builds one isolated feature graph and its entry controller.
     ///

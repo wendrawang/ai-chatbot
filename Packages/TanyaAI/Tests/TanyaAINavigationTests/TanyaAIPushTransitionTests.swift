@@ -5,6 +5,7 @@ import XCTest
 /// How the feature arrives. It is presented rather than pushed - staying out
 /// of the host's navigation stack is the point - so the push has to be the
 /// animation's doing.
+@MainActor
 final class TanyaAIPushTransitionTests: XCTestCase {
     func testPresentingAndDismissingUseOppositeDirections() {
         let transition = TanyaAIPushTransition()

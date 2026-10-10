@@ -60,13 +60,4 @@ extension TanyaAIChatViewModel {
         )
     }
 
-    /// Hops to the main queue only when it has to. A session may deliver on
-    /// any queue, and an extra hop per event would be visible while streaming.
-    func performOnMain(_ action: @escaping () -> Void) {
-        if Thread.isMainThread {
-            action()
-        } else {
-            DispatchQueue.main.async(execute: action)
-        }
-    }
 }

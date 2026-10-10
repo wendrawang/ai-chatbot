@@ -31,6 +31,7 @@ struct MessageListView: View {
                     onToggle: viewModel.toggleChoice,
                     onSubmit: viewModel.submitChoices
                 ),
+                onRetryMessage: viewModel.retryMessage,
                 onAction: viewModel.perform,
                 onSuggestion: viewModel.sendSuggestion,
                 onConfirmation: viewModel.confirm,

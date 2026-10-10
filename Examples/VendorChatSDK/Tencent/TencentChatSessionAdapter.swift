@@ -8,6 +8,7 @@ final class TencentChatSessionAdapter: TanyaAIChatSession {
 
     private let groupID: String
     private let manager = V2TIMManager.shared
+    private var generation = 0
     private var isActive = false
     private var isLoadingHistory = false
     private var pendingMessages: [V2TIMMessage] = []
@@ -28,6 +29,8 @@ final class TencentChatSessionAdapter: TanyaAIChatSession {
             onEvent?(.failed(TencentChatError.notLoggedIn))
             return
         }
+        generation += 1
+        let epoch = generation
         knownIdentifiers.removeAll()
         orderedIdentifiers.removeAll()
         isActive = true
@@ -38,25 +41,31 @@ final class TencentChatSessionAdapter: TanyaAIChatSession {
             count: 20,
             lastMsg: nil,
             succ: { [weak self] messages in
-                DispatchQueue.main.async { self?.finishHistory(messages) }
-            },
-            fail: { [weak self] _, _ in
                 DispatchQueue.main.async {
-                    self?.finishHistory([])
+                    guard let self, self.generation == epoch else { return }
+                    self.finishHistory(messages)
+                }
+            },
+            fail: { [weak self] code, description in
+                DispatchQueue.main.async {
+                    guard let self, self.generation == epoch else { return }
+                    self.onEvent?(.historyFailed(TencentChatError.sdk(code: Int(code), message: description)))
+                    self.finishHistory(nil)
                 }
             }
         )
     }
 
-    func send(text: String, context: TanyaAIContext?, requestIdentifier: String) {
-        guard isActive else { return }
+    @discardableResult
+    func send(text: String, context: TanyaAIContext?, requestIdentifier: String) -> String? {
+        guard isActive else { return nil }
+        let epoch = generation
         guard let message = manager.createTextMessage(text: text) else {
-            onEvent?(.failed(TencentChatError.messageCreationFailed))
-            return
+            onEvent?(.sendFailed(requestIdentifier: requestIdentifier, error: TencentChatError.messageCreationFailed))
+            return nil
         }
-        // A backend must define how context/requestIdentifier are carried.
-        // Do not insert either into visible message text.
-        _ = manager.sendMessage(
+        // The request ID identifies this SDK submission, not a future bot reply.
+        return manager.sendMessage(
             message: message,
             receiver: nil,
             groupID: groupID,
@@ -64,10 +73,21 @@ final class TencentChatSessionAdapter: TanyaAIChatSession {
             onlineUserOnly: false,
             offlinePushInfo: nil,
             progress: nil,
-            succ: nil,
+            succ: { [weak self] in
+                DispatchQueue.main.async {
+                    guard let self, self.isActive, self.generation == epoch else { return }
+                    self.onEvent?(.sendSucceeded(
+                        requestIdentifier: requestIdentifier, messageIdentifier: message.msgID
+                    ))
+                }
+            },
             fail: { [weak self] code, description in
                 DispatchQueue.main.async {
-                    self?.onEvent?(.failed(TencentChatError.sdk(code: Int(code), message: description)))
+                    guard let self, self.isActive, self.generation == epoch else { return }
+                    self.onEvent?(.sendFailed(
+                        requestIdentifier: requestIdentifier,
+                        error: TencentChatError.sdk(code: Int(code), message: description)
+                    ))
                 }
             }
         )
@@ -75,6 +95,7 @@ final class TencentChatSessionAdapter: TanyaAIChatSession {
 
     func disconnect() {
         guard isActive else { return }
+        generation += 1
         isActive = false
         manager.removeAdvancedMsgListener(listener: self)
         pendingMessages.removeAll()
@@ -83,16 +104,16 @@ final class TencentChatSessionAdapter: TanyaAIChatSession {
         onEvent = nil
     }
 
-    private func finishHistory(_ messages: [V2TIMMessage]) {
+    private func finishHistory(_ messages: [V2TIMMessage]?) {
         guard isActive else { return }
         // The SDK returns newest first; preserve its order even when timestamps are equal.
-        let ordered = Array(messages.reversed())
+        let ordered = Array((messages ?? []).reversed())
         let history = ordered.compactMap { message -> TanyaAIChatSessionMessage? in
             guard message.groupID == groupID else { return nil }
             remember(message.msgID)
             return contractMessage(message)
         }
-        onEvent?(.history(history))
+        if messages != nil { onEvent?(.history(history)) }
         isLoadingHistory = false
         onEvent?(.connected)
         let pending = pendingMessages

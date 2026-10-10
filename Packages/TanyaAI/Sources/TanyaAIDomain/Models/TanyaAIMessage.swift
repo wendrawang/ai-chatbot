@@ -14,14 +14,20 @@ public struct TanyaAIMessage: Equatable {
     public let identifier: String
     public let role: Role
     public var content: TanyaAIMessageContent
+    public var remoteIdentifier: String?
+    public var delivery: TanyaAIMessageDelivery?
 
     public init(
         identifier: String,
         role: Role,
-        content: TanyaAIMessageContent
+        content: TanyaAIMessageContent,
+        remoteIdentifier: String? = nil,
+        delivery: TanyaAIMessageDelivery? = nil
     ) {
         self.identifier = identifier
         self.role = role
         self.content = content
+        self.remoteIdentifier = remoteIdentifier
+        self.delivery = delivery
     }
 }

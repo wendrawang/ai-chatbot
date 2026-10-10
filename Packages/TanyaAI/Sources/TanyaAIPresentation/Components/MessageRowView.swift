@@ -14,13 +14,30 @@ struct MessageRowView: View {
                 Spacer(minLength: FigmaSize.spacing48.sizeInArtwork)
             }
 
-            content
+            VStack(alignment: viewModel.role == .user ? .trailing : .leading,
+                   spacing: FigmaSize.spacing4.sizeInArtwork) {
+                content
+                deliveryStatus
+            }
 
             if viewModel.role != .user {
                 Spacer(minLength: FigmaSize.spacing32.sizeInArtwork)
             }
         }
         .accessibilityElement(children: .contain)
+    }
+
+    @ViewBuilder
+    private var deliveryStatus: some View {
+        if viewModel.delivery == .pending {
+            Text(copy.chat("chat.sending"))
+                .designFont(.caption)
+        } else if viewModel.delivery == .failed {
+            Button(copy.chat("chat.retrySend")) { handlers.onRetryMessage(viewModel.identifier) }
+                .designFont(.caption)
+                .frame(minHeight: DesignKitMetrics.Size.minimumTapTarget.tapTargetInArtwork)
+                .accessibilityIdentifier("chat.retrySend.\(viewModel.identifier)")
+        }
     }
 
     @ViewBuilder

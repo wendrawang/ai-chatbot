@@ -32,6 +32,7 @@ import UIKit
 /// can inject it with `.environmentObject(_:)`. A coordinator written as
 /// `MainCoordinator()` deep inside a root screen has no initializer to thread
 /// anything through, and that is the common shape.
+@MainActor
 public final class TanyaAIHost: ObservableObject {
     private let theme: Theme
     private let authorizationService: TanyaAIAuthorizationService?

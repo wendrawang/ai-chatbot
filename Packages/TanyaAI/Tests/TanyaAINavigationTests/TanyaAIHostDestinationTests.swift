@@ -3,6 +3,7 @@ import TanyaAITestSupport
 import XCTest
 @testable import TanyaAI
 
+@MainActor
 final class TanyaAIHostDestinationTests: XCTestCase {
     func testLegacyDeeplinkRemainsRestrictedToConfiguredSchemeAndHost() {
         let host = makeHost()

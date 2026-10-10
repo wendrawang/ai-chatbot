@@ -24,6 +24,7 @@ public final class MockTanyaAIChatSession: TanyaAIChatSession {
     public private(set) var sentContexts: [TanyaAIContext?] = []
     public private(set) var isConnected = false
 
+    private var generation = 0
     private let reply: (String) -> [TanyaAIChatSessionEvent]
     private let callbackQueue: DispatchQueue
     private let stepDelay: TimeInterval
@@ -44,33 +45,41 @@ public final class MockTanyaAIChatSession: TanyaAIChatSession {
     }
 
     public func connect() {
+        generation += 1
         isConnected = true
         emit([.connected], startingAt: 0)
     }
 
+    @discardableResult
     public func send(
         text: String,
         context: TanyaAIContext?,
         requestIdentifier: String
-    ) {
+    ) -> String? {
+        guard isConnected else { return nil }
+        let remoteIdentifier = UUID().uuidString
         sentTexts.append(text)
         sentContexts.append(context)
+        emit([.sendSucceeded(requestIdentifier: requestIdentifier, messageIdentifier: remoteIdentifier)], startingAt: 0)
         emit(reply(text), startingAt: 1)
+        return remoteIdentifier
     }
 
     public func disconnect() {
+        generation += 1
         isConnected = false
-        emit([.disconnected(nil)], startingAt: 0)
     }
 
     private func emit(
         _ events: [TanyaAIChatSessionEvent],
         startingAt offset: Int
     ) {
+        let epoch = generation
         for (index, event) in events.enumerated() {
             let delay = stepDelay * Double(index + offset)
             callbackQueue.asyncAfter(deadline: .now() + delay) { [weak self] in
-                self?.onEvent?(event)
+                guard let self, self.generation == epoch else { return }
+                self.onEvent?(event)
             }
         }
     }

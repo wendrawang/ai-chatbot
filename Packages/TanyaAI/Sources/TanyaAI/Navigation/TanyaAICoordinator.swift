@@ -5,6 +5,7 @@ import TanyaAIDomain
 import TanyaAIPresentation
 import UIKit
 
+@MainActor
 final class TanyaAICoordinator: NSObject {
     private let navigationController: UINavigationController
     private let dependencyContainer: TanyaAIDependencyContainer
@@ -66,9 +67,8 @@ final class TanyaAICoordinator: NSObject {
     }
 
     private func showHistory(animated isAnimated: Bool) {
-        let viewModel = dependencyContainer.makeHistoryViewModel()
         let controller = UIHostingController(
-            rootView: ConversationHistoryScreen(viewModel: viewModel)
+            rootView: ConversationHistoryScreen(items: dependencyContainer.historyItems)
                 .theme(dependencyContainer.theme)
                 .copyCatalog(dependencyContainer.copy)
                 .imageLoader(dependencyContainer.imageLoader)

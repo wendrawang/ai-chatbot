@@ -29,7 +29,7 @@ final class SendbirdChatSessionAdapter: NSObject, TanyaAIChatSession {
     /// The package calls `connect()` and `send(...)` back to back, and opening
     /// a channel is a round trip - so without this the customer's first
     /// message is dropped in silence.
-    private var queuedMessages: [String] = []
+    private var queuedMessages: [(String, String)] = []
 
     /// Reports the channel the session settled on, so the host can store it
     /// and pass it back as `channelURL` to continue this conversation later.
@@ -58,6 +58,7 @@ final class SendbirdChatSessionAdapter: NSObject, TanyaAIChatSession {
         SendbirdChat.addChannelDelegate(self, identifier: delegateIdentifier)
 
         guard let existingChannelURL else {
+            onEvent?(.connected)
             return
         }
         lock.lock()
@@ -78,12 +79,13 @@ final class SendbirdChatSessionAdapter: NSObject, TanyaAIChatSession {
     /// `requestIdentifier` is not sent: Sendbird will not echo it back, so
     /// correlating on it would be a promise this adapter cannot keep. The
     /// package falls back to the message identifier Sendbird supplies.
-    func send(text: String, context: TanyaAIContext?, requestIdentifier: String) {
+    @discardableResult
+    func send(text: String, context: TanyaAIContext?, requestIdentifier: String) -> String? {
         lock.lock()
         let channel = self.channel
         var isChannelStartNeeded = false
         if channel == nil {
-            queuedMessages.append(text)
+            queuedMessages.append((text, requestIdentifier))
             isChannelStartNeeded = !isOpeningChannel
             isOpeningChannel = true
         }
@@ -93,15 +95,21 @@ final class SendbirdChatSessionAdapter: NSObject, TanyaAIChatSession {
             if isChannelStartNeeded {
                 createChannel()
             }
-            return
+            return nil
         }
-        sendNow(text, on: channel)
+        sendNow(text, identifier: requestIdentifier, on: channel)
+        return nil
     }
 
-    private func sendNow(_ text: String, on channel: GroupChannel) {
-        channel.sendUserMessage(text) { [weak self] _, error in
+    private func sendNow(_ text: String, identifier: String, on channel: GroupChannel) {
+        channel.sendUserMessage(text) { [weak self] message, error in
             if let error {
-                self?.onEvent?(.failed(error))
+                self?.onEvent?(.sendFailed(requestIdentifier: identifier, error: error))
+            } else {
+                self?.onEvent?(.sendSucceeded(
+                    requestIdentifier: identifier,
+                    messageIdentifier: message.map { String($0.messageId) }
+                ))
             }
         }
     }
@@ -155,7 +163,7 @@ final class SendbirdChatSessionAdapter: NSObject, TanyaAIChatSession {
         lock.unlock()
 
         onChannelReady?(channel.channelURL)
-        pending.forEach { sendNow($0, on: channel) }
+        pending.forEach { sendNow($0.0, identifier: $0.1, on: channel) }
         // `.connected` goes last, once history has been read: it is what tells
         // the package the conversation is settled, so sending it first would
         // put a greeting on screen that history is about to replace.

@@ -7,13 +7,15 @@ import TanyaAIDomain
 /// state and this one holds the rules for adding to it - chiefly that
 /// nothing may overwrite a confirmation the customer has already settled.
 extension TanyaAIChatViewModel {
-    func appendUserMessage(_ text: String) {
+    func appendUserMessage(_ text: String) -> TanyaAIMessageItemViewModel {
         let message = TanyaAIMessage(
             identifier: UUID().uuidString,
             role: .user,
-            content: .text(text)
+            content: .text(text), delivery: .pending
         )
-        appendMessage(TanyaAIMessageItemViewModel(message: message))
+        let row = TanyaAIMessageItemViewModel(message: message)
+        appendMessage(row)
+        return row
     }
 
     func appendAssistantPlaceholder(identifier: String) {

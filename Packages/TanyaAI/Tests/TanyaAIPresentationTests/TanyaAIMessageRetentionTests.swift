@@ -2,12 +2,13 @@ import TanyaAIDomain
 import XCTest
 @testable import TanyaAIPresentation
 
+@MainActor
 final class TanyaAIMessageRetentionTests: XCTestCase {
     func testLiveMessagesKeepOnlyTheNewestHundred() {
-        let useCase = TanyaAIChatUseCaseStub()
-        let viewModel = TanyaAIChatViewModel(useCase: useCase)
+        let repository = TanyaAIRepositoryStub()
+        let viewModel = TanyaAIChatViewModel(repository: repository)
         for index in 0..<150 {
-            useCase.sendUnsolicited(.content(
+            repository.sendUnsolicited(.content(
                 messageIdentifier: "message-\(index)",
                 content: .text("Reply \(index)")
             ))
@@ -19,15 +20,15 @@ final class TanyaAIMessageRetentionTests: XCTestCase {
     }
 
     func testEvictionReleasesTheRowAndItsRedirect() {
-        let useCase = TanyaAIChatUseCaseStub()
-        let viewModel = TanyaAIChatViewModel(useCase: useCase)
-        useCase.sendUnsolicited(.content(messageIdentifier: "old", content: .text("Old")))
+        let repository = TanyaAIRepositoryStub()
+        let viewModel = TanyaAIChatViewModel(repository: repository)
+        repository.sendUnsolicited(.content(messageIdentifier: "old", content: .text("Old")))
         weak var evicted: TanyaAIMessageItemViewModel?
         evicted = viewModel.messages.first
         viewModel.redirectedIdentifiers["original"] = "old"
 
         for index in 0..<100 {
-            useCase.sendUnsolicited(.content(
+            repository.sendUnsolicited(.content(
                 messageIdentifier: "new-\(index)", content: .text("New")
             ))
         }
@@ -37,13 +38,13 @@ final class TanyaAIMessageRetentionTests: XCTestCase {
     }
 
     func testRestorationAlsoBoundsInjectedUseCases() {
-        let useCase = TanyaAIChatUseCaseStub()
-        let viewModel = TanyaAIChatViewModel(useCase: useCase)
+        let repository = TanyaAIRepositoryStub()
+        let viewModel = TanyaAIChatViewModel(repository: repository)
         let history = (0..<150).map { index in
             TanyaAIMessage(identifier: "\(index)", role: .assistant, content: .text("History"))
         }
 
-        useCase.sendUnsolicited(.history(history))
+        repository.sendUnsolicited(.history(history))
 
         XCTAssertEqual(viewModel.messages.count, 100)
         XCTAssertEqual(viewModel.messages.first?.identifier, "50")

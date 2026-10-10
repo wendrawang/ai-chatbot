@@ -7,17 +7,6 @@ import TanyaAIDomain
 /// Split from the repository proper so the live path - a turn opening,
 /// streaming and closing - stays readable on its own.
 extension TanyaAISessionRepository {
-    func reportEmptyHistoryIfNeeded() {
-        lock.lock()
-        let isHistoryNeeded = !isHistoryReported
-        isHistoryReported = true
-        lock.unlock()
-        guard isHistoryNeeded else {
-            return
-        }
-        emit(.history([]))
-    }
-
     /// A past message becomes the same content a live one would, so history
     /// and new replies render through one path.
     ///
@@ -29,7 +18,8 @@ extension TanyaAISessionRepository {
         TanyaAIMessage(
             identifier: message.identifier,
             role: message.author == .customer ? .user : .assistant,
-            content: historyContent(message)
+            content: historyContent(message),
+            remoteIdentifier: message.identifier
         )
     }
 

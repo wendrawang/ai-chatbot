@@ -5,36 +5,28 @@ import SwiftUI
 /// A rounded container holds both the growing field and its trailing action.
 /// The action stays at the bottom as the field grows to four lines.
 public struct MessageComposer: View {
+    @Environment(\.theme) private var theme
     @Binding private var text: String
     private let placeholder: String
     private let sendLabel: String
-    private let stopLabel: String
-    private let isGenerating: Bool
     private let isEnabled: Bool
     private let onSend: () -> Void
-    private let onStop: () -> Void
 
     public init(
-        text: Binding<String>, placeholder: String, sendLabel: String, stopLabel: String,
-        isGenerating: Bool, isEnabled: Bool = true,
-        onSend: @escaping () -> Void, onStop: @escaping () -> Void
+        text: Binding<String>,
+        placeholder: String,
+        sendLabel: String,
+        isEnabled: Bool = true,
+        onSend: @escaping () -> Void
     ) {
         self._text = text
         self.placeholder = placeholder
         self.sendLabel = sendLabel
-        self.stopLabel = stopLabel
-        self.isGenerating = isGenerating
         self.isEnabled = isEnabled
         self.onSend = onSend
-        self.onStop = onStop
     }
-    @Environment(\.theme) private var theme
 
-    public var body: some View {
-        inputSurface
-            .padding(.horizontal, FigmaSize.spacing16.sizeInArtwork)
-            .padding(.vertical, FigmaSize.spacing8.sizeInArtwork)
-    }
+    public var body: some View { inputSurface }
 
     private var inputSurface: some View {
         HStack(alignment: .bottom, spacing: FigmaSize.spacing8.sizeInArtwork) {
@@ -88,9 +80,8 @@ public struct MessageComposer: View {
     }
 
     private var actionButton: some View {
-        let isActive = isGenerating || isSendEnabled
-        return Button(action: isGenerating ? onStop : onSend) {
-            Image(systemName: isGenerating ? "stop.fill" : "arrow.up")
+        Button(action: onSend) {
+            Image(systemName: "arrow.up")
                 .designFont(.button)
                 .foregroundColor(Color(theme.colors.userBubbleText))
                 .frame(
@@ -98,7 +89,7 @@ public struct MessageComposer: View {
                     height: DesignKitMetrics.Size.composerAction.sizeInArtwork
                 )
                 .background(
-                    Circle().fill(Color(isActive ? theme.colors.accent : theme.colors.secondaryText))
+                    Circle().fill(Color(isSendEnabled ? theme.colors.accent : theme.colors.secondaryText))
                 )
                 .frame(
                     width: DesignKitMetrics.Size.minimumTapTarget.tapTargetInArtwork,
@@ -107,8 +98,8 @@ public struct MessageComposer: View {
                 .contentShape(Rectangle())
         }
         .buttonStyle(.plain)
-        .disabled(!isActive)
-        .accessibilityLabel(isGenerating ? stopLabel : sendLabel)
+        .disabled(!isSendEnabled)
+        .accessibilityLabel(sendLabel)
     }
 
     private var isSendEnabled: Bool {

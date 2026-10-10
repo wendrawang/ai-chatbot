@@ -3,6 +3,7 @@ import UIKit
 import XCTest
 @testable import TanyaAIPresentation
 
+@MainActor
 final class TanyaAIFrameRateTests: XCTestCase {
     /// The bar the rendering has to clear.
     private static let target = 55.0
@@ -62,10 +63,10 @@ final class TanyaAIFrameRateTests: XCTestCase {
     }
 
     private func makeHarness(messageCount: Int) -> ViewHarness {
-        let useCase = TanyaAIChatUseCaseFixture()
-        let viewModel = TanyaAIChatViewModel(useCase: useCase)
+        let repository = TanyaAIRepositoryFixture()
+        let viewModel = TanyaAIChatViewModel(repository: repository)
         viewModel.sendMessage("performance fixture")
-        useCase.appendStatusMessages(count: messageCount)
+        repository.appendStatusMessages(count: messageCount)
 
         let controller = UIHostingController(
             rootView: ChatScreen(viewModel: viewModel)

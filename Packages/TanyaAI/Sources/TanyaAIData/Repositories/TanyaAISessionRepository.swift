@@ -3,42 +3,70 @@ import Foundation
 import TanyaAIContracts
 import TanyaAIDomain
 
-/// Drives the chat from a vendor SDK session.
-///
-/// Turns a session into the request-shaped `TanyaAIRepository` the layers
-/// above expect. Two differences are handled here:
-///
-/// - a session has no per-request completion, so a turn ends on
-///   `messageCompleted`, `failed`, or an unexpected `disconnected`;
-/// - a session delivers messages nobody asked for, which are forwarded to the
-///   unsolicited observer rather than to the turn in flight.
+/// Serializes vendor events and maps them into one main-queue channel stream.
 public final class TanyaAISessionRepository: TanyaAIRepository {
-    /// How much of a reopened conversation reaches the screen.
-    ///
-    /// Enforced here rather than trusted to each adapter: a vendor that
-    /// returns its whole archive would otherwise put thousands of rows into
-    /// one table, and the adapter is the layer most likely to be written by
-    /// someone who has never seen this file.
     static let historyLimit = TanyaAIMessage.historyLimit
-
     private let session: TanyaAIChatSession
+    private let eventsQueue = DispatchQueue(label: "TanyaAI.SessionEvents")
     let decoder = TanyaAIStreamEventDecoder()
-    let lock = NSLock()
-    private var activeTurn: Turn?
-    private var unsolicitedObserver: ((TanyaAIStreamEvent) -> Void)?
-    private var isSessionStarted = false
-    var isHistoryReported = false
+    private var observer: ((TanyaAIStreamEvent) -> Void)?
+    private var generation = 0
+    private var isStarted = false
+    private var isReady = false
+    private var isHistoryReported = false
+    private var pendingContent: [TanyaAIChatSessionEvent] = []
     private var context: TanyaAIContext?
 
-    public init(
-        session: TanyaAIChatSession,
-        context: TanyaAIContext? = nil
-    ) {
+    public var onEvent: ((TanyaAIStreamEvent) -> Void)? {
+        get { eventsQueue.sync { observer } }
+        set { eventsQueue.sync { observer = newValue } }
+    }
+
+    public init(session: TanyaAIChatSession, context: TanyaAIContext? = nil) {
         self.session = session
         self.context = context
-        session.onEvent = { [weak self] event in
-            self?.handle(event)
+    }
+
+    public func connect() {
+        let epoch: Int? = eventsQueue.sync {
+            guard !isStarted else { return nil }
+            generation += 1
+            isStarted = true
+            isReady = false
+            isHistoryReported = false
+            pendingContent.removeAll()
+            emit(.connectionChanged(.connecting))
+            return generation
         }
+        guard let epoch else { return }
+        session.onEvent = { [weak self] event in self?.enqueue(event, epoch: epoch) }
+        session.connect()
+    }
+
+    @discardableResult
+    public func sendMessage(text: String, requestIdentifier: String) -> String? {
+        let submission = eventsQueue.sync { () -> (Bool, TanyaAIContext?) in
+            if !isReady { emit(.sendFailed(requestIdentifier: requestIdentifier)) }
+            return (isReady, context)
+        }
+        guard submission.0 else { return nil }
+        return session.send(text: text, context: submission.1, requestIdentifier: requestIdentifier)
+    }
+
+    public func updateContext(_ context: TanyaAIContext?) {
+        eventsQueue.sync { self.context = context }
+    }
+
+    public func disconnect() {
+        session.onEvent = nil
+        eventsQueue.sync {
+            generation += 1
+            isStarted = false
+            isReady = false
+            pendingContent.removeAll()
+            emit(.connectionChanged(.closed))
+        }
+        session.disconnect()
     }
 
     deinit {
@@ -46,87 +74,54 @@ public final class TanyaAISessionRepository: TanyaAIRepository {
         session.disconnect()
     }
 
-    @discardableResult
-    public func sendMessage(
-        conversationIdentifier: String?,
-        text: String,
-        onEvent: @escaping (TanyaAIStreamEvent) -> Void,
-        completion: @escaping (Result<Void, Error>) -> Void
-    ) -> TanyaAICancellable {
-        let requestIdentifier = UUID().uuidString
-        let turn = Turn(
-            identifier: requestIdentifier,
-            onEvent: onEvent,
-            completion: completion
-        )
-
-        lock.lock()
-        activeTurn = turn
-        let context = self.context
-        lock.unlock()
-
-        connectIfNeeded()
-        session.send(
-            text: text,
-            context: context,
-            requestIdentifier: requestIdentifier
-        )
-        return TurnCancellable { [weak self] in
-            self?.finishTurn(identifier: requestIdentifier, result: nil)
+    private func enqueue(_ event: TanyaAIChatSessionEvent, epoch: Int) {
+        eventsQueue.async { [weak self] in
+            guard let self, self.generation == epoch else { return }
+            self.handle(event)
         }
     }
-
-    public func updateContext(_ context: TanyaAIContext?) {
-        lock.lock()
-        self.context = context
-        lock.unlock()
-    }
-
-    /// Events that arrive outside a turn: an agent replying on their own, a
-    /// typing indicator between turns, a hand-off pushed by the channel.
-    public func observeUnsolicitedEvents(
-        _ onEvent: @escaping (TanyaAIStreamEvent) -> Void
-    ) {
-        lock.lock()
-        unsolicitedObserver = onEvent
-        lock.unlock()
-        // The observer must exist before connect can synchronously emit history.
-        connectIfNeeded()
-    }
-
-    private func connectIfNeeded() {
-        lock.lock()
-        let isConnectionNeeded = !isSessionStarted
-        isSessionStarted = true
-        lock.unlock()
-        if isConnectionNeeded {
-            session.connect()
-        }
-    }
-
-    // MARK: - Session events
 
     private func handle(_ event: TanyaAIChatSessionEvent) {
         switch event {
         case .connected:
-            // A session that reports itself open without sending history has
-            // none. Saying so is what lets the screen settle instead of
-            // waiting on a batch that will never arrive.
-            reportEmptyHistoryIfNeeded()
-        case .disconnected(let error):
-            guard let error else {
-                return
+            if !isHistoryReported { emit(.history([])) }
+            isHistoryReported = true
+            isReady = true
+            emit(.connectionChanged(.ready))
+            flushPendingContent()
+        case .failed, .disconnected:
+            isReady = false
+            if case .disconnected(nil) = event {
+                emit(.connectionChanged(.closed))
+            } else {
+                emit(.connectionChanged(.failed))
             }
-            finishTurn(identifier: nil, result: .failure(error))
-        case .failed(let error):
-            finishTurn(identifier: nil, result: .failure(error))
+        case .historyFailed:
+            isHistoryReported = true
+            emit(.historyFailed)
+            flushPendingContent()
+        case .sendSucceeded(let identifier, let messageIdentifier):
+            emit(.sendSucceeded(requestIdentifier: identifier, messageIdentifier: messageIdentifier))
+        case .sendFailed(let identifier, _):
+            emit(.sendFailed(requestIdentifier: identifier))
         default:
-            handleContent(event)
+            receiveContent(event)
         }
     }
 
-    /// Everything that puts something on screen, as opposed to opening or
-    /// closing the channel.
+    private func receiveContent(_ event: TanyaAIChatSessionEvent) {
+        if case .history(let messages) = event {
+            isHistoryReported = true
+            emit(.history(messages.suffix(Self.historyLimit).map(makeHistoryMessage)))
+            flushPendingContent()
+        } else if isHistoryReported {
+            handleContent(event)
+        } else {
+            if pendingContent.count >= Self.historyLimit { pendingContent.removeFirst() }
+            pendingContent.append(event)
+        }
+    }
+
     private func handleContent(_ event: TanyaAIChatSessionEvent) {
         switch event {
         case .messageStarted(let identifier):
@@ -135,97 +130,40 @@ public final class TanyaAISessionRepository: TanyaAIRepository {
             emit(.textDelta(messageIdentifier: identifier, text: text))
         case .messageCompleted(let identifier):
             emit(.responseCompleted(messageIdentifier: identifier))
-            finishTurn(identifier: nil, result: .success(()))
         case .structuredPayload(let name, let json):
             emitStructured(name: name, json: json)
         case .typing(let isTyping):
             emit(.typing(isTyping))
-        case .history(let messages):
-            lock.lock()
-            isHistoryReported = true
-            lock.unlock()
-            emit(
-                .history(
-                    messages
-                        .suffix(Self.historyLimit)
-                        .map(makeHistoryMessage)
-                )
-            )
         case .hostAction(let identifier, let deeplink):
-            emit(
-                .hostAction(
-                    Action(identifier: identifier, deeplink: deeplink)
-                )
-            )
+            emit(.hostAction(Action(identifier: identifier, deeplink: deeplink)))
         default:
             break
         }
     }
 
+    private func flushPendingContent() {
+        let pending = pendingContent
+        pendingContent.removeAll()
+        pending.forEach(handleContent)
+    }
+
     private func emitStructured(name: String, json: Data) {
         do {
-            guard let event = try decoder.decode(name: name, json: json) else {
-                return
-            }
-            emit(event)
+            if let event = try decoder.decode(name: name, json: json) { emit(event) }
         } catch {
-            emit(
-                .content(
-                    messageIdentifier: UUID().uuidString,
-                    content: .unsupported(
-                        nil
-                    )
-                )
-            )
+            emit(.content(messageIdentifier: UUID().uuidString, content: .unsupported(nil)))
         }
     }
 
-    func emit(_ event: TanyaAIStreamEvent) {
-        lock.lock()
-        let turn = activeTurn
-        let observer = unsolicitedObserver
-        lock.unlock()
-
-        if let turn {
-            turn.onEvent(event)
-        } else {
-            observer?(event)
+    /// Called only on eventsQueue. Check the generation again at UI delivery.
+    private func emit(_ event: TanyaAIStreamEvent) {
+        let epoch = generation
+        DispatchQueue.main.async { [weak self] in
+            guard let self else { return }
+            let callback = self.eventsQueue.sync {
+                self.generation == epoch ? self.observer : nil
+            }
+            callback?(event)
         }
-    }
-
-    private func finishTurn(
-        identifier: String?,
-        result: Result<Void, Error>?
-    ) {
-        lock.lock()
-        guard let turn = activeTurn,
-              identifier == nil || identifier == turn.identifier else {
-            lock.unlock()
-            return
-        }
-        activeTurn = nil
-        lock.unlock()
-
-        if let result {
-            turn.completion(result)
-        }
-    }
-
-    private struct Turn {
-        let identifier: String
-        let onEvent: (TanyaAIStreamEvent) -> Void
-        let completion: (Result<Void, Error>) -> Void
-    }
-}
-
-private final class TurnCancellable: TanyaAICancellable {
-    private let action: () -> Void
-
-    init(_ action: @escaping () -> Void) {
-        self.action = action
-    }
-
-    func cancel() {
-        action()
     }
 }

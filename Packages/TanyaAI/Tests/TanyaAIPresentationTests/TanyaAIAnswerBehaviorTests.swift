@@ -4,13 +4,14 @@ import TanyaAIDomain
 import XCTest
 @testable import TanyaAIPresentation
 
+@MainActor
 final class TanyaAIAnswerBehaviorTests: XCTestCase {
     func testRadioSendsPromptAndKeepsTheOtherParts() {
-        let useCase = TanyaAIChatUseCaseStub()
-        let model = makeModel(useCase)
+        let repository = TanyaAIRepositoryStub()
+        let model = makeModel(repository)
         model.selectAnswerOption("answer", "help")
 
-        XCTAssertEqual(useCase.receivedText, "Contact support")
+        XCTAssertEqual(repository.receivedText, "Contact support")
         XCTAssertEqual(model.messages.last?.content, .text("Contact support"))
         guard case .answer(let current) = model.messages.first?.content else { return XCTFail("Missing answer") }
         XCTAssertTrue(current.isAnswered)
@@ -20,11 +21,11 @@ final class TanyaAIAnswerBehaviorTests: XCTestCase {
     }
 
     func testDuplicateTapAndReplayCannotResendOrReviveOptions() {
-        let useCase = TanyaAIChatUseCaseStub()
-        let model = makeModel(useCase)
+        let repository = TanyaAIRepositoryStub()
+        let model = makeModel(repository)
         model.selectAnswerOption("answer", "help")
-        useCase.complete(.success(()))
-        useCase.sendUnsolicited(.content(messageIdentifier: "answer", content: .answer(answer)))
+        repository.complete(.success(()))
+        repository.sendUnsolicited(.content(messageIdentifier: "answer", content: .answer(answer)))
         model.selectAnswerOption("answer", "help")
 
         XCTAssertEqual(model.messages.filter { $0.role == .user }.count, 1)
@@ -32,49 +33,46 @@ final class TanyaAIAnswerBehaviorTests: XCTestCase {
         XCTAssertTrue(current.isAnswered)
     }
 
-    func testInvalidOptionAndBusyTapKeepTheDraftAndOptions() {
-        let useCase = TanyaAIChatUseCaseStub()
-        let model = makeModel(useCase)
-        model.inputText = "My draft"
+    func testInvalidOptionDoesNotSendAndUnavailableChannelKeepsOptions() {
+        let repository = TanyaAIRepositoryStub()
+        let model = makeModel(repository)
         model.selectAnswerOption("answer", "missing")
-        XCTAssertEqual(model.inputText, "My draft")
-        XCTAssertNil(useCase.receivedText)
-        model.sendMessage("First request")
-        model.inputText = "Next draft"
+        XCTAssertNil(repository.receivedText)
+        repository.send(.connectionChanged(.failed))
         model.selectAnswerOption("answer", "help")
-        XCTAssertEqual(model.inputText, "Next draft")
+        XCTAssertNil(repository.receivedText)
         guard case .answer(let current) = model.messages.first?.content else { return XCTFail("Missing answer") }
-        XCTAssertTrue(current.isAnswered)
+        XCTAssertFalse(current.isAnswered)
     }
 
     func testOnlyLatestAnswerCanBeSelected() {
-        let useCase = TanyaAIChatUseCaseStub()
-        let model = makeModel(useCase)
-        useCase.sendUnsolicited(.content(messageIdentifier: "other", content: .answer(answer)))
+        let repository = TanyaAIRepositoryStub()
+        let model = makeModel(repository)
+        repository.sendUnsolicited(.content(messageIdentifier: "other", content: .answer(answer)))
         model.selectAnswerOption("answer", "help")
-        XCTAssertNil(useCase.receivedText)
+        XCTAssertNil(repository.receivedText)
         guard case .answer(let previous) = model.messages[0].content else { return XCTFail("Missing previous") }
         XCTAssertTrue(previous.isAnswered)
         XCTAssertEqual(model.messages[1].content, .answer(answer))
     }
 
     func testRestoredAnsweredRadioIgnoresTap() {
-        let useCase = TanyaAIChatUseCaseStub()
-        let model = TanyaAIChatViewModel(useCase: useCase)
+        let repository = TanyaAIRepositoryStub()
+        let model = TanyaAIChatViewModel(repository: repository)
         var restored = answer
         restored.isAnswered = true
-        useCase.sendUnsolicited(.history([
+        repository.sendUnsolicited(.history([
             TanyaAIMessage(identifier: "answer", role: .assistant, content: .answer(restored))
         ]))
         model.selectAnswerOption("answer", "help")
-        XCTAssertNil(useCase.receivedText)
+        XCTAssertNil(repository.receivedText)
     }
 
     func testTextDeltaKeepsOptionsImageAndActions() {
-        let useCase = TanyaAIChatUseCaseStub()
-        let model = makeModel(useCase)
-        useCase.sendUnsolicited(.textDelta(messageIdentifier: "answer", text: " Extra text"))
-        useCase.sendUnsolicited(.responseCompleted(messageIdentifier: "answer"))
+        let repository = TanyaAIRepositoryStub()
+        let model = makeModel(repository)
+        repository.sendUnsolicited(.textDelta(messageIdentifier: "answer", text: " Extra text"))
+        repository.sendUnsolicited(.responseCompleted(messageIdentifier: "answer"))
         guard case .answer(let current) = model.messages.first?.content else { return XCTFail("Missing answer") }
         XCTAssertEqual(current.text, (answer.text ?? "") + " Extra text")
         XCTAssertEqual(current.options, answer.options)
@@ -83,17 +81,17 @@ final class TanyaAIAnswerBehaviorTests: XCTestCase {
     }
 
     func testLegacySingleChoicesSendImmediatelyAndStayConsumed() {
-        let useCase = TanyaAIChatUseCaseStub()
-        let model = makeModel(useCase)
+        let repository = TanyaAIRepositoryStub()
+        let model = makeModel(repository)
         let choices = ChoicesPayload(identifier: "radio", title: "Question", choices: [
             .init(identifier: "help", title: "Help", prompt: "Contact support")
         ])
-        useCase.sendUnsolicited(.content(messageIdentifier: "radio", content: .choices(choices)))
+        repository.sendUnsolicited(.content(messageIdentifier: "radio", content: .choices(choices)))
         model.toggleChoice(choices, "help")
-        useCase.complete(.success(()))
-        useCase.sendUnsolicited(.content(messageIdentifier: "radio", content: .choices(choices)))
+        repository.complete(.success(()))
+        repository.sendUnsolicited(.content(messageIdentifier: "radio", content: .choices(choices)))
         model.toggleChoice(choices, "help")
-        XCTAssertEqual(useCase.receivedText, "Contact support")
+        XCTAssertEqual(repository.receivedText, "Contact support")
         XCTAssertEqual(model.messages.filter { $0.role == .user }.count, 1)
         guard case .choices(let current) = model.messages[1].content else { return XCTFail("Missing question") }
         XCTAssertTrue(current.isSubmitted)
@@ -110,10 +108,10 @@ final class TanyaAIAnswerBehaviorTests: XCTestCase {
         )
     }
 
-    private func makeModel(_ useCase: TanyaAIChatUseCaseStub) -> TanyaAIChatViewModel {
-        let model = TanyaAIChatViewModel(useCase: useCase)
-        useCase.sendUnsolicited(.history([]))
-        useCase.sendUnsolicited(.content(messageIdentifier: "answer", content: .answer(answer)))
+    private func makeModel(_ repository: TanyaAIRepositoryStub) -> TanyaAIChatViewModel {
+        let model = TanyaAIChatViewModel(repository: repository)
+        repository.sendUnsolicited(.history([]))
+        repository.sendUnsolicited(.content(messageIdentifier: "answer", content: .answer(answer)))
         return model
     }
 }

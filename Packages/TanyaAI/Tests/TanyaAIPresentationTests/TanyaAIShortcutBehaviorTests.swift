@@ -6,41 +6,43 @@ import XCTest
 
 /// Shortcuts are the host's way in, not the bot's answer to anything, so they
 /// behave differently from the prompts a reply offers.
+@MainActor
 final class TanyaAIShortcutBehaviorTests: XCTestCase {
     func testUsingAShortcutLeavesTheRestInPlace() {
-        let useCase = TanyaAIChatUseCaseStub()
+        let repository = TanyaAIRepositoryStub()
         let viewModel = TanyaAIChatViewModel(
-            useCase: useCase,
+            repository: repository,
             shortcuts: shortcuts
         )
-        useCase.sendUnsolicited(.history([]))
+        repository.sendUnsolicited(.history([]))
 
         viewModel.sendShortcut(shortcuts[0])
 
-        XCTAssertEqual(useCase.receivedText, "Saya mau transfer")
+        XCTAssertEqual(repository.receivedText, "Saya mau transfer")
         XCTAssertEqual(viewModel.shortcuts.count, 2)
     }
 
     /// A turn is already open, so tapping one would do nothing. A control that
     /// ignores a tap is worse than one that is not there.
-    func testShortcutsAreHiddenWhileAReplyArrives() {
-        let useCase = TanyaAIChatUseCaseStub()
+    func testShortcutsRemainUsableWhileAReplyArrives() {
+        let repository = TanyaAIRepositoryStub()
         let viewModel = TanyaAIChatViewModel(
-            useCase: useCase,
+            repository: repository,
             shortcuts: shortcuts
         )
-        useCase.sendUnsolicited(.history([]))
+        repository.sendUnsolicited(.history([]))
         XCTAssertTrue(viewModel.isShortcutRowVisible)
 
         viewModel.sendShortcut(shortcuts[0])
 
-        XCTAssertFalse(viewModel.isShortcutRowVisible)
+        repository.send(.typing(true))
+        XCTAssertTrue(viewModel.isShortcutRowVisible)
     }
 
     func testNoShortcutsMeansNoStrip() {
-        let useCase = TanyaAIChatUseCaseStub()
-        let viewModel = TanyaAIChatViewModel(useCase: useCase)
-        useCase.sendUnsolicited(.history([]))
+        let repository = TanyaAIRepositoryStub()
+        let viewModel = TanyaAIChatViewModel(repository: repository)
+        repository.sendUnsolicited(.history([]))
 
         XCTAssertFalse(viewModel.isShortcutRowVisible)
     }

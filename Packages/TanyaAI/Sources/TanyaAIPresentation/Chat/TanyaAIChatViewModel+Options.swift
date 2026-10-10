@@ -12,7 +12,7 @@ public extension TanyaAIChatViewModel {
 
     /// Sends one radio option and consumes only that answer's option list.
     func selectAnswerOption(_ messageIdentifier: String, _ optionIdentifier: String) {
-        guard !isGenerating, !isRestoring,
+        guard isSendEnabled,
               let message = message(identifier: messageIdentifier),
               case .answer(let payload) = message.content,
               !payload.isAnswered,

@@ -20,12 +20,10 @@ public struct ChatScreen: View {
             errorBanner
             shortcutStrip
             separator
-            MessageComposer(
-                text: $viewModel.inputText,
-                placeholder: copy.chat("chat.placeholder"),
-                sendLabel: copy.chat("chat.send"), stopLabel: copy.chat("chat.stop"),
-                isGenerating: viewModel.isGenerating,
-                onSend: viewModel.sendCurrentMessage, onStop: viewModel.cancelGeneration
+            ComposerSection(
+                isEnabled: viewModel.isSendEnabled,
+                draftRequest: viewModel.draftRequest,
+                onSend: viewModel.sendMessage
             )
         }
         .background(Color(theme.colors.background))
@@ -87,12 +85,22 @@ public struct ChatScreen: View {
     @ViewBuilder
     private var errorBanner: some View {
         if let errorMessage = viewModel.errorMessage {
-            Text(errorMessage)
-                .font(Font(theme.fonts.footnote))
-                .foregroundColor(Color(theme.colors.error))
-                .frame(maxWidth: .infinity, alignment: .leading)
-                .padding(.horizontal, FigmaSize.spacing16.sizeInArtwork)
-                .padding(.vertical, FigmaSize.spacing8.sizeInArtwork)
+            HStack(spacing: FigmaSize.spacing8.sizeInArtwork) {
+                Text(errorMessage)
+                    .designFont(.footnote)
+                    .foregroundColor(Color(theme.colors.error))
+                Spacer(minLength: 0)
+                if viewModel.isSessionRetryAvailable {
+                    Button(copy.chat("chat.retry"), action: viewModel.retrySession)
+                        .designFont(.button)
+                        .frame(minHeight: DesignKitMetrics.Size.minimumTapTarget.tapTargetInArtwork)
+                        .disabled(viewModel.connection == .connecting)
+                        .accessibilityIdentifier("chat.retrySession")
+                }
+            }
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .padding(.horizontal, FigmaSize.spacing16.sizeInArtwork)
+            .padding(.vertical, FigmaSize.spacing8.sizeInArtwork)
         }
     }
 
