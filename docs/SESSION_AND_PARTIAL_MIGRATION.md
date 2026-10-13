@@ -70,11 +70,13 @@ Also import `TanyaAIContracts` for `TanyaAIChatSession`. Own `ChatOwner` once wi
 
 `sendMessage(_:) -> Bool` reports whether the channel accepted the submission locally. False preserves the editor draft and selection. The editor draft is now local to `ComposerSection`; it is not `viewModel.inputText`. For custom editors, call `sendMessage(draft)` and clear your binding only when true. `draftRequest` carries an identified prefill from actions such as editing an approval.
 
-Initial history blocks submission until the channel is ready. A configured `startInitialPrompt(_:)` is deferred until readiness and runs once; the default host configuration has no initial prompt or greeting. History retry uses the SDK snapshot, reuses known rows by SDK ID, preserves pending/failed outbox rows, and does not restore consumed options or settled approvals. Only the latest answer offers radio options.
+Initial history blocks submission until the channel is ready. A configured `startInitialPrompt(_:)` is deferred until readiness and runs once; the default host configuration has no initial prompt or greeting. History retry uses the SDK snapshot, reuses known rows by SDK ID, preserves pending/failed outbox rows, and does not reactivate consumed options or settled approvals. Only the latest answer offers active radio options; older options remain visible as read-only history.
 
 Outgoing rows have pending/sent/failed status. Retry reuses the failed row with a new local submission ID. Local IDs never imply backend reply correlation. If delivery is uncertain, retry may produce another server message; backend idempotency is outside the current contract.
 
-History screens now use `ConversationHistoryScreen(items:)`. These are host-provided summaries; cross-group history selection and New Chat provisioning are not added by this migration.
+History screens use `ConversationHistoryScreen(items:)`. These are host-provided summaries; cross-group history selection is not implemented. The Figma UI adds an optional `makeNewSession` factory and welcome configuration. The factory must supply a fresh empty conversation; server provisioning remains the host/backend's responsibility. See [FIGMA_CHAT_UI.md](FIGMA_CHAT_UI.md).
+
+For consolidating the existing design system first, follow [DESIGNKIT_PHASED_MIGRATION.md](DESIGNKIT_PHASED_MIGRATION.md). Its first checkpoint covers Legacy compatibility, one token/font source, and one sizing implementation before adopting chat components.
 
 ## Validation and team conventions
 

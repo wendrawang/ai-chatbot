@@ -23,7 +23,9 @@ public struct ChoicesBubble: View {
         } else {
             ResponseContent(
                 text: payload.title,
-                options: payload.isSubmitted ? [] : options,
+                options: options,
+                selectedIdentifier: payload.selected.first,
+                isOptionsEnabled: !payload.isSubmitted,
                 onSelect: { onToggle($0.identifier) },
                 actions: {}
             )

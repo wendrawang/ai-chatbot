@@ -6,15 +6,24 @@ public struct OptionList: View {
     private var theme
     let title: String?
     let options: [SelectionOption]
+    let selectedIdentifier: String?
+    let isEnabled: Bool
+    let maximumWidth: CGFloat?
     let onSelect: (SelectionOption) -> Void
 
     public init(
         title: String?,
         options: [SelectionOption],
+        selectedIdentifier: String? = nil,
+        isEnabled: Bool = true,
+        maximumWidth: CGFloat? = DesignKitMetrics.Size.bubbleMaximumWidth.sizeInArtwork,
         onSelect: @escaping (SelectionOption) -> Void
     ) {
         self.title = title
         self.options = options
+        self.selectedIdentifier = selectedIdentifier
+        self.isEnabled = isEnabled
+        self.maximumWidth = maximumWidth
         self.onSelect = onSelect
     }
 
@@ -27,7 +36,7 @@ public struct OptionList: View {
             rows
         }
         .frame(
-            maxWidth: DesignKitMetrics.Size.bubbleMaximumWidth.sizeInArtwork,
+            maxWidth: maximumWidth,
             alignment: .leading
         )
         .frame(maxWidth: .infinity, alignment: .leading)
@@ -52,7 +61,12 @@ public struct OptionList: View {
             spacing: FigmaSize.spacing8.sizeInArtwork
         ) {
             ForEach(options, id: \.identifier) { option in
-                OptionRow(option: option, onSelect: onSelect)
+                OptionRow(
+                    option: option,
+                    isSelected: option.identifier == selectedIdentifier,
+                    isEnabled: isEnabled && selectedIdentifier == nil,
+                    onSelect: onSelect
+                )
             }
         }
     }

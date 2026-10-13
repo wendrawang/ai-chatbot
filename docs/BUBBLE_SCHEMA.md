@@ -1,6 +1,8 @@
 # JSON untuk menghasilkan bubble
 
 Kontrak Tencent `TIMTextElem`/`TIMCustomElem` terbaru: [TENCENT_MESSAGE_CONTRACT.md](TENCENT_MESSAGE_CONTRACT.md).
+UI Figma memakai blok berurutan pada event `response` dengan dummy:
+[FIGMA_CHAT_UI.md](FIGMA_CHAT_UI.md). Vendor/kontrak produksi belum dipilih.
 
 Package menerima **nama event + payload JSON** melalui `TanyaAIChatSession`.
 Backend tidak mengirim nama SwiftUI view. Nama event memilih bubble; payload
@@ -46,6 +48,7 @@ Setiap tautan berisi payload lengkap, field wajib, dan perilakunya.
 
 | Tampilan | Event | Referensi |
 | --- | --- | --- |
+| Blok berurutan: rich text, tabel, NAB, summary, dokumen | `response` | [Figma UI](FIGMA_CHAT_UI.md) |
 | Kombinasi teks, radio, gambar, action | `answer` | [Answer](ANSWER_CONTENT.md) |
 | Teks tanpa outline | `text_delta` | Contoh streaming di bawah |
 | Gambar + caption | `image` | [Gambar](bubbles/CONTENT.md#image) |
@@ -109,6 +112,8 @@ Styling teks memakai tag berikut, bukan Markdown:
 | `[underline]teks[/underline]` | Garis bawah |
 | `[strike]teks[/strike]` | Coret |
 | `[color]teks\|25C36B[/color]` | Warna hex |
+| `[link]https://www.google.com\|Buka Google[/link]` | Label native dengan intent webview |
+| `[link]ocbcid://mobile?type=portfolio\|Portofolio[/link]` | Label native dengan intent deeplink |
 
 Tag dapat bersarang. Tag tidak dikenal dibuang, teksnya dipertahankan.
 
@@ -141,11 +146,11 @@ Format inbound typed card 3Dolphins belum terverifikasi; pakai mock untuk review
 
 ## Nama unik tanpa titik
 
-Nama canonical memakai huruf kecil dan underscore untuk dua kata. Seluruh 18 nama
+Nama canonical memakai huruf kecil dan underscore untuk dua kata. Seluruh nama
 terdaftar di `TanyaAIEventName` (tersedia melalui `import TanyaAI`). Gunakan
 `TanyaAIEventName.status.rawValue` ketika tidak ingin menulis string manual.
 
-- Bubble: `answer`, `image`, `choices`, `actions`, `html`, `live_agent`, `approval`, `receipt`,
+- Bubble: `response`, `answer`, `image`, `choices`, `actions`, `html`, `live_agent`, `approval`, `receipt`,
   `chart`, `portfolio`, `financial_list`, `status`, `information`.
 - Saran: `suggestions`.
 - Lifecycle: `response_started`, `text_delta`, `response_completed`, `heartbeat`.

@@ -5,9 +5,12 @@ enum SandboxLaunchMode {
     case showcase
     case answers
     case deeplink
+    case figma
 
     init(arguments: [String]) {
-        if arguments.contains("--answers") {
+        if arguments.contains("--figma") {
+            self = .figma
+        } else if arguments.contains("--answers") {
             self = .answers
         } else if arguments.contains("--showcase") {
             self = .showcase
@@ -26,7 +29,7 @@ enum SandboxLaunchMode {
         switch self {
         case .legacyHost, .deeplink:
             return false
-        case .showcase, .answers:
+        case .showcase, .answers, .figma:
             return true
         }
     }
@@ -37,14 +40,14 @@ enum SandboxLaunchMode {
         switch self {
         case .legacyHost:
             return false
-        case .showcase, .answers, .deeplink:
+        case .showcase, .answers, .deeplink, .figma:
             return true
         }
     }
 
     var initialPrompt: String? {
         switch self {
-        case .legacyHost:
+        case .legacyHost, .figma:
             return nil
         case .showcase:
             return "showcase all bubbles"

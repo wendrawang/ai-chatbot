@@ -1,4 +1,5 @@
 import DesignKit
+import TanyaAIContracts
 import TanyaAIData
 import TanyaAIDomain
 import TanyaAIPresentation
@@ -10,6 +11,7 @@ final class TanyaAIDependencyContainer {
     var copy: CopyCatalog { configuration.copy }
     var theme: Theme { dependencies.theme }
     var imageLoader: ImageLoading { dependencies.imageLoader }
+    var defaultSession: TanyaAIChatSession { dependencies.chatSession }
 
     init(
         configuration: TanyaAIConfiguration,
@@ -19,16 +21,24 @@ final class TanyaAIDependencyContainer {
         self.dependencies = dependencies
     }
 
-    func makeChatViewModel(isConfirmationEnabled: Bool = false) -> TanyaAIChatViewModel {
+    func makeChatViewModel(
+        isConfirmationEnabled: Bool = false,
+        isHostFlowEnabled: Bool = false,
+        isNewSessionEnabled: Bool = false,
+        session: TanyaAIChatSession? = nil
+    ) -> TanyaAIChatViewModel {
         let repository = TanyaAISessionRepository(
-            session: dependencies.chatSession
+            session: session ?? dependencies.chatSession
         )
         return TanyaAIChatViewModel(
             repository: repository,
             isAuthorizationEnabled: dependencies.authorizationService != nil,
             isConfirmationEnabled: isConfirmationEnabled,
+            isHostFlowEnabled: isHostFlowEnabled,
+            isNewSessionEnabled: isNewSessionEnabled,
             shortcuts: configuration.shortcuts,
-            copy: copy
+            copy: copy,
+            welcome: configuration.welcome
         )
     }
 

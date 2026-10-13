@@ -19,8 +19,15 @@ struct MessageTableRow: View {
                 )
                 .id(message.identifier)
             case .typing:
-                TypingIndicatorView(label: copy.chat("chat.responding"))
+                ActivityStatus(text: copy.chat("chat.responding"))
                     .accessibilityIdentifier("chat.typing")
+            case .timestamp(let timestamp):
+                Text(timestamp)
+                    .designFont(.caption)
+                    .foregroundColor(Color(theme.colors.secondaryText))
+                    .frame(maxWidth: .infinity, alignment: .center)
+                    .padding(.vertical, FigmaSize.spacing8.sizeInArtwork)
+                    .accessibilityIdentifier("chat.timestamp")
             case .suggestions(let title, let suggestions):
                 OptionList(
                     title: title,

@@ -12,21 +12,28 @@ final class TanyaAICoordinator: NSObject {
     private weak var containerController: UIViewController?
     private let confirmationHandler: ((ConfirmationPayload) -> Void)?
     private let actionHandler: (Action) -> Void
+    private let hostFlowHandler: TanyaAIHostFlowHandler?
+    private let makeNewSession: (() -> TanyaAIChatSession)?
     private weak var chatViewModel: TanyaAIChatViewModel?
     private weak var chatController: UIViewController?
+    private weak var currentSession: TanyaAIChatSession?
 
     init(
         navigationController: UINavigationController,
         dependencyContainer: TanyaAIDependencyContainer,
         containerController: UIViewController,
         actionHandler: @escaping (Action) -> Void = { _ in },
-        confirmationHandler: ((ConfirmationPayload) -> Void)? = nil
+        confirmationHandler: ((ConfirmationPayload) -> Void)? = nil,
+        hostFlowHandler: TanyaAIHostFlowHandler? = nil,
+        makeNewSession: (() -> TanyaAIChatSession)? = nil
     ) {
         self.navigationController = navigationController
         self.dependencyContainer = dependencyContainer
         self.containerController = containerController
         self.confirmationHandler = confirmationHandler
         self.actionHandler = actionHandler
+        self.hostFlowHandler = hostFlowHandler
+        self.makeNewSession = makeNewSession
         super.init()
         navigationController.delegate = self
     }
@@ -46,8 +53,14 @@ final class TanyaAICoordinator: NSObject {
         }
     }
 
-    private func showChat() {
-        let viewModel = dependencyContainer.makeChatViewModel(isConfirmationEnabled: confirmationHandler != nil)
+    private func showChat(session: TanyaAIChatSession? = nil, isInitialPromptEnabled: Bool = true) {
+        let session = session ?? dependencyContainer.defaultSession
+        let viewModel = dependencyContainer.makeChatViewModel(
+            isConfirmationEnabled: confirmationHandler != nil,
+            isHostFlowEnabled: hostFlowHandler != nil,
+            isNewSessionEnabled: makeNewSession != nil,
+            session: session
+        )
         viewModel.onOutput = { [weak self] output in
             self?.handle(output)
         }
@@ -59,11 +72,12 @@ final class TanyaAICoordinator: NSObject {
         )
         chatViewModel = viewModel
         chatController = controller
+        currentSession = session
         navigationController.setViewControllers(
             [controller],
             animated: false
         )
-        dependencyContainer.startInitialPrompt(on: viewModel)
+        if isInitialPromptEnabled { dependencyContainer.startInitialPrompt(on: viewModel) }
     }
 
     private func showHistory(animated isAnimated: Bool) {
@@ -117,8 +131,30 @@ final class TanyaAICoordinator: NSObject {
             show(.approval(payload))
         case .requestConfirmation(let payload):
             confirmationHandler?(payload)
+        case .requestHostFlow(let request):
+            requestHostFlow(request)
+        case .startNewSession:
+            startNewSession()
         case .performAction(let action):
             actionHandler(action)
+        }
+    }
+
+    private func startNewSession() {
+        guard let makeNewSession, navigationController.presentedViewController == nil else { return }
+        let session = makeNewSession()
+        guard session !== currentSession else { return }
+        chatController?.view.endEditing(true)
+        showChat(session: session, isInitialPromptEnabled: false)
+    }
+
+    private func requestHostFlow(_ request: TanyaAIHostFlowRequest) {
+        guard let hostFlowHandler, let viewModel = chatViewModel, let presenter = chatController else { return }
+        hostFlowHandler(request, presenter) { [weak self, weak viewModel] result in
+            DispatchQueue.main.async { [weak self, weak viewModel] in
+                guard let self, let viewModel, self.chatViewModel === viewModel else { return }
+                viewModel.completeHostFlow(requestIdentifier: request.identifier, result: result)
+            }
         }
     }
 

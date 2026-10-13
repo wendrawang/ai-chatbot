@@ -1,4 +1,5 @@
 import DesignKit
+import TanyaAIContracts
 import TanyaAIDomain
 import UIKit
 
@@ -18,6 +19,8 @@ public enum TanyaAIModule {
     public static func makeViewController(
         configuration: TanyaAIConfiguration = TanyaAIConfiguration(),
         dependencies: TanyaAIDependencies,
+        onHostFlow: TanyaAIHostFlowHandler? = nil,
+        makeNewSession: (() -> TanyaAIChatSession)? = nil,
         onConfirmation: ((ConfirmationPayload) -> Void)? = nil,
         onAction: @escaping (Action) -> Void = { _ in }
     ) -> UIViewController {
@@ -27,7 +30,10 @@ public enum TanyaAIModule {
         )
         return ChatContainerViewController(
             dependencyContainer: dependencyContainer,
-            actionHandler: onAction, confirmationHandler: onConfirmation
+            actionHandler: onAction,
+            confirmationHandler: onConfirmation,
+            hostFlowHandler: onHostFlow,
+            makeNewSession: makeNewSession
         )
     }
 }

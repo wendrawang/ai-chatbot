@@ -25,7 +25,7 @@ dimuat menampilkan placeholder. `accessibilityText` opsional.
 
 Wajib: `messageIdentifier`, `choices`; setiap pilihan wajib `identifier` dan `title`. `prompt` default ke
 `title`. `allowsMultipleSelection` default `false`: tiap radio tap langsung mengirim prompt,
-lalu seluruh radio pada jawaban itu hilang dan title tetap tampil.
+lalu seluruh radio tetap menjadi riwayat read-only dan title tetap tampil.
 Dengan `allowsMultipleSelection: true`, tombol submit mengirim prompt pilihan digabung `", "`
 sesuai urutan daftar. Key JSON tetap sama meskipun property Swift memakai `isMultipleSelectionAllowed`.
 Untuk gabungan teks, radio, gambar, dan action gunakan [answer](../ANSWER_CONTENT.md).

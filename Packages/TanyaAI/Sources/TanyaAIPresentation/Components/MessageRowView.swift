@@ -24,11 +24,11 @@ struct MessageRowView: View {
                 deliveryStatus
             }
 
-            if viewModel.role != .user {
-                Spacer(minLength: FigmaSize.spacing32.sizeInArtwork)
-            }
         }
         .accessibilityElement(children: .contain)
+        .accessibilityIdentifier(
+            viewModel.role == .user ? "chat.user.\(viewModel.identifier)" : "chat.assistant.\(viewModel.identifier)"
+        )
     }
 
     @ViewBuilder
@@ -50,8 +50,11 @@ struct MessageRowView: View {
         case .text(let text):
             TextBubble(
                 text: text,
-                isUser: viewModel.role == .user
+                isUser: viewModel.role == .user,
+                onLink: handlers.onInlineLink
             )
+        case .response(let payload):
+            ResponseBlocksView(payload: payload, messageIdentifier: viewModel.identifier, handlers: handlers)
         case .answer(let payload):
             answer(payload)
         case .image(let payload):
@@ -119,7 +122,8 @@ struct MessageRowView: View {
         AnswerView(
             payload: payload,
             onSelect: { handlers.onAnswerOption(viewModel.identifier, $0) },
-            onAction: handlers.onAction
+            onAction: handlers.onAction,
+            onLink: handlers.onInlineLink
         )
     }
 

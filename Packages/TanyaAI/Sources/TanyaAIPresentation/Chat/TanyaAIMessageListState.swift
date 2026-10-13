@@ -1,6 +1,6 @@
 import DesignKit
-import TanyaAIDomain
 import Foundation
+import TanyaAIDomain
 
 /// What the message table should be showing.
 ///
@@ -16,6 +16,8 @@ struct TanyaAIMessageListState {
     let suggestions: [Suggestion]
     /// The question those prompts answer, when the reply sent one.
     let suggestionsTitle: String?
+    var timestamp: String?
+    var latestPromptIdentifier: String?
 
     static let empty = TanyaAIMessageListState(
         messages: [],
@@ -31,6 +33,7 @@ struct TanyaAIMessageListState {
 
     var rowCount: Int {
         messages.count
+            + (timestamp == nil ? 0 : 1)
             + (isTypingRowVisible ? 1 : 0)
             + (isSuggestionRowVisible ? 1 : 0)
     }
@@ -39,10 +42,13 @@ struct TanyaAIMessageListState {
     /// prompts - the order rows are counted in.
     func kind(at index: Int) -> TanyaAIMessageRowKind? {
         guard index >= 0 else { return nil }
-        if index < messages.count {
-            return .message(messages[index])
+        let offset = timestamp == nil ? 0 : 1
+        if index == 0, let timestamp { return .timestamp(timestamp) }
+        let position = index - offset
+        if position >= 0, position < messages.count {
+            return .message(messages[position])
         }
-        if isTypingRowVisible, index == messages.count {
+        if isTypingRowVisible, position == messages.count {
             return .typing
         }
         guard isSuggestionRowVisible, index == rowCount - 1 else {
@@ -54,10 +60,14 @@ struct TanyaAIMessageListState {
     /// Whether the rows themselves differ, as opposed to a message changing
     /// its own contents - which the row observes for itself.
     func rowsDiffer(from other: TanyaAIMessageListState) -> Bool {
-        isTypingRowVisible != other.isTypingRowVisible
+        timestamp != other.timestamp || isTypingRowVisible != other.isTypingRowVisible
             || !messages.elementsEqual(other.messages, by: { $0 === $1 })
             || suggestions != other.suggestions
             || suggestionsTitle != other.suggestionsTitle
+    }
+
+    func rowIndex(messageIdentifier: String) -> Int? {
+        messages.firstIndex(where: { $0.identifier == messageIdentifier }).map { $0 + (timestamp == nil ? 0 : 1) }
     }
 }
 
@@ -66,4 +76,5 @@ enum TanyaAIMessageRowKind {
     case message(TanyaAIMessageItemViewModel)
     case typing
     case suggestions(title: String?, items: [Suggestion])
+    case timestamp(String)
 }

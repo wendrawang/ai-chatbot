@@ -11,12 +11,14 @@ import Foundation
 ///     [underline]wen[/underline]
 ///     [strike]wen[/strike]
 ///     [color]wen|25C36B[/color]
+///     [link]https://example.com|Open example[/link]
 struct MarkupStyle: Equatable {
     var isBold = false
     var isItalic = false
     var isUnderlined = false
     var isStruckThrough = false
     var colorHex: String?
+    var linkURL: URL?
 
     var isPlain: Bool {
         isBold == false
@@ -24,6 +26,7 @@ struct MarkupStyle: Equatable {
             && isUnderlined == false
             && isStruckThrough == false
             && colorHex == nil
+            && linkURL == nil
     }
 }
 
@@ -39,6 +42,7 @@ enum MarkupTag: String {
     case underline
     case strike
     case color
+    case link
 }
 
 /// Turns tagged text into styled runs.
@@ -111,7 +115,7 @@ enum MarkupParser {
     /// `[bo` at the end of a chunk is a tag still on its way, so it is
     /// hidden. `[USD 100` is ordinary copy that opens a bracket, so it is
     /// kept: dropping it would lose the rest of the message.
-    private static func isPartialTag(_ fragment: Substring) -> Bool {
+    static func isPartialTag(_ fragment: Substring) -> Bool {
         var name = fragment.dropFirst()
         if name.hasPrefix("/") {
             name = name.dropFirst()
@@ -124,16 +128,26 @@ enum MarkupParser {
         guard frames.count > 1 else {
             return
         }
+        if let matching = frames.dropFirst().lastIndex(where: { $0.tag?.rawValue == name }) {
+            // A closing link must end its hit area even if one of the nested
+            // style tags was never closed by the sender.
+            while frames.count - 1 > matching {
+                let nested = frames.removeLast()
+                frames[frames.count - 1].append(runs: nested.styledRuns())
+            }
+        }
         let frame = frames.removeLast()
         guard frame.tag?.rawValue == name || frame.tag == nil else {
             // Mismatched close: keep the content, forget the styling.
-            frames[frames.count - 1].append(runs: frame.runs)
+            frames[frames.count - 1].append(
+                runs: frame.tag == .link ? frame.linkedRuns(isInteractive: false) : frame.runs
+            )
             return
         }
         frames[frames.count - 1].append(runs: frame.styledRuns())
     }
 
-    private struct Frame {
+    struct Frame {
         let tag: MarkupTag?
         var runs: [MarkupRun] = []
 
@@ -166,6 +180,8 @@ enum MarkupParser {
                 return runs.map { apply($0) { $0.isStruckThrough = true } }
             case .color:
                 return colouredRuns()
+            case .link:
+                return linkedRuns()
             }
         }
 
@@ -173,7 +189,8 @@ enum MarkupParser {
         /// after the last pipe, so it is stripped before the text is shown.
         private func colouredRuns() -> [MarkupRun] {
             guard var last = runs.last,
-                  let pipe = last.text.lastIndex(of: "|") else {
+                let pipe = last.text.lastIndex(of: "|")
+            else {
                 return runs
             }
             let hex = String(last.text[last.text.index(after: pipe)...])

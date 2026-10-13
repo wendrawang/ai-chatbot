@@ -5,11 +5,25 @@ extension MarkupParser {
     static func plainText(from source: String) -> String {
         var output = ""
         var index = source.startIndex
+        var linkTargets: [Bool] = []
         while index < source.endIndex {
             if source[index] == "[", let token = Token(source: source, from: index), token.isTag {
+                if token.name == MarkupTag.link.rawValue {
+                    if token.isClosing {
+                        if linkTargets.isEmpty == false { linkTargets.removeLast() }
+                    } else {
+                        linkTargets.append(true)
+                    }
+                }
                 index = token.end
+            } else if source[index] == "[", isPartialTag(source[index...]) {
+                break
             } else {
-                output.append(source[index])
+                if linkTargets.last == true {
+                    if source[index] == "|" { linkTargets[linkTargets.count - 1] = false }
+                } else {
+                    output.append(source[index])
+                }
                 index = source.index(after: index)
             }
         }
@@ -38,7 +52,8 @@ extension MarkupParser {
             self.name = name
             self.isClosing = isClosing
             self.end = source.index(after: closingBracket)
-            self.isTag = name.isEmpty == false
+            self.isTag =
+                name.isEmpty == false
                 && name.count <= 12
                 && name.allSatisfy { $0.isLowercase && $0.isLetter }
         }

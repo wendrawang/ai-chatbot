@@ -8,18 +8,21 @@ public struct AnswerPayload: Equatable {
     public let actions: ActionPayload?
     /// Restored answered options stay hidden. Other content remains readable.
     public var isAnswered: Bool
+    public var selectedIdentifier: String?
 
     public init(
         text: String? = nil,
         options: [Suggestion] = [],
         image: ImagePayload? = nil,
         actions: ActionPayload? = nil,
-        isAnswered: Bool = false
+        isAnswered: Bool = false,
+        selectedIdentifier: String? = nil
     ) {
         self.text = text
         self.options = options
         self.image = image
         self.actions = actions
         self.isAnswered = isAnswered
+        self.selectedIdentifier = selectedIdentifier
     }
 }

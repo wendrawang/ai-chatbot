@@ -1,11 +1,12 @@
-import TanyaAI
 import SwiftUI
+import TanyaAI
 import UIKit
 
 final class SceneDelegate: UIResponder, UIWindowSceneDelegate {
     var window: UIWindow?
     private var tanyaAIGateway: TanyaAIPresentationGateway?
     private var deeplinkRouter: SandboxDeeplinkRouter?
+    private var figmaPresenter: SandboxFigmaPresenter?
 
     func scene(
         _ scene: UIScene,
@@ -43,6 +44,11 @@ final class SceneDelegate: UIResponder, UIWindowSceneDelegate {
     private func makeRootController(
         for launchMode: SandboxLaunchMode
     ) -> UIViewController {
+        if case .figma = launchMode {
+            let presenter = SandboxFigmaPresenter()
+            figmaPresenter = presenter
+            return presenter.makeFeatureController()
+        }
         let dependencies = SandboxTanyaAIFactory.makeDependencies(
             isShowcaseVisible: launchMode.isFastStreamingEnabled
         )

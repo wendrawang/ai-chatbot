@@ -4,6 +4,7 @@ import Foundation
 public enum TanyaAIEventName: String, CaseIterable {
     case components
     case answer
+    case response
     case image
     case choices
     case actions
@@ -30,7 +31,8 @@ public enum TanyaAIEventName: String, CaseIterable {
         case "response.completed": self = .responseCompleted
         case "response.suggestions": self = .suggestions
         default:
-            let canonical = wireName.hasPrefix("content.")
+            let canonical =
+                wireName.hasPrefix("content.")
                 ? String(wireName.dropFirst(8)).replacingOccurrences(of: "-", with: "_")
                 : wireName
             self.init(rawValue: canonical)

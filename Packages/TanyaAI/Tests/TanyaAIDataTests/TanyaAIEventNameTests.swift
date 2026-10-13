@@ -2,12 +2,13 @@ import Foundation
 import TanyaAIContracts
 import TanyaAIDomain
 import XCTest
+
 @testable import TanyaAIData
 
 final class TanyaAIEventNameTests: XCTestCase {
     func testCanonicalNamesAreCompleteUniqueAndDotFree() {
         let expected: Set<String> = [
-            "components", "answer", "image", "choices", "actions", "html", "live_agent", "approval",
+            "components", "answer", "response", "image", "choices", "actions", "html", "live_agent", "approval",
             "receipt", "chart", "portfolio", "financial_list", "status", "information",
             "suggestions", "response_started", "text_delta", "response_completed", "heartbeat"
         ]
@@ -41,15 +42,21 @@ final class TanyaAIEventNameTests: XCTestCase {
     }
 
     func testWireLifecycleUsesNativeSessionEvents() throws {
-        guard case .messageStarted(let started) = try TanyaAIChatSessionEvent.fromWire(
-            name: "response_started", json: payload()
-        ) else { return XCTFail("Missing native start") }
-        guard case .messageDelta(let identifier, let text) = try TanyaAIChatSessionEvent.fromWire(
-            name: "text_delta", json: payload()
-        ) else { return XCTFail("Missing native delta") }
-        guard case .messageCompleted(let completed) = try TanyaAIChatSessionEvent.fromWire(
-            name: "response_completed", json: payload()
-        ) else { return XCTFail("Missing native completion") }
+        guard
+            case .messageStarted(let started) = try TanyaAIChatSessionEvent.fromWire(
+                name: "response_started", json: payload()
+            )
+        else { return XCTFail("Missing native start") }
+        guard
+            case .messageDelta(let identifier, let text) = try TanyaAIChatSessionEvent.fromWire(
+                name: "text_delta", json: payload()
+            )
+        else { return XCTFail("Missing native delta") }
+        guard
+            case .messageCompleted(let completed) = try TanyaAIChatSessionEvent.fromWire(
+                name: "response_completed", json: payload()
+            )
+        else { return XCTFail("Missing native completion") }
         XCTAssertEqual(started, "sample")
         XCTAssertEqual(identifier, started)
         XCTAssertEqual(completed, started)
@@ -58,9 +65,11 @@ final class TanyaAIEventNameTests: XCTestCase {
 
     func testWireCanonicalizesStructuredPayloadWithoutChangingJSON() throws {
         let json = try payload()
-        guard case .structuredPayload(let name, let data) = try TanyaAIChatSessionEvent.fromWire(
-            name: "content.status", json: json
-        ) else { return XCTFail("Missing structured payload") }
+        guard
+            case .structuredPayload(let name, let data) = try TanyaAIChatSessionEvent.fromWire(
+                name: "content.status", json: json
+            )
+        else { return XCTFail("Missing structured payload") }
         XCTAssertEqual(name, "status")
         XCTAssertEqual(data, json)
     }
@@ -76,9 +85,11 @@ final class TanyaAIEventNameTests: XCTestCase {
 
     func testUnknownFlatNameShowsFallback() throws {
         let decoder = TanyaAIStreamEventDecoder()
-        guard case .content(let identifier, .unsupported(let text)) = try decoder.decode(
-            name: "future_card", json: payload()
-        ) else { return XCTFail("Missing fallback") }
+        guard
+            case .content(let identifier, .unsupported(let text)) = try decoder.decode(
+                name: "future_card", json: payload()
+            )
+        else { return XCTFail("Missing fallback") }
         XCTAssertEqual(identifier, "sample")
         XCTAssertEqual(text, "Please update")
         XCTAssertNil(try decoder.decode(name: "telemetry.changed", json: payload()))
@@ -107,6 +118,7 @@ final class TanyaAIEventNameTests: XCTestCase {
             "challengeIdentifier": "challenge", "expiresAt": "2099-01-01T00:00:00Z",
             "suggestions": [["identifier": "next", "title": "Next", "prompt": "Next"]],
             "elements": [["type": "text", "text": "Sample text"]],
+            "response": ["blocks": [["type": "text", "text": "Sample text"]]],
             "fallbackText": "Please update"
         ]
         return try JSONSerialization.data(withJSONObject: object)

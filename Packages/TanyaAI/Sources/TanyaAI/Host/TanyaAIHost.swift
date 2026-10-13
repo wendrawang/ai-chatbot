@@ -43,7 +43,10 @@ public final class TanyaAIHost: ObservableObject {
     private let shortcuts: [Suggestion]
     private let copy: CopyCatalog
     private let historyItems: [ConversationSummary]
+    private let welcome: WelcomeConfiguration?
     private let makeSession: () -> TanyaAIChatSession
+    private let makeNewSession: (() -> TanyaAIChatSession)?
+    private let onHostFlow: TanyaAIHostFlowHandler?
     private let onDestination: ((Action, URL) -> Void)?
     private let onConfirmation: ((ConfirmationPayload) -> Void)?
     private let onDeeplink: (URL) -> Void
@@ -73,6 +76,8 @@ public final class TanyaAIHost: ObservableObject {
     ///     torn out from under the next presentation.
     ///   - onDestination: optional typed handler for deeplink/webview/browser.
     ///   - onConfirmation: opens the host PIN flow after dismissal; carries the backend reference.
+    ///   - onHostFlow: presents existing documents/PIN above chat and returns their result without closing chat.
+    ///   - makeNewSession: creates a genuinely separate empty conversation; nil disables the new-session action.
     ///   - onDeeplink: the host's existing deeplink handler - the same one
     ///     `scene(_:openURLContexts:)` calls. It is invoked only after the
     ///     feature has finished dismissing.
@@ -86,9 +91,12 @@ public final class TanyaAIHost: ObservableObject {
         shortcuts: [Suggestion] = [],
         copy: CopyCatalog = CopyCatalog(),
         historyItems: [ConversationSummary] = [],
+        welcome: WelcomeConfiguration? = nil,
         makeSession: @escaping () -> TanyaAIChatSession,
+        makeNewSession: (() -> TanyaAIChatSession)? = nil,
         onDestination: ((Action, URL) -> Void)? = nil,
         onConfirmation: ((ConfirmationPayload) -> Void)? = nil,
+        onHostFlow: TanyaAIHostFlowHandler? = nil,
         onDeeplink: @escaping (URL) -> Void
     ) {
         self.onDestination = onDestination
@@ -102,7 +110,10 @@ public final class TanyaAIHost: ObservableObject {
         self.shortcuts = shortcuts
         self.copy = copy
         self.historyItems = historyItems
+        self.welcome = welcome
         self.makeSession = makeSession
+        self.makeNewSession = makeNewSession
+        self.onHostFlow = onHostFlow
         self.onDeeplink = onDeeplink
     }
 
@@ -122,13 +133,16 @@ public final class TanyaAIHost: ObservableObject {
                 initialPrompt: initialPrompt,
                 shortcuts: shortcuts,
                 copy: copy,
-                historyItems: historyItems
+                historyItems: historyItems,
+                welcome: welcome
             ),
             dependencies: TanyaAIDependencies(
                 chatSession: makeSession(),
                 authorizationService: authorizationService,
                 theme: presentationTheme
             ),
+            onHostFlow: onHostFlow,
+            makeNewSession: makeNewSession,
             onConfirmation: confirmationCallback,
             onAction: { [weak self] action in self?.handle(action) }
         )

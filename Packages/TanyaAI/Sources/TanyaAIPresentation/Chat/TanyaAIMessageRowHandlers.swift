@@ -1,4 +1,5 @@
 import DesignKit
+import Foundation
 import TanyaAIDomain
 
 /// The callbacks a message row can raise, carried as one value.
@@ -42,6 +43,13 @@ struct TanyaAIMessageRowHandlers {
     let onSuggestion: (Suggestion) -> Void
     var onConfirmation: (ConfirmationPayload) -> Void = { _ in }
     var onAnswerOption: (String, String) -> Void = { _, _ in }
+    var onResponseOption: (String, String, String) -> Void = { _, _, _ in }
+    var onResponseAction: (String, ResponseAction) -> Void = { _, _ in }
+    var onResponseDocument: (String, String, String) -> Void = { _, _, _ in }
+    var onResponseAuthorize: (String, String, String) -> Void = { _, _, _ in }
+    var onInlineLink: (URL) -> Void = { _ in }
+    var isHostFlowEnabled = false
+    var isSendEnabled = false
     /// Declining a live-agent offer. Accepting it is `onAction`, because it
     /// is the same hand-off any deeplink takes.
     let onDeclineLiveAgent: (LiveAgentPayload) -> Void

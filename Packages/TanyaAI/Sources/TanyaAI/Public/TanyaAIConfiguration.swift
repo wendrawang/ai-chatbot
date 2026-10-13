@@ -6,6 +6,8 @@ public struct TanyaAIConfiguration: Equatable {
     public let copy: CopyCatalog
     /// Optional summaries supplied by the host, empty by default.
     public let historyItems: [ConversationSummary]
+    /// Empty-conversation content supplied by the host; nil keeps the legacy empty state.
+    public let welcome: WelcomeConfiguration?
 
     /// Optional first message sent when opening; nil sends nothing automatically.
     public let initialPrompt: String?
@@ -24,11 +26,13 @@ public struct TanyaAIConfiguration: Equatable {
         initialPrompt: String? = nil,
         shortcuts: [Suggestion] = [],
         copy: CopyCatalog = CopyCatalog(),
-        historyItems: [ConversationSummary] = []
+        historyItems: [ConversationSummary] = [],
+        welcome: WelcomeConfiguration? = nil
     ) {
         self.copy = copy
         self.historyItems = historyItems
         self.initialPrompt = initialPrompt
         self.shortcuts = shortcuts
+        self.welcome = welcome
     }
 }

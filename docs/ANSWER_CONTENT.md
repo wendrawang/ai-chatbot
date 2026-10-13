@@ -8,7 +8,11 @@ Tombol kirim berada di dalam kotak pada sisi kanan bawah: abu-abu ketika disable
 accent ketika siap kirim. Caller memberi binding teks, placeholder, label aksesibilitas, dan callback.
 Logic sesi/kirim tetap di TanyaAI. Update **DesignKit dan TanyaAI bersama**.
 
-## Format jawaban yang disetujui
+## Format jawaban kompatibilitas
+
+UI Figma terbaru memakai blok berurutan pada event `response`; lihat
+[FIGMA_CHAT_UI.md](FIGMA_CHAT_UI.md). `answer` di bawah tetap didukung bagi
+integrasi lama, dengan perilaku radio read-only yang sama.
 
 Jawaban bot tanpa outline atau background di sekeliling seluruh jawabannya.
 Prompt nasabah tetap bubble accent. Satu event `answer` dapat memuat bagian berikut:
@@ -52,13 +56,14 @@ prompt nasabah. `image.caption` boleh dihilangkan. Bentuk `actions` sama dengan
 event `actions` yang sudah ada.
 
 Saat radio dipilih, prompt menjadi pesan nasabah dan dikirim melalui sesi yang
-sudah diinjeksi. **Semua option dari jawaban itu hilang**; teks, gambar, dan
-action tetap. Radio pada pesan lama juga hilang ketika pesan berikutnya datang. Tap ganda/replay untuk identifier yang
-sama tidak dapat mengirim ulang atau memunculkan kembali option yang sudah dipakai.
+sudah diinjeksi. **Option tetap terlihat sebagai riwayat read-only** dengan
+centang hijau pada pilihan terpilih. Pesan berikutnya menonaktifkan radio lama.
+Tap ganda/replay untuk identifier yang sama tidak dapat mengirim ulang atau
+mengaktifkan kembali option yang sudah dipakai.
 Pilihan invalid, prompt kosong, atau tap ketika request masih aktif tidak
 mengkonsumsi pilihan maupun mengganti draft.
 
-Untuk history, hanya pesan terakhir yang mempertahankan radio. `isAnswered: true`
+Untuk history, hanya pesan terakhir yang memiliki radio aktif. `isAnswered: true`
 tetap didukung untuk status settled eksplisit. Package tidak menulis state chat
 ke penyimpanan host. Kontrak Tencent terbaru memakai `TIMTextElem`/`TIMCustomElem`;
 lihat [TENCENT_MESSAGE_CONTRACT.md](TENCENT_MESSAGE_CONTRACT.md) untuk payload dan setup host.
@@ -109,8 +114,9 @@ Sandbox `--answers` menampilkan keempat bagian dan dapat dipakai untuk memeriksa
 radio sebelum/sesudah tap. Ini fixture eksplisit untuk demo/test, bukan startup
 behavior package produksi.
 
-Screenshot simulator dari test UI: [sebelum radio tap](../Artifacts/Screenshots/answer-before-selection.png)
-dan [sesudah radio tap](../Artifacts/Screenshots/answer-after-selection.png).
+Screenshot lama yang menyembunyikan radio tidak lagi menjadi acuan UX.
+Sandbox `--figma` serta screenshot pada [FIGMA_CHAT_UI.md](FIGMA_CHAT_UI.md)
+memakai perilaku pilihan yang tetap terlihat.
 
 Saat pengguna scroll ke atas, tombol `ScrollToLatestButton` generik muncul di
 bawah area percakapan. Tap kembali ke pesan terbaru dan mengaktifkan auto-follow.

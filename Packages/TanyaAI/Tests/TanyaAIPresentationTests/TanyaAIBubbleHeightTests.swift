@@ -7,7 +7,7 @@ import XCTest
 
 @MainActor
 final class TanyaAIBubbleHeightTests: XCTestCase {
-    func testConsumingOptionsShrinksRowWithoutOverlappingTheFollowingMessage() {
+    func testConsumingOptionsKeepsReadOnlyHistoryWithoutOverlappingTheFollowingMessage() {
         let window = UIWindow(frame: CGRect(x: 0, y: 0, width: 390, height: 700))
         let (tableView, coordinator) = makeTable(in: window)
         defer { window.isHidden = true }
@@ -30,13 +30,13 @@ final class TanyaAIBubbleHeightTests: XCTestCase {
         tableView.layoutIfNeeded()
         let original = tableView.rectForRow(at: IndexPath(row: 0, section: 0)).height
         answer.consumeOptions()
-        let settled = expectation(description: "Options removed and row resized")
+        let settled = expectation(description: "Options become read-only and row settles")
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) { settled.fulfill() }
         wait(for: [settled], timeout: 2)
         tableView.layoutIfNeeded()
         let first = tableView.rectForRow(at: IndexPath(row: 0, section: 0))
         let second = tableView.rectForRow(at: IndexPath(row: 1, section: 0))
-        XCTAssertLessThan(first.height, original - 40)
+        XCTAssertEqual(first.height, original, accuracy: 1)
         XCTAssertGreaterThanOrEqual(second.minY, first.maxY)
     }
 

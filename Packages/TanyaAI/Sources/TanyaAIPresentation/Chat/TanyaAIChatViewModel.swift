@@ -24,8 +24,18 @@ public final class TanyaAIChatViewModel: ObservableObject {
     public internal(set) var suggestionsTitle: String?
     @Published
     public internal(set) var draftRequest: TanyaAIDraftRequest?
+    @Published
+    public private(set) var latestPromptIdentifier: String?
 
     public let shortcuts: [Suggestion]
+    public let welcome: WelcomeConfiguration?
+    public let sessionIdentifier = UUID()
+    public let sessionStartedAt = Date()
+    public private(set) lazy var sessionTimestamp = ChatDateFormat.string(
+        from: sessionStartedAt, locale: Locale(identifier: copy.localeIdentifier)
+    )
+    public let isNewSessionEnabled: Bool
+    public let isHostFlowEnabled: Bool
     public var onOutput: ((TanyaAIChatOutput) -> Void)?
     let repository: TanyaAIRepository
     let copy: CopyCatalog
@@ -34,8 +44,10 @@ public final class TanyaAIChatViewModel: ObservableObject {
     var isConfirmationRequested = false
     var redirectedIdentifiers: [String: String] = [:]
     var pendingSubmissions: [String: String] = [:]
+    var pendingHostFlow: PendingHostFlow?
     private var queuedInitialPrompt: String?
     private var isInitialPromptSent = false
+    private var isInitialPromptSubmitting = false
     lazy var textDeltaBuffer = TanyaAITextDeltaBuffer { [weak self] identifier, text in
         self?.appendTextDeltaNow(identifier: identifier, text: text)
     }
@@ -44,14 +56,20 @@ public final class TanyaAIChatViewModel: ObservableObject {
         repository: TanyaAIRepository,
         isAuthorizationEnabled: Bool = true,
         isConfirmationEnabled: Bool = false,
+        isHostFlowEnabled: Bool = false,
+        isNewSessionEnabled: Bool = false,
         shortcuts: [Suggestion] = [],
-        copy: CopyCatalog = CopyCatalog()
+        copy: CopyCatalog = CopyCatalog(),
+        welcome: WelcomeConfiguration? = nil
     ) {
         self.repository = repository
         self.isAuthorizationEnabled = isAuthorizationEnabled
         self.isConfirmationEnabled = isConfirmationEnabled
         self.shortcuts = shortcuts
         self.copy = copy
+        self.welcome = welcome
+        self.isHostFlowEnabled = isHostFlowEnabled
+        self.isNewSessionEnabled = isNewSessionEnabled
         repository.onEvent = { [weak self] event in self?.handle(event) }
         repository.connect()
     }
@@ -72,7 +90,9 @@ public final class TanyaAIChatViewModel: ObservableObject {
         errorMessage = nil
         suggestions = []
         suggestionsTitle = nil
-        submit(appendUserMessage(prompt))
+        let message = appendUserMessage(prompt)
+        if !isInitialPromptSubmitting { latestPromptIdentifier = message.identifier }
+        submit(message)
         return true
     }
 
@@ -104,13 +124,19 @@ public final class TanyaAIChatViewModel: ObservableObject {
         guard let text = queuedInitialPrompt, isSendEnabled else { return }
         queuedInitialPrompt = nil
         isInitialPromptSent = true
+        isInitialPromptSubmitting = true
         sendMessage(text)
+        isInitialPromptSubmitting = false
     }
 
     public func sendSuggestion(_ suggestion: Suggestion) { sendMessage(suggestion.prompt) }
     public func sendShortcut(_ shortcut: Suggestion) { sendMessage(shortcut.prompt) }
     public func close() { onOutput?(.close) }
     public func openHistory() { onOutput?(.openHistory) }
+    public func startNewSession() {
+        guard isNewSessionEnabled else { return }
+        onOutput?(.startNewSession)
+    }
 
     func reportUnauthorizableApproval() {
         errorMessage = copy.chat("chat.authorizationRequired")

@@ -41,3 +41,7 @@
 "chat.retrySend" = "Kirim ulang pesan";
 "chat.sending" = "Mengirim…";
 "chat.editPrompt" = "Ubah {title}: ";
+
+"chat.newSession" = "Percakapan baru";
+
+"chat.hostFlowFailed" = "Proses belum selesai. Silakan coba lagi.";

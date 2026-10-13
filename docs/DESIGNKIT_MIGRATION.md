@@ -1,6 +1,9 @@
 # Migrasi host ke DesignKit
 
 Lanjutan: [copy multilanguage dan komponen generik](DESIGNKIT_COPY_AND_COMPONENTS.md).
+Untuk menggabungkan repo design system existing lebih dulu, gunakan
+[rencana Legacy, token, font, dan sizing](DESIGNKIT_PHASED_MIGRATION.md).
+Komponen dan bridge UI Figma baru: [FIGMA_CHAT_UI.md](FIGMA_CHAT_UI.md).
 
 ## Batas package dan atomic design
 

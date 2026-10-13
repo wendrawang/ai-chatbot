@@ -17,6 +17,7 @@ final class TanyaAIStreamEventDecoder {
             return try decodeUnknown(name: name, json: json)
         }
         if event == .components { return try decodeComponents(json) }
+        if event == .response { return try decodeResponse(json) }
         if let content = try decodeContent(name: event, json: json) {
             return content
         }
@@ -154,9 +155,10 @@ final class TanyaAIStreamEventDecoder {
 
     private func decodeChart(_ data: Data) throws -> TanyaAIStreamEvent {
         let payload = try decoder.decode(TanyaAIChartDTO.self, from: data)
-        let chartType = ChartPayload.ChartType(
-            rawValue: payload.chartType
-        ) ?? .bar
+        let chartType =
+            ChartPayload.ChartType(
+                rawValue: payload.chartType
+            ) ?? .bar
         let chart = ChartPayload(
             title: payload.title,
             subtitle: payload.subtitle,

@@ -19,3 +19,4 @@ public typealias TanyaAISuggestion = TanyaAIDomain.Suggestion
 public typealias TanyaAIKeyValue = DesignKit.KeyValue
 public typealias TanyaAIConversationSummary = TanyaAIDomain.ConversationSummary
 public typealias TanyaAIConfirmationPayload = TanyaAIDomain.ConfirmationPayload
+public typealias TanyaAIWelcomeConfiguration = TanyaAIDomain.WelcomeConfiguration

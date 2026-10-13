@@ -49,7 +49,8 @@ extension TanyaAIChatViewModel {
                         options: payload.options,
                         image: payload.image,
                         actions: payload.actions,
-                        isAnswered: payload.isAnswered
+                        isAnswered: payload.isAnswered,
+                        selectedIdentifier: payload.selectedIdentifier
                     )))
             return
         } else {

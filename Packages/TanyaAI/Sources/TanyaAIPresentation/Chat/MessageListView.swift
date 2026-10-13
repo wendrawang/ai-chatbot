@@ -20,7 +20,9 @@ struct MessageListView: View {
                 suggestions: viewModel.isSuggestionRowVisible
                     ? viewModel.suggestions
                     : [],
-                suggestionsTitle: viewModel.suggestionsTitle
+                suggestionsTitle: viewModel.suggestionsTitle,
+                timestamp: viewModel.welcome != nil && !viewModel.messages.isEmpty ? viewModel.sessionTimestamp : nil,
+                latestPromptIdentifier: viewModel.latestPromptIdentifier
             ),
             theme: theme,
             scrollControl: scrollControl,
@@ -39,6 +41,15 @@ struct MessageListView: View {
                 onSuggestion: { [weak viewModel] in viewModel?.sendSuggestion($0) },
                 onConfirmation: { [weak viewModel] in viewModel?.confirm($0) },
                 onAnswerOption: { [weak viewModel] in viewModel?.selectAnswerOption($0, $1) },
+                onResponseOption: { [weak viewModel] in viewModel?.selectResponseOption($0, $1, $2) },
+                onResponseAction: { [weak viewModel] in viewModel?.performResponseAction($0, $1) },
+                onResponseDocument: { [weak viewModel] in viewModel?.openResponseDocument($0, $1, $2) },
+                onResponseAuthorize: { [weak viewModel] message, identifier, title in
+                    viewModel?.authorizeResponse(message, confirmationIdentifier: identifier, title: title)
+                },
+                onInlineLink: { [weak viewModel] in viewModel?.performInlineLink($0.absoluteString) },
+                isHostFlowEnabled: viewModel.isHostFlowEnabled,
+                isSendEnabled: viewModel.isSendEnabled,
                 onDeclineLiveAgent: { [weak viewModel] in viewModel?.declineLiveAgent($0) }
             )
         )

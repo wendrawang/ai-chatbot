@@ -75,14 +75,21 @@ Sebelas tipe konten plus fallback. Yang perlu diingat soal tampilannya:
   URL.** Chart tetap `content.chart` — ia ikut tema, ikut Dynamic Type, dan
   bisa dibaca VoiceOver; tidak satu pun bertahan di dalam web view. Kirim
   `height`, atau baris tumbuh setelah fragmen dirender.
-- **Radio satu tap langsung mengirim prompt, lalu option list pada jawaban itu
-  hilang.** `choices` default single-select; `allowsMultipleSelection: true`
-  mempertahankan kontrak multi-select + submit untuk integrasi lama.
-  Radio hanya tampil pada pesan terakhir; pesan baru menghabiskan option lama.
-  Teks, gambar, dan action tetap tampil setelah radio dipilih.
+- **Radio satu tap langsung mengirim prompt, lalu tetap menjadi riwayat read-only.**
+  Pilihan terpilih ditandai centang; opsi lain menjadi abu-abu dan tidak dapat
+  dipilih ulang. Pesan baru menonaktifkan pilihan lama tanpa menghapusnya.
+  `choices` default single-select; `allowsMultipleSelection: true` mempertahankan
+  kontrak multi-select + submit untuk integrasi lama.
+- **`response` menyusun blok tampilan sesuai urutan data**, termasuk rich text,
+  catatan, tabel maksimal tiga kolom, action, pilihan, NAB, ringkasan, dan dokumen.
+  `answer` lama tetap kompatibel. Dokumen dan PIN baru memakai halaman host dengan
+  hasil balik; tidak menutup chat atau mengirim PIN sebagai pesan.
 - **Input generik memiliki tombol kirim di dalam kotak, tumbuh sampai 4 baris lalu scroll.**
   Tombol ke pesan terbaru muncul saat pengguna menjauh dari bawah; pesan baru tidak
   menarik posisi baca pengguna.
+- **Prompt baru ditempatkan dekat atas dengan preview jawaban sebelumnya.**
+  Jawaban tumbuh di bawahnya; drag manual membatalkan anchor dan arrow kembali
+  ke bagian paling bawah. Restore history/initialPrompt tetap parkir di bawah.
 - **Shortcut bukan protokol.** Host yang inquiry lalu mengoper daftarnya lewat
   `TanyaAIConfiguration` — sebuah nilai, bukan layanan.
 - **`content.image` menggunakan `ImageLoading` yang bisa diinjeksi.** Host dapat
@@ -90,6 +97,8 @@ Sebelas tipe konten plus fallback. Yang perlu diingat soal tampilannya:
   saat logout; task view dibatalkan saat dilepas. Kirim `aspectRatio` agar tinggi stabil.
 
 Panduan migrasi: `docs/DESIGNKIT_MIGRATION.md`.
+Tahapan Legacy/token/font/sizing: `docs/DESIGNKIT_PHASED_MIGRATION.md`.
+UI dummy Figma dan bridge host: `docs/FIGMA_CHAT_UI.md`.
 Copy multilanguage dan komponen generik: `docs/DESIGNKIT_COPY_AND_COMPONENTS.md`.
 Teks UI dari resource/injeksi host; jalankan `Scripts/check_design_system.py`.
 

@@ -41,3 +41,7 @@
 "chat.retrySend" = "Retry message";
 "chat.sending" = "Sending…";
 "chat.editPrompt" = "Change {title}: ";
+
+"chat.newSession" = "New conversation";
+
+"chat.hostFlowFailed" = "The process could not finish. Please try again.";

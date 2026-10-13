@@ -1,5 +1,10 @@
 # Kontrak Tencent dan perubahan host
 
+Dokumen ini membahas adapter Tencent kompatibilitas. Pengembangan UI Figma saat
+ini memakai dummy melalui event `response` dan belum menetapkan vendor backend;
+lihat [FIGMA_CHAT_UI.md](FIGMA_CHAT_UI.md). Kontrak Tencent di bawah tidak
+membatasi urutan atau jenis blok UI baru.
+
 Gunakan versi DesignKit/TanyaAI yang sudah mendukung kontrak ini. Migrasi transport
 C2C ke group tidak mengubah kedua package; salin empat file Swift pada root
 `Examples/VendorChatSDK/Tencent` ke target host, tanpa folder `Tests`. Termasuk
@@ -42,10 +47,10 @@ diminta. Package tidak mengirim kode seperti `promo_cashback10` sebagai teks
 percakapan. Bila backend perlu ID pilihan sebagai metadata, sepakati kanal
 metadata terpisah pada adapter; jangan menyisipkannya ke teks nasabah.
 
-Radio hanya tersedia pada **pesan terakhir**. Tap satu option langsung mengirim
-prompt dan menyembunyikan semua option jawaban itu. Pesan baru juga menyembunyikan
-radio pada jawaban lama, termasuk saat history dipulihkan. Update/replay pesan
-lama tidak menghidupkannya lagi. Teks, kartu, dan link tetap terlihat.
+Radio hanya aktif pada **pesan terakhir**. Tap satu option langsung mengirim
+prompt dan mempertahankan pilihan sebagai riwayat read-only. Pesan baru juga
+menonaktifkan radio lama, termasuk saat history dipulihkan. Update/replay tidak
+mengaktifkan kembali radio lama. Teks, kartu, link, dan option tetap terlihat.
 
 ```json
 {"type":"info_card","title":"Cashback Belanja 10%",

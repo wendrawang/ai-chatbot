@@ -8,6 +8,7 @@
 #   ./Scripts/run_sandbox.sh --deeplink      hand-off demo
 #   ./Scripts/run_sandbox.sh --showcase      every bubble
 #   ./Scripts/run_sandbox.sh --answers       four-part answer and radio tap
+#   ./Scripts/run_sandbox.sh --figma         Figma conversation and dummy host flows
 #
 # Override the device with TANYA_AI_SIMULATOR.
 

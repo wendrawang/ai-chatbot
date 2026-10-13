@@ -16,6 +16,10 @@ extension MessageTableView {
         var state = TanyaAIMessageListState.empty
         var isFollowingLatestMessage = true
         var scrollRequestIdentifier = 0
+        var activePromptIdentifier: String?
+        var promptTrailingInset: CGFloat = 0
+        var isAdjustingScroll = false
+        var isPositionUpdatePending = false
         private var copy = CopyCatalog()
         private var theme = Theme.sandbox
         private var screenMetrics = ArtworkMetrics.screen
@@ -47,31 +51,41 @@ extension MessageTableView {
             let isThemeChanged =
                 self.theme != theme || screenMetrics != currentMetrics
                 || self.imageLoader !== imageLoader || self.copy != copy
-            self.copy = copy
-            self.state = state
-            self.theme = theme
-            screenMetrics = currentMetrics
-            self.imageLoader = imageLoader
-            self.handlers = handlers
-            bindMessages(state.messages)
-
-            tableView?.backgroundColor = theme.colors.background
-            tableView?.estimatedRowHeight = DesignKitMetrics.Size.estimatedRowHeight.sizeInArtwork
-            let inset = DesignKitMetrics.Spacing.snug.sizeInArtwork
-            tableView?.contentInset = UIEdgeInsets(top: inset, left: 0, bottom: inset, right: 0)
+            configure(state, theme: theme, handlers: handlers, imageLoader: imageLoader, copy: copy)
             let isRowStructureChanged = state.rowsDiffer(from: previous)
             if isRowStructureChanged || isThemeChanged {
                 tableView?.reloadData()
             }
-            reportScrollPosition()
-            guard isFollowingLatestMessage else {
-                return
-            }
-            if previous.isRestoring, state.isRestoring == false {
+            if state.latestPromptIdentifier != previous.latestPromptIdentifier,
+                let identifier = state.latestPromptIdentifier
+            {
+                activePromptIdentifier = identifier
+                isFollowingLatestMessage = false
+                scrollRequestIdentifier += 1
+                parkAtPrompt()
+            } else if activePromptIdentifier != nil {
+                parkAtPrompt()
+            } else if isFollowingLatestMessage, previous.isRestoring, !state.isRestoring {
                 parkAtBottom()
-            } else if isRowStructureChanged {
-                scheduleScrollToBottom(animated: false)
             }
+            reportScrollPosition()
+            if isRowStructureChanged || isThemeChanged { schedulePositionUpdate() }
+        }
+
+        private func configure(
+            _ state: TanyaAIMessageListState, theme: Theme, handlers: TanyaAIMessageRowHandlers,
+            imageLoader: ImageLoading, copy: CopyCatalog
+        ) {
+            self.copy = copy
+            self.state = state
+            self.theme = theme
+            screenMetrics = ArtworkMetrics.screen
+            self.imageLoader = imageLoader
+            self.handlers = handlers
+            bindMessages(state.messages)
+            tableView?.backgroundColor = .clear
+            tableView?.estimatedRowHeight = DesignKitMetrics.Size.estimatedRowHeight.sizeInArtwork
+            updateContentInset()
         }
 
         func tableView(
@@ -177,19 +191,14 @@ extension MessageTableView {
                 tableView.layoutIfNeeded()
             }
             reportScrollPosition()
-            guard isFollowingLatestMessage else {
-                return
-            }
-            scheduleScrollToBottom(animated: false)
+            schedulePositionUpdate()
         }
 
         private func tableLayoutDidChange() {
+            guard !isAdjustingScroll else { return }
             refreshScreenMetrics()
             reportScrollPosition()
-            guard isFollowingLatestMessage else {
-                return
-            }
-            scheduleScrollToBottom(animated: false)
+            schedulePositionUpdate()
         }
 
         private func refreshScreenMetrics() {
@@ -198,8 +207,7 @@ extension MessageTableView {
             screenMetrics = current
             theme = theme.resolved(traits: tableView.traitCollection)
             tableView.estimatedRowHeight = DesignKitMetrics.Size.estimatedRowHeight.sizeInArtwork
-            let inset = DesignKitMetrics.Spacing.snug.sizeInArtwork
-            tableView.contentInset = UIEdgeInsets(top: inset, left: 0, bottom: inset, right: 0)
+            updateContentInset()
             tableView.reloadData()
         }
     }

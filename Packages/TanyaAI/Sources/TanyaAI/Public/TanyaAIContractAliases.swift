@@ -15,3 +15,5 @@ public typealias TanyaAIChatSessionMessage =
 public typealias TanyaAIContext = TanyaAIContracts.TanyaAIContext
 public typealias TanyaAIEventName = TanyaAIContracts.TanyaAIEventName
 public typealias TanyaAIChatSessionElement = TanyaAIContracts.TanyaAIChatSessionElement
+public typealias TanyaAIHostFlowRequest = TanyaAIContracts.TanyaAIHostFlowRequest
+public typealias TanyaAIHostFlowResult = TanyaAIContracts.TanyaAIHostFlowResult

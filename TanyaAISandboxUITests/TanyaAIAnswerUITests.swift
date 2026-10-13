@@ -1,7 +1,7 @@
 import XCTest
 
 final class TanyaAIAnswerUITests: XCTestCase {
-    func testRadioBecomesPromptAndOnlyOptionsDisappear() {
+    func testRadioBecomesPromptAndOptionsRemainReadOnly() {
         let application = XCUIApplication()
         application.launchArguments = ["--answers"]
         application.launch()
@@ -13,8 +13,11 @@ final class TanyaAIAnswerUITests: XCTestCase {
         capture("answer-before-selection")
         option.tap()
         XCTAssertTrue(application.staticTexts["Pilihan diterima."].waitForExistence(timeout: 5))
-        XCTAssertFalse(application.buttons["option.product"].exists)
-        XCTAssertFalse(application.buttons["option.support"].exists)
+        for _ in 0..<6 where option.exists == false { table.swipeDown() }
+        XCTAssertTrue(application.buttons["option.product"].exists)
+        XCTAssertFalse(application.buttons["option.product"].isEnabled)
+        XCTAssertTrue(application.buttons["option.support"].exists)
+        XCTAssertFalse(application.buttons["option.support"].isEnabled)
         XCTAssertTrue(application.staticTexts["Informasi produk"].exists)
         XCTAssertTrue(application.staticTexts["Pilih informasi yang ingin Anda lihat."].exists)
         XCTAssertTrue(application.staticTexts["Promo produk pilihan"].exists)

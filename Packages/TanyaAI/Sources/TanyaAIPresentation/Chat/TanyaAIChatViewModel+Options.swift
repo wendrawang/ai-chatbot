@@ -14,13 +14,15 @@ public extension TanyaAIChatViewModel {
     func selectAnswerOption(_ messageIdentifier: String, _ optionIdentifier: String) {
         guard isSendEnabled,
             let message = message(identifier: messageIdentifier),
-            case .answer(let payload) = message.content,
+            case .answer(var payload) = message.content,
             !payload.isAnswered,
             let option = payload.options.first(where: { $0.identifier == optionIdentifier }),
             !option.prompt.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
         else {
             return
         }
+        payload.selectedIdentifier = optionIdentifier
+        message.update(content: .answer(payload))
         message.consumeOptions()
         sendMessage(option.prompt)
     }
