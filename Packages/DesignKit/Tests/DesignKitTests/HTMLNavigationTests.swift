@@ -1,11 +1,21 @@
 import WebKit
 import XCTest
+
 @testable import DesignKit
 
 /// Exercise WebKit's actual navigation classifications: automatic redirects
 /// and frame loads are `.other`, just like loadHTMLString.
 @MainActor
 final class HTMLNavigationTests: XCTestCase {
+    private var window: UIWindow?
+
+    override func tearDown() {
+        window?.isHidden = true
+        window?.rootViewController = nil
+        window = nil
+        super.tearDown()
+    }
+
     func testHostCanLoadAndReplaceAFragment() {
         let probe = HTMLNavigationProbe()
         let webView = makeWebView(probe: probe)
@@ -66,8 +76,14 @@ final class HTMLNavigationTests: XCTestCase {
         let configuration = WKWebViewConfiguration()
         configuration.defaultWebpagePreferences.allowsContentJavaScript = false
         configuration.websiteDataStore = .nonPersistent()
-        let webView = WKWebView(frame: .zero, configuration: configuration)
+        let webView = WKWebView(frame: CGRect(x: 0, y: 0, width: 320, height: 200), configuration: configuration)
         webView.navigationDelegate = probe
+        let controller = UIViewController()
+        controller.view.addSubview(webView)
+        let window = UIWindow(frame: UIScreen.main.bounds)
+        window.rootViewController = controller
+        window.makeKeyAndVisible()
+        self.window = window
         return webView
     }
 }

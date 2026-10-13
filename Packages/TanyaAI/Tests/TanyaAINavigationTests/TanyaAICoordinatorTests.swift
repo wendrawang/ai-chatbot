@@ -4,8 +4,10 @@ import TanyaAIDomain
 import TanyaAITestSupport
 import UIKit
 import XCTest
+
 @testable import TanyaAI
 
+@MainActor
 final class TanyaAICoordinatorTests: XCTestCase {
     func testStartCreatesOnlyChatDestination() {
         let navigationController = UINavigationController()
@@ -111,9 +113,11 @@ final class TanyaAICoordinatorTests: XCTestCase {
             navigationController: navigation, onConfirmation: { received = $0 }
         )
         coordinator.start()
-        let payload = try JSONDecoder().decode(ConfirmationPayload.self, from: Data(
-            #"{"confirmation_id":"conf","fields":[{"key":"amount","label":"Amount","value":"100"}]}"#.utf8
-        ))
+        let payload = try JSONDecoder().decode(
+            ConfirmationPayload.self,
+            from: Data(
+                #"{"confirmation_id":"conf","fields":[{"key":"amount","label":"Amount","value":"100"}]}"#.utf8
+            ))
         XCTAssertNil(received)
         coordinator.chatViewModelForTesting?.confirm(payload)
         XCTAssertEqual(received, payload)

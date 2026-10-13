@@ -6,11 +6,14 @@ import SwiftUI
 /// `ChartBubble`: it follows the theme, scales with Dynamic Type and can be
 /// read aloud, none of which survive inside a web view.
 public struct HTMLBubble: View {
+    @Environment(\.copyCatalog)
+    private var copy
+    @Environment(\.theme)
+    private var theme
     let payload: HTMLPayload
-    @Environment(\.copyCatalog) private var copy
-    @Environment(\.theme) private var theme
 
-    @State private var height: CGFloat
+    @State
+    private var height: CGFloat
 
     public init(payload: HTMLPayload) {
         self.payload = payload

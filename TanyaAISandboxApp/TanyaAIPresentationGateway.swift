@@ -2,6 +2,7 @@ import DesignKit
 import TanyaAI
 import UIKit
 
+@MainActor
 final class TanyaAIPresentationGateway: TanyaAIPresenting {
     private weak var rootController: UIViewController?
     private weak var activeController: UIViewController?

@@ -2,10 +2,13 @@ import DesignKit
 import SwiftUI
 
 public struct AuthorizationSheet: View {
+    @Environment(\.copyCatalog)
+    private var copy
+    @Environment(\.theme)
+    private var theme
 
-    @Environment(\.copyCatalog) private var copy
-    @ObservedObject private var viewModel: TanyaAIPINViewModel
-    @Environment(\.theme) private var theme
+    @ObservedObject
+    private var viewModel: TanyaAIPINViewModel
 
     public init(viewModel: TanyaAIPINViewModel) {
         self.viewModel = viewModel
@@ -18,8 +21,10 @@ public struct AuthorizationSheet: View {
 
             sheetContent
                 .background(Color(theme.colors.background))
-                .clipShape(RoundedCorners(radius: DesignKitMetrics.Radius.sheet.sizeInArtwork,
-                                          corners: [.topLeft, .topRight]))
+                .clipShape(
+                    RoundedCorners(
+                        radius: DesignKitMetrics.Radius.sheet.sizeInArtwork,
+                        corners: [.topLeft, .topRight]))
         }
         .accessibilityIdentifier("pin.sheet")
     }
@@ -30,9 +35,11 @@ public struct AuthorizationSheet: View {
             SecureCodeIndicator(
                 enteredDigitCount: viewModel.pin.count,
                 totalDigitCount: TanyaAIPINViewModel.requiredDigitCount,
-                label: copy.chat("chat.pinProgress", values: [
-                    "count": String(viewModel.pin.count), "total": String(TanyaAIPINViewModel.requiredDigitCount)
-                ])
+                label: copy.chat(
+                    "chat.pinProgress",
+                    values: [
+                        "count": String(viewModel.pin.count), "total": String(TanyaAIPINViewModel.requiredDigitCount)
+                    ])
             )
             validationMessage
             authorizationStatus
@@ -50,17 +57,21 @@ public struct AuthorizationSheet: View {
         HStack(spacing: FigmaSize.spacing8.sizeInArtwork) {
             VStack(alignment: .leading, spacing: FigmaSize.spacing4.sizeInArtwork) {
                 Text(copy.chat("chat.authorizeTitle"))
-                    .font(Font(theme.fonts.title))
-                Text(copy.chat("chat.pinInstruction", values: [
-                    "count": String(TanyaAIPINViewModel.requiredDigitCount)
-                ]))
-                    .font(Font(theme.fonts.footnote))
-                    .foregroundColor(Color(theme.colors.secondaryText))
+                    .designFont(.title)
+                Text(
+                    copy.chat(
+                        "chat.pinInstruction",
+                        values: [
+                            "count": String(TanyaAIPINViewModel.requiredDigitCount)
+                        ])
+                )
+                .designFont(.footnote)
+                .foregroundColor(Color(theme.colors.secondaryText))
             }
             Spacer(minLength: FigmaSize.spacing8.sizeInArtwork)
             Button(action: viewModel.cancel) {
                 Image(systemName: "xmark.circle.fill")
-                    .font(Font(theme.fonts.title))
+                    .designFont(.title)
                     .foregroundColor(Color(theme.colors.secondaryText))
                     .frame(
                         width: DesignKitMetrics.Size.minimumTapTarget.tapTargetInArtwork,
@@ -76,7 +87,7 @@ public struct AuthorizationSheet: View {
     private var validationMessage: some View {
         if let errorMessage = viewModel.errorMessage {
             Text(errorMessage)
-                .font(Font(theme.fonts.footnote))
+                .designFont(.footnote)
                 .foregroundColor(Color(theme.colors.error))
         }
     }
@@ -86,10 +97,11 @@ public struct AuthorizationSheet: View {
         if viewModel.isSubmitting {
             HStack(spacing: FigmaSize.spacing8.sizeInArtwork) {
                 ProgressView().tint(Color(theme.colors.accent))
-                    .frame(width: DesignKitMetrics.Size.indicator.sizeInArtwork,
-                           height: DesignKitMetrics.Size.indicator.sizeInArtwork)
+                    .frame(
+                        width: DesignKitMetrics.Size.indicator.sizeInArtwork,
+                        height: DesignKitMetrics.Size.indicator.sizeInArtwork)
                 Text(copy.chat("chat.authorizing"))
-                    .font(Font(theme.fonts.footnote))
+                    .designFont(.footnote)
                     .foregroundColor(Color(theme.colors.secondaryText))
             }
             .frame(maxWidth: .infinity)

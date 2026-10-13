@@ -149,3 +149,9 @@ Teks UI dari resource/injeksi host; jalankan `Scripts/check_design_system.py`.
 - **`makeSession` harus mengembalikan instance baru tiap presentasi.**
   Repository mengambil alih `onEvent` dan menutup sesi saat deinit, jadi
   instance bersama akan dicabut dari presentasi berikutnya.
+
+## Session flow and component conventions
+
+Follow `docs/COMPONENT_STYLE.md` and `docs/SESSION_AND_PARTIAL_MIGRATION.md`. The repository is session-shaped; do not reintroduce a pass-through chat UseCase or complete a submission from a bot reply. Draft editing stays local to the composer. SDK send callbacks identify submissions; the backend currently supports neither Stop nor reply correlation.
+
+Use `python3 Scripts/format_changed.py --base <ref>` for changed Swift files. Generated tokens are excluded. Formatting uses the Xcode-bundled formatter and `.swift-format`; it does not replace physical length checks or SwiftLint.

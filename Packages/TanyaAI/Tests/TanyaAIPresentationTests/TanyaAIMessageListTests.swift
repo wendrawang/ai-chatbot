@@ -2,8 +2,10 @@ import DesignKit
 import TanyaAIDomain
 import UIKit
 import XCTest
+
 @testable import TanyaAIPresentation
 
+@MainActor
 final class TanyaAIMessageListTests: XCTestCase {
     /// The restored conversation has to reach the screen already at its
     /// latest message. Parking on the next runloop would draw one frame at

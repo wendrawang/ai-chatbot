@@ -3,10 +3,13 @@ import SwiftUI
 import TanyaAIDomain
 
 public struct ChatScreen: View {
+    @Environment(\.copyCatalog)
+    private var copy
+    @Environment(\.theme)
+    private var theme
 
-    @Environment(\.copyCatalog) private var copy
-    @ObservedObject private var viewModel: TanyaAIChatViewModel
-    @Environment(\.theme) private var theme
+    @ObservedObject
+    private var viewModel: TanyaAIChatViewModel
 
     public init(viewModel: TanyaAIChatViewModel) {
         self.viewModel = viewModel
@@ -20,12 +23,10 @@ public struct ChatScreen: View {
             errorBanner
             shortcutStrip
             separator
-            MessageComposer(
-                text: $viewModel.inputText,
-                placeholder: copy.chat("chat.placeholder"),
-                sendLabel: copy.chat("chat.send"), stopLabel: copy.chat("chat.stop"),
-                isGenerating: viewModel.isGenerating,
-                onSend: viewModel.sendCurrentMessage, onStop: viewModel.cancelGeneration
+            ComposerSection(
+                isEnabled: viewModel.isSendEnabled,
+                draftRequest: viewModel.draftRequest,
+                onSend: viewModel.sendMessage
             )
         }
         .background(Color(theme.colors.background))
@@ -39,6 +40,7 @@ public struct ChatScreen: View {
             MessageListView(viewModel: viewModel)
             if viewModel.isRestoring {
                 LoadingStateView(label: copy.chat("chat.loading"))
+                    .accessibilityIdentifier("chat.restoring")
             }
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
@@ -48,21 +50,21 @@ public struct ChatScreen: View {
         HStack(spacing: FigmaSize.spacing16.sizeInArtwork) {
             Button(action: viewModel.close) {
                 Image(systemName: "xmark")
-                    .font(Font(theme.fonts.headline))
+                    .designFont(.headline)
                     .frame(
                         width: DesignKitMetrics.Size.minimumTapTarget.tapTargetInArtwork,
                         height: DesignKitMetrics.Size.minimumTapTarget.tapTargetInArtwork
                     )
             }
-            .accessibility(label: Text(copy.chat("chat.close")))
+            .accessibilityLabel(copy.chat("chat.close"))
 
             VStack(alignment: .leading, spacing: DesignKitMetrics.Spacing.micro.sizeInArtwork) {
                 Text(copy.chat("chat.title"))
-                    .font(Font(theme.fonts.headline))
+                    .designFont(.headline)
                     .foregroundColor(Color(theme.colors.primaryText))
                 if !copy.chat("chat.subtitle").isEmpty {
                     Text(copy.chat("chat.subtitle"))
-                        .font(Font(theme.fonts.caption))
+                        .designFont(.caption)
                         .foregroundColor(Color(theme.colors.secondaryText))
                 }
             }
@@ -71,13 +73,13 @@ public struct ChatScreen: View {
 
             Button(action: viewModel.openHistory) {
                 Image(systemName: "clock")
-                    .font(Font(theme.fonts.headline))
+                    .designFont(.headline)
                     .frame(
                         width: DesignKitMetrics.Size.minimumTapTarget.tapTargetInArtwork,
                         height: DesignKitMetrics.Size.minimumTapTarget.tapTargetInArtwork
                     )
             }
-            .accessibility(label: Text(copy.chat("chat.history")))
+            .accessibilityLabel(copy.chat("chat.history"))
         }
         .padding(.horizontal, FigmaSize.spacing8.sizeInArtwork)
         .padding(.top, FigmaSize.spacing8.sizeInArtwork)
@@ -86,13 +88,25 @@ public struct ChatScreen: View {
 
     @ViewBuilder
     private var errorBanner: some View {
-        if let errorMessage = viewModel.errorMessage {
-            Text(errorMessage)
-                .font(Font(theme.fonts.footnote))
-                .foregroundColor(Color(theme.colors.error))
-                .frame(maxWidth: .infinity, alignment: .leading)
-                .padding(.horizontal, FigmaSize.spacing16.sizeInArtwork)
-                .padding(.vertical, FigmaSize.spacing8.sizeInArtwork)
+        if let errorMessage = viewModel.errorMessage
+            ?? (viewModel.isHistoryUnavailable ? copy.chat("chat.historyUnavailable") : nil)
+        {
+            HStack(spacing: FigmaSize.spacing8.sizeInArtwork) {
+                Text(errorMessage)
+                    .designFont(.footnote)
+                    .foregroundColor(Color(theme.colors.error))
+                Spacer(minLength: 0)
+                if viewModel.isSessionRetryAvailable {
+                    Button(copy.chat("chat.retry"), action: viewModel.retrySession)
+                        .designFont(.button)
+                        .frame(minHeight: DesignKitMetrics.Size.minimumTapTarget.tapTargetInArtwork)
+                        .disabled(viewModel.connection == .connecting)
+                        .accessibilityIdentifier("chat.retrySession")
+                }
+            }
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .padding(.horizontal, FigmaSize.spacing16.sizeInArtwork)
+            .padding(.vertical, FigmaSize.spacing8.sizeInArtwork)
         }
     }
 

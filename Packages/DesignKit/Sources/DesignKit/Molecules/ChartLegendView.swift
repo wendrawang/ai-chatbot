@@ -5,8 +5,9 @@ import SwiftUI
 /// A molecule rather than an atom - it is rows of smaller parts, and it
 /// only means anything next to the chart it explains.
 struct ChartLegendView: View {
+    @Environment(\.theme)
+    private var theme
     let series: [ChartSeries]
-    @Environment(\.theme) private var theme
 
     var body: some View {
         VStack(spacing: DesignKitMetrics.Spacing.legend.sizeInArtwork) {

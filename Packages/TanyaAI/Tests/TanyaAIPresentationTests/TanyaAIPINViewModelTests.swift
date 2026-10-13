@@ -4,8 +4,10 @@ import TanyaAIContracts
 import TanyaAIDomain
 import TanyaAITestSupport
 import XCTest
+
 @testable import TanyaAIPresentation
 
+@MainActor
 final class TanyaAIPINViewModelTests: XCTestCase {
     func testValidDemoPINCompletesAuthorization() {
         let completionExpectation = expectation(description: "authorization completes")
@@ -141,16 +143,18 @@ final class TanyaAIPINViewModelTests: XCTestCase {
 }
 
 private final class HoldingAuthorizationService:
-    TanyaAIAuthorizationService {
+    TanyaAIAuthorizationService
+{
 
     let cancellable = HoldingCancellable()
 
     func authorize(
         request: TanyaAIAuthorizationRequest,
         pin: String,
-        completion: @escaping (
-            Result<TanyaAIAuthorizationResult, Error>
-        ) -> Void
+        completion:
+            @escaping (
+                Result<TanyaAIAuthorizationResult, Error>
+            ) -> Void
     ) -> TanyaAICancellable {
         cancellable
     }

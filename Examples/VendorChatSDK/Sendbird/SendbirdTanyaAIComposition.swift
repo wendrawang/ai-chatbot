@@ -10,6 +10,7 @@ import TanyaAI
 /// What it does *not* do is call `SendbirdChat.initialize` or
 /// `SendbirdChat.connect`. Those belong to the application - see
 /// `SendbirdAppLifecycle` next to this file.
+@MainActor
 final class SendbirdTanyaAIComposition {
     private let botUserId: String
     private let deeplinkScheme: String
@@ -50,9 +51,10 @@ final class SendbirdTanyaAIComposition {
             deeplinkScheme: deeplinkScheme,
             deeplinkHost: deeplinkHost,
             makeSession: { [weak self] in
-                self?.makeSession() ?? SendbirdChatSessionAdapter(
-                    botUserId: ""
-                )
+                self?.makeSession()
+                    ?? SendbirdChatSessionAdapter(
+                        botUserId: ""
+                    )
             },
             onDeeplink: onDeeplink
         )

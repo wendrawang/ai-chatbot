@@ -2,38 +2,40 @@ import DesignKit
 import Foundation
 import TanyaAIDomain
 import XCTest
+
 @testable import TanyaAIPresentation
 
 /// Picking chips changes nothing until submit. That is the whole reason this
 /// bubble exists rather than reusing the prompts, so it is what these pin.
+@MainActor
 final class TanyaAIChoicesBehaviorTests: XCTestCase {
     func testTappingChipsSendsNothing() {
-        let useCase = TanyaAIChatUseCaseStub()
-        let viewModel = makeViewModel(useCase: useCase)
+        let repository = TanyaAIRepositoryStub()
+        let viewModel = makeViewModel(repository: repository)
 
         viewModel.toggleChoice(payload, "dining")
         viewModel.toggleChoice(payload, "hotel")
 
-        XCTAssertNil(useCase.receivedText)
+        XCTAssertNil(repository.receivedText)
         XCTAssertEqual(selection(in: viewModel), ["dining", "hotel"])
     }
 
     func testSubmitSendsTheAnswerAndSettlesTheCard() {
-        let useCase = TanyaAIChatUseCaseStub()
-        let viewModel = makeViewModel(useCase: useCase)
+        let repository = TanyaAIRepositoryStub()
+        let viewModel = makeViewModel(repository: repository)
 
         viewModel.toggleChoice(payload, "dining")
         viewModel.submitChoices(payload)
 
-        XCTAssertEqual(useCase.receivedText, "Promo dining")
+        XCTAssertEqual(repository.receivedText, "Promo dining")
         XCTAssertTrue(isSubmitted(in: viewModel))
     }
 
     /// The question stays on screen after it is answered - the conversation is
     /// the record of both halves - but it stops taking input.
     func testASettledCardIgnoresFurtherTaps() {
-        let useCase = TanyaAIChatUseCaseStub()
-        let viewModel = makeViewModel(useCase: useCase)
+        let repository = TanyaAIRepositoryStub()
+        let viewModel = makeViewModel(repository: repository)
 
         viewModel.toggleChoice(payload, "dining")
         viewModel.submitChoices(payload)
@@ -43,12 +45,12 @@ final class TanyaAIChoicesBehaviorTests: XCTestCase {
     }
 
     func testSubmitWithNothingPickedSendsNothing() {
-        let useCase = TanyaAIChatUseCaseStub()
-        let viewModel = makeViewModel(useCase: useCase)
+        let repository = TanyaAIRepositoryStub()
+        let viewModel = makeViewModel(repository: repository)
 
         viewModel.submitChoices(payload)
 
-        XCTAssertNil(useCase.receivedText)
+        XCTAssertNil(repository.receivedText)
         XCTAssertFalse(isSubmitted(in: viewModel))
     }
 
@@ -73,10 +75,10 @@ final class TanyaAIChoicesBehaviorTests: XCTestCase {
     }
 
     private func makeViewModel(
-        useCase: TanyaAIChatUseCaseStub
+        repository: TanyaAIRepositoryStub
     ) -> TanyaAIChatViewModel {
-        let viewModel = TanyaAIChatViewModel(useCase: useCase)
-        useCase.sendUnsolicited(
+        let viewModel = TanyaAIChatViewModel(repository: repository)
+        repository.sendUnsolicited(
             .content(messageIdentifier: "q1", content: .choices(payload))
         )
         return viewModel

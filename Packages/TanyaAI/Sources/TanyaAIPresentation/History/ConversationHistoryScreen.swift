@@ -1,22 +1,25 @@
 import DesignKit
 import SwiftUI
+import TanyaAIDomain
 
 public struct ConversationHistoryScreen: View {
-    @Environment(\.copyCatalog) private var copy
-    @ObservedObject private var viewModel: TanyaAIHistoryViewModel
-    @Environment(\.theme) private var theme
+    @Environment(\.copyCatalog)
+    private var copy
+    @Environment(\.theme)
+    private var theme
+    private let items: [ConversationSummary]
 
-    public init(viewModel: TanyaAIHistoryViewModel) {
-        self.viewModel = viewModel
+    public init(items: [ConversationSummary]) {
+        self.items = items
     }
 
     public var body: some View {
-        List(viewModel.items, id: \.identifier) { item in
+        List(items, id: \.identifier) { item in
             SummaryRow(title: item.title, detail: item.detail)
         }
-        .listStyle(PlainListStyle())
+        .listStyle(.plain)
         .overlay {
-            if viewModel.items.isEmpty {
+            if items.isEmpty {
                 Text(copy.chat("chat.emptyHistory"))
                     .designFont(.body)
                     .foregroundColor(Color(theme.colors.secondaryText))

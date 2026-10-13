@@ -1,19 +1,13 @@
 import SwiftUI
 import UIKit
 import XCTest
+
 @testable import TanyaAIPresentation
 
+@MainActor
 final class TanyaAIFrameRateTests: XCTestCase {
-    /// The bar the rendering has to clear.
+    /// Regression proxy: CADisplayLink callback cadence, not GPU-rendered FPS.
     private static let target = 55.0
-    /// How many times the scroll is sampled.
-    ///
-    /// One sample decides the verdict by whatever else the machine happened to
-    /// be doing: the same unchanged code measured 53.7, 54.6, 57.0 and 58.2 on
-    /// four consecutive runs, straddling the bar. Three samples and the best
-    /// of them asks the question actually worth asking - can this code hold
-    /// the frame rate when it is given a fair chance - rather than whether the
-    /// simulator was starved at that moment. The bar itself does not move.
     private static let sampleCount = 3
 
     func testLargeConversationScrollsAtSixtyFrameTarget() {
@@ -31,12 +25,12 @@ final class TanyaAIFrameRateTests: XCTestCase {
         let samples = (0..<Self.sampleCount).map { _ in
             sampleFramesPerSecond(scrolling: tableView)
         }
-        let best = samples.max() ?? 0
-        print("TANYA_AI_MEASURED_FPS=\(best) samples=\(samples)")
+        let median = samples.sorted()[samples.count / 2]
+        print("TANYA_AI_DISPLAY_LINK_MEDIAN=\(median) samples=\(samples)")
         XCTAssertGreaterThanOrEqual(
-            best,
+            median,
             Self.target,
-            "Every sample was below target: \(samples)"
+            "Median callback cadence was below target: \(samples)"
         )
         withExtendedLifetime(harness) {}
     }
@@ -62,10 +56,10 @@ final class TanyaAIFrameRateTests: XCTestCase {
     }
 
     private func makeHarness(messageCount: Int) -> ViewHarness {
-        let useCase = TanyaAIChatUseCaseFixture()
-        let viewModel = TanyaAIChatViewModel(useCase: useCase)
+        let repository = TanyaAIRepositoryFixture()
+        let viewModel = TanyaAIChatViewModel(repository: repository)
         viewModel.sendMessage("performance fixture")
-        useCase.appendStatusMessages(count: messageCount)
+        repository.appendStatusMessages(count: messageCount)
 
         let controller = UIHostingController(
             rootView: ChatScreen(viewModel: viewModel)

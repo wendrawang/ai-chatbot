@@ -34,3 +34,10 @@
 "chat.subtitle" = "";
 "chat.latest" = "Scroll to latest message";
 "chat.confirmation" = "Confirm details";
+"chat.connectionFailed" = "Chat is unavailable. Please retry.";
+"chat.historyUnavailable" = "Conversation history could not be loaded. You can still send messages.";
+"chat.sendFailed" = "A message could not be sent. Retry it below.";
+"chat.retry" = "Retry";
+"chat.retrySend" = "Retry message";
+"chat.sending" = "Sending…";
+"chat.editPrompt" = "Change {title}: ";

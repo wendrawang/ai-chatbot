@@ -9,13 +9,16 @@ import TanyaAI
 /// legacy hierarchy, so a destination cannot be pushed while it is still on
 /// screen, and the deeplink has to land on the dashboard first. UIKit gives
 /// the exact moment for free: the dismissal completion handler.
+@MainActor
 final class SandboxDeeplinkRouter: ObservableObject {
     /// The destination currently pushed on the legacy stack. `nil` means the
     /// stack is back on the dashboard.
-    @Published var activeDestination: SandboxDeeplinkDestination?
+    @Published
+    var activeDestination: SandboxDeeplinkDestination?
 
     /// Set while a validated destination waits to be pushed.
-    @Published private(set) var isDestinationPending = false
+    @Published
+    private(set) var isDestinationPending = false
 
     private var pendingDestination: SandboxDeeplinkDestination?
     private let opener: (URL) -> Void
@@ -55,9 +58,10 @@ final class SandboxDeeplinkRouter: ObservableObject {
     @discardableResult
     func receive(_ url: URL) -> Bool {
         guard let accepted = SandboxDeeplink.accepted(url),
-              let destination = SandboxDeeplinkDispatcher.destination(
+            let destination = SandboxDeeplinkDispatcher.destination(
                 for: accepted
-              ) else {
+            )
+        else {
             return false
         }
         pendingDestination = destination

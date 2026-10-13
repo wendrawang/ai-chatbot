@@ -1,3 +1,4 @@
+import Foundation
 import TanyaAI
 import TanyaAITestSupport
 
@@ -34,7 +35,13 @@ enum SandboxTanyaAIFactory {
     static func makeDependencies(
         isShowcaseVisible: Bool = false
     ) -> TanyaAIDependencies {
-        TanyaAIDependencies(
+        if ProcessInfo.processInfo.arguments.contains("--interruptions") {
+            return TanyaAIDependencies(
+                chatSession: interruptionSession(),
+                authorizationService: MockTanyaAIAuthorizationService(), theme: .sandbox
+            )
+        }
+        return TanyaAIDependencies(
             chatSession: MockTanyaAIChatSession.sandbox(
                 stepDelay: isShowcaseVisible ? 0.005 : 0.05
             ),
@@ -42,4 +49,17 @@ enum SandboxTanyaAIFactory {
             theme: .sandbox
         )
     }
+    private static func interruptionSession() -> MockTanyaAIChatSession {
+        MockTanyaAIChatSession(stepDelay: 1) { text in
+            let identifier = UUID().uuidString
+            return [
+                .typing(true),
+                .messageStarted(messageIdentifier: identifier),
+                .messageDelta(messageIdentifier: identifier, text: "Reply: " + text),
+                .messageCompleted(messageIdentifier: identifier),
+                .typing(false)
+            ]
+        }
+    }
+
 }

@@ -1,8 +1,9 @@
 import SwiftUI
 
 public struct ReceiptBubble: View {
+    @Environment(\.theme)
+    private var theme
     let payload: ReceiptPayload
-    @Environment(\.theme) private var theme
 
     public init(payload: ReceiptPayload) {
         self.payload = payload
@@ -29,10 +30,10 @@ public struct ReceiptBubble: View {
                 .designFont(.title)
                 .foregroundColor(Color(theme.colors.success))
                 .frame(
-                            width: DesignKitMetrics.Size.successIcon.sizeInArtwork,
-                            height: DesignKitMetrics.Size.successIcon.sizeInArtwork
-                        )
-                .background(Color(theme.colors.success).opacity(0.12))
+                    width: DesignKitMetrics.Size.successIcon.sizeInArtwork,
+                    height: DesignKitMetrics.Size.successIcon.sizeInArtwork
+                )
+                .background(Color(theme.colors.success).opacity(DesignKitMetrics.Opacity.successBackground))
                 .clipShape(Circle())
             Text(payload.title)
                 .designFont(.title)

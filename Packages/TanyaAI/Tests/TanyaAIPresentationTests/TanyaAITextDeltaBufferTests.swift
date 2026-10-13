@@ -1,6 +1,8 @@
 import XCTest
+
 @testable import TanyaAIPresentation
 
+@MainActor
 final class TanyaAITextDeltaBufferTests: XCTestCase {
     func testBurstIsPublishedInOneOrderedBatch() {
         var batches: [String] = []

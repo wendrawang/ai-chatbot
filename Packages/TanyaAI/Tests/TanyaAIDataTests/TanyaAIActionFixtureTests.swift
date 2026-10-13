@@ -4,6 +4,7 @@ import TanyaAIContracts
 import TanyaAIDomain
 import TanyaAITestSupport
 import XCTest
+
 @testable import TanyaAIData
 
 /// Proves the fixture a host uses to test its deeplink hand-off produces
@@ -66,19 +67,18 @@ final class TanyaAIActionFixtureTests: XCTestCase {
         let repository = TanyaAISessionRepository(session: session)
         var receivedEvents: [TanyaAIStreamEvent] = []
 
-        _ = repository.sendMessage(
-            conversationIdentifier: nil,
-            text: "anything",
-            onEvent: { receivedEvents.append($0) },
-            completion: { result in
-                if case .failure(let error) = result {
-                    XCTFail("Unexpected error: \(error)")
-                }
-                completionExpectation.fulfill()
+        repository.onEvent = { event in
+            receivedEvents.append(event)
+            if event == .connectionChanged(.ready) {
+                repository.sendMessage(text: "anything", requestIdentifier: "fixture")
             }
-        )
+            if case .responseCompleted = event { completionExpectation.fulfill() }
+        }
+        repository.connect()
 
         wait(for: [completionExpectation], timeout: 2)
+        repository.onEvent = nil
+        repository.disconnect()
         return receivedEvents
     }
 }

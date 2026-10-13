@@ -5,10 +5,11 @@ import SwiftUI
 /// A link rather than a filled button: the destination is elsewhere in the
 /// app, and a solid button would promise something happening here.
 public struct ActionLink: View {
+    @Environment(\.theme)
+    private var theme
     let title: String
     let isUnderlined: Bool
     let onTap: () -> Void
-    @Environment(\.theme) private var theme
 
     public init(
         title: String,

@@ -5,16 +5,20 @@ import TanyaAIDomain
 import TanyaAITestSupport
 import UIKit
 import XCTest
+
 @testable import TanyaAI
 @testable import TanyaAIPresentation
 
+@MainActor
 final class TanyaAILifecycleTests: XCTestCase {
     func testRenderedChatsReleaseAcrossRepeatedCycles() {
         for _ in 0..<25 {
             weak var releasedModel: TanyaAIChatViewModel?
             weak var releasedController: UIViewController?
             autoreleasepool {
-                let viewModel = TanyaAIChatViewModel(useCase: TanyaAIChatUseCaseFixture())
+                let repository = TanyaAIRepositoryFixture()
+                let viewModel = TanyaAIChatViewModel(repository: repository)
+                repository.appendMixedMessages()
                 let controller = UIHostingController(rootView: ChatScreen(viewModel: viewModel))
                 let window = UIWindow(frame: UIScreen.main.bounds)
                 window.rootViewController = controller
@@ -31,13 +35,13 @@ final class TanyaAILifecycleTests: XCTestCase {
         }
     }
 
-    func testChatViewModelReleasesAndCancelsActiveRequest() {
-        let useCase = TanyaAIChatUseCaseFixture()
+    func testChatViewModelReleasesAndDisconnectsSession() {
+        let repository = TanyaAIRepositoryFixture()
         weak var weakViewModel: TanyaAIChatViewModel?
 
         autoreleasepool {
             var viewModel: TanyaAIChatViewModel? = TanyaAIChatViewModel(
-                useCase: useCase
+                repository: repository
             )
             viewModel?.sendMessage("performance fixture")
             weakViewModel = viewModel
@@ -45,7 +49,7 @@ final class TanyaAILifecycleTests: XCTestCase {
         }
 
         XCTAssertNil(weakViewModel)
-        XCTAssertTrue(useCase.cancellationProbe.isCancelled)
+        XCTAssertTrue(repository.isDisconnected)
     }
 
     func testPINViewModelReleasesAndCancelsActiveRequest() {

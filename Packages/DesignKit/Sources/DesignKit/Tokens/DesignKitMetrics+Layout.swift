@@ -27,6 +27,7 @@ public extension DesignKitMetrics {
     }
 
     enum Opacity {
+        public static let successBackground: Double = 0.12
         public static let pressed: Double = 0.7
         public static let disabled: Double = 0.35
         public static let disabledSend: Double = 0.4

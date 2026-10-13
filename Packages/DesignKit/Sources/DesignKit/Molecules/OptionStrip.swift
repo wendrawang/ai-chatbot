@@ -2,9 +2,10 @@ import SwiftUI
 
 /// A horizontal row of options with stable identifiers.
 public struct OptionStrip: View {
+    @Environment(\.theme)
+    private var theme
     let options: [SelectionOption]
     let onSelect: (SelectionOption) -> Void
-    @Environment(\.theme) private var theme
 
     public init(
         options: [SelectionOption],

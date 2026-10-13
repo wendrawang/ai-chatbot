@@ -7,10 +7,13 @@ import SwiftUI
 /// would animate every change in this subtree - including the layout the row
 /// gets when the table first places it - which reads as a stray slide.
 public struct TypingIndicatorView: View {
-    @Environment(\.theme) private var theme
+    @Environment(\.theme)
+    private var theme
+    @Environment(\.accessibilityReduceMotion)
+    private var isReduceMotion
 
-    @Environment(\.accessibilityReduceMotion) private var isReduceMotion
-    @State private var isAnimating = false
+    @State
+    private var isAnimating = false
 
     private let dotCount = DesignKitMetrics.Motion.dotCount
 
@@ -46,9 +49,11 @@ public struct TypingIndicatorView: View {
                     )
                     .opacity(isAnimating ? 1 : DesignKitMetrics.Opacity.restingDot)
                     .animation(
-                        isReduceMotion ? nil : Animation.easeInOut(duration: DesignKitMetrics.Motion.dotDuration)
-                            .repeatForever()
-                            .delay(Double(index) * DesignKitMetrics.Motion.dotDelay),
+                        isReduceMotion
+                            ? nil
+                            : Animation.easeInOut(duration: DesignKitMetrics.Motion.dotDuration)
+                                .repeatForever()
+                                .delay(Double(index) * DesignKitMetrics.Motion.dotDelay),
                         value: isAnimating
                     )
             }

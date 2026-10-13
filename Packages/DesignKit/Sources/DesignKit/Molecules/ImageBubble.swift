@@ -9,8 +9,9 @@ import SwiftUI
 /// the artwork's business - `aspectRatio` sets the picture, the caption takes
 /// what it needs underneath.
 public struct ImageBubble: View {
+    @Environment(\.theme)
+    private var theme
     let payload: ImagePayload
-    @Environment(\.theme) private var theme
 
     private var cornerRadius: CGFloat { DesignKitMetrics.Radius.bubble.sizeInArtwork }
 

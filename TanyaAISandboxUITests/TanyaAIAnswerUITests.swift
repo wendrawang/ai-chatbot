@@ -79,6 +79,24 @@ final class TanyaAIAnswerUITests: XCTestCase {
         XCTAssertLessThanOrEqual(send.frame.maxX, application.frame.maxX)
     }
 
+    func testComposerCanSubmitAnotherPromptWhileAgentIsTyping() {
+        let application = XCUIApplication()
+        application.launchArguments = ["--answers", "--interruptions"]
+        application.launch()
+        let typing = application.descendants(matching: .any)["chat.typing"].firstMatch
+        XCTAssertTrue(typing.waitForExistence(timeout: 10))
+        XCTAssertFalse(application.buttons["Stop response"].exists)
+        let input = application.textViews.firstMatch
+        input.tap()
+        input.typeText("Second")
+        let send = application.buttons["Send message"]
+        XCTAssertTrue(send.isEnabled)
+        send.tap()
+        XCTAssertTrue(application.staticTexts["Second"].waitForExistence(timeout: 5))
+        XCTAssertTrue(application.staticTexts["Reply: Second"].waitForExistence(timeout: 10))
+        capture("send-while-agent-typing")
+    }
+
     private func capture(_ name: String) {
         let attachment = XCTAttachment(screenshot: XCUIScreen.main.screenshot())
         attachment.name = name

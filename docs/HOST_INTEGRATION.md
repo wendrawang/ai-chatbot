@@ -187,3 +187,9 @@ Satu host yang dipertahankan, satu session per presentasi, dan satu kali registr
 font. Gunakan renderer package; tidak perlu membuat ulang ViewModel, parser JSON,
 cache gambar, atau UITableView di host. Riwayat dan transcript aktif dibatasi 100
 pesan. Gambar di-downsample dan update streaming digabung sebelum layout.
+
+## Session-stream update
+
+See [SESSION_AND_PARTIAL_MIGRATION.md](SESSION_AND_PARTIAL_MIGRATION.md) for the current partial API. The editor draft is local; no chat UseCase is needed. A new prompt can be sent while the agent is typing. There is no Stop control and no assumption that a bot reply acknowledges the last submitted prompt. SDK send callbacks report the local submission ID. History failure produces a warning, not a silent empty archive.
+
+For a theme chosen after login, pass `themeProvider: { themeManager.theme }` alongside the initial `theme`. Keep the manager separate from the host; avoid capturing AppState strongly from a host it owns. Each opening reads the latest theme. An already-open chat remains a presentation snapshot.

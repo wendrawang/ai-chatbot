@@ -1,10 +1,12 @@
 # Kontrak Tencent dan perubahan host
 
-Update **DesignKit dan TanyaAI bersama**, lalu salin seluruh file Swift terbaru
-pada `Examples/VendorChatSDK/Tencent` ke target host. Termasuk file baru
+Gunakan versi DesignKit/TanyaAI yang sudah mendukung kontrak ini. Migrasi transport
+C2C ke group tidak mengubah kedua package; salin empat file Swift pada root
+`Examples/VendorChatSDK/Tencent` ke target host, tanpa folder `Tests`. Termasuk
 `TencentChatSessionAdapter+Contract.swift`. Pertahankan modifier `.tanyaAIHost(host)`
 di Main dan entry point yang memanggil `host.present()` saat tombol ditekan.
-SDK init/login/AppState tidak berubah. `initialPrompt: nil` tidak mengirim chat
+SDK init/login/AppState tetap; konfigurasi composition sekarang memakai `groupID`.
+`initialPrompt: nil` tidak mengirim chat
 otomatis; membuka sesi hanya mengambil history dan memasang listener.
 
 ## Envelope dan isi pesan
@@ -72,7 +74,7 @@ menutup, jadi router tetap dapat dijalankan hanya dari Main.
 
 ```swift
 let composition = TencentTanyaAIComposition(
-    botUserID: "bot_poc", deeplinkScheme: "ocbcid", deeplinkHost: "mobile"
+    groupID: groupIDFromBackend, deeplinkScheme: "ocbcid", deeplinkHost: "mobile"
 )
 let host = composition.makeHost(
     theme: selectedTheme,
@@ -125,20 +127,27 @@ memang membawa data challenge lengkap.
 Dari direktori Tencent, dengan pasangan admin ID/UserSig yang sesuai:
 
 ```sh
+TENCENT_GROUP_ID='GroupId_Anda' \
 TENCENT_SDK_APP_ID='SDKAppID_Anda' \
 TENCENT_REST_HOST='adminapiidn.im.qcloud.com' \
 sh send_test_reply.sh answer
 ```
 
 Domain harus sama dengan region aplikasi Tencent. Script meminta **UserSig app
-admin**, bukan UserSig `wen` atau `bot_poc`. Default sender `bot_poc`, recipient
-`wen`. Gunakan argumen `text`, `radio`, `info`, `link`, `confirmation`, atau
-`answer`; script memerlukan Python 3 untuk menghasilkan JSON dan `MsgRandom`
+admin**, bukan UserSig `wen` atau `bot_poc`. Default sender `bot_poc`, target
+adalah `TENCENT_GROUP_ID`; nasabah dan bot harus menjadi anggota group.
+Gunakan argumen `text`, `radio`, `info`, `link`, `confirmation`, atau
+`answer`; script memerlukan Python 3 untuk menghasilkan JSON dan `Random`
 baru, serta memeriksa `ActionStatus`/`ErrorCode`. Tidak membutuhkan secret key.
-Untuk akun lain, set `TENCENT_BOT_ID`/`TENCENT_USER_ID`.
+Endpoint reply: `v4/group_open_http_svc/send_group_msg`; envelope memakai
+`GroupId` dan `Random`, tanpa `To_Account`/`MsgRandom` C2C. Untuk akun bot lain,
+set `TENCENT_BOT_ID`. Perintah `create-group` menyiapkan Public group PoC dengan join/invite SDK ditutup
+dengan owner `TENCENT_USER_ID` (default `wen`) dan anggota bot. Lihat
+[panduan group host](../Examples/VendorChatSDK/Tencent/README.md).
 
 Live dan history menggunakan pemetaan yang sama. Urutan batch history Tencent
-dibalik dari newest-first, tanpa mengurutkan ulang timestamp yang bisa sama. Membuka ulang chat tidak
+dibalik dari newest-first, tanpa mengurutkan ulang timestamp yang bisa sama.
+Membuka ulang chat tidak
 mengirim greeting; respons awal dapat berasal dari history atau bot yang mengirim
 pesan sendiri. Pengiriman REST nyata tetap perlu diverifikasi pada host dengan
 SDK/login Anda.

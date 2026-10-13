@@ -11,6 +11,7 @@ extension MessageTableView {
         /// estimated bottom, then at the measured one.
         static let maximumParkingPasses = 4
 
+        weak var parentController: UIViewController?
         weak var tableView: UITableView?
         var state = TanyaAIMessageListState.empty
         var isFollowingLatestMessage = true
@@ -20,12 +21,14 @@ extension MessageTableView {
         private var screenMetrics = ArtworkMetrics.screen
         private var imageLoader: ImageLoading = ImageLoader.shared
         private var handlers = TanyaAIMessageRowHandlers.inert
+        private let hostedCells = NSHashTable<MessageHostingCell>.weakObjects()
         private var subscriptions: [ObjectIdentifier: AnyCancellable] = [:]
         private var isHeightUpdatePending = false
         weak var scrollControl: TanyaAIMessageScrollControl?
         var latestRequestIdentifier = 0
 
-        func attach(_ tableView: LayoutTrackingTableView) {
+        func attach(_ tableView: LayoutTrackingTableView, parent: UIViewController? = nil) {
+            self.parentController = parent
             self.tableView = tableView
             tableView.onLayoutChange = { [weak self] in
                 self?.tableLayoutDidChange()
@@ -41,7 +44,8 @@ extension MessageTableView {
         ) {
             let previous = self.state
             let currentMetrics = ArtworkMetrics.screen
-            let isThemeChanged = self.theme != theme || screenMetrics != currentMetrics
+            let isThemeChanged =
+                self.theme != theme || screenMetrics != currentMetrics
                 || self.imageLoader !== imageLoader || self.copy != copy
             self.copy = copy
             self.state = state
@@ -81,17 +85,51 @@ extension MessageTableView {
             _ tableView: UITableView,
             cellForRowAt indexPath: IndexPath
         ) -> UITableViewCell {
-            guard let cell = tableView.dequeueReusableCell(
-                withIdentifier: MessageHostingCell.reuseIdentifier,
-                for: indexPath
-            ) as? MessageHostingCell else {
+            guard
+                let cell = tableView.dequeueReusableCell(
+                    withIdentifier: MessageHostingCell.reuseIdentifier,
+                    for: indexPath
+                ) as? MessageHostingCell
+            else {
                 return UITableViewCell()
             }
             guard let kind = state.kind(at: indexPath.row) else {
                 return cell
             }
-            cell.configure(rootView: rowView(for: kind))
+            hostedCells.add(cell)
+            if let parentController {
+                cell.configure(rootView: rowView(for: kind), parent: parentController)
+            }
             return cell
+        }
+
+        func tableView(_ tableView: UITableView, willDisplay cell: UITableViewCell, forRowAt indexPath: IndexPath) {
+            guard let parentController else { return }
+            (cell as? MessageHostingCell)?.attachHostedController(to: parentController)
+        }
+
+        func tableView(_ table: UITableView, didEndDisplaying cell: UITableViewCell, forRowAt path: IndexPath) {
+            (cell as? MessageHostingCell)?.detachHostedController()
+        }
+
+        func detach() {
+            subscriptions.removeAll()
+            hostedCells.allObjects.forEach { $0.clearHostedContent() }
+            hostedCells.removeAllObjects()
+            scrollRequestIdentifier += 1
+            tableView?.dataSource = nil
+            tableView?.delegate = nil
+            (tableView as? LayoutTrackingTableView)?.onLayoutChange = nil
+            parentController?.children.forEach { child in
+                child.willMove(toParent: nil)
+                child.view.removeFromSuperview()
+                child.removeFromParent()
+            }
+            handlers = .inert
+            state = .empty
+            scrollControl = nil
+            parentController = nil
+            tableView = nil
         }
 
         private func rowView(

@@ -1,8 +1,9 @@
 import SwiftUI
 
 public struct ChartBubble: View {
+    @Environment(\.theme)
+    private var theme
     let payload: ChartPayload
-    @Environment(\.theme) private var theme
 
     public init(payload: ChartPayload) {
         self.payload = payload

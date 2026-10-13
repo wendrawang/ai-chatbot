@@ -2,11 +2,14 @@ import DesignKit
 import SwiftUI
 
 struct MessageListView: View {
-    @ObservedObject var viewModel: TanyaAIChatViewModel
-    @StateObject private var scrollControl = TanyaAIMessageScrollControl()
-    @Environment(\.copyCatalog) private var copy
-
-    @Environment(\.theme) private var theme
+    @Environment(\.copyCatalog)
+    private var copy
+    @Environment(\.theme)
+    private var theme
+    @ObservedObject
+    var viewModel: TanyaAIChatViewModel
+    @StateObject
+    private var scrollControl = TanyaAIMessageScrollControl()
 
     var body: some View {
         MessageTableView(
@@ -23,19 +26,20 @@ struct MessageListView: View {
             scrollControl: scrollControl,
             handlers: TanyaAIMessageRowHandlers(
                 approval: .init(
-                    onEdit: viewModel.editApproval,
-                    onCancel: viewModel.cancelApproval,
-                    onApprove: viewModel.approve
+                    onEdit: { [weak viewModel] in viewModel?.editApproval($0) },
+                    onCancel: { [weak viewModel] in viewModel?.cancelApproval($0) },
+                    onApprove: { [weak viewModel] in viewModel?.approve($0) }
                 ),
                 choices: .init(
-                    onToggle: viewModel.toggleChoice,
-                    onSubmit: viewModel.submitChoices
+                    onToggle: { [weak viewModel] in viewModel?.toggleChoice($0, $1) },
+                    onSubmit: { [weak viewModel] in viewModel?.submitChoices($0) }
                 ),
-                onAction: viewModel.perform,
-                onSuggestion: viewModel.sendSuggestion,
-                onConfirmation: viewModel.confirm,
-                onAnswerOption: viewModel.selectAnswerOption,
-                onDeclineLiveAgent: viewModel.declineLiveAgent
+                onRetryMessage: { [weak viewModel] in viewModel?.retryMessage($0) },
+                onAction: { [weak viewModel] in viewModel?.perform($0) },
+                onSuggestion: { [weak viewModel] in viewModel?.sendSuggestion($0) },
+                onConfirmation: { [weak viewModel] in viewModel?.confirm($0) },
+                onAnswerOption: { [weak viewModel] in viewModel?.selectAnswerOption($0, $1) },
+                onDeclineLiveAgent: { [weak viewModel] in viewModel?.declineLiveAgent($0) }
             )
         )
         .overlay(alignment: .bottom) {

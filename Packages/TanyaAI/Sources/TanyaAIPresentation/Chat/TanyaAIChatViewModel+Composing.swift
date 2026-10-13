@@ -7,19 +7,22 @@ import TanyaAIDomain
 /// state and this one holds the rules for adding to it - chiefly that
 /// nothing may overwrite a confirmation the customer has already settled.
 extension TanyaAIChatViewModel {
-    func appendUserMessage(_ text: String) {
+    func appendUserMessage(_ text: String) -> TanyaAIMessageItemViewModel {
         let message = TanyaAIMessage(
             identifier: UUID().uuidString,
             role: .user,
-            content: .text(text)
+            content: .text(text), delivery: .pending
         )
-        appendMessage(TanyaAIMessageItemViewModel(message: message))
+        let row = TanyaAIMessageItemViewModel(message: message)
+        appendMessage(row)
+        return row
     }
 
     func appendAssistantPlaceholder(identifier: String) {
         let target = resolvedIdentifier(for: identifier)
         if let existing = message(identifier: target),
-           isSettledApproval(existing.content) == false {
+            isSettledApproval(existing.content) == false
+        {
             return
         }
         appendContent(identifier: identifier, content: .text(""))
@@ -30,7 +33,8 @@ extension TanyaAIChatViewModel {
         // through `appendContent` gives the delta a fresh bubble.
         let target = resolvedIdentifier(for: identifier)
         guard let message = message(identifier: target),
-              isSettledApproval(message.content) == false else {
+            isSettledApproval(message.content) == false
+        else {
             appendContent(identifier: identifier, content: .text(text))
             return
         }
@@ -38,13 +42,15 @@ extension TanyaAIChatViewModel {
         if case .text(let value) = message.content {
             existingText = value
         } else if case .answer(let payload) = message.content {
-            message.update(content: .answer(AnswerPayload(
-                text: (payload.text ?? "") + text,
-                options: payload.options,
-                image: payload.image,
-                actions: payload.actions,
-                isAnswered: payload.isAnswered
-            )))
+            message.update(
+                content: .answer(
+                    AnswerPayload(
+                        text: (payload.text ?? "") + text,
+                        options: payload.options,
+                        image: payload.image,
+                        actions: payload.actions,
+                        isAnswered: payload.isAnswered
+                    )))
             return
         } else {
             existingText = ""

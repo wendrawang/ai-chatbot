@@ -51,3 +51,6 @@ find "$PROJECT_ROOT/TanyaAISandboxApp" \
   -name '*.swift' -print0 | xargs -0 xcrun swift \
     -sdk "$MACOS_SDK" -I "$SWIFT_HOST_LIBS" -L "$SWIFT_HOST_LIBS" \
     -lSwiftSyntax -lSwiftParser "$PROJECT_ROOT/Scripts/check_methods.swift"
+
+# CI may supply its PR base; local checks cover unstaged/staged/new Swift files.
+python3 "$PROJECT_ROOT/Scripts/format_changed.py" --check --base "${TANYA_AI_STYLE_BASE:-HEAD}"

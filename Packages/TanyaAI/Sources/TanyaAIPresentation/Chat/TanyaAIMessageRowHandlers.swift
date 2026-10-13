@@ -37,6 +37,7 @@ struct TanyaAIMessageRowHandlers {
 
     let approval: Approval
     let choices: Choices
+    var onRetryMessage: (String) -> Void = { _ in }
     let onAction: (Action) -> Void
     let onSuggestion: (Suggestion) -> Void
     var onConfirmation: (ConfirmationPayload) -> Void = { _ in }

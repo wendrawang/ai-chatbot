@@ -9,6 +9,7 @@ enum SessionError: Error {
 
 final class SessionSpy: TanyaAIChatSession {
     var onEvent: ((TanyaAIChatSessionEvent) -> Void)?
+    private(set) var requestIdentifiers: [String] = []
     private(set) var sentTexts: [String] = []
     private(set) var sentContexts: [TanyaAIContext?] = []
     private(set) var isConnected = false
@@ -23,9 +24,11 @@ final class SessionSpy: TanyaAIChatSession {
         text: String,
         context: TanyaAIContext?,
         requestIdentifier: String
-    ) {
+    ) -> String? {
+        requestIdentifiers.append(requestIdentifier)
         sentTexts.append(text)
         sentContexts.append(context)
+        return "sdk-" + requestIdentifier
     }
 
     func disconnect() {

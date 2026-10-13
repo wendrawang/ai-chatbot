@@ -2,8 +2,10 @@ import DesignKit
 import TanyaAIDomain
 import UIKit
 import XCTest
+
 @testable import TanyaAIPresentation
 
+@MainActor
 final class TanyaAIScrollControlTests: XCTestCase {
     func testVisibilityCoalescesAndReturnCancelsStaleUpdate() {
         let control = TanyaAIMessageScrollControl()

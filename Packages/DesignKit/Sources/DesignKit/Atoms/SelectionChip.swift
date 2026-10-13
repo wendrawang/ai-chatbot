@@ -10,11 +10,12 @@ import UIKit
 /// column and lost the shape the design is built on. Repacking is the smaller
 /// cost of the two.
 public struct SelectionChip: View {
+    @Environment(\.theme)
+    private var theme
     let title: String
     let isSelected: Bool
     let isEnabled: Bool
     let onTap: () -> Void
-    @Environment(\.theme) private var theme
 
     /// The tick and the gap after it, counted only when it is showing.
     static let indicatorWidth = DesignKitMetrics.Size.indicator
@@ -42,7 +43,8 @@ public struct SelectionChip: View {
         let text = (title as NSString).size(
             withAttributes: [.font: font]
         ).width
-        let tick = isSelected
+        let tick =
+            isSelected
             ? indicatorWidth.sizeInArtwork + FigmaSize.spacing8.sizeInArtwork
             : 0
         return ceil(text) + tick + FigmaSize.spacing16.sizeInArtwork * 2

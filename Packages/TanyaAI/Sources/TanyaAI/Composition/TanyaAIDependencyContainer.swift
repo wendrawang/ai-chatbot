@@ -3,6 +3,7 @@ import TanyaAIData
 import TanyaAIDomain
 import TanyaAIPresentation
 
+@MainActor
 final class TanyaAIDependencyContainer {
     private let configuration: TanyaAIConfiguration
     private let dependencies: TanyaAIDependencies
@@ -22,9 +23,8 @@ final class TanyaAIDependencyContainer {
         let repository = TanyaAISessionRepository(
             session: dependencies.chatSession
         )
-        let useCase = TanyaAIChatUseCase(repository: repository)
         return TanyaAIChatViewModel(
-            useCase: useCase,
+            repository: repository,
             isAuthorizationEnabled: dependencies.authorizationService != nil,
             isConfirmationEnabled: isConfirmationEnabled,
             shortcuts: configuration.shortcuts,
@@ -32,15 +32,13 @@ final class TanyaAIDependencyContainer {
         )
     }
 
-    func makeHistoryViewModel() -> TanyaAIHistoryViewModel {
-        TanyaAIHistoryViewModel(items: configuration.historyItems)
-    }
+    var historyItems: [ConversationSummary] { configuration.historyItems }
 
     func startInitialPrompt(on viewModel: TanyaAIChatViewModel) {
         guard let initialPrompt = configuration.initialPrompt else {
             return
         }
-        viewModel.sendMessage(initialPrompt)
+        viewModel.startInitialPrompt(initialPrompt)
     }
 
     func makePINViewModel(

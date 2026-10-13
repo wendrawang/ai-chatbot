@@ -3,52 +3,50 @@ import Foundation
 import TanyaAIContracts
 import TanyaAIDomain
 import XCTest
+
 @testable import TanyaAIPresentation
 
+@MainActor
 final class TanyaAIChatBehaviorTests: XCTestCase {
-    func testBlankAndConcurrentMessagesAreIgnored() {
-        let useCase = ChatUseCaseBehaviorStub()
-        let viewModel = TanyaAIChatViewModel(useCase: useCase)
-
-        viewModel.sendMessage("   ")
-        viewModel.sendMessage("First request")
-        viewModel.sendMessage("Second request")
-
-        XCTAssertEqual(useCase.receivedTexts, ["First request"])
-        XCTAssertEqual(viewModel.messages.count, 1)
-        XCTAssertTrue(viewModel.isGenerating)
+    func testBlankMessagesAreIgnoredAndNewContextCanBeSentWhileTyping() {
+        let repository = TanyaAIRepositoryStub()
+        let viewModel = TanyaAIChatViewModel(repository: repository)
+        XCTAssertFalse(viewModel.sendMessage("   "))
+        XCTAssertTrue(viewModel.sendMessage("First request"))
+        repository.send(.typing(true))
+        XCTAssertTrue(viewModel.sendMessage("Second request"))
+        XCTAssertEqual(repository.receivedTexts, ["First request", "Second request"])
+        XCTAssertEqual(viewModel.messages.count, 2)
+        XCTAssertTrue(viewModel.isAgentTyping)
     }
 
-    func testCancellationStopsRequestAndFlushesText() {
-        let useCase = ChatUseCaseBehaviorStub()
-        let viewModel = TanyaAIChatViewModel(useCase: useCase)
-        viewModel.sendMessage("Start request")
-        useCase.send(
-            .textDelta(messageIdentifier: "assistant", text: "Partial")
-        )
-
-        viewModel.cancelGeneration()
-
-        XCTAssertTrue(useCase.cancellable.isCancelled)
-        XCTAssertFalse(viewModel.isGenerating)
-        XCTAssertEqual(viewModel.messages.last?.content, .text("Partial"))
+    func testLateReplyOnlyFinishesItsOwnTextBuffer() {
+        let repository = TanyaAIRepositoryStub()
+        repository.isAutomaticAcknowledgement = false
+        let viewModel = TanyaAIChatViewModel(repository: repository)
+        viewModel.sendMessage("First")
+        viewModel.sendMessage("Second")
+        repository.send(.textDelta(messageIdentifier: "first-reply", text: "Late reply"))
+        repository.send(.responseCompleted(messageIdentifier: "first-reply"))
+        XCTAssertEqual(viewModel.messages[0].delivery, .pending)
+        XCTAssertEqual(viewModel.messages[1].delivery, .pending)
+        XCTAssertEqual(viewModel.messages.last?.content, .text("Late reply"))
     }
 
     func testFailurePreservesConversationAndShowsError() {
-        let useCase = ChatUseCaseBehaviorStub()
-        let viewModel = TanyaAIChatViewModel(useCase: useCase)
+        let repository = TanyaAIRepositoryStub()
+        repository.isAutomaticAcknowledgement = false
+        let viewModel = TanyaAIChatViewModel(repository: repository)
         viewModel.sendMessage("Start request")
-
-        useCase.complete(.failure(ChatBehaviorError.interrupted))
-
-        XCTAssertFalse(viewModel.isGenerating)
+        repository.complete(.failure(ChatBehaviorError.interrupted))
+        XCTAssertEqual(viewModel.messages.first?.delivery, .failed)
         XCTAssertNotNil(viewModel.errorMessage)
         XCTAssertEqual(viewModel.messages.count, 1)
     }
 
     func testNavigationActionsProduceOutputs() {
         let viewModel = TanyaAIChatViewModel(
-            useCase: ChatUseCaseBehaviorStub()
+            repository: TanyaAIRepositoryStub()
         )
         var outputs: [TanyaAIChatOutput] = []
         viewModel.onOutput = { outputs.append($0) }
@@ -63,8 +61,8 @@ final class TanyaAIChatBehaviorTests: XCTestCase {
     }
 
     func testApprovalEditCancelAndStateGuard() {
-        let useCase = ChatUseCaseBehaviorStub()
-        let viewModel = TanyaAIChatViewModel(useCase: useCase)
+        let repository = TanyaAIRepositoryStub()
+        let viewModel = TanyaAIChatViewModel(repository: repository)
         let approval = makeApproval()
         var approvalOutputCount = 0
         viewModel.onOutput = { output in
@@ -73,7 +71,7 @@ final class TanyaAIChatBehaviorTests: XCTestCase {
             }
         }
         viewModel.sendMessage("Create transfer")
-        useCase.send(
+        repository.send(
             .content(
                 messageIdentifier: "approval-message",
                 content: .approval(approval)
@@ -81,7 +79,7 @@ final class TanyaAIChatBehaviorTests: XCTestCase {
         )
 
         viewModel.editApproval(approval)
-        XCTAssertTrue(viewModel.inputText.hasPrefix("Change"))
+        XCTAssertTrue((viewModel.draftRequest?.text.hasPrefix("Change") == true))
         viewModel.cancelApproval(approval)
         guard case .approval(let cancelled) = viewModel.messages.last?.content else {
             return XCTFail("Expected cancelled approval")
@@ -92,17 +90,17 @@ final class TanyaAIChatBehaviorTests: XCTestCase {
     }
 
     func testContentReplacesExistingPlaceholder() {
-        let useCase = ChatUseCaseBehaviorStub()
-        let viewModel = TanyaAIChatViewModel(useCase: useCase)
+        let repository = TanyaAIRepositoryStub()
+        let viewModel = TanyaAIChatViewModel(repository: repository)
         viewModel.sendMessage("Show status")
-        useCase.send(.responseStarted(messageIdentifier: "assistant"))
+        repository.send(.responseStarted(messageIdentifier: "assistant"))
         let status = StatusPayload(
             title: "Completed",
             detail: "Sanitized result",
             level: .success
         )
 
-        useCase.send(
+        repository.send(
             .content(
                 messageIdentifier: "assistant",
                 content: .status(status)
@@ -128,39 +126,4 @@ final class TanyaAIChatBehaviorTests: XCTestCase {
 
 private enum ChatBehaviorError: Error {
     case interrupted
-}
-
-private final class ChatUseCaseBehaviorStub: TanyaAIChatUseCaseProtocol {
-    let cancellable = ChatCancellableSpy()
-    private var eventHandler: ((TanyaAIStreamEvent) -> Void)?
-    private var completionHandler: ((Result<Void, Error>) -> Void)?
-    private(set) var receivedTexts: [String] = []
-
-    func sendMessage(
-        conversationIdentifier: String?,
-        text: String,
-        onEvent: @escaping (TanyaAIStreamEvent) -> Void,
-        completion: @escaping (Result<Void, Error>) -> Void
-    ) -> TanyaAICancellable {
-        receivedTexts.append(text)
-        eventHandler = onEvent
-        completionHandler = completion
-        return cancellable
-    }
-
-    func send(_ event: TanyaAIStreamEvent) {
-        eventHandler?(event)
-    }
-
-    func complete(_ result: Result<Void, Error>) {
-        completionHandler?(result)
-    }
-}
-
-private final class ChatCancellableSpy: TanyaAICancellable {
-    private(set) var isCancelled = false
-
-    func cancel() {
-        isCancelled = true
-    }
 }

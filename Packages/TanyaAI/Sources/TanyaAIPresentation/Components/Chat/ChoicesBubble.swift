@@ -4,10 +4,11 @@ import TanyaAIDomain
 
 /// Adapts feature selection rules and backend prompts to the reusable layout.
 public struct ChoicesBubble: View {
+    @Environment(\.copyCatalog)
+    private var copy
     private let payload: ChoicesPayload
     private let onToggle: (String) -> Void
     private let onSubmit: () -> Void
-    @Environment(\.copyCatalog) private var copy
 
     public init(payload: ChoicesPayload, onToggle: @escaping (String) -> Void, onSubmit: @escaping () -> Void) {
         self.payload = payload
@@ -15,7 +16,8 @@ public struct ChoicesBubble: View {
         self.onSubmit = onSubmit
     }
 
-    @ViewBuilder public var body: some View {
+    @ViewBuilder
+    public var body: some View {
         if payload.isMultipleSelectionAllowed {
             multipleChoices
         } else {
@@ -23,7 +25,7 @@ public struct ChoicesBubble: View {
                 text: payload.title,
                 options: payload.isSubmitted ? [] : options,
                 onSelect: { onToggle($0.identifier) },
-                actions: { }
+                actions: {}
             )
         }
     }

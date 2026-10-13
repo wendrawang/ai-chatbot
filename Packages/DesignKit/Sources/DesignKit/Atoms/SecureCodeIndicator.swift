@@ -1,6 +1,8 @@
 import SwiftUI
 
 public struct SecureCodeIndicator: View {
+    @Environment(\.theme)
+    private var theme
 
     let enteredDigitCount: Int
     let totalDigitCount: Int
@@ -11,15 +13,15 @@ public struct SecureCodeIndicator: View {
         self.totalDigitCount = max(0, totalDigitCount)
         self.label = label
     }
-    @Environment(\.theme) private var theme
 
     public var body: some View {
         HStack(spacing: DesignKitMetrics.Spacing.card.sizeInArtwork) {
             ForEach(0..<totalDigitCount, id: \.self) { index in
                 Circle()
                     .fill(indicatorColor(at: index))
-                    .frame(width: DesignKitMetrics.Size.secureDigit.sizeInArtwork,
-                           height: DesignKitMetrics.Size.secureDigit.sizeInArtwork)
+                    .frame(
+                        width: DesignKitMetrics.Size.secureDigit.sizeInArtwork,
+                        height: DesignKitMetrics.Size.secureDigit.sizeInArtwork)
             }
         }
         .frame(maxWidth: .infinity)

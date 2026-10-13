@@ -48,22 +48,24 @@ final class TanyaAIPushAnimator: NSObject, UIViewControllerAnimatedTransitioning
     func transitionDuration(
         using transitionContext: UIViewControllerContextTransitioning?
     ) -> TimeInterval {
-        Self.duration
+        UIAccessibility.isReduceMotionEnabled ? 0 : Self.duration
     }
 
     func animateTransition(
         using context: UIViewControllerContextTransitioning
     ) {
         guard let leaving = context.viewController(forKey: .from),
-              let arriving = context.viewController(forKey: .to) else {
+            let arriving = context.viewController(forKey: .to)
+        else {
             context.completeTransition(false)
             return
         }
         let container = context.containerView
-        let width = container.bounds.width
+        let width = UIAccessibility.isReduceMotionEnabled ? 0 : container.bounds.width
         // The page arrives from the side the language reads towards.
-        let direction: CGFloat = container
-            .effectiveUserInterfaceLayoutDirection == .rightToLeft ? -1 : 1
+        let direction: CGFloat =
+            container
+                .effectiveUserInterfaceLayoutDirection == .rightToLeft ? -1 : 1
 
         if isPresenting {
             present(
@@ -150,7 +152,7 @@ final class TanyaAIPushAnimator: NSObject, UIViewControllerAnimatedTransitioning
         completion: @escaping () -> Void
     ) {
         UIView.animate(
-            withDuration: Self.duration,
+            withDuration: transitionDuration(using: nil),
             delay: 0,
             options: [.curveEaseInOut],
             animations: changes,

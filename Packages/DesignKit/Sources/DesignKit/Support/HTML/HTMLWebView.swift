@@ -17,10 +17,11 @@ import WebKit
 /// Height is measured from the scroll view rather than asked for with
 /// JavaScript, which would defeat the first lock.
 struct HTMLWebView: UIViewRepresentable {
+    @Environment(\.colorScheme)
+    private var colorScheme
     let html: String
     let theme: Theme
     let onHeightChange: (CGFloat) -> Void
-    @Environment(\.colorScheme) private var colorScheme
 
     func makeCoordinator() -> Coordinator {
         Coordinator(onHeightChange: onHeightChange)
@@ -80,29 +81,29 @@ struct HTMLWebView: UIViewRepresentable {
         let divider = theme.colors.divider.cssColor(traits)
         let size = theme.fonts.body.pointSize
         return """
-        <!doctype html><html><head><meta charset="utf-8">
-        <meta http-equiv="Content-Security-Policy" content="default-src 'none';
-        style-src 'unsafe-inline'; img-src data:; base-uri 'none'; form-action 'none'">
-        <meta name="viewport" content="width=device-width,initial-scale=1">
-        <style>
-        :root { color-scheme: light dark; }
-        html, body { margin: 0; padding: 0; background: transparent; }
-        body {
-          font: \(size)px -apple-system, system-ui, sans-serif;
-          color: \(text);
-          -webkit-text-size-adjust: none;
-        }
-        table { border-collapse: collapse; width: 100%; }
-        th, td {
-          padding-block: \(FigmaSize.spacing8.sizeInArtwork)px;
-          padding-inline: \(DesignKitMetrics.Spacing.regular.sizeInArtwork)px;
-          border-bottom: \(DesignKitMetrics.Stroke.divider.strokeInArtwork)px solid \(divider);
-          text-align: left;
-        }
-        th { color: \(secondary); font-weight: \(DesignKitMetrics.Web.headerWeight); }
-        img { max-width: 100%; height: auto; }
-        </style></head><body>\(html)</body></html>
-        """
+            <!doctype html><html><head><meta charset="utf-8">
+            <meta http-equiv="Content-Security-Policy" content="default-src 'none';
+            style-src 'unsafe-inline'; img-src data:; base-uri 'none'; form-action 'none'">
+            <meta name="viewport" content="width=device-width,initial-scale=1">
+            <style>
+            :root { color-scheme: light dark; }
+            html, body { margin: 0; padding: 0; background: transparent; }
+            body {
+              font: \(size)px -apple-system, system-ui, sans-serif;
+              color: \(text);
+              -webkit-text-size-adjust: none;
+            }
+            table { border-collapse: collapse; width: 100%; }
+            th, td {
+              padding-block: \(FigmaSize.spacing8.sizeInArtwork)px;
+              padding-inline: \(DesignKitMetrics.Spacing.regular.sizeInArtwork)px;
+              border-bottom: \(DesignKitMetrics.Stroke.divider.strokeInArtwork)px solid \(divider);
+              text-align: left;
+            }
+            th { color: \(secondary); font-weight: \(DesignKitMetrics.Web.headerWeight); }
+            img { max-width: 100%; height: auto; }
+            </style></head><body>\(html)</body></html>
+            """
     }
 
     final class Coordinator: NSObject, WKNavigationDelegate {
@@ -130,7 +131,8 @@ struct HTMLWebView: UIViewRepresentable {
                 options: [.new]
             ) { [weak self, weak webView] _, change in
                 guard let webView, let height = change.newValue?.height, height > 0,
-                      abs(height - webView.bounds.height) > DesignKitMetrics.Layout.measurementTolerance else {
+                    abs(height - webView.bounds.height) > DesignKitMetrics.Layout.measurementTolerance
+                else {
                     return
                 }
                 // WebKit also reports the viewport during native fitting. Feeding it back
@@ -155,9 +157,10 @@ struct HTMLWebView: UIViewRepresentable {
             // `.other` also includes automatic redirects and frame loads.
             // Only the main-frame about:blank load armed by the host may pass.
             guard isInitialNavigationPending,
-                  navigationAction.navigationType == .other,
-                  navigationAction.targetFrame?.isMainFrame == true,
-                  navigationAction.request.url?.absoluteString == "about:blank" else {
+                navigationAction.navigationType == .other,
+                navigationAction.targetFrame?.isMainFrame == true,
+                navigationAction.request.url?.absoluteString == "about:blank"
+            else {
                 decisionHandler(.cancel)
                 return
             }

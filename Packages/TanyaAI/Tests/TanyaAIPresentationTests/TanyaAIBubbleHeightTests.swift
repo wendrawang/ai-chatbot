@@ -2,24 +2,31 @@ import DesignKit
 import TanyaAIDomain
 import UIKit
 import XCTest
+
 @testable import TanyaAIPresentation
 
+@MainActor
 final class TanyaAIBubbleHeightTests: XCTestCase {
     func testConsumingOptionsShrinksRowWithoutOverlappingTheFollowingMessage() {
         let window = UIWindow(frame: CGRect(x: 0, y: 0, width: 390, height: 700))
         let (tableView, coordinator) = makeTable(in: window)
         defer { window.isHidden = true }
-        let answer = TanyaAIMessageItemViewModel(message: TanyaAIMessage(
-            identifier: "answer", role: .assistant,
-            content: .answer(AnswerPayload(text: "Choose a service", options: [
-                .init(identifier: "first", title: "First option", prompt: "First option"),
-                .init(identifier: "second", title: "Second option", prompt: "Second option")
-            ]))
-        ))
-        coordinator.update(TanyaAIMessageListState(
-            messages: [answer, item(identifier: "next", text: "Following message")],
-            isRestoring: false, isTypingRowVisible: false, suggestions: [], suggestionsTitle: nil
-        ), theme: .sandbox, handlers: .inert)
+        let answer = TanyaAIMessageItemViewModel(
+            message: TanyaAIMessage(
+                identifier: "answer", role: .assistant,
+                content: .answer(
+                    AnswerPayload(
+                        text: "Choose a service",
+                        options: [
+                            .init(identifier: "first", title: "First option", prompt: "First option"),
+                            .init(identifier: "second", title: "Second option", prompt: "Second option")
+                        ]))
+            ))
+        coordinator.update(
+            TanyaAIMessageListState(
+                messages: [answer, item(identifier: "next", text: "Following message")],
+                isRestoring: false, isTypingRowVisible: false, suggestions: [], suggestionsTitle: nil
+            ), theme: .sandbox, handlers: .inert)
         tableView.layoutIfNeeded()
         let original = tableView.rectForRow(at: IndexPath(row: 0, section: 0)).height
         answer.consumeOptions()
@@ -48,15 +55,17 @@ final class TanyaAIBubbleHeightTests: XCTestCase {
         let window = UIWindow(frame: tableView.frame)
         let controller = UIViewController()
         window.rootViewController = controller
+        coordinator.attach(tableView, parent: controller)
         controller.view.addSubview(tableView)
         window.makeKeyAndVisible()
         defer { window.isHidden = true }
         let message = item(identifier: "growing", text: "Short")
-        coordinator.update(TanyaAIMessageListState(
-            messages: [message, item(identifier: "next", text: "Following bubble")],
-            isRestoring: false, isTypingRowVisible: false,
-            suggestions: [], suggestionsTitle: nil
-        ), theme: .sandbox, handlers: .inert)
+        coordinator.update(
+            TanyaAIMessageListState(
+                messages: [message, item(identifier: "next", text: "Following bubble")],
+                isRestoring: false, isTypingRowVisible: false,
+                suggestions: [], suggestionsTitle: nil
+            ), theme: .sandbox, handlers: .inert)
         tableView.layoutIfNeeded()
         let original = tableView.rectForRow(at: IndexPath(row: 0, section: 0)).height
         message.update(content: .text(String(repeating: "A longer answer with several words. ", count: 20)))
@@ -79,10 +88,11 @@ final class TanyaAIBubbleHeightTests: XCTestCase {
             let tableView = LayoutTrackingTableView(frame: .zero)
             coordinator.attach(tableView)
             let message = item(identifier: "pending", text: "Short")
-            coordinator.update(TanyaAIMessageListState(
-                messages: [message], isRestoring: false, isTypingRowVisible: false,
-                suggestions: [], suggestionsTitle: nil
-            ), theme: .sandbox, handlers: .inert)
+            coordinator.update(
+                TanyaAIMessageListState(
+                    messages: [message], isRestoring: false, isTypingRowVisible: false,
+                    suggestions: [], suggestionsTitle: nil
+                ), theme: .sandbox, handlers: .inert)
             message.update(content: .text("Updated before teardown"))
             releasedTable = tableView
             releasedCoordinator = coordinator
@@ -94,9 +104,10 @@ final class TanyaAIBubbleHeightTests: XCTestCase {
     }
 
     private func item(identifier: String, text: String) -> TanyaAIMessageItemViewModel {
-        TanyaAIMessageItemViewModel(message: TanyaAIMessage(
-            identifier: identifier, role: .assistant, content: .text(text)
-        ))
+        TanyaAIMessageItemViewModel(
+            message: TanyaAIMessage(
+                identifier: identifier, role: .assistant, content: .text(text)
+            ))
     }
 
     private func makeTable(in window: UIWindow) -> (LayoutTrackingTableView, MessageTableView.Coordinator) {
@@ -107,8 +118,8 @@ final class TanyaAIBubbleHeightTests: XCTestCase {
         tableView.estimatedRowHeight = 60
         tableView.dataSource = coordinator
         tableView.delegate = coordinator
-        coordinator.attach(tableView)
         let controller = UIViewController()
+        coordinator.attach(tableView, parent: controller)
         window.rootViewController = controller
         controller.view.addSubview(tableView)
         window.makeKeyAndVisible()

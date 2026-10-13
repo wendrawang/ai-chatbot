@@ -68,13 +68,6 @@ let package = Package(
             ]
         ),
         .testTarget(
-            name: "TanyaAIDomainTests",
-            dependencies: [
-                "TanyaAIDomain",
-                "TanyaAITestSupport"
-            ]
-        ),
-        .testTarget(
             name: "TanyaAIPresentationTests",
             dependencies: [
                 "TanyaAIPresentation",

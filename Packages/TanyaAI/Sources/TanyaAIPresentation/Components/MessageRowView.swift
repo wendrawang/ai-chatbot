@@ -3,9 +3,11 @@ import SwiftUI
 import TanyaAIDomain
 
 struct MessageRowView: View {
+    @Environment(\.copyCatalog)
+    private var copy
 
-    @Environment(\.copyCatalog) private var copy
-    @ObservedObject var viewModel: TanyaAIMessageItemViewModel
+    @ObservedObject
+    var viewModel: TanyaAIMessageItemViewModel
     let handlers: TanyaAIMessageRowHandlers
 
     var body: some View {
@@ -14,13 +16,32 @@ struct MessageRowView: View {
                 Spacer(minLength: FigmaSize.spacing48.sizeInArtwork)
             }
 
-            content
+            VStack(
+                alignment: viewModel.role == .user ? .trailing : .leading,
+                spacing: FigmaSize.spacing4.sizeInArtwork
+            ) {
+                content
+                deliveryStatus
+            }
 
             if viewModel.role != .user {
                 Spacer(minLength: FigmaSize.spacing32.sizeInArtwork)
             }
         }
         .accessibilityElement(children: .contain)
+    }
+
+    @ViewBuilder
+    private var deliveryStatus: some View {
+        if viewModel.delivery == .pending {
+            Text(copy.chat("chat.sending"))
+                .designFont(.caption)
+        } else if viewModel.delivery == .failed {
+            Button(copy.chat("chat.retrySend")) { handlers.onRetryMessage(viewModel.identifier) }
+                .designFont(.caption)
+                .frame(minHeight: DesignKitMetrics.Size.minimumTapTarget.tapTargetInArtwork)
+                .accessibilityIdentifier("chat.retrySend.\(viewModel.identifier)")
+        }
     }
 
     @ViewBuilder
@@ -69,9 +90,11 @@ struct MessageRowView: View {
     }
 
     private func unsupported(_ message: String?) -> some View {
-        StatusBubble(payload: StatusPayload(
-            title: copy.chat("chat.updateRequired"), detail: message ?? copy.chat("chat.unsupported"), level: .warning
-        ))
+        StatusBubble(
+            payload: StatusPayload(
+                title: copy.chat("chat.updateRequired"), detail: message ?? copy.chat("chat.unsupported"),
+                level: .warning
+            ))
     }
 
     private func confirmation(_ payload: ConfirmationPayload) -> some View {
