@@ -1,5 +1,13 @@
 # Rencana migrasi bertahap ke DesignKit
 
+Katalog sekarang sudah dibatasi ke komponen Figma terbaru. Chart/HTML/card
+finansial lama, keypad/PIN internal, dan contoh vendor sudah dihapus. Tipe/ukuran
+DesignKit memakai nama peran umum. Untuk existing design system Anda, `Legacy`
+tetap menjadi area migrasi API yang masih dipakai screen aplikasi, bukan area
+untuk menyalin lagi komponen demo yang dihapus. Update kedua package bersama;
+perubahan parameter host/kontrak ada pada README dan HOST_INTEGRATION.md.
+
+
 Mulai dari **fondasi DesignKit: Legacy, token, font, dan sizing**. Setelah fondasi
 stabil, pindahkan komponen kecil dan adopsi UI Tanya AI satu bagian setiap kali.
 Tidak perlu langsung mengganti seluruh screen aplikasi atau menghapus semua

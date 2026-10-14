@@ -25,14 +25,19 @@ public struct AcknowledgementRow: View {
                     .fixedSize(horizontal: false, vertical: true)
                     .frame(maxWidth: .infinity, alignment: .leading)
                 Image(systemName: isAccepted ? "checkmark.circle.fill" : "circle")
-                    .designFont(.headline)
+                    .resizable()
+                    .scaledToFit()
+                    .frame(
+                        width: DesignKitMetrics.Size.indicator.sizeInArtwork,
+                        height: DesignKitMetrics.Size.indicator.sizeInArtwork
+                    )
                     .foregroundColor(Color(isAccepted ? theme.colors.success : theme.colors.primaryText))
                     .accessibilityHidden(true)
             }
             .padding(FigmaSize.spacing16.sizeInArtwork)
             .frame(minHeight: DesignKitMetrics.Size.minimumTapTarget.tapTargetInArtwork)
             .background(
-                RoundedRectangle(cornerRadius: DesignKitMetrics.Conversation.summaryRadius.sizeInArtwork)
+                RoundedRectangle(cornerRadius: DesignKitMetrics.Radius.summary.sizeInArtwork)
                     .strokeBorder(
                         Color(isAccepted ? theme.colors.success : theme.colors.divider),
                         lineWidth: DesignKitMetrics.Stroke.hairline.strokeInArtwork

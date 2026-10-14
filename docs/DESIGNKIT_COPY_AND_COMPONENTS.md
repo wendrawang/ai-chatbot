@@ -1,210 +1,76 @@
-# Komponen generik dan copy multilanguage
+# DesignKit: komponen dan aturan pemakaian
 
-Update **DesignKit dan TanyaAI ke revisi yang sama**. Integrasi utama tetap
-`TanyaAIHost` + `.tanyaAIHost(host)`; penggantian nama berlaku untuk view komponen,
-bukan kontrak sesi SDK atau facade host.
+DesignKit tidak mengetahui Tanya AI, backend, produk bank, atau navigasi.
+Public view menggunakan nama peran dan input tampilan generik. Katalog saat ini
+hanya berisi primitive/komponen yang dipakai desain Figma terbaru, beserta
+fondasi token, font, sizing, localization, rich text dan hosting UIKit.
 
-## Memilih bahasa dan copy dari host
+## Katalog aktif
 
-Paket menyediakan copy UI `en` dan `id`. Jika tidak diberi konfigurasi,
-`CopyCatalog` mengambil bahasa pilihan perangkat saat dibuat. Bahasa yang belum
-tersedia dan key terjemahan yang hilang fallback ke Inggris. Prioritasnya:
-**override host → resource bahasa terpilih → resource Inggris → key**.
+| Komponen | Kegunaan | Struktur/input |
+| --- | --- | --- |
+| `MessageComposer` | Kotak input multiline dengan send di dalam | Binding draft, enabled dan onSend; field/button/surface private |
+| `GrowingTextInput` | Editor multiline satu–empat baris pada iOS 15 | Bridge UITextView terukur; tidak memegang sesi |
+| `RichText` / `TextBubble` | Teks bergaya, link, bullet dan prompt user | String + callback link; parser native, tanpa HTML |
+| `ScrollToLatestButton` | Tombol kembali ke pesan terakhir | Label + callback; pemilik scroll ada pada screen |
+| `OptionRow` / `OptionList` | Pilihan aktif dan readonly history | SelectionOption, selected ID, enabled dan callback |
+| `ActionPill` | Aksi outlined | Judul, simbol, enabled dan callback; tidak tahu deeplink |
+| `ActivityStatus` | Status proses dengan simbol | Teks dari caller; tidak memegang task jaringan |
+| `LoadingStateView` | Loading/error bootstrap | Label dari caller; pemilik state di fitur |
+| `QuickActionRow` / `QuickActionList` | Entry action dengan judul/deskripsi/icon | QuickActionData + callback; reusable untuk halaman lain |
+| `WelcomeContent<Emblem>` | Sapaan/deskripsi/daftar entry action | Copy/action dan artwork ViewBuilder; screen mengatur posisi/background |
+| `DataTable` | Tabel dua/tiga kolom | DataTableData; satu pembagian lebar header/row/footer, teks membungkus |
+| `ItemHeader` | Judul item dengan subjudul/detail/simbol | Nilai tampilan umum; tidak ada model produk bank |
+| `MetricSummary` | Nilai utama dengan delta dan info | Judul/value/change dalam String, positivity, callback info |
+| `SummaryCard<Header>` | Ringkasan fields dengan header | SummaryField + ViewBuilder header; pemilik transaksi tetap di fitur |
+| `AcknowledgementRow` | Dokumen/persetujuan yang bisa dibuka | Judul, accepted, enabled, callback; keputusan accepted milik caller |
+| `OutlinedBackground` / `DesignButtonStyle` | Primitive surface/button feedback | Visual theme dan ukuran; tanpa workflow |
+| `HostingTableViewCell` / `LayoutTrackingTableView` | Bridge layout/lifetime UIKit | Generic Content; tidak menyimpan data bisnis |
 
-Host dapat memakai resource localization miliknya sendiri; isi dictionary harus
-sudah berupa string dalam bahasa yang dipilih host. Override tidak melakukan
-network request atau menjalankan closure di setiap row.
+Tidak ada ViewModel per komponen. `let` untuk nilai display, `@Binding` untuk
+state milik caller, `@State` untuk interaksi/pengukuran lokal. Callback mengirim
+intent ke screen. `ViewBuilder` pada welcome/summary memungkinkan ganti artwork
+atau header tanpa menambah banyak flag yang tidak saling berkaitan.
 
-```swift
-import TanyaAI
+`DataTable` mempunyai validasi jumlah kolom/cell/span di data model, sehingga
+renderer tidak perlu memutuskan cara membuang kolom berlebih. Ukuran teks
+aksesibilitas memakai field vertikal per row tanpa membuang kolom. Lebar diukur sekali
+untuk seluruh baris; cell membungkus vertikal. Data numeric tetap berupa String
+presentasi, perhitungan/format mata uang milik pemakai.
 
-let copy = TanyaAICopyCatalog(
-    localeIdentifier: "id",
-    overrides: [
-        "chat.title": "Tanya AI",
-        "chat.subtitle": "",
-        "chat.placeholder": "Tanyakan sesuatu",
-        "chat.interrupted": "Koneksi terputus. Silakan coba lagi."
-    ]
-)
-```
-
-String contoh di atas milik **host**, bukan default package. Di project utama,
-isi nilainya menggunakan accessor `.xcstrings` / `.strings` aplikasi Anda.
-Tidak perlu menyalin semua key; key yang tidak dioverride memakai resource package.
-
-Tambahkan `copy` pada pembuatan host yang sudah ada:
-
-```swift
-let host = TanyaAIHost(
-    theme: selectedTheme,
-    deeplinkScheme: appScheme,
-    deeplinkHost: appDeeplinkHost,
-    initialPrompt: nil,
-    shortcuts: [],
-    copy: copy,
-    makeSession: makeChatSession,
-    onDeeplink: handleDeeplink
-)
-```
-
-`selectedTheme`, `appScheme`, `makeChatSession`, dan `handleDeeplink` adalah
-nilai/fungsi integrasi Anda yang sudah ada. Tetap pasang `.tanyaAIHost(host)`
-pada Main dan panggil `host.present()` dari tombol entry point.
-
-Jika menggunakan `TanyaAIModule.makeViewController` secara langsung,
-masukkan `copy` ke `TanyaAIConfiguration(copy: copy)`.
-
-Konfigurasi host adalah **snapshot per instance**, termasuk copy untuk error
-ViewModel dan layar PIN. Ketika bahasa aplikasi berubah, tutup presentasi lalu
-buat host baru dengan copy bahasa baru. Mengganti `.locale` di Main saja tidak
-mengganti konfigurasi fitur yang dipresentasikan melalui UIKit.
-
-## Memakai DesignKit secara mandiri
+## Fondasi dan cara pasang
 
 ```swift
-import DesignKit
-import SwiftUI
-
-struct ProfileScreen: View {
-    let copy: CopyCatalog
-    let selectedTheme: Theme
-
-    var body: some View {
-        ProfileContent()
-            .copyCatalog(copy)
-            .theme(selectedTheme)
-    }
-}
+ContentView()
+    .theme(selectedTheme)
+    .copyCatalog(CopyCatalog(localeIdentifier: "id"))
 ```
 
-`ProfileContent` adalah isi halaman host. Modifier `.copyCatalog` menyalurkan
-copy dan locale ke subtree. Memberi nilai baru dari state host memperbarui
-komponen SwiftUI yang memakai environment tersebut. Root UIKit lain harus
-menerima environment secara eksplisit; bridge tabel chat sudah meneruskannya.
+Theme merupakan nilai environment; ThemeManager hanya dipakai bila pemakai
+memerlukan pergantian theme teramati. Tidak ada singleton global wajib atau
+artwork environment object. Font melalui `.designFont(role)` dan font family
+terdaftar dari resource package.
 
-Komponen seperti `MessageComposer`, `LoadingStateView`, `SecureCodeIndicator`,
-`ChoiceGroup`, dan `ActionLink` menerima label langsung dari caller. `NumericKeypad`
-dan fallback aksesibilitas memakai resource DesignKit, dengan override
-`design.digit`, `design.deleteDigit`, `design.responding`, `design.formattedResult`.
+Padding/spacing menggunakan `FigmaSize` langsung. Nilai yang belum tersedia
+menggunakan `DesignKitMetrics.Size`, `Radius`, `Table`, `Shadow`, dan sebagainya.
+`.sizeInArtwork` untuk artwork, `.tapTargetInArtwork` untuk touch area ≥44,
+`.strokeInArtwork` untuk batas pixel. Opacity adalah nilai tanpa satuan.
+Komponen mengatur padding dalam; screen mengatur margin luar.
 
-Tidak ada singleton bahasa yang diubah global, sehingga dua flow/window boleh
-memakai bahasa berbeda. Template menggunakan placeholder bernama (`{count}`,
-`{total}`, `{digit}`), bukan printf. Override mempertahankan nama placeholder
-agar nilai dinamis tetap terbaca; teks dari pengguna tidak diproses ulang.
+Copy berupa input/label caller. Fallback teks memakai resource package, dan
+CopyCatalog bisa memberi override per subtree tanpa mengubah window lain.
+Accessibility label dibaca VoiceOver; identifier stabil dipakai automation.
 
-Daftar key lengkap:
+## Scope migrasi
 
-- `Packages/DesignKit/Sources/DesignKit/Resources/en.lproj/Localizable.strings`
-- `Packages/TanyaAI/Sources/TanyaAIPresentation/Resources/en.lproj/Localizable.strings`
+Chart, portfolio allocation, receipt, financial-list, HTML/image card, live
+agent, pilihan multi-select, ResponseContent empat bagian dan keypad/PIN
+internal sudah dihapus dari katalog. Komponen dokumen/PIN host dummy ada hanya
+di Sandbox; aplikasi produksi memakai halaman existing host. Backend/vendor
+examples lama juga tidak menjadi template migrasi saat ini.
 
-Untuk bahasa baru, host bisa memberikan semua override dalam bahasa tersebut,
-atau tambahkan pasangan resource localization package melalui alur terjemahan.
-Pesan, judul card, prompt, serta label tombol **dari backend** tidak diterjemahkan
-oleh package. Pilihan bahasa respons bot tetap menjadi kontrak host/backend.
-
-## Pembagian komponen
-
-| Lokasi | Komponen |
-| --- | --- |
-| DesignKit / Atoms | `GrowingTextInput`, `SelectionChip`, `SecureCodeIndicator`, `ActionLink`, `RoundedCorners` |
-| DesignKit / Molecules | `MessageComposer`, `NumericKeypad`, `OptionRow`, `OptionList`, `OptionStrip`, `SummaryRow`, `LoadingStateView`, `TypingIndicatorView` |
-| DesignKit / Organisms | `ResponseContent`, `ChoiceGroup` dan card kompleks yang sudah ada |
-| DesignKit / Support/UIKit | `HostingTableViewCell<Content>`, `LayoutTrackingTableView` |
-| TanyaAIPresentation | `ChatScreen`, `ConversationHistoryScreen`, `AuthorizationSheet`, adapter pesan dan approval |
-
-`SelectionOption` hanya berisi identifier dan title. Payload aksi, prompt yang
-dikirim, transaction ID, challenge PIN, serta aturan pilihan tetap berada di
-TanyaAIDomain. `ChoicesBubble` mengadaptasi radio ke `ResponseContent` dan multi-select ke `ChoiceGroup` tanpa
-membuat DesignKit bergantung pada domain chat. `ApprovalBubble`/`LiveAgentBubble`
-tetap di fitur karena memahami status transaksi/handoff, bukan sekadar tampilan.
-
-Nama view tidak mengandung `TanyaAI`. ViewModel dan kontrak SDK tetap memiliki
-namespace fitur. Host yang hanya memakai facade tidak perlu mengganti nama-nama
-internal. Caller yang mengimpor langsung view presentasi perlu mengganti:
-
-| Sebelumnya | Sekarang |
-| --- | --- |
-| `TanyaAIChatView` | `ChatScreen` |
-| `TanyaAIHistoryView` | `ConversationHistoryScreen` |
-| `TanyaAIPINBottomSheetView` | `AuthorizationSheet` |
-| `ChoiceChip` | `DesignKit.SelectionChip(title:...)` |
-| `TanyaAIChatInputView` | `DesignKit.MessageComposer` (GrowingTextInput satu–empat baris) |
-| `SuggestionList` / `ShortcutStrip` | `DesignKit.OptionList(options:...)` / `OptionStrip(options:...)` |
-| `RestoringView()` | `DesignKit.LoadingStateView(label:...)` |
-| `ActionLink(button:onTap:)` | `DesignKit.ActionLink(title:isUnderlined:onTap:)` |
-| `TypingIndicatorView()` | `DesignKit.TypingIndicatorView(label:...)` |
-
-`ChoicesPayload.submitTitle`, `LiveAgentPayload.continueTitle/cancelTitle`, dan
-`TanyaAIMessageContent.unsupported` sekarang membawa teks optional. `nil`
-memilih fallback lokal di presentation; teks backend yang ada tetap dipertahankan.
-Caller yang membaca field tersebut langsung harus menangani optional.
-
-`Suggestion.sandboxDefaults` dihapus; kirim daftar milik host atau biarkan `[]`.
-Tidak ada greeting, suggestion, sample history, atau petunjuk PIN demo yang
-dimasukkan otomatis oleh package produksi. Default title adalah “Chat”/
-“Percakapan”, subtitle kosong. Respons bot yang datang tetap ditampilkan.
-
-## Ukuran dan tipografi
-
-Angka layout komponen diambil dari `DesignKitMetrics`, kemudian di-resolve lewat
-`value.sizeInArtwork`, `value.strokeInArtwork`, atau `value.tapTargetInArtwork`. Font memakai role
-`theme.fonts` / `.designFont`, bukan angka ukuran pada view. Token tambahan yang
-belum ada di export Figma berada di file mapping `Tokens/DesignKitMetrics*.swift`.
-**Tidak ada perubahan pada `Tokens/Generated`.**
-
-Reference artwork hardcoded 375×812; properti ukuran membaca lebar layar.
-Tidak perlu artwork environment atau modifier pada root.
-Batas composer empat baris ada di `DesignKitMetrics.Text.maximumInputLines`.
-Motion, opacity, tolerance pengukuran, dan batas HTML juga memiliki token bernama.
-Lihat [setup font dan artwork](DESIGNKIT_MIGRATION.md) untuk skala dan Dynamic Type.
-
-Nol layout, faktor matematika, digit keypad, PIN policy, batas cache/payload,
-identifier protokol, SF Symbols, dan markup HTML bukan copy atau ukuran desain.
-Fixture pada target `TanyaAITestSupport`, test, dan aplikasi sandbox tetap memiliki
-data contoh. Target test support tidak boleh ditautkan pada Release host.
-
-## Riwayat dan validasi
-
-Daftar riwayat default kosong. Host dapat memasukkan
-`historyItems: [TanyaAIConversationSummary]` pada host/configuration; judul dan
-detail disediakan host. Ini adalah daftar ringkasan, belum menambah navigasi
-pemilihan percakapan. Restorasi pesan aktif lewat session SDK tetap bekerja
-melalui kontrak yang sudah ada.
-
-`python3 Scripts/check_design_system.py` memeriksa pola literal UI, boundary
-DesignKit, serta kelengkapan key/placeholder en/id. Pemeriksaan ini ikut
-`Scripts/check_style.sh`. Guard tersebut melengkapi review, bukan pembuktian
-bahwa setiap string/angka adalah salah atau bahwa runtime pasti bebas leak.
-
-Lihat [hasil dan batas validasi](DESIGNKIT_VALIDATION.md). Jalankan verification
-runtime iOS sebelum migrasi produksi luas.
-
-Komposisi jawaban empat bagian dan integrasi host: [ANSWER_CONTENT.md](ANSWER_CONTENT.md).
-
-
-### Composer dan spacing (5 Oktober 2026)
-
-`ChatScreen` memiliki margin luar horizontal 16 dan vertikal 8. `MessageComposer`
-memiliki padding dalam horizontal 16 dan vertikal 8. Gunakan nilai `FigmaSize`
-langsung jika tersedia; ukuran khusus tetap di handwritten `DesignKitMetrics`.
-
-Composer terdiri dari field, actionButton, dan surface putih dengan stroke/shadow.
-Draft dimiliki subview SwiftUI lokal. Tombol selalu Kirim karena backend tidak
-mendukung Stop. Radius artwork 8, lingkaran tombol artwork 24; area sentuh minimal 44 point.
-Shadow memakai opacity 0.12, radius artwork 4, offset vertikal artwork 2. Teks dinamis
-resolved untuk permukaan terang karena background composer memang selalu putih.
-
-Rumus ukuran adalah `round(value * min(deviceWidth / 375, 1.25))`.
-Rumus existing `round(value / (375 / deviceWidth))` menghasilkan rasio yang sama sebelum
-batas skala. Batas 1.25 merupakan kebijakan tampilan, bukan peningkatan akurasi. Tinggi
-812 tidak dipakai untuk stretch vertikal; scaling seragam mengikuti lebar. Penggunaan
-`UIScreen.main` cocok untuk asumsi layar penuh, tidak mengukur lebar split view/window.
-
-Theme komponen menggunakan nilai `@Environment(\.theme)`, bukan `@EnvironmentObject`.
-`.theme(theme)` memasang nilai; `.theme(manager)` mengamati `ThemeManager` di root lalu
-meneruskan nilai theme. Singleton biasa tidak memberi notifikasi perubahan ke SwiftUI.
-Singleton observable tetap memerlukan observation dan membuat state global dibagi semua
-window/test. Environment memungkinkan override halaman tanpa mengubah halaman lainnya.
-
-Current conventions and constructor migration are in [COMPONENT_STYLE.md](COMPONENT_STYLE.md) and [SESSION_AND_PARTIAL_MIGRATION.md](SESSION_AND_PARTIAL_MIGRATION.md). The component owns inner padding; the screen owns outer margins. Stop parameters are removed.
+Design system existing Anda dipindah ke `Legacy` sesuai
+[plan bertahap](DESIGNKIT_PHASED_MIGRATION.md). `Legacy` menandai API lama yang
+masih dipakai screen existing; bukan menghidupkan lagi katalog demo yang dihapus.
+Repo existing belum dilampirkan, jadi inventory dan adapter Legacy belum
+mengklaim implementasi konkret. Ikuti [template komponen](COMPONENT_STYLE.md).

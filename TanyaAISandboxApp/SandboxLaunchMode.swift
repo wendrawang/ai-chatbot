@@ -1,61 +1,10 @@
 import Foundation
 
 enum SandboxLaunchMode {
-    case legacyHost
-    case showcase
-    case answers
-    case deeplink
+    case host
     case figma
 
     init(arguments: [String]) {
-        if arguments.contains("--figma") {
-            self = .figma
-        } else if arguments.contains("--answers") {
-            self = .answers
-        } else if arguments.contains("--showcase") {
-            self = .showcase
-        } else if arguments.contains("--deeplink") {
-            self = .deeplink
-        } else {
-            self = .legacyHost
-        }
+        self = arguments.contains("--host") ? .host : .figma
     }
-
-    /// Opens the feature directly instead of the legacy host screen.
-    ///
-    /// The deeplink demo stays on the legacy host: the hand-off has to land
-    /// back on the dashboard, so the dashboard must exist.
-    var isStandaloneFeature: Bool {
-        switch self {
-        case .legacyHost, .deeplink:
-            return false
-        case .showcase, .answers, .figma:
-            return true
-        }
-    }
-
-    /// Shortens the mock chunk delay so a UI run does not wait on simulated
-    /// streaming.
-    var isFastStreamingEnabled: Bool {
-        switch self {
-        case .legacyHost:
-            return false
-        case .showcase, .answers, .deeplink, .figma:
-            return true
-        }
-    }
-
-    var initialPrompt: String? {
-        switch self {
-        case .legacyHost, .figma:
-            return nil
-        case .showcase:
-            return "showcase all bubbles"
-        case .answers:
-            return "answer composition demo"
-        case .deeplink:
-            return "deeplink hand-off"
-        }
-    }
-
 }

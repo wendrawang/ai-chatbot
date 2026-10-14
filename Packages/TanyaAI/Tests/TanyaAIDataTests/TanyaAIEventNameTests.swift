@@ -7,11 +7,7 @@ import XCTest
 
 final class TanyaAIEventNameTests: XCTestCase {
     func testCanonicalNamesAreCompleteUniqueAndDotFree() {
-        let expected: Set<String> = [
-            "components", "answer", "response", "image", "choices", "actions", "html", "live_agent", "approval",
-            "receipt", "chart", "portfolio", "financial_list", "status", "information",
-            "suggestions", "response_started", "text_delta", "response_completed", "heartbeat"
-        ]
+        let expected: Set<String> = ["response", "response_started", "text_delta", "response_completed", "heartbeat"]
         let names = TanyaAIEventName.allCases.map(\.rawValue)
         XCTAssertEqual(Set(names), expected)
         XCTAssertEqual(names.count, expected.count)
@@ -38,7 +34,6 @@ final class TanyaAIEventNameTests: XCTestCase {
         XCTAssertEqual(TanyaAIEventName(wireName: "response.started"), .responseStarted)
         XCTAssertEqual(TanyaAIEventName(wireName: "text.delta"), .textDelta)
         XCTAssertEqual(TanyaAIEventName(wireName: "response.completed"), .responseCompleted)
-        XCTAssertEqual(TanyaAIEventName(wireName: "response.suggestions"), .suggestions)
     }
 
     func testWireLifecycleUsesNativeSessionEvents() throws {
@@ -67,14 +62,14 @@ final class TanyaAIEventNameTests: XCTestCase {
         let json = try payload()
         guard
             case .structuredPayload(let name, let data) = try TanyaAIChatSessionEvent.fromWire(
-                name: "content.status", json: json
+                name: "content.response", json: json
             )
         else { return XCTFail("Missing structured payload") }
-        XCTAssertEqual(name, "status")
+        XCTAssertEqual(name, "response")
         XCTAssertEqual(data, json)
     }
 
-    func testSuggestionsAndLifecycleAreNotClassifiedAsCards() {
+    func testLifecycleIsNotClassifiedAsContent() {
         for name in TanyaAIEventName.allCases {
             XCTAssertEqual(TanyaAIEventName.isContentName(name.rawValue), name.isContent)
         }
@@ -102,22 +97,8 @@ final class TanyaAIEventNameTests: XCTestCase {
     }
 
     private func payload() throws -> Data {
-        let action = ["identifier": "open", "deeplink": "ocbcid://mobile"]
-        let series: [[String: Any]] = [["label": "Cash", "value": 100, "formattedValue": "100%"]]
         let object: [String: Any] = [
-            "messageIdentifier": "sample", "title": "Sample", "text": "Sample text",
-            "detail": "Details", "level": "success", "items": [],
-            "imageURL": "https://example.com/sample.png", "caption": "Sample image",
-            "html": "<p>Sample</p>", "action": action,
-            "choices": [["identifier": "choice", "title": "Choice"]],
-            "actions": [["title": "Open", "action": action]],
-            "chartType": "bar", "series": series, "totalValue": "100",
-            "performanceText": "+1%", "allocations": series, "style": "incoming",
-            "rows": [["title": "Salary", "value": "100"]], "summary": [],
-            "approvalIdentifier": "approval", "transactionIdentifier": "transaction",
-            "challengeIdentifier": "challenge", "expiresAt": "2099-01-01T00:00:00Z",
-            "suggestions": [["identifier": "next", "title": "Next", "prompt": "Next"]],
-            "elements": [["type": "text", "text": "Sample text"]],
+            "messageIdentifier": "sample", "text": "Sample text",
             "response": ["blocks": [["type": "text", "text": "Sample text"]]],
             "fallbackText": "Please update"
         ]

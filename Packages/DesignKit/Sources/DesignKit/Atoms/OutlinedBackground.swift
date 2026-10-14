@@ -1,11 +1,9 @@
 import SwiftUI
 
-/// The outlined shape a reply, a suggestion and a hand-off link all sit in.
-///
-/// One place, so the three never drift apart: they appear next to each other
-/// in the same conversation.
+/// A neutral outlined surface used by selectable rows.
 public struct OutlinedBackground: View {
-    @Environment(\.theme) private var theme
+    @Environment(\.theme)
+    private var theme
 
     public init() {}
 

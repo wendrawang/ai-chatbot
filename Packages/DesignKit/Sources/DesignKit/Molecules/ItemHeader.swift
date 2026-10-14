@@ -27,8 +27,8 @@ public struct ItemHeader: View {
                     )
                     .foregroundColor(Color(theme.colors.userBubbleText))
                     .frame(
-                        width: DesignKitMetrics.Conversation.itemIcon.sizeInArtwork,
-                        height: DesignKitMetrics.Conversation.itemIcon.sizeInArtwork
+                        width: DesignKitMetrics.Size.itemIcon.sizeInArtwork,
+                        height: DesignKitMetrics.Size.itemIcon.sizeInArtwork
                     )
                     .background(Color(theme.colors.accent))
                     .clipShape(Circle())

@@ -14,18 +14,22 @@ final class TanyaAIBubbleHeightTests: XCTestCase {
         let answer = TanyaAIMessageItemViewModel(
             message: TanyaAIMessage(
                 identifier: "answer", role: .assistant,
-                content: .answer(
-                    AnswerPayload(
-                        text: "Choose a service",
-                        options: [
-                            .init(identifier: "first", title: "First option", prompt: "First option"),
-                            .init(identifier: "second", title: "Second option", prompt: "Second option")
-                        ]))
+                content: .response(
+                    ResponsePayload(blocks: [
+                        .text("Choose a service"),
+                        .options(
+                            ResponseOptions(
+                                identifier: "services",
+                                choices: [
+                                    ResponseChoice(identifier: "first", title: "First option"),
+                                    ResponseChoice(identifier: "second", title: "Second option")
+                                ]))
+                    ]))
             ))
         coordinator.update(
             TanyaAIMessageListState(
                 messages: [answer, item(identifier: "next", text: "Following message")],
-                isRestoring: false, isTypingRowVisible: false, suggestions: [], suggestionsTitle: nil
+                isRestoring: false, isTypingRowVisible: false
             ), theme: .sandbox, handlers: .inert)
         tableView.layoutIfNeeded()
         let original = tableView.rectForRow(at: IndexPath(row: 0, section: 0)).height
@@ -63,8 +67,7 @@ final class TanyaAIBubbleHeightTests: XCTestCase {
         coordinator.update(
             TanyaAIMessageListState(
                 messages: [message, item(identifier: "next", text: "Following bubble")],
-                isRestoring: false, isTypingRowVisible: false,
-                suggestions: [], suggestionsTitle: nil
+                isRestoring: false, isTypingRowVisible: false
             ), theme: .sandbox, handlers: .inert)
         tableView.layoutIfNeeded()
         let original = tableView.rectForRow(at: IndexPath(row: 0, section: 0)).height
@@ -90,8 +93,7 @@ final class TanyaAIBubbleHeightTests: XCTestCase {
             let message = item(identifier: "pending", text: "Short")
             coordinator.update(
                 TanyaAIMessageListState(
-                    messages: [message], isRestoring: false, isTypingRowVisible: false,
-                    suggestions: [], suggestionsTitle: nil
+                    messages: [message], isRestoring: false, isTypingRowVisible: false
                 ), theme: .sandbox, handlers: .inert)
             message.update(content: .text("Updated before teardown"))
             releasedTable = tableView

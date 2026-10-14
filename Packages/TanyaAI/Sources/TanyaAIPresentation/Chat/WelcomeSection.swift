@@ -38,14 +38,14 @@ struct WelcomeSection: View {
                     .resizable()
                     .scaledToFit()
                     .frame(
-                        width: DesignKitMetrics.Conversation.itemIcon.sizeInArtwork,
-                        height: DesignKitMetrics.Conversation.itemIcon.sizeInArtwork
+                        width: DesignKitMetrics.Size.itemIcon.sizeInArtwork,
+                        height: DesignKitMetrics.Size.itemIcon.sizeInArtwork
                     )
                     .foregroundColor(Color(theme.colors.userBubbleText))
             )
             .frame(
-                width: DesignKitMetrics.Conversation.emblem.sizeInArtwork,
-                height: DesignKitMetrics.Conversation.emblem.sizeInArtwork
+                width: DesignKitMetrics.Size.emblem.sizeInArtwork,
+                height: DesignKitMetrics.Size.emblem.sizeInArtwork
             )
             .background(
                 Circle()

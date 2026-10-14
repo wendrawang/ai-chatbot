@@ -31,8 +31,8 @@ public struct QuickActionRow: View {
                     .resizable()
                     .scaledToFit()
                     .frame(
-                        width: DesignKitMetrics.Conversation.actionChevron.sizeInArtwork,
-                        height: DesignKitMetrics.Conversation.actionChevron.sizeInArtwork
+                        width: DesignKitMetrics.Size.actionChevron.sizeInArtwork,
+                        height: DesignKitMetrics.Size.actionChevron.sizeInArtwork
                     )
                     .foregroundColor(Color(theme.colors.accent))
                     .accessibilityHidden(true)
@@ -40,7 +40,7 @@ public struct QuickActionRow: View {
             .padding(FigmaSize.spacing16.sizeInArtwork)
             .frame(minHeight: DesignKitMetrics.Size.minimumTapTarget.tapTargetInArtwork)
             .background(Color(theme.colors.surface))
-            .cornerRadius(DesignKitMetrics.Conversation.quickActionRadius.sizeInArtwork)
+            .cornerRadius(DesignKitMetrics.Radius.quickAction.sizeInArtwork)
             .contentShape(Rectangle())
         }
         .buttonStyle(.plain)

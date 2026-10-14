@@ -63,7 +63,7 @@ public struct DataTableData: Codable, Equatable {
     public let footer: DataTableRow?
 
     public init(columns: [DataTableColumn], rows: [DataTableRow], footer: DataTableRow? = nil) throws {
-        guard (1...DesignKitMetrics.Conversation.maximumTableColumns).contains(columns.count) else {
+        guard (1...DesignKitMetrics.Table.maximumColumns).contains(columns.count) else {
             throw DataTableValidationError.invalidColumnCount(columns.count)
         }
         for (index, column) in columns.enumerated() {

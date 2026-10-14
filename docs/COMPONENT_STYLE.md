@@ -1,10 +1,10 @@
 # Component and screen conventions
 
-Use SwiftUI by default. Use native hosting configuration for table cells on iOS 16+, with explicit controller containment as the iOS 15 fallback. Keep UIKit/WebKit behind focused bridges when the iOS 15 requirement or measured behavior requires them. DesignKit depends on no feature or SDK; TanyaAI owns session and transaction policy.
+Use SwiftUI by default. Use native hosting configuration for table cells on iOS 16+, with explicit controller containment as the iOS 15 fallback. Keep UIKit behind focused bridges when the iOS 15 requirement or measured behavior requires them. DesignKit depends on no feature or SDK; TanyaAI owns session and transaction policy.
 
 ## Ownership and dependency injection
 
-Use `let` for display inputs, `@Binding` for a value owned by the caller, and `@State`/`@FocusState` for editing or local interaction. Computed values need no stored state. A ViewModel belongs to a screen workflow with async work or business decisions; do not introduce one for every card, button, or composer. Inject callbacks for actions. Protocols belong at replaceable I/O boundaries such as a chat session, authorization service, or image loader.
+Use `let` for display inputs, `@Binding` for a value owned by the caller, and `@State`/`@FocusState` for editing or local interaction. Computed values need no stored state. A ViewModel belongs to a screen workflow with async work or business decisions; do not introduce one for every card, button, or composer. Inject callbacks for actions. Protocols belong at replaceable I/O boundaries such as a chat session.
 
 UI owners and public UIKit entry points are `@MainActor`. Repositories serialize incoming events and deliver them on the main queue. Do not store credentials/PIN or log message payloads in UI diagnostics. A `weak` capture is required where ownership would form a cycle; immutable configuration can be captured strongly.
 

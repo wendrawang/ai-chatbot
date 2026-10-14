@@ -23,7 +23,6 @@ extension MessageTableView {
         private var copy = CopyCatalog()
         private var theme = Theme.sandbox
         private var screenMetrics = ArtworkMetrics.screen
-        private var imageLoader: ImageLoading = ImageLoader.shared
         private var handlers = TanyaAIMessageRowHandlers.inert
         private let hostedCells = NSHashTable<MessageHostingCell>.weakObjects()
         private var subscriptions: [ObjectIdentifier: AnyCancellable] = [:]
@@ -43,15 +42,14 @@ extension MessageTableView {
             _ state: TanyaAIMessageListState,
             theme: Theme,
             handlers: TanyaAIMessageRowHandlers,
-            imageLoader: ImageLoading = ImageLoader.shared,
             copy: CopyCatalog = CopyCatalog()
         ) {
             let previous = self.state
             let currentMetrics = ArtworkMetrics.screen
             let isThemeChanged =
                 self.theme != theme || screenMetrics != currentMetrics
-                || self.imageLoader !== imageLoader || self.copy != copy
-            configure(state, theme: theme, handlers: handlers, imageLoader: imageLoader, copy: copy)
+                || self.copy != copy
+            configure(state, theme: theme, handlers: handlers, copy: copy)
             let isRowStructureChanged = state.rowsDiffer(from: previous)
             if isRowStructureChanged || isThemeChanged {
                 tableView?.reloadData()
@@ -74,13 +72,12 @@ extension MessageTableView {
 
         private func configure(
             _ state: TanyaAIMessageListState, theme: Theme, handlers: TanyaAIMessageRowHandlers,
-            imageLoader: ImageLoading, copy: CopyCatalog
+            copy: CopyCatalog
         ) {
             self.copy = copy
             self.state = state
             self.theme = theme
             screenMetrics = ArtworkMetrics.screen
-            self.imageLoader = imageLoader
             self.handlers = handlers
             bindMessages(state.messages)
             tableView?.backgroundColor = .clear
@@ -153,8 +150,7 @@ extension MessageTableView {
                 kind: kind,
                 theme: theme,
                 handlers: handlers,
-                copy: copy,
-                imageLoader: imageLoader
+                copy: copy
             )
         }
 

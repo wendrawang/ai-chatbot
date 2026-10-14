@@ -24,7 +24,7 @@ public struct SummaryCard<Header: View>: View {
         }
         .padding(FigmaSize.spacing16.sizeInArtwork)
         .background(Color(theme.colors.surface))
-        .cornerRadius(DesignKitMetrics.Conversation.summaryRadius.sizeInArtwork)
+        .cornerRadius(DesignKitMetrics.Radius.summary.sizeInArtwork)
         .frame(maxWidth: .infinity, alignment: .leading)
         .accessibilityElement(children: .contain)
         .accessibilityIdentifier("summary.card")

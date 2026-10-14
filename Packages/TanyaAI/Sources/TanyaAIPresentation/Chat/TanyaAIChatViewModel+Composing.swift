@@ -1,61 +1,27 @@
 import Foundation
 import TanyaAIDomain
 
-/// Turning what arrives into bubbles.
-///
-/// Split from the ViewModel proper so that file holds the conversation's
-/// state and this one holds the rules for adding to it - chiefly that
-/// nothing may overwrite a confirmation the customer has already settled.
 extension TanyaAIChatViewModel {
     func appendUserMessage(_ text: String) -> TanyaAIMessageItemViewModel {
-        let message = TanyaAIMessage(
-            identifier: UUID().uuidString,
-            role: .user,
-            content: .text(text), delivery: .pending
-        )
-        let row = TanyaAIMessageItemViewModel(message: message)
+        let row = TanyaAIMessageItemViewModel(
+            message: TanyaAIMessage(
+                identifier: UUID().uuidString, role: .user, content: .text(text), delivery: .pending
+            ))
         appendMessage(row)
         return row
     }
 
     func appendAssistantPlaceholder(identifier: String) {
-        let target = resolvedIdentifier(for: identifier)
-        if let existing = message(identifier: target),
-            isSettledApproval(existing.content) == false
-        {
-            return
-        }
+        guard message(identifier: identifier) == nil else { return }
         appendContent(identifier: identifier, content: .text(""))
     }
 
     func appendTextDeltaNow(identifier: String, text: String) {
-        // Text may not overwrite a settled confirmation either: routing
-        // through `appendContent` gives the delta a fresh bubble.
-        let target = resolvedIdentifier(for: identifier)
-        guard let message = message(identifier: target),
-            isSettledApproval(message.content) == false
-        else {
+        guard let message = message(identifier: identifier) else {
             appendContent(identifier: identifier, content: .text(text))
             return
         }
-        let existingText: String
-        if case .text(let value) = message.content {
-            existingText = value
-        } else if case .answer(let payload) = message.content {
-            message.update(
-                content: .answer(
-                    AnswerPayload(
-                        text: (payload.text ?? "") + text,
-                        options: payload.options,
-                        image: payload.image,
-                        actions: payload.actions,
-                        isAnswered: payload.isAnswered,
-                        selectedIdentifier: payload.selectedIdentifier
-                    )))
-            return
-        } else {
-            existingText = ""
-        }
-        message.update(content: .text(existingText + text))
+        guard case .text(let previous) = message.content else { return }
+        message.update(content: .text(previous + text))
     }
 }

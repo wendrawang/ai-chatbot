@@ -49,19 +49,8 @@ final class SceneDelegate: UIResponder, UIWindowSceneDelegate {
             figmaPresenter = presenter
             return presenter.makeFeatureController()
         }
-        let dependencies = SandboxTanyaAIFactory.makeDependencies(
-            isShowcaseVisible: launchMode.isFastStreamingEnabled
-        )
+        let dependencies = SandboxTanyaAIFactory.makeDependencies()
 
-        if launchMode.isStandaloneFeature {
-            return TanyaAIModule.makeViewController(
-                configuration: TanyaAIConfiguration(
-                    initialPrompt: launchMode.initialPrompt,
-                    shortcuts: SandboxTanyaAIFactory.shortcuts
-                ),
-                dependencies: dependencies
-            )
-        }
         return makeLegacyRootController(
             dependencies: dependencies,
             launchMode: launchMode
@@ -75,8 +64,8 @@ final class SceneDelegate: UIResponder, UIWindowSceneDelegate {
         let gateway = TanyaAIPresentationGateway(
             dependencies: dependencies,
             configuration: TanyaAIConfiguration(
-                initialPrompt: launchMode.initialPrompt,
-                shortcuts: SandboxTanyaAIFactory.shortcuts
+                copy: SandboxTanyaAIFactory.figmaCopy,
+                welcome: SandboxTanyaAIFactory.figmaWelcome
             )
         )
         let router = makeDeeplinkRouter(gateway: gateway)

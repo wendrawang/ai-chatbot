@@ -10,7 +10,6 @@ final class ChatContainerViewController: UIViewController {
     private let pushTransition = TanyaAIPushTransition()
     private var coordinator: TanyaAICoordinator?
     private let dependencyContainer: TanyaAIDependencyContainer
-    private let confirmationHandler: ((ConfirmationPayload) -> Void)?
     private let actionHandler: (Action) -> Void
     private let hostFlowHandler: TanyaAIHostFlowHandler?
     private let makeNewSession: (() -> TanyaAIChatSession)?
@@ -18,12 +17,10 @@ final class ChatContainerViewController: UIViewController {
     init(
         dependencyContainer: TanyaAIDependencyContainer,
         actionHandler: @escaping (Action) -> Void = { _ in },
-        confirmationHandler: ((ConfirmationPayload) -> Void)? = nil,
         hostFlowHandler: TanyaAIHostFlowHandler? = nil,
         makeNewSession: (() -> TanyaAIChatSession)? = nil
     ) {
         self.dependencyContainer = dependencyContainer
-        self.confirmationHandler = confirmationHandler
         self.actionHandler = actionHandler
         self.hostFlowHandler = hostFlowHandler
         self.makeNewSession = makeNewSession
@@ -71,7 +68,6 @@ final class ChatContainerViewController: UIViewController {
             dependencyContainer: dependencyContainer,
             containerController: self,
             actionHandler: actionHandler,
-            confirmationHandler: confirmationHandler,
             hostFlowHandler: hostFlowHandler,
             makeNewSession: makeNewSession
         )

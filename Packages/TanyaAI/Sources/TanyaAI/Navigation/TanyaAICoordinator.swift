@@ -10,7 +10,6 @@ final class TanyaAICoordinator: NSObject {
     private let navigationController: UINavigationController
     private let dependencyContainer: TanyaAIDependencyContainer
     private weak var containerController: UIViewController?
-    private let confirmationHandler: ((ConfirmationPayload) -> Void)?
     private let actionHandler: (Action) -> Void
     private let hostFlowHandler: TanyaAIHostFlowHandler?
     private let makeNewSession: (() -> TanyaAIChatSession)?
@@ -23,14 +22,12 @@ final class TanyaAICoordinator: NSObject {
         dependencyContainer: TanyaAIDependencyContainer,
         containerController: UIViewController,
         actionHandler: @escaping (Action) -> Void = { _ in },
-        confirmationHandler: ((ConfirmationPayload) -> Void)? = nil,
         hostFlowHandler: TanyaAIHostFlowHandler? = nil,
         makeNewSession: (() -> TanyaAIChatSession)? = nil
     ) {
         self.navigationController = navigationController
         self.dependencyContainer = dependencyContainer
         self.containerController = containerController
-        self.confirmationHandler = confirmationHandler
         self.actionHandler = actionHandler
         self.hostFlowHandler = hostFlowHandler
         self.makeNewSession = makeNewSession
@@ -39,24 +36,12 @@ final class TanyaAICoordinator: NSObject {
     }
 
     func start() {
-        show(.chat, animated: false)
-    }
-
-    func show(_ route: TanyaAIRoute, animated isAnimated: Bool = true) {
-        switch route {
-        case .chat:
-            showChat()
-        case .history:
-            showHistory(animated: isAnimated)
-        case .approval(let payload):
-            showApproval(payload)
-        }
+        showChat()
     }
 
     private func showChat(session: TanyaAIChatSession? = nil, isInitialPromptEnabled: Bool = true) {
         let session = session ?? dependencyContainer.defaultSession
         let viewModel = dependencyContainer.makeChatViewModel(
-            isConfirmationEnabled: confirmationHandler != nil,
             isHostFlowEnabled: hostFlowHandler != nil,
             isNewSessionEnabled: makeNewSession != nil,
             session: session
@@ -68,7 +53,6 @@ final class TanyaAICoordinator: NSObject {
             rootView: ChatScreen(viewModel: viewModel)
                 .theme(dependencyContainer.theme)
                 .copyCatalog(dependencyContainer.copy)
-                .imageLoader(dependencyContainer.imageLoader)
         )
         chatViewModel = viewModel
         chatController = controller
@@ -80,57 +64,10 @@ final class TanyaAICoordinator: NSObject {
         if isInitialPromptEnabled { dependencyContainer.startInitialPrompt(on: viewModel) }
     }
 
-    private func showHistory(animated isAnimated: Bool) {
-        let controller = UIHostingController(
-            rootView: ConversationHistoryScreen(items: dependencyContainer.historyItems)
-                .theme(dependencyContainer.theme)
-                .copyCatalog(dependencyContainer.copy)
-                .imageLoader(dependencyContainer.imageLoader)
-        )
-        navigationController.pushViewController(
-            controller,
-            animated: isAnimated
-        )
-    }
-
-    private func showApproval(_ payload: ApprovalPayload) {
-        // Unreachable when no authorization service was injected: the
-        // ViewModel refuses the confirmation before it gets here.
-        guard
-            let viewModel = dependencyContainer.makePINViewModel(
-                approval: payload
-            )
-        else {
-            return
-        }
-        viewModel.onOutput = { [weak self, weak viewModel] output in
-            self?.handlePIN(output, approval: payload)
-            viewModel?.clearSensitiveState()
-        }
-        let controller = AuthorizationSheetViewController(
-            viewModel: viewModel,
-            theme: dependencyContainer.theme,
-            copy: dependencyContainer.copy
-        )
-        controller.isModalInPresentation = true
-        navigationController.present(controller, animated: true)
-    }
-
-    /// Turns a chat intent into navigation.
-    ///
-    /// `history` and `approval` stay inside the feature's own stack.
-    /// `performAction` leaves the package entirely: it is forwarded to the
-    /// host, and the feature neither opens the deeplink nor dismisses itself.
     private func handle(_ output: TanyaAIChatOutput) {
         switch output {
         case .close:
             containerController?.dismiss(animated: true)
-        case .openHistory:
-            show(.history)
-        case .requestApproval(let payload):
-            show(.approval(payload))
-        case .requestConfirmation(let payload):
-            confirmationHandler?(payload)
         case .requestHostFlow(let request):
             requestHostFlow(request)
         case .startNewSession:
@@ -158,33 +95,6 @@ final class TanyaAICoordinator: NSObject {
         }
     }
 
-    private func handlePIN(
-        _ output: TanyaAIPINOutput,
-        approval: ApprovalPayload
-    ) {
-        switch output {
-        case .started:
-            updateApproval(approval, state: .authorizing)
-        case .cancel:
-            navigationController.dismiss(animated: true)
-            updateApproval(approval, state: .awaitingApproval)
-        case .completed(let result):
-            navigationController.dismiss(animated: true)
-            let state: ApprovalPayload.State =
-                result.status == .completed ? .completed : .processing
-            updateApproval(approval, state: state)
-        }
-    }
-
-    private func updateApproval(
-        _ approval: ApprovalPayload,
-        state: ApprovalPayload.State
-    ) {
-        chatViewModel?.updateApproval(
-            identifier: approval.approvalIdentifier,
-            state: state
-        )
-    }
 }
 
 #if DEBUG

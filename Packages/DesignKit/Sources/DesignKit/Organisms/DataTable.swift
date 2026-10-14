@@ -5,6 +5,8 @@ import SwiftUI
 public struct DataTable: View {
     @Environment(\.theme)
     private var theme
+    @Environment(\.sizeCategory)
+    private var sizeCategory
     @State
     private var availableWidth: CGFloat = 0
     private let data: DataTableData
@@ -14,6 +16,25 @@ public struct DataTable: View {
     }
 
     public var body: some View {
+        VStack(alignment: .leading, spacing: 0) {
+            if sizeCategory.isAccessibilityCategory {
+                stackedContent
+            } else {
+                tabularContent
+            }
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .background(widthReader)
+        .onPreferenceChange(TableWidthPreference.self) { width in
+            if width.isFinite, abs(width - availableWidth) > DesignKitMetrics.Layout.measurementTolerance {
+                availableWidth = width
+            }
+        }
+        .accessibilityElement(children: .contain)
+        .accessibilityIdentifier("data.table")
+    }
+
+    private var tabularContent: some View {
         VStack(alignment: .leading, spacing: 0) {
             row(cells: data.columns.map(\.title), isEmphasized: true, isHeader: true)
             divider
@@ -28,22 +49,51 @@ public struct DataTable: View {
                 row(cells: footer.cells, isEmphasized: true, leadingColumnSpan: footer.leadingColumnSpan)
             }
         }
-        .frame(maxWidth: .infinity, alignment: .leading)
-        .background(widthReader)
-        .onPreferenceChange(TableWidthPreference.self) { width in
-            if width.isFinite, abs(width - availableWidth) > DesignKitMetrics.Spacing.pixelGap {
-                availableWidth = width
+    }
+
+    /// Keep logical columns intact, but make every value readable with accessibility text sizes.
+    private var stackedContent: some View {
+        VStack(alignment: .leading, spacing: 0) {
+            ForEach(data.rows.indices, id: \.self) { index in
+                stackedRow(data.rows[index])
+                divider
+            }
+            if let footer = data.footer {
+                VStack(alignment: .leading, spacing: FigmaSize.spacing8.sizeInArtwork) {
+                    ForEach(visibleColumns(span: footer.leadingColumnSpan), id: \.self) { index in
+                        Text(footer.cells[index]).fontWeight(.semibold).designFont(.subheadline)
+                    }
+                }
+                .padding(.vertical, FigmaSize.spacing8.sizeInArtwork)
             }
         }
-        .accessibilityElement(children: .contain)
-        .accessibilityIdentifier("data.table")
+    }
+
+    private func stackedRow(_ row: DataTableRow) -> some View {
+        VStack(alignment: .leading, spacing: FigmaSize.spacing16.sizeInArtwork) {
+            ForEach(visibleColumns(span: row.leadingColumnSpan), id: \.self) { index in
+                VStack(alignment: .leading, spacing: FigmaSize.spacing4.sizeInArtwork) {
+                    Text(data.columns[index].title)
+                        .designFont(.footnote)
+                        .foregroundColor(Color(theme.colors.secondaryText))
+                    Text(row.cells[index])
+                        .fontWeight(row.isEmphasized ? .semibold : .regular)
+                        .designFont(.subheadline)
+                        .foregroundColor(Color(theme.colors.primaryText))
+                }
+                .fixedSize(horizontal: false, vertical: true)
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .accessibilityElement(children: .combine)
+            }
+        }
+        .padding(.vertical, FigmaSize.spacing16.sizeInArtwork)
     }
 
     private func row(
         cells: [String], isEmphasized: Bool, isHeader: Bool = false, leadingColumnSpan: Int = 1
     ) -> some View {
         let widths = data.columnWidths(availableWidth: availableWidth, spacing: FigmaSize.spacing8.sizeInArtwork)
-        let indices = data.columns.indices.filter { $0 == 0 || $0 >= leadingColumnSpan }
+        let indices = visibleColumns(span: leadingColumnSpan)
         return HStack(alignment: .top, spacing: FigmaSize.spacing8.sizeInArtwork) {
             ForEach(indices, id: \.self) { index in
                 Text(cells[index])
@@ -62,6 +112,10 @@ public struct DataTable: View {
             }
         }
         .padding(.vertical, FigmaSize.spacing8.sizeInArtwork)
+    }
+
+    private func visibleColumns(span: Int) -> [Int] {
+        data.columns.indices.filter { $0 == 0 || $0 >= span }
     }
 
     private func cellWidth(index: Int, widths: [CGFloat], leadingColumnSpan: Int) -> CGFloat? {

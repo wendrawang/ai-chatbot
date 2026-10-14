@@ -119,8 +119,7 @@ final class TanyaAIPromptAnchorTests: XCTestCase {
         _ messages: [TanyaAIMessageItemViewModel], prompt: String? = nil
     ) -> TanyaAIMessageListState {
         TanyaAIMessageListState(
-            messages: messages, isRestoring: false, isTypingRowVisible: false,
-            suggestions: [], suggestionsTitle: nil, latestPromptIdentifier: prompt
+            messages: messages, isRestoring: false, isTypingRowVisible: false, latestPromptIdentifier: prompt
         )
     }
 

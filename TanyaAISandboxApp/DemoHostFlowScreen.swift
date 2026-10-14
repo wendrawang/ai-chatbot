@@ -69,8 +69,8 @@ struct DemoHostPINScreen: View {
                     Circle()
                         .fill(Color(index < digitCount ? theme.colors.accent : theme.colors.secondaryText))
                         .frame(
-                            width: DesignKitMetrics.Size.secureDigit.sizeInArtwork,
-                            height: DesignKitMetrics.Size.secureDigit.sizeInArtwork
+                            width: DemoHostKeypad.digitSize.sizeInArtwork,
+                            height: DemoHostKeypad.digitSize.sizeInArtwork
                         )
                 }
             }
@@ -78,7 +78,7 @@ struct DemoHostPINScreen: View {
             .accessibilityLabel("Jumlah digit")
             .accessibilityValue("\(digitCount) dari 6")
             .accessibilityIdentifier("sandbox.pin.count")
-            NumericKeypad(
+            DemoHostKeypad(
                 onDigit: { _ in enterDigit() }, onDelete: { digitCount = max(0, digitCount - 1) },
                 isDisabled: isCompleting
             )

@@ -82,12 +82,15 @@ onEvent?(.structuredPayload(name: "response", json: payloadData))
 Jenis blok: `text`, `note`, `table`, `actions`, `options`, `metric`,
 `summary`, `documents`, `activity`. Contoh lengkap ada di
 `MockFigmaResponseFixture+Portfolio` dan `MockFigmaResponseFixture+Purchase`.
-Event `answer` dan bubble lama tetap dapat diterima.
+Katalog lama sudah dihapus: hanya `text` dan `response` yang dirender. Event konten
+yang tidak dikenali menjadi fallback teks; bukan renderer kompatibilitas lama.
 
 Tabel menolak lebih dari tiga kolom dan jumlah cell yang berbeda dari header.
 `widthWeight` membagi lebar tersedia, bukan ukuran pixel masing-masing baris.
 Nominal dapat rata kanan; teks membungkus secara vertikal tanpa HTML atau scroll
-horizontal. Tidak ada accordion pada tahap ini.
+horizontal. Pada kategori Dynamic Type aksesibilitas, field disusun vertikal
+per row supaya label/angka tetap terbaca. Model tetap maksimal tiga kolom;
+layout tabel biasa mengikuti Figma. Tidak ada accordion pada tahap ini.
 Footer total dapat memakai `leadingColumnSpan: 2` dengan cell kedua kosong,
 sehingga label memakai lebar dua kolom dan nominal tetap sejajar kolom terakhir.
 Span divalidasi; nilai pada cell yang digabung tidak boleh diam-diam disembunyikan.

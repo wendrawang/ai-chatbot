@@ -143,7 +143,7 @@ final class TanyaAIHostFlowTests: XCTestCase {
 
     private func makeCoordinator(
         _ navigation: UINavigationController,
-        session: TanyaAIChatSession = MockTanyaAIChatSession.sandbox(),
+        session: TanyaAIChatSession = MockTanyaAIChatSession.figma(),
         makeNewSession: (() -> TanyaAIChatSession)? = nil,
         onHostFlow: TanyaAIHostFlowHandler? = nil
     ) -> TanyaAICoordinator {

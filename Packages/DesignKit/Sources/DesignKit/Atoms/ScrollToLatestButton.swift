@@ -15,7 +15,12 @@ public struct ScrollToLatestButton: View {
     public var body: some View {
         Button(action: onTap) {
             Image(systemName: "arrow.down")
-                .designFont(.button)
+                .resizable()
+                .scaledToFit()
+                .frame(
+                    width: DesignKitMetrics.Size.icon.sizeInArtwork,
+                    height: DesignKitMetrics.Size.icon.sizeInArtwork
+                )
                 .foregroundColor(Color(theme.colors.accent))
                 .frame(
                     width: DesignKitMetrics.Size.minimumTapTarget.tapTargetInArtwork,

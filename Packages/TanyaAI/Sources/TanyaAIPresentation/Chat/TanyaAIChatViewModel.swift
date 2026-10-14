@@ -19,15 +19,10 @@ public final class TanyaAIChatViewModel: ObservableObject {
     @Published
     public internal(set) var errorMessage: String?
     @Published
-    public internal(set) var suggestions: [Suggestion] = []
-    @Published
-    public internal(set) var suggestionsTitle: String?
-    @Published
     public internal(set) var draftRequest: TanyaAIDraftRequest?
     @Published
     public private(set) var latestPromptIdentifier: String?
 
-    public let shortcuts: [Suggestion]
     public let welcome: WelcomeConfiguration?
     public let sessionIdentifier = UUID()
     public let sessionStartedAt = Date()
@@ -39,10 +34,6 @@ public final class TanyaAIChatViewModel: ObservableObject {
     public var onOutput: ((TanyaAIChatOutput) -> Void)?
     let repository: TanyaAIRepository
     let copy: CopyCatalog
-    let isConfirmationEnabled: Bool
-    let isAuthorizationEnabled: Bool
-    var isConfirmationRequested = false
-    var redirectedIdentifiers: [String: String] = [:]
     var pendingSubmissions: [String: String] = [:]
     var pendingHostFlow: PendingHostFlow?
     private var queuedInitialPrompt: String?
@@ -54,18 +45,12 @@ public final class TanyaAIChatViewModel: ObservableObject {
 
     public init(
         repository: TanyaAIRepository,
-        isAuthorizationEnabled: Bool = true,
-        isConfirmationEnabled: Bool = false,
         isHostFlowEnabled: Bool = false,
         isNewSessionEnabled: Bool = false,
-        shortcuts: [Suggestion] = [],
         copy: CopyCatalog = CopyCatalog(),
         welcome: WelcomeConfiguration? = nil
     ) {
         self.repository = repository
-        self.isAuthorizationEnabled = isAuthorizationEnabled
-        self.isConfirmationEnabled = isConfirmationEnabled
-        self.shortcuts = shortcuts
         self.copy = copy
         self.welcome = welcome
         self.isHostFlowEnabled = isHostFlowEnabled
@@ -76,8 +61,6 @@ public final class TanyaAIChatViewModel: ObservableObject {
 
     public var isSendEnabled: Bool { connection == .ready && !isRestoring }
     public var isTypingRowVisible: Bool { isAgentTyping }
-    public var isShortcutRowVisible: Bool { isSendEnabled && !shortcuts.isEmpty }
-    public var isSuggestionRowVisible: Bool { isSendEnabled && !suggestions.isEmpty }
     public var isSessionRetryAvailable: Bool {
         connection == .failed || connection == .closed || isHistoryUnavailable
     }
@@ -88,8 +71,6 @@ public final class TanyaAIChatViewModel: ObservableObject {
         let prompt = text.trimmingCharacters(in: .whitespacesAndNewlines)
         guard isSendEnabled, !prompt.isEmpty else { return false }
         errorMessage = nil
-        suggestions = []
-        suggestionsTitle = nil
         let message = appendUserMessage(prompt)
         if !isInitialPromptSubmitting { latestPromptIdentifier = message.identifier }
         submit(message)
@@ -129,17 +110,10 @@ public final class TanyaAIChatViewModel: ObservableObject {
         isInitialPromptSubmitting = false
     }
 
-    public func sendSuggestion(_ suggestion: Suggestion) { sendMessage(suggestion.prompt) }
-    public func sendShortcut(_ shortcut: Suggestion) { sendMessage(shortcut.prompt) }
     public func close() { onOutput?(.close) }
-    public func openHistory() { onOutput?(.openHistory) }
     public func startNewSession() {
         guard isNewSessionEnabled else { return }
         onOutput?(.startNewSession)
-    }
-
-    func reportUnauthorizableApproval() {
-        errorMessage = copy.chat("chat.authorizationRequired")
     }
 
     func appendMessage(_ message: TanyaAIMessageItemViewModel) {
@@ -152,7 +126,6 @@ public final class TanyaAIChatViewModel: ObservableObject {
         let overflow = messages.count - TanyaAIMessage.historyLimit
         if overflow > 0 { messages.removeFirst(overflow) }
         let identifiers = Set(messages.map(\.identifier))
-        redirectedIdentifiers = redirectedIdentifiers.filter { identifiers.contains($0.value) }
         pendingSubmissions = pendingSubmissions.filter { identifiers.contains($0.value) }
     }
 

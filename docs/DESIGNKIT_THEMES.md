@@ -126,7 +126,7 @@ hardcoded 375×812 dan properti `.sizeInArtwork`. Di UIKit, panggil
 berisi `UIFont` langsung tetap snapshot final untuk kompatibilitas.
 
 Panduan lengkap ukuran `sizeInArtwork`, setup root, batas atomic design, dan
-migrasi host: [DESIGNKIT_MIGRATION.md](DESIGNKIT_MIGRATION.md).
+migrasi host: [DESIGNKIT_PHASED_MIGRATION.md](DESIGNKIT_PHASED_MIGRATION.md).
 
 Untuk resource font lain:
 

@@ -1,30 +1,18 @@
-# Performance and lifecycle baseline
+# Performance dan lifetime
 
-Measured on the sanitized Debug build using an iPhone 17 Pro simulator running
-iOS 26.5. Results are directional and are not a substitute for profiling a
-Release build on the oldest supported physical device.
+Draft composer lokal agar setiap ketikan tidak mempublikasikan seluruh daftar.
+Row memiliki observed message object; update konten memperbarui row tersebut.
+History dibatasi 100 pesan. Langganan row/hosted cells dilepas saat detach,
+callback tertunda weak dan pekerjaan ukuran/posisi dicoalesce dengan batas pass.
 
-## Latest automated result
+UITableView menggunakan self-sizing hosted SwiftUI cells dan posisi scroll
+terukur. UIHostingConfiguration dipakai pada iOS 16+; containment controller
+pada iOS 15. Root table memakai plain UIViewController agar perubahan keyboard
+cukup ditangani SwiftUI, tanpa inset keyboard kedua dari UITableViewController.
 
-Verified again on 5 August 2026. All 45 package tests and all 3 UI tests
-passed after the typed-bubble and fallback audit.
+Unit tests memeriksa 150 pesan→100, eviction, batch teks, anchored scrolling,
+repeated render/dismiss dan pelepasan graph. Frame-rate monitor menghitung
+cadence callback display link di simulator, bukan rendered FPS perangkat.
 
-| Check | Fixture | Result |
-| --- | --- | --- |
-| Scroll frame rate | 120 stable message rows | 60.40 FPS |
-| Parser process peak | XCTest process | 47.86 MB |
-| Parser memory delta | Per measured iteration | 0 KB |
-| Chat lifecycle | Active request then release | Passed |
-| PIN lifecycle | Active authorization then release | Passed |
-| Full feature graph | Container loaded then released | Passed |
-| UI showcase | 11+ bubbles and PIN sheet | Passed |
-
-The frame-rate assertion allows a minimum of 55 measured frames per second to
-avoid simulator scheduling noise while targeting a 60 FPS display link.
-
-## Production gate
-
-Before release, repeat the scroll and streaming tests on the oldest supported
-physical iPhone with a Release build. Use Instruments Allocations and Leaks for
-repeated open, stream, approve, dismiss cycles. Also test a paginated history
-with the product team's maximum supported conversation length.
+Hasil regresi/stress dan batas validasi: [FIGMA_CHAT_VALIDATION.md](FIGMA_CHAT_VALIDATION.md).
+Pengukuran perangkat nyata, SDK dan backend baru dilakukan setelah integrasi host.

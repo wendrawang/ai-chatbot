@@ -10,13 +10,13 @@ final class TanyaAIFrameRateTests: XCTestCase {
     private static let target = 55.0
     private static let sampleCount = 3
 
-    func testLargeConversationScrollsAtSixtyFrameTarget() {
+    func testLargeConversationMaintainsDisplayLinkCadence() {
         XCTAssertTrue(Thread.isMainThread)
         let harness = makeHarness(messageCount: 120)
         let tableView = findTableView(in: harness.controller.view)
         XCTAssertNotNil(tableView)
-        // 120 incoming messages exercise eviction; only 100 plus typing remain.
-        XCTAssertEqual(tableView?.numberOfRows(inSection: 0), 101)
+        // 120 incoming messages exercise eviction; 100 messages plus typing and timestamp remain.
+        XCTAssertEqual(tableView?.numberOfRows(inSection: 0), 102)
         XCTAssertEqual(
             tableView?.separatorStyle,
             UITableViewCell.SeparatorStyle.none
@@ -59,7 +59,7 @@ final class TanyaAIFrameRateTests: XCTestCase {
         let repository = TanyaAIRepositoryFixture()
         let viewModel = TanyaAIChatViewModel(repository: repository)
         viewModel.sendMessage("performance fixture")
-        repository.appendStatusMessages(count: messageCount)
+        repository.appendMessages(count: messageCount)
 
         let controller = UIHostingController(
             rootView: ChatScreen(viewModel: viewModel)

@@ -71,6 +71,7 @@ public struct MessageComposer: View {
 
             if text.isEmpty {
                 Text(placeholder)
+                    .lineLimit(1)
                     .designFont(.body)
                     .foregroundColor(
                         Color(
@@ -88,7 +89,9 @@ public struct MessageComposer: View {
     private var actionButton: some View {
         Button(action: onSend) {
             Image(systemName: "arrow.up")
-                .designFont(.button)
+                .resizable()
+                .scaledToFit()
+                .padding(FigmaSize.spacing4.sizeInArtwork)
                 .foregroundColor(Color(theme.colors.userBubbleText))
                 .frame(
                     width: DesignKitMetrics.Size.composerAction.sizeInArtwork,

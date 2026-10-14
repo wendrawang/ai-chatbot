@@ -10,20 +10,23 @@ public enum MockFigmaResponseFixture {
         for prompt: String, productTitle: String = "Manulife Dana Kas II Kelas A"
     ) -> [TanyaAIChatSessionEvent] {
         let command = prompt.trimmingCharacters(in: .whitespacesAndNewlines).lowercased()
-        let blocks: [Block]
-        switch command {
-        case "cek portofolio": blocks = portfolio()
-        case "cek performa investasiku": blocks = investment()
-        case "optimalkan investasi yang kurang produktif": blocks = optimization()
-        case "lihat pilihan produk": blocks = products()
-        case "beli produk": blocks = productOptions()
-        case "beli sekarang": blocks = amountInstruction()
-        case "konfirmasi pembelian": blocks = documents()
-        case "__transaction_success__": blocks = transactionSuccess()
-        default: blocks = selectionOrAmount(prompt: prompt, productTitle: productTitle)
-        }
+        let blocks = stressResponse(for: command) ?? content(for: command, prompt: prompt, productTitle: productTitle)
         let activity = command == "cek performa investasiku" ? "Checking your investment…" : nil
         return response(blocks: blocks, activity: activity)
+    }
+
+    private static func content(for command: String, prompt: String, productTitle: String) -> [Block] {
+        switch command {
+        case "cek portofolio": return portfolio()
+        case "cek performa investasiku": return investment()
+        case "optimalkan investasi yang kurang produktif": return optimization()
+        case "lihat pilihan produk": return products()
+        case "beli produk": return productOptions()
+        case "beli sekarang": return amountInstruction()
+        case "konfirmasi pembelian": return documents()
+        case "__transaction_success__": return transactionSuccess()
+        default: return selectionOrAmount(prompt: prompt, productTitle: productTitle)
+        }
     }
 
     static func response(blocks: [Block], activity: String? = nil) -> [TanyaAIChatSessionEvent] {

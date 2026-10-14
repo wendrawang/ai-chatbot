@@ -23,8 +23,6 @@ public final class TanyaAIMessageItemViewModel:
         delivery = message.delivery
         remoteIdentifier = message.remoteIdentifier ?? (message.role == .user ? nil : message.identifier)
         switch message.content {
-        case .answer(let payload): isOptionsConsumed = payload.isAnswered
-        case .choices(let payload): isOptionsConsumed = payload.isSubmitted
         case .response(let payload): isOptionsConsumed = payload.isReadOnly
         default: break
         }
@@ -44,37 +42,18 @@ public final class TanyaAIMessageItemViewModel:
         guard !isOptionsConsumed else { return }
         isOptionsConsumed = true
         switch content {
-        case .answer, .choices, .response: update(content: content)
+        case .response: update(content: content)
         default: break
         }
     }
 
     private func preservingSelection(in content: TanyaAIMessageContent) -> TanyaAIMessageContent {
         switch content {
-        case .answer(var payload):
-            isOptionsConsumed = isOptionsConsumed || payload.isAnswered
-            payload.isAnswered = isOptionsConsumed
-            if case .answer(let previous) = self.content {
-                payload.selectedIdentifier = previous.selectedIdentifier ?? payload.selectedIdentifier
-            }
-            return .answer(payload)
-        case .choices(var payload):
-            isOptionsConsumed = isOptionsConsumed || payload.isSubmitted
-            payload.isSubmitted = isOptionsConsumed
-            if case .choices(let previous) = self.content, previous.isSubmitted {
-                payload.selected = previous.selected
-            }
-            return .choices(payload)
         case .response(let payload):
             isOptionsConsumed = isOptionsConsumed || payload.isReadOnly
             let previous: ResponsePayload?
             if case .response(let value) = self.content { previous = value } else { previous = nil }
             return .response(payload.preservingInteraction(from: previous, isReadOnly: isOptionsConsumed))
-        case .liveAgent(var payload):
-            if case .liveAgent(let previous) = self.content {
-                payload.isDeclined = payload.isDeclined || previous.isDeclined
-            }
-            return .liveAgent(payload)
         default:
             return content
         }

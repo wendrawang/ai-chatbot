@@ -21,7 +21,6 @@ public struct ChatScreen: View {
             separator
             conversation
             errorBanner
-            shortcutStrip
             separator
             ComposerSection(
                 isEnabled: viewModel.isSendEnabled,
@@ -41,11 +40,7 @@ public struct ChatScreen: View {
             MessageListView(viewModel: viewModel)
             if !viewModel.isRestoring, viewModel.messages.isEmpty, let welcome = viewModel.welcome {
                 WelcomeSection(configuration: welcome) { action in
-                    if let shortcut = viewModel.shortcuts.first(where: { $0.identifier == action.identifier }) {
-                        viewModel.sendShortcut(shortcut)
-                    } else {
-                        viewModel.sendMessage(action.title)
-                    }
+                    viewModel.sendMessage(action.title)
                 }
                 .disabled(!viewModel.isSendEnabled)
             }
@@ -67,6 +62,7 @@ public struct ChatScreen: View {
                     headerIcon("chevron.left")
                 }
                 .accessibilityLabel(copy.chat("chat.close"))
+                .accessibilityIdentifier("chat.close")
                 Spacer(minLength: FigmaSize.spacing16.sizeInArtwork)
                 headerAction
             }
@@ -79,20 +75,14 @@ public struct ChatScreen: View {
         .accessibilityIdentifier("chat.header")
     }
 
-    @ViewBuilder
     private var headerAction: some View {
-        if viewModel.welcome != nil {
-            Button(action: viewModel.startNewSession) {
-                headerIcon("ellipsis").rotationEffect(.degrees(90))
-            }
-            .foregroundColor(Color(theme.colors.primaryText))
-            .disabled(!viewModel.isNewSessionEnabled)
-            .accessibilityLabel(copy.chat("chat.newSession"))
-            .accessibilityIdentifier("chat.newSession")
-        } else {
-            Button(action: viewModel.openHistory) { headerIcon("clock") }
-                .accessibilityLabel(copy.chat("chat.history"))
+        Button(action: viewModel.startNewSession) {
+            headerIcon("ellipsis").rotationEffect(.degrees(90))
         }
+        .foregroundColor(Color(theme.colors.primaryText))
+        .disabled(!viewModel.isNewSessionEnabled)
+        .accessibilityLabel(copy.chat("chat.newSession"))
+        .accessibilityIdentifier("chat.newSession")
     }
 
     private func headerIcon(_ name: String) -> some View {
@@ -130,20 +120,6 @@ public struct ChatScreen: View {
             .frame(maxWidth: .infinity, alignment: .leading)
             .padding(.horizontal, FigmaSize.spacing16.sizeInArtwork)
             .padding(.vertical, FigmaSize.spacing8.sizeInArtwork)
-        }
-    }
-
-    @ViewBuilder
-    private var shortcutStrip: some View {
-        if viewModel.welcome == nil, viewModel.isShortcutRowVisible {
-            OptionStrip(
-                options: viewModel.shortcuts.map { SelectionOption(identifier: $0.identifier, title: $0.title) },
-                onSelect: { option in
-                    if let shortcut = viewModel.shortcuts.first(where: { $0.identifier == option.identifier }) {
-                        viewModel.sendShortcut(shortcut)
-                    }
-                }
-            )
         }
     }
 

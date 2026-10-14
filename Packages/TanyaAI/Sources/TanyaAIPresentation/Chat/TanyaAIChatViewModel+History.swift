@@ -14,7 +14,7 @@ extension TanyaAIChatViewModel {
             let remoteIdentifier = item.remoteIdentifier ?? item.identifier
             guard identifiers.insert(remoteIdentifier).inserted else { return nil as TanyaAIMessageItemViewModel? }
             guard let current = existing[remoteIdentifier] else { return TanyaAIMessageItemViewModel(message: item) }
-            if !isSettledApproval(current.content) { current.update(content: item.content) }
+            current.update(content: item.content)
             if current.role == .user { current.setDelivery(.sent) }
             return current
         }

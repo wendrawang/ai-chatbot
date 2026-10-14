@@ -23,11 +23,11 @@ final class ChatCopyTests: XCTestCase {
         XCTAssertEqual(viewModel.errorMessage, "Please retry from host")
     }
 
-    func testPresentationResourcesAndPlaceholdersResolve() {
+    func testCurrentPresentationResourcesResolve() {
         let copy = CopyCatalog(localeIdentifier: "id")
-        XCTAssertEqual(copy.chat("chat.submit"), "Kirim")
+        XCTAssertEqual(copy.chat("chat.send"), "Kirim pesan")
         XCTAssertEqual(copy.chat("chat.subtitle"), "")
-        XCTAssertEqual(copy.chat("chat.invalidPIN", values: ["count": "6"]), "Masukkan PIN 6 digit.")
+        XCTAssertEqual(copy.chat("chat.newSession"), "Percakapan baru")
     }
 
 }

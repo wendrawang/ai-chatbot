@@ -38,8 +38,8 @@ public struct WelcomeContent<Emblem: View>: View {
         VStack(spacing: FigmaSize.spacing16.sizeInArtwork) {
             emblem
                 .frame(
-                    width: DesignKitMetrics.Conversation.emblem.sizeInArtwork,
-                    height: DesignKitMetrics.Conversation.emblem.sizeInArtwork
+                    width: DesignKitMetrics.Size.emblem.sizeInArtwork,
+                    height: DesignKitMetrics.Size.emblem.sizeInArtwork
                 )
                 .accessibilityHidden(true)
             Text(title)

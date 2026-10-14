@@ -8,8 +8,8 @@ public enum TanyaAIModule {
     /// Builds one isolated feature graph and its entry controller.
     ///
     /// - Parameters:
-    ///   - configuration: relative message path and optional initial prompt.
-    ///   - dependencies: host transport, authorization service, and theme.
+    ///   - configuration: localized copy, welcome content and optional first prompt.
+    ///   - dependencies: host session and theme.
     ///   - onAction: called with the deeplink a bubble asks the host to open.
     ///     The feature does not open it, does not dismiss itself, and does not
     ///     navigate. Validate the deeplink here and drop anything the app does
@@ -21,7 +21,6 @@ public enum TanyaAIModule {
         dependencies: TanyaAIDependencies,
         onHostFlow: TanyaAIHostFlowHandler? = nil,
         makeNewSession: (() -> TanyaAIChatSession)? = nil,
-        onConfirmation: ((ConfirmationPayload) -> Void)? = nil,
         onAction: @escaping (Action) -> Void = { _ in }
     ) -> UIViewController {
         let dependencyContainer = TanyaAIDependencyContainer(
@@ -31,7 +30,6 @@ public enum TanyaAIModule {
         return ChatContainerViewController(
             dependencyContainer: dependencyContainer,
             actionHandler: onAction,
-            confirmationHandler: onConfirmation,
             hostFlowHandler: onHostFlow,
             makeNewSession: makeNewSession
         )

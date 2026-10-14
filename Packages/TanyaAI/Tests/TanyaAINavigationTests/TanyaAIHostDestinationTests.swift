@@ -15,9 +15,9 @@ final class TanyaAIHostDestinationTests: XCTestCase {
     }
 
     func testExternalDestinationsRequireOptInAndHTTPSWithoutCredentials() {
-        XCTAssertNil(makeHost().accepted(action("https://example.com", .browser)))
+        XCTAssertNil(makeHost().accepted(action("https://example.com", .webview)))
         let host = makeHost(isRoutingEnabled: true)
-        for type in [TanyaAIAction.DestinationType.webview, .browser] {
+        for type in [TanyaAIAction.DestinationType.webview] {
             XCTAssertNotNil(host.accepted(action("https://example.com/path?q=hello", type)))
             XCTAssertNil(host.accepted(action("http://example.com", type)))
             XCTAssertNil(host.accepted(action("https://user:secret@example.com", type)))
@@ -33,7 +33,7 @@ final class TanyaAIHostDestinationTests: XCTestCase {
     private func makeHost(isRoutingEnabled: Bool = false) -> TanyaAIHost {
         TanyaAIHost(
             theme: .sandbox, deeplinkScheme: "ocbcid", deeplinkHost: "mobile",
-            makeSession: { MockTanyaAIChatSession.sandbox() },
+            makeSession: { MockTanyaAIChatSession.figma() },
             onDestination: isRoutingEnabled ? { _, _ in } : nil,
             onDeeplink: { _ in }
         )

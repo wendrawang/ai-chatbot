@@ -26,9 +26,6 @@ extension TanyaAIChatViewModel {
             textDeltaBuffer.append(messageIdentifier: identifier, text: text)
         case .content(let identifier, let content):
             appendContent(identifier: identifier, content: content)
-        case .suggestions(let title, let payloads):
-            suggestionsTitle = title
-            suggestions = payloads.map(makeSuggestion)
         case .responseCompleted(let identifier):
             textDeltaBuffer.flush(messageIdentifier: identifier)
         case .hostAction(let action):

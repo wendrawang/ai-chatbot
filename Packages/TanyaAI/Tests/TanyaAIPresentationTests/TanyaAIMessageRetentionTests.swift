@@ -21,13 +21,12 @@ final class TanyaAIMessageRetentionTests: XCTestCase {
         XCTAssertEqual(viewModel.messages.last?.identifier, "message-149")
     }
 
-    func testEvictionReleasesTheRowAndItsRedirect() {
+    func testEvictionReleasesTheRow() {
         let repository = TanyaAIRepositoryStub()
         let viewModel = TanyaAIChatViewModel(repository: repository)
         repository.sendUnsolicited(.content(messageIdentifier: "old", content: .text("Old")))
         weak var evicted: TanyaAIMessageItemViewModel?
         evicted = viewModel.messages.first
-        viewModel.redirectedIdentifiers["original"] = "old"
 
         for index in 0..<100 {
             repository.sendUnsolicited(
@@ -37,7 +36,6 @@ final class TanyaAIMessageRetentionTests: XCTestCase {
         }
 
         XCTAssertNil(evicted)
-        XCTAssertTrue(viewModel.redirectedIdentifiers.isEmpty)
     }
 
     func testRestorationAlsoBoundsInjectedUseCases() {
