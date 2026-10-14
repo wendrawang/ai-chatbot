@@ -17,6 +17,7 @@ public enum MockFigmaResponseFixture {
 
     private static func content(for command: String, prompt: String, productTitle: String) -> [Block] {
         switch command {
+        case "contoh komponen": return componentExample()
         case "cek portofolio": return portfolio()
         case "cek performa investasiku": return investment()
         case "optimalkan investasi yang kurang produktif": return optimization()

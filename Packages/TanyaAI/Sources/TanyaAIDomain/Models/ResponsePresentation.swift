@@ -19,10 +19,19 @@ public struct ResponseSummary: Equatable, Decodable {
 
 public struct ResponseAction: Equatable, Decodable {
     public enum Intent: String, Decodable { case prompt, destination, edit, authorization }
+    public enum Presentation: String, Decodable { case outlined, link, filled }
     public let identifier: String
     public let title: String
     public let intent: Intent
     public let target: String
+    public let symbolName: String?
+    public let presentation: Presentation?
+}
+
+/// UI-only media fixture. The host will supply real media after asset/backend selection.
+public struct ResponseMedia: Equatable, Decodable {
+    public let title: String
+    public let subtitle: String?
     public let symbolName: String?
 }
 

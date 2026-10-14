@@ -3,6 +3,7 @@ import SwiftUI
 
 /// Artwork slot: replace the decorative wave with the approved exported asset when available.
 struct ChatBackdrop: View {
+    // TODO: Replace ConversationWave with the approved decorative background asset from Figma.
     @Environment(\.theme)
     private var theme
 

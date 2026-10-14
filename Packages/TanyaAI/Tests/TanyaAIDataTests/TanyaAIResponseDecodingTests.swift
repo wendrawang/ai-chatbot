@@ -60,4 +60,54 @@ final class TanyaAIResponseDecodingTests: XCTestCase {
             name: "response", json: JSONSerialization.data(withJSONObject: object)
         )
     }
+
+    func testMediaAndSuggestionsPreserveOrderAndActionAppearance() throws {
+        let event = try decode(blocks: [
+            ["type": "media", "media": ["title": "Media title", "symbolName": "gift.fill"]],
+            [
+                "type": "suggestions",
+                "actions": [
+                    ["identifier": "one", "title": "Suggestion", "intent": "prompt", "target": "Prompt"]
+                ]
+            ],
+            [
+                "type": "actions",
+                "actions": [
+                    [
+                        "identifier": "link", "title": "Open", "intent": "destination", "target": "https://example.com",
+                        "presentation": "link"
+                    ],
+                    [
+                        "identifier": "cta", "title": "Continue", "intent": "prompt", "target": "Continue",
+                        "presentation": "filled"
+                    ]
+                ]
+            ]
+        ])
+        guard case .content(_, .response(let response)) = event,
+            case .media(let media) = response.blocks[0],
+            case .suggestions(let suggestions) = response.blocks[1],
+            case .actions(let actions) = response.blocks[2]
+        else { return XCTFail("Missing ordered display blocks") }
+        XCTAssertEqual(media.title, "Media title")
+        XCTAssertNil(suggestions.first?.presentation)
+        XCTAssertEqual(suggestions.first?.target, "Prompt")
+        XCTAssertEqual(actions.map(\.presentation), [.link, .filled])
+    }
+
+    func testUnknownActionAppearanceFailsRatherThanChangesItsMeaning() {
+        XCTAssertThrowsError(
+            try decode(blocks: [
+                [
+                    "type": "actions",
+                    "actions": [
+                        [
+                            "identifier": "one", "title": "Open", "intent": "destination",
+                            "target": "https://example.com",
+                            "presentation": "unknown"
+                        ]
+                    ]
+                ]
+            ]))
+    }
 }

@@ -9,12 +9,17 @@ fondasi token, font, sizing, localization, rich text dan hosting UIKit.
 
 | Komponen | Kegunaan | Struktur/input |
 | --- | --- | --- |
-| `MessageComposer` | Kotak input multiline dengan send di dalam | Binding draft, enabled dan onSend; field/button/surface private |
+| `MessageComposer` | Input multiline dengan send/stop di dalam | Binding draft, enabled/generating, onSend/onStop; field/button/surface private |
 | `GrowingTextInput` | Editor multiline satu–empat baris pada iOS 15 | Bridge UITextView terukur; tidak memegang sesi |
 | `RichText` / `TextBubble` | Teks bergaya, link, bullet dan prompt user | String + callback link; parser native, tanpa HTML |
 | `ScrollToLatestButton` | Tombol kembali ke pesan terakhir | Label + callback; pemilik scroll ada pada screen |
 | `OptionRow` / `OptionList` | Pilihan aktif dan readonly history | SelectionOption, selected ID, enabled dan callback |
 | `ActionPill` | Aksi outlined | Judul, simbol, enabled dan callback; tidak tahu deeplink |
+| `LinkAction` / `FilledAction<Icon>` | Underlined redirect / filled CTA | Copy, enabled, callback; FilledAction menerima artwork dan tint |
+| `SuggestionList<Content>` | Suggested prompt horizontal | Content slot untuk action dengan identifier/intent milik caller |
+| `MediaCard<Media>` | Gambar dengan title/subtitle | Media ViewBuilder; bounded aspect ratio/clipping, tanpa networking |
+| `NavigationHeader<Leading, Trailing>` | Header dengan title di tengah | Control slots berimbang; state/navigasi/safe area milik screen |
+| `DateSeparator` | Tanggal di antara konten | String yang sudah diformat oleh caller |
 | `ActivityStatus` | Status proses dengan simbol | Teks dari caller; tidak memegang task jaringan |
 | `LoadingStateView` | Loading/error bootstrap | Label dari caller; pemilik state di fitur |
 | `QuickActionRow` / `QuickActionList` | Entry action dengan judul/deskripsi/icon | QuickActionData + callback; reusable untuk halaman lain |
@@ -37,6 +42,10 @@ renderer tidak perlu memutuskan cara membuang kolom berlebih. Ukuran teks
 aksesibilitas memakai field vertikal per row tanpa membuang kolom. Lebar diukur sekali
 untuk seluruh baris; cell membungkus vertikal. Data numeric tetap berupa String
 presentasi, perhitungan/format mata uang milik pemakai.
+
+Source berada pada `Components/<NamaKomponen>`, tanpa kategori atomic.
+[PreviewBook](PREVIEWBOOK.md) memperlihatkan state/pemakaian; fixtures dan
+artwork dummy bertanda TODO tinggal di Sandbox/fitur, bukan default produksi.
 
 ## Fondasi dan cara pasang
 
@@ -63,10 +72,11 @@ Accessibility label dibaca VoiceOver; identifier stabil dipakai automation.
 
 ## Scope migrasi
 
-Chart, portfolio allocation, receipt, financial-list, HTML/image card, live
+Chart, portfolio allocation, receipt, financial-list, renderer HTML/image card lama, live
 agent, pilihan multi-select, ResponseContent empat bagian dan keypad/PIN
-internal sudah dihapus dari katalog. Komponen dokumen/PIN host dummy ada hanya
-di Sandbox; aplikasi produksi memakai halaman existing host. Backend/vendor
+internal sudah dihapus dari katalog. MediaCard baru hanya menjadi surface
+generik dari chopping terbaru, dengan artwork disuplai pemakai. Komponen
+dokumen/PIN host dummy ada hanya di Sandbox; aplikasi produksi memakai halaman existing host. Backend/vendor
 examples lama juga tidak menjadi template migrasi saat ini.
 
 Design system existing Anda dipindah ke `Legacy` sesuai

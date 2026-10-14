@@ -1,6 +1,6 @@
 # UI Tanya AI dari Figma — tahap dummy
 
-Tahap ini membangun tampilan dan interaksi dari delapan foto Figma. Backend
+Tahap ini membangun tampilan dan interaksi dari delapan foto flow Figma dan enam foto chopping komponen. Backend
 belum dipilih; tidak ada login SDK, provisioning group, atau transaksi nyata
 yang ditambahkan. Mulai migrasi fondasi dengan
 [DESIGNKIT_PHASED_MIGRATION.md](DESIGNKIT_PHASED_MIGRATION.md), lalu adopsi
@@ -37,7 +37,11 @@ Target test support tidak boleh ikut aplikasi host Release.
 | Dokumen belum/sudah disetujui | `AcknowledgementRow` | Hasil persetujuan dari halaman host |
 | “Checking your investment…” | `ActivityStatus` | Event status/data dummy |
 | Arrow kembali ke latest | `ScrollToLatestButton` | Coordinator daftar memiliki posisi scroll |
-| Header, timestamp, background | `ChatScreen` / `MessageTableRow` | Fitur; bukan komponen bisnis di DesignKit |
+| Header dan timestamp | `NavigationHeader` / `DateSeparator` | Callback navigasi/format date milik fitur; status bar milik iOS |
+| Background | `ChatBackdrop` | Artwork dummy dengan TODO penggantian |
+| Gambar + caption | `MediaCard` | Media placeholder lokal; tidak menambah networking |
+| Suggested prompt horizontal | `SuggestionList` + action | Intent/callback milik fitur |
+| Underlined redirect / filled CTA | `LinkAction` / `FilledAction` | Routing tetap webview/deeplink host |
 | Syarat & Ketentuan dan PIN | Halaman existing host | `onHostFlow` dengan completion ke chat yang sama |
 
 Tidak ada ViewModel per bubble. DesignKit menerima nilai/`Binding` dan callback.
@@ -80,7 +84,14 @@ onEvent?(.structuredPayload(name: "response", json: payloadData))
 ```
 
 Jenis blok: `text`, `note`, `table`, `actions`, `options`, `metric`,
-`summary`, `documents`, `activity`. Contoh lengkap ada di
+`summary`, `documents`, `activity`, `media`, `suggestions`. Action memakai
+`presentation` opsional `outlined`/`link`/`filled`; default tetap outlined.
+Kirim **Contoh komponen** untuk fixture media/actions/suggestions. Bentuk media
+masih placeholder UI, bukan kontrak backend final.
+
+[PreviewBook](PREVIEWBOOK.md) dijalankan dengan `--previewbook` untuk inspect
+state masing-masing komponen, termasuk send/stop dan dummy artwork. Stop
+menerima callback; adapter backend belum menyediakan cancellation di chat. Contoh lengkap ada di
 `MockFigmaResponseFixture+Portfolio` dan `MockFigmaResponseFixture+Purchase`.
 Katalog lama sudah dihapus: hanya `text` dan `response` yang dirender. Event konten
 yang tidak dikenali menjadi fallback teks; bukan renderer kompatibilitas lama.

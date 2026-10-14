@@ -44,6 +44,9 @@ final class SceneDelegate: UIResponder, UIWindowSceneDelegate {
     private func makeRootController(
         for launchMode: SandboxLaunchMode
     ) -> UIViewController {
+        if case .previewBook = launchMode {
+            return UIHostingController(rootView: PreviewBookScreen())
+        }
         if case .figma = launchMode {
             let presenter = SandboxFigmaPresenter()
             figmaPresenter = presenter

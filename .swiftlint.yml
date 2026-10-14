@@ -7,6 +7,10 @@ included:
   - Examples
   - Scripts
 
+# Approved Figma placeholder assets deliberately retain replacement TODOs.
+disabled_rules:
+  - todo
+
 excluded:
   - .build
   - DerivedData

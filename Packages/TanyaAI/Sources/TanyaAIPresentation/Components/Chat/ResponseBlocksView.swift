@@ -19,6 +19,8 @@ struct ResponseBlocksView: View {
     }
 
     @ViewBuilder
+    // Exhaustive display dispatch; each case delegates to one focused component.
+    // swiftlint:disable:next cyclomatic_complexity
     private func block(_ block: ResponseBlock) -> some View {
         switch block {
         case .text(let text):
@@ -32,15 +34,12 @@ struct ResponseBlocksView: View {
             DataTable(data: data)
         case .actions(let actions):
             actionList(actions)
+        case .suggestions(let actions):
+            suggestionList(actions)
+        case .media(let media):
+            mediaCard(media)
         case .options(let options):
-            OptionList(
-                title: options.title,
-                options: options.choices.map { SelectionOption(identifier: $0.identifier, title: $0.title) },
-                selectedIdentifier: options.selectedIdentifier,
-                isEnabled: !options.isReadOnly && !payload.isReadOnly && handlers.isSendEnabled,
-                maximumWidth: nil,
-                onSelect: { handlers.onResponseOption(messageIdentifier, options.identifier, $0.identifier) }
-            )
+            optionList(options)
         case .metric(let metric):
             metricSummary(metric)
         case .summary(let summary):
@@ -57,20 +56,46 @@ struct ResponseBlocksView: View {
         }
     }
 
+    private func suggestionList(_ actions: [ResponseAction]) -> some View {
+        SuggestionList {
+            ForEach(actions, id: \.identifier) { action in
+                if isVisible(action) { responseAction(action) }
+            }
+        }
+    }
+
+    private func mediaCard(_ media: ResponseMedia) -> some View {
+        MediaCard(title: media.title, subtitle: media.subtitle) {
+            // TODO: Replace the local dummy with approved artwork supplied by the host/media adapter.
+            Color(theme.colors.accent).opacity(DesignKitMetrics.Opacity.gradientStart)
+                .overlay(
+                    Image(systemName: media.symbolName ?? "photo").resizable().scaledToFit()
+                        .frame(
+                            width: DesignKitMetrics.Size.emblem.sizeInArtwork,
+                            height: DesignKitMetrics.Size.emblem.sizeInArtwork
+                        )
+                        .foregroundColor(Color(theme.colors.userBubbleText)))
+        }
+        .accessibilityIdentifier("response.media")
+    }
+
     private func actionList(_ actions: [ResponseAction]) -> some View {
         VStack(alignment: .leading, spacing: FigmaSize.spacing8.sizeInArtwork) {
             ForEach(actions, id: \.identifier) { action in
-                if action.intent == .destination || !payload.isReadOnly {
-                    ActionPill(
-                        title: action.title, symbolName: action.symbolName,
-                        isEnabled: action.intent != .prompt || handlers.isSendEnabled
-                    ) {
-                        handlers.onResponseAction(messageIdentifier, action)
-                    }
-                    .accessibilityIdentifier("response.action.\(action.identifier)")
-                }
+                if isVisible(action) { responseAction(action) }
             }
         }
+    }
+
+    private func optionList(_ options: ResponseOptions) -> some View {
+        OptionList(
+            title: options.title,
+            options: options.choices.map { SelectionOption(identifier: $0.identifier, title: $0.title) },
+            selectedIdentifier: options.selectedIdentifier,
+            isEnabled: !options.isReadOnly && !payload.isReadOnly && handlers.isSendEnabled,
+            maximumWidth: nil,
+            onSelect: { handlers.onResponseOption(messageIdentifier, options.identifier, $0.identifier) }
+        )
     }
 
     private func metricSummary(_ metric: ResponseMetric) -> some View {

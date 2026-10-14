@@ -21,11 +21,7 @@ struct MessageTableRow: View {
                 ActivityStatus(text: copy.chat("chat.responding"))
                     .accessibilityIdentifier("chat.typing")
             case .timestamp(let timestamp):
-                Text(timestamp)
-                    .designFont(.caption)
-                    .foregroundColor(Color(theme.colors.secondaryText))
-                    .frame(maxWidth: .infinity, alignment: .center)
-                    .padding(.vertical, FigmaSize.spacing8.sizeInArtwork)
+                DateSeparator(text: timestamp)
                     .accessibilityIdentifier("chat.timestamp")
             }
         }

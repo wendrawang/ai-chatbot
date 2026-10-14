@@ -6,6 +6,7 @@
 #
 #   ./Scripts/run_sandbox.sh                 Figma UI and dummy host flows
 #   ./Scripts/run_sandbox.sh --host          isolated presentation on an existing host stack
+#   ./Scripts/run_sandbox.sh --previewbook   standalone DesignKit component catalog
 #
 # Override the device with TANYA_AI_SIMULATOR.
 

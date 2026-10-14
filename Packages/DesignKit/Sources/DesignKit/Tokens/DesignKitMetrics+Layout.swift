@@ -20,6 +20,7 @@ public extension DesignKitMetrics {
     }
 
     enum Opacity {
+        public static let gradientStart: Double = 0.8
         public static let pressed: Double = 0.7
         public static let disabled: Double = 0.35
     }

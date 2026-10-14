@@ -40,4 +40,20 @@ final class ComponentLayoutStressTests: XCTestCase {
         controller.view.layoutIfNeeded()
         return controller.sizeThatFits(in: CGSize(width: width, height: 10_000))
     }
+
+    func testMediaArtworkCannotExpandItsContainer() {
+        let card = MediaCard(title: "Title") { Color.blue.frame(width: 2_000, height: 2_000) }
+        let fitted = fittedSize(card, width: 320)
+        XCTAssertLessThanOrEqual(fitted.width, 321)
+        XCTAssertLessThan(fitted.height, 500)
+    }
+
+    func testInvalidMediaAspectRatioStillProducesAVisibleBoundedCard() {
+        let standard = fittedSize(MediaCard(title: "Title") { Color.blue }, width: 320)
+        for ratio: CGFloat in [-1, 0, .infinity, .nan] {
+            let fitted = fittedSize(MediaCard(title: "Title", aspectRatio: ratio) { Color.blue }, width: 320)
+            XCTAssertEqual(fitted.width, standard.width, accuracy: 1)
+            XCTAssertEqual(fitted.height, standard.height, accuracy: 1)
+        }
+    }
 }

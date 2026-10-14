@@ -26,6 +26,7 @@ struct WelcomeSection: View {
     }
 
     private var emblem: some View {
+        // TODO: Replace the dummy gradient and sparkles with the approved welcome emblem from Figma.
         Circle()
             .fill(
                 LinearGradient(

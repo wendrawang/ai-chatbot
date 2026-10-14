@@ -14,16 +14,20 @@ PIN demo menghitung jumlah digit; tidak menyimpan PIN atau menjalankan transaksi
 ```sh
 ./Scripts/run_sandbox.sh
 ./Scripts/run_sandbox.sh --host
+./Scripts/run_sandbox.sh --previewbook
 ```
 
 `--host` memeriksa presentasi terpisah dari stack navigasi aplikasi lama.
-Semua mode memakai katalog respons yang sama. Mode showcase/answers/vendor
-lama sudah dihapus agar migrasi mengacu ke satu desain.
+Mode default/host memakai katalog respons yang sama. `--previewbook` membuka
+katalog komponen SwiftUI tanpa sesi chat. Kirim **Contoh komponen** di chat
+untuk melihat media, underlined/filled action dan suggested prompt horizontal.
+Mode showcase/answers/vendor lama sudah dihapus.
 
 ## Panduan
 
 - [Migrasi bertahap: Legacy, token, font dan sizing](docs/DESIGNKIT_PHASED_MIGRATION.md)
 - [Katalog komponen generik dan cara pemakaian](docs/DESIGNKIT_COPY_AND_COMPONENTS.md)
+- [PreviewBook, state dan TODO asset Figma](docs/PREVIEWBOOK.md)
 - [Mapping Figma, rich text, tabel dan bridge host](docs/FIGMA_CHAT_UI.md)
 - [Integrasi host](docs/HOST_INTEGRATION.md)
 - [Mulai dari composer lalu layar chat](docs/SESSION_AND_PARTIAL_MIGRATION.md)
@@ -44,12 +48,13 @@ Host: navigasi, webview, dokumen, PIN, backend
 
 Konten pesan adalah `text`, `response` berisi blok berurutan, atau fallback
 `unsupported`. Blok respons: teks/catatan, tabel maksimal tiga kolom, aksi,
-pilihan, metrik, ringkasan, dokumen dan aktivitas. Tidak ada renderer HTML,
+pilihan, metrik, ringkasan, dokumen, aktivitas, media dan suggested prompt.
+Action presentation bisa outlined, underlined link atau filled CTA. Tidak ada renderer HTML,
 chart/portfolio/receipt lama, live agent, multi-select atau PIN internal.
 Dokumen dan otorisasi memakai halaman existing host melalui `onHostFlow`.
 
 Nama DesignKit bersifat umum, misalnya `DataTable`, `SummaryCard`, `ItemHeader`
-dan `QuickActionRow`. Data presentasi generik ada di DesignKit; prompt,
+dan `QuickActionRow`, pada `Components/<NamaKomponen>`. Data presentasi generik ada di DesignKit; prompt,
 reference transaksi dan aturan sesi ada di fitur. Komponen tidak membutuhkan
 ViewModel masing-masing. Gunakan nilai, binding, state lokal dan callback.
 

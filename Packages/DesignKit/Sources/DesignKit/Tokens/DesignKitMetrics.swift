@@ -13,6 +13,8 @@ public enum DesignKitMetrics {
         public static let bubble: CGFloat = 12
         public static let quickAction: CGFloat = 8
         public static let summary: CGFloat = 8
+        public static let media: CGFloat = 8
+        public static let action: CGFloat = 24
     }
 
     public enum Stroke {
@@ -34,6 +36,10 @@ public enum DesignKitMetrics {
 
     public enum Table {
         public static let maximumColumns = 3
+    }
+
+    public enum Media {
+        public static let aspectRatio: CGFloat = 1.5
     }
 
     public enum Text {

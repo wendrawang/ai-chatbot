@@ -71,6 +71,31 @@ extension ComponentLayoutStressTests {
                             title: longText, subtitle: code, symbolName: "doc")
                     ) { _ in })
             )
+        ] + choppedComponents(longText: longText)
+    }
+
+    private func choppedComponents(longText: String) -> [(String, AnyView)] {
+        [
+            ("media", AnyView(MediaCard(title: longText, subtitle: longText) { Color.blue })),
+            ("link action", AnyView(LinkAction(title: longText) {})),
+            ("filled action", AnyView(FilledAction(title: longText, onTap: {}, icon: { Color.blue }))),
+            ("suggestions", AnyView(SuggestionList { ActionPill(title: longText) {} })),
+            ("header", AnyView(NavigationHeader(title: longText, leading: { Color.clear }, trailing: { Color.clear }))),
+            ("date", AnyView(DateSeparator(text: longText))),
+            (
+                "composer",
+                AnyView(
+                    MessageComposer(
+                        text: .constant(longText), placeholder: longText,
+                        sendLabel: "Send", onSend: {}))
+            ),
+            (
+                "composer stop",
+                AnyView(
+                    MessageComposer(
+                        text: .constant(longText), placeholder: longText,
+                        sendLabel: "Send", isGenerating: true, onStop: {}, onSend: {}))
+            )
         ]
     }
 }

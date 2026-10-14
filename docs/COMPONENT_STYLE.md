@@ -12,6 +12,11 @@ Own long-lived feature models once, outside `body`. `@StateObject` owns a SwiftU
 
 ## Names and declaration order
 
+Public visual components live in `Components/<ComponentName>`. Private helpers
+that belong to the component stay in its folder. Foundations, tokens, typography
+and feature workflow retain their separate owners. PreviewBook groups by usage;
+it does not impose Atoms/Molecules/Organisms categories on source code.
+
 Name components by role: `MessageComposer`, `OptionRow`, `SummaryCard`. A `View` suffix is optional for semantic component names; keep the established name within a component family. Use `Screen` for a page, `Sheet` for a modal, `ViewController` for UIKit, and `ViewModel` only for workflow/state owners. Use generic names in DesignKit. Feature-specific payload adapters belong in TanyaAIPresentation.
 
 Private visual sections are nouns: `header`, `content`, `footer`, `actionButton`. Parameterized helpers describe the item: `row(for:)`, `label(for:)`. Extract a dedicated `struct View` when reused, when it owns local state, or when it needs a separate dependency/update boundary. A computed `some View` property organizes code; it does not isolate observation by itself.

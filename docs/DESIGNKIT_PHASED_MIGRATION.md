@@ -35,7 +35,7 @@ DesignKit
 ├── Theme                     mapping semantik dan resolusi tema
 ├── Typography                resep font dan registrasi resource
 ├── Foundations               sizing, warna dan akses asset
-├── Atoms / Molecules / Organisms
+├── Components/<NamaKomponen>   komponen berdasarkan peran
 ├── Models / Support          data presentasi dan utilitas UI
 └── Legacy
     ├── Components            komponen lama yang masih dipakai
@@ -194,6 +194,10 @@ beserta mapping fondasinya sebagai satu perubahan; jangan mengembalikan salinan
 token duplikat sementara untuk menutup error.
 
 ## Tahap 2 — Adopsi satu komponen kecil
+
+Periksa state melalui [PreviewBook](PREVIEWBOOK.md) terlebih dahulu. Chopping
+komponen terbaru menambahkan media, suggested prompt, filled/link action dan
+header/date separator generik. Artwork masih dummy dengan TODO penggantian.
 
 Mulai dengan MessageComposer pada screen kosong. Pakai seluruh package DesignKit
 beserta resource/dependency internalnya; jangan copy hanya satu file view lalu

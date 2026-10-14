@@ -38,6 +38,11 @@ Gunakan `docs/FIGMA_CHAT_UI.md`, `docs/DESIGNKIT_PHASED_MIGRATION.md` dan
 
 ## Token, sizing dan copy
 
+- Komponen visual ada di `Components/<NamaKomponen>`. Katalog `--previewbook`
+  hanya untuk Sandbox. Dummy artwork menggunakan TODO penggantian asset.
+- Media/action/suggestions terbaru adalah blok UI, tanpa network image loader
+  atau cancellation backend palsu. Stop composer adalah callback dari pemakai.
+
 - Padding/spacing ambil FigmaSize langsung bila tersedia. Ukuran khusus di
   DesignKitMetrics, nama berdasarkan peran, tanpa alias duplikat generated.
 - Jangan edit Tokens/Generated; hanya ganti dengan export engine.

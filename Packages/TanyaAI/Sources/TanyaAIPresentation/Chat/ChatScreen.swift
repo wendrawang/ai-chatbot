@@ -53,25 +53,16 @@ public struct ChatScreen: View {
     }
 
     private var header: some View {
-        ZStack {
-            Text(copy.chat("chat.title"))
-                .designFont(.headline)
-                .foregroundColor(Color(theme.colors.primaryText))
-            HStack {
-                Button(action: viewModel.close) {
-                    headerIcon("chevron.left")
-                }
-                .accessibilityLabel(copy.chat("chat.close"))
-                .accessibilityIdentifier("chat.close")
-                Spacer(minLength: FigmaSize.spacing16.sizeInArtwork)
-                headerAction
+        NavigationHeader(title: copy.chat("chat.title")) {
+            Button(action: viewModel.close) {
+                headerIcon("chevron.left")
             }
+            .foregroundColor(Color(theme.colors.accent))
+            .accessibilityLabel(copy.chat("chat.close"))
+            .accessibilityIdentifier("chat.close")
+        } trailing: {
+            headerAction
         }
-        .padding(.horizontal, FigmaSize.spacing8.sizeInArtwork)
-        .padding(.top, FigmaSize.spacing8.sizeInArtwork)
-        .background(Color(theme.colors.background))
-        .foregroundColor(Color(theme.colors.accent))
-        .accessibilityElement(children: .contain)
         .accessibilityIdentifier("chat.header")
     }
 
