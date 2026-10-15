@@ -11,7 +11,7 @@ final class TanyaAIHostThemeTests: XCTestCase {
         let original = selected
         let host = TanyaAIHost(
             theme: .sandbox, themeProvider: { selected }, deeplinkScheme: "sample",
-            makeSession: { MockTanyaAIChatSession.sandbox() }, onDeeplink: { _ in }
+            makeSession: { MockTanyaAIChatSession.figma() }, onDeeplink: { _ in }
         )
         XCTAssertEqual(host.presentationTheme, original)
         selected = Theme(tokens: PremierColorConstants(), fonts: original.fonts)

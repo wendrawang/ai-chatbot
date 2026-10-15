@@ -7,7 +7,6 @@ struct MessageTableRow: View {
     let theme: Theme
     let handlers: TanyaAIMessageRowHandlers
     var copy = CopyCatalog()
-    var imageLoader: ImageLoading = ImageLoader.shared
 
     var body: some View {
         Group {
@@ -19,24 +18,16 @@ struct MessageTableRow: View {
                 )
                 .id(message.identifier)
             case .typing:
-                TypingIndicatorView(label: copy.chat("chat.responding"))
+                ActivityStatus(text: copy.chat("chat.responding"))
                     .accessibilityIdentifier("chat.typing")
-            case .suggestions(let title, let suggestions):
-                OptionList(
-                    title: title,
-                    options: suggestions.map { SelectionOption(identifier: $0.identifier, title: $0.title) },
-                    onSelect: { option in
-                        if let suggestion = suggestions.first(where: { $0.identifier == option.identifier }) {
-                            handlers.onSuggestion(suggestion)
-                        }
-                    }
-                )
+            case .timestamp(let timestamp):
+                DateSeparator(text: timestamp)
+                    .accessibilityIdentifier("chat.timestamp")
             }
         }
         .padding(.horizontal, FigmaSize.spacing16.sizeInArtwork)
         .padding(.vertical, DesignKitMetrics.Spacing.snug.sizeInArtwork)
         .theme(theme)
-        .imageLoader(imageLoader)
         .copyCatalog(copy)
     }
 }

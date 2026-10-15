@@ -46,47 +46,18 @@ final class TanyaAIChatBehaviorTests: XCTestCase {
 
     func testNavigationActionsProduceOutputs() {
         let viewModel = TanyaAIChatViewModel(
-            repository: TanyaAIRepositoryStub()
+            repository: TanyaAIRepositoryStub(), isNewSessionEnabled: true
         )
         var outputs: [TanyaAIChatOutput] = []
         viewModel.onOutput = { outputs.append($0) }
 
-        viewModel.openHistory()
+        viewModel.startNewSession()
         viewModel.close()
 
         XCTAssertEqual(outputs.count, 2)
-        guard case .openHistory = outputs[0], case .close = outputs[1] else {
-            return XCTFail("Expected history and close outputs")
+        guard case .startNewSession = outputs[0], case .close = outputs[1] else {
+            return XCTFail("Expected new session and close outputs")
         }
-    }
-
-    func testApprovalEditCancelAndStateGuard() {
-        let repository = TanyaAIRepositoryStub()
-        let viewModel = TanyaAIChatViewModel(repository: repository)
-        let approval = makeApproval()
-        var approvalOutputCount = 0
-        viewModel.onOutput = { output in
-            if case .requestApproval = output {
-                approvalOutputCount += 1
-            }
-        }
-        viewModel.sendMessage("Create transfer")
-        repository.send(
-            .content(
-                messageIdentifier: "approval-message",
-                content: .approval(approval)
-            )
-        )
-
-        viewModel.editApproval(approval)
-        XCTAssertTrue((viewModel.draftRequest?.text.hasPrefix("Change") == true))
-        viewModel.cancelApproval(approval)
-        guard case .approval(let cancelled) = viewModel.messages.last?.content else {
-            return XCTFail("Expected cancelled approval")
-        }
-        XCTAssertEqual(cancelled.state, .cancelled)
-        viewModel.approve(cancelled)
-        XCTAssertEqual(approvalOutputCount, 0)
     }
 
     func testContentReplacesExistingPlaceholder() {
@@ -94,34 +65,18 @@ final class TanyaAIChatBehaviorTests: XCTestCase {
         let viewModel = TanyaAIChatViewModel(repository: repository)
         viewModel.sendMessage("Show status")
         repository.send(.responseStarted(messageIdentifier: "assistant"))
-        let status = StatusPayload(
-            title: "Completed",
-            detail: "Sanitized result",
-            level: .success
-        )
+        let response = ResponsePayload(blocks: [.text("Completed"), .note("Sanitized result")])
 
         repository.send(
             .content(
                 messageIdentifier: "assistant",
-                content: .status(status)
+                content: .response(response)
             )
         )
 
-        XCTAssertEqual(viewModel.messages.last?.content, .status(status))
+        XCTAssertEqual(viewModel.messages.last?.content, .response(response))
     }
 
-    private func makeApproval() -> ApprovalPayload {
-        ApprovalPayload(
-            approvalIdentifier: "approval-demo",
-            transactionIdentifier: "transaction-demo",
-            challengeIdentifier: "challenge-demo",
-            kind: .transfer,
-            title: "Confirm transfer",
-            summary: [],
-            expiresAt: Date().addingTimeInterval(300),
-            state: .awaitingApproval
-        )
-    }
 }
 
 private enum ChatBehaviorError: Error {

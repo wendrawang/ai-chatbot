@@ -1,12 +1,10 @@
-# Contoh
+# Contoh integrasi
 
-Contoh integrasi host dan beberapa pilihan SDK chat.
+- [HostIntegration](HostIntegration): contoh mapping theme dan link ke API host terbaru.
+- [Demo](Demo): factory Debug dengan session dummy; tidak menautkan SDK vendor.
 
-| Folder | Isi |
-| --- | --- |
-| [`HostIntegration`](HostIntegration) | Memasang fitur ke app existing: `TanyaAIHost`, plus adapter otorisasi dan theme milik Anda |
-| [`VendorChatSDK/Sendbird`](VendorChatSDK/Sendbird) | Adapter Sendbird, composition root, dan lifecycle: kapan memanggil initialize / connect / disconnect |
-| [`VendorChatSDK/Tencent`](VendorChatSDK/Tencent) | PoC Tencent Chat Core SDK: lifecycle, sesi C2C, history, dan wiring RootScreen/AppState/MainCoordinator |
-
-File di sini bukan bagian dari target sandbox. Salin ke project Anda, lalu
-ganti placeholder `Host*`/`App*` dengan tipe milik Anda sendiri.
+Katalog/vendor examples lama dihapus selama fokus migrasi UI Figma. Untuk
+alur lengkap dengan welcome dan existing document/PIN bridge, lihat
+`TanyaAISandboxApp/SandboxFigmaPresenter.swift` dan
+[host integration](../docs/HOST_INTEGRATION.md). Sesuaikan copy/resources/
+route host sendiri sebelum adopsi.

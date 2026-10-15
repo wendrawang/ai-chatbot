@@ -52,26 +52,6 @@ final class TanyaAILifecycleTests: XCTestCase {
         XCTAssertTrue(repository.isDisconnected)
     }
 
-    func testPINViewModelReleasesAndCancelsActiveRequest() {
-        let authorizationService = TanyaAIAuthorizationFixture()
-        weak var weakViewModel: TanyaAIPINViewModel?
-
-        autoreleasepool {
-            var viewModel: TanyaAIPINViewModel? = TanyaAIPINViewModel(
-                approval: makeApproval(),
-                authorizationService: authorizationService
-            )
-            [1, 2, 3, 4, 5, 6].forEach {
-                viewModel?.appendDigit($0)
-            }
-            weakViewModel = viewModel
-            viewModel = nil
-        }
-
-        XCTAssertNil(weakViewModel)
-        XCTAssertTrue(authorizationService.cancellationProbe.isCancelled)
-    }
-
     func testCompleteFeatureGraphReleasesAfterDismissal() {
         weak var weakController: UIViewController?
 
@@ -87,22 +67,9 @@ final class TanyaAILifecycleTests: XCTestCase {
         XCTAssertNil(weakController)
     }
 
-    private func makeApproval() -> ApprovalPayload {
-        ApprovalPayload(
-            approvalIdentifier: "approval-fixture",
-            transactionIdentifier: "transaction-fixture",
-            challengeIdentifier: "challenge-fixture",
-            title: "Sample approval",
-            summary: [],
-            expiresAt: Date().addingTimeInterval(300),
-            state: .awaitingApproval
-        )
-    }
-
     private func makeDependencies() -> TanyaAIDependencies {
         TanyaAIDependencies(
-            chatSession: MockTanyaAIChatSession.sandbox(),
-            authorizationService: MockTanyaAIAuthorizationService(),
+            chatSession: MockTanyaAIChatSession.figma(),
             theme: .sandbox
         )
     }

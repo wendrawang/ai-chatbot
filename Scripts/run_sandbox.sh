@@ -4,10 +4,9 @@
 #
 # Any argument is forwarded to the app, so the launch modes work directly:
 #
-#   ./Scripts/run_sandbox.sh                 legacy host screen
-#   ./Scripts/run_sandbox.sh --deeplink      hand-off demo
-#   ./Scripts/run_sandbox.sh --showcase      every bubble
-#   ./Scripts/run_sandbox.sh --answers       four-part answer and radio tap
+#   ./Scripts/run_sandbox.sh                 Figma UI and dummy host flows
+#   ./Scripts/run_sandbox.sh --host          isolated presentation on an existing host stack
+#   ./Scripts/run_sandbox.sh --previewbook   standalone DesignKit component catalog
 #
 # Override the device with TANYA_AI_SIMULATOR.
 

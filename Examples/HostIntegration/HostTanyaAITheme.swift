@@ -25,14 +25,6 @@ extension TanyaAITheme {
             assistantBubble: UIColor(named: "BubbleIncoming") ?? fallback.assistantBubble,
             assistantBubbleText: UIColor(named: "TextPrimary") ?? fallback.primaryText,
             divider: UIColor(named: "Divider") ?? fallback.divider,
-            chartTrack: UIColor(named: "ChartTrack") ?? fallback.chartTrack,
-            chartColors: [
-                UIColor(named: "ChartSeries1") ?? fallback.chartColors[0],
-                UIColor(named: "ChartSeries2") ?? fallback.chartColors[1],
-                UIColor(named: "ChartSeries3") ?? fallback.chartColors[2],
-                UIColor(named: "ChartSeries4") ?? fallback.chartColors[3],
-                UIColor(named: "ChartSeries5") ?? fallback.chartColors[4]
-            ],
             success: UIColor(named: "Success") ?? fallback.success,
             warning: UIColor(named: "Warning") ?? fallback.warning,
             error: UIColor(named: "Error") ?? fallback.error,

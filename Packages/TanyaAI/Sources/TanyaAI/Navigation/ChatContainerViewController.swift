@@ -1,4 +1,5 @@
 import DesignKit
+import TanyaAIContracts
 import TanyaAIDomain
 import UIKit
 
@@ -9,17 +10,20 @@ final class ChatContainerViewController: UIViewController {
     private let pushTransition = TanyaAIPushTransition()
     private var coordinator: TanyaAICoordinator?
     private let dependencyContainer: TanyaAIDependencyContainer
-    private let confirmationHandler: ((ConfirmationPayload) -> Void)?
     private let actionHandler: (Action) -> Void
+    private let hostFlowHandler: TanyaAIHostFlowHandler?
+    private let makeNewSession: (() -> TanyaAIChatSession)?
 
     init(
         dependencyContainer: TanyaAIDependencyContainer,
         actionHandler: @escaping (Action) -> Void = { _ in },
-        confirmationHandler: ((ConfirmationPayload) -> Void)? = nil
+        hostFlowHandler: TanyaAIHostFlowHandler? = nil,
+        makeNewSession: (() -> TanyaAIChatSession)? = nil
     ) {
         self.dependencyContainer = dependencyContainer
-        self.confirmationHandler = confirmationHandler
         self.actionHandler = actionHandler
+        self.hostFlowHandler = hostFlowHandler
+        self.makeNewSession = makeNewSession
         super.init(nibName: nil, bundle: nil)
         modalPresentationStyle = .fullScreen
         transitioningDelegate = pushTransition
@@ -63,7 +67,9 @@ final class ChatContainerViewController: UIViewController {
             navigationController: featureNavigationController,
             dependencyContainer: dependencyContainer,
             containerController: self,
-            actionHandler: actionHandler, confirmationHandler: confirmationHandler
+            actionHandler: actionHandler,
+            hostFlowHandler: hostFlowHandler,
+            makeNewSession: makeNewSession
         )
         self.coordinator = coordinator
         coordinator.start()

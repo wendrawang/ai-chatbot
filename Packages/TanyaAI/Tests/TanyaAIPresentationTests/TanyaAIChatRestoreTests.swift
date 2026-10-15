@@ -41,30 +41,28 @@ final class TanyaAIChatRestoreTests: XCTestCase {
     /// Restoring has its own loading state. Typing dots would promise a
     /// reply nobody asked for, and prompts belong to a conversation that has
     /// already said whether it is empty.
-    func testRestoringShowsNeitherTypingDotsNorSuggestions() {
+    func testRestoringShowsLoadingWithoutTyping() {
         let repository = TanyaAIRepositoryStub()
         repository.isAutomaticConnection = false
         let viewModel = TanyaAIChatViewModel(repository: repository)
 
         XCTAssertTrue(viewModel.isRestoring)
         XCTAssertFalse(viewModel.isTypingRowVisible)
-        XCTAssertFalse(viewModel.isSuggestionRowVisible)
 
         repository.sendUnsolicited(.history([]))
 
-        XCTAssertFalse(viewModel.isSuggestionRowVisible)
     }
 
-    func testTextReplyDoesNotCreateSuggestions() {
+    func testUnpromptedTextReplyCompletesAfterRestore() {
         let repository = TanyaAIRepositoryStub()
         let viewModel = TanyaAIChatViewModel(repository: repository)
         repository.sendUnsolicited(.history([]))
         repository.sendUnsolicited(.responseStarted(messageIdentifier: "reply-1"))
         repository.sendUnsolicited(.textDelta(messageIdentifier: "reply-1", text: "Halo"))
         repository.sendUnsolicited(.responseCompleted(messageIdentifier: "reply-1"))
+        XCTAssertEqual(viewModel.messages.last?.content, .text("Halo"))
+        XCTAssertFalse(viewModel.isTypingRowVisible)
 
-        XCTAssertTrue(viewModel.suggestions.isEmpty)
-        XCTAssertFalse(viewModel.isSuggestionRowVisible)
     }
 
     /// Typing before the channel answers wins. History is older than what

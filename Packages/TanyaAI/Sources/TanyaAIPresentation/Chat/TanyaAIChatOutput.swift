@@ -1,10 +1,9 @@
-import DesignKit
+import TanyaAIContracts
 import TanyaAIDomain
 
 public enum TanyaAIChatOutput {
     case close
-    case openHistory
-    case requestConfirmation(ConfirmationPayload)
-    case requestApproval(ApprovalPayload)
+    case startNewSession
+    case requestHostFlow(TanyaAIHostFlowRequest)
     case performAction(Action)
 }

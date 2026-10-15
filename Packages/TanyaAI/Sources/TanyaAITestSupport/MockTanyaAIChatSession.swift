@@ -1,20 +1,7 @@
 import Foundation
 import TanyaAIContracts
 
-/// Stands in for a vendor chat SDK session.
-///
-/// Lets a host build and run the whole feature - typed cards, hand-off, agent
-/// typing - before the real SDK is wired in:
-///
-/// ```swift
-/// let dependencies = TanyaAIDependencies(
-///     chatSession: MockTanyaAIChatSession.demo(
-///         deeplink: "ocbcid://mobile?type=transfer"
-///     ),
-///     authorizationService: MockTanyaAIAuthorizationService(),
-///     theme: .sandbox
-/// )
-/// ```
+/// A controllable session double for tests and the Figma UI demo.
 public final class MockTanyaAIChatSession: TanyaAIChatSession {
     public var onEvent: ((TanyaAIChatSessionEvent) -> Void)?
 
@@ -82,107 +69,5 @@ public final class MockTanyaAIChatSession: TanyaAIChatSession {
                 self.onEvent?(event)
             }
         }
-    }
-}
-
-public extension MockTanyaAIChatSession {
-    /// A reply that exercises every path a session transport adds: typing,
-    /// streamed text, a typed card carrying the host's own deeplink, and a
-    /// hand-off pushed by the channel itself.
-    /// The sandbox's own answers, picked from what the customer typed.
-    ///
-    /// Same fixtures the demo app uses, so a host can see every bubble type
-    /// before a real SDK is wired in.
-    static func sandbox(
-        stepDelay: TimeInterval = 0.05
-    ) -> MockTanyaAIChatSession {
-        MockTanyaAIChatSession(stepDelay: stepDelay) { text in
-            MockTanyaAIResponseFixture.events(for: text)
-        }
-    }
-
-    static func demo(
-        deeplink: String,
-        callbackQueue: DispatchQueue = .main,
-        stepDelay: TimeInterval = 0.05
-    ) -> MockTanyaAIChatSession {
-        MockTanyaAIChatSession(
-            callbackQueue: callbackQueue,
-            stepDelay: stepDelay
-        ) { text in
-            let identifier = "vendor-\(UUID().uuidString.prefix(8))"
-            var events: [TanyaAIChatSessionEvent] = [
-                .typing(true),
-                .messageStarted(messageIdentifier: identifier),
-                .messageDelta(
-                    messageIdentifier: identifier,
-                    text: "Reply from the vendor channel for: \(text)"
-                ),
-                .typing(false)
-            ]
-            if let json = actionCardJSON(
-                messageIdentifier: "\(identifier)-card",
-                deeplink: deeplink
-            ) {
-                events.append(
-                    .structuredPayload(name: "actions", json: json)
-                )
-            }
-            events.append(
-                .messageCompleted(messageIdentifier: identifier)
-            )
-            return events
-        }
-    }
-
-    /// A channel-sourced hand-off: no card is rendered, the deeplink goes
-    /// straight to the host.
-    static func handoffOnly(
-        deeplink: String,
-        callbackQueue: DispatchQueue = .main,
-        stepDelay: TimeInterval = 0.05
-    ) -> MockTanyaAIChatSession {
-        MockTanyaAIChatSession(
-            callbackQueue: callbackQueue,
-            stepDelay: stepDelay
-        ) { _ in
-            let identifier = "vendor-handoff"
-            return [
-                .messageStarted(messageIdentifier: identifier),
-                .messageDelta(
-                    messageIdentifier: identifier,
-                    text: "Opening the existing screen for you."
-                ),
-                .hostAction(
-                    identifier: "vendor-handoff",
-                    deeplink: deeplink
-                ),
-                .messageCompleted(messageIdentifier: identifier)
-            ]
-        }
-    }
-
-    private static func actionCardJSON(
-        messageIdentifier: String,
-        deeplink: String
-    ) -> Data? {
-        let payload: [String: Any] = [
-            "messageIdentifier": messageIdentifier,
-            "title": "Continue in the app",
-            "actions": [
-                [
-                    "title": "Open the existing screen",
-                    "style": "primary",
-                    "action": [
-                        "identifier": "vendor-open",
-                        "deeplink": deeplink
-                    ]
-                ]
-            ]
-        ]
-        return try? JSONSerialization.data(
-            withJSONObject: payload,
-            options: [.sortedKeys]
-        )
     }
 }

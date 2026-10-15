@@ -6,7 +6,7 @@
 /// destinations belong to the app.
 public struct Action: Equatable {
     public enum DestinationType: String, Equatable, Decodable {
-        case deeplink, webview, browser
+        case deeplink, webview
     }
 
     public let destinationType: DestinationType
@@ -27,43 +27,5 @@ public struct Action: Equatable {
         self.destinationType = destinationType
         self.identifier = identifier
         self.deeplink = deeplink
-    }
-}
-
-/// One button on an action card.
-public struct ActionButton: Equatable {
-    /// Visual weight only. It carries no behaviour and no permission.
-    public enum Style: String, Equatable {
-        case primary
-        case secondary
-    }
-
-    public let title: String
-    public let style: Style
-    public let action: Action
-
-    public var identifier: String { action.identifier }
-
-    public init(
-        title: String,
-        style: Style = .primary,
-        action: Action
-    ) {
-        self.title = title
-        self.style = style
-        self.action = action
-    }
-}
-
-/// A set of hand-off links.
-///
-/// No heading of its own. Whatever explains the hand-off arrives as an
-/// ordinary reply before it, so a title here would say the same thing twice -
-/// and a field the UI never draws is a promise the contract does not keep.
-public struct ActionPayload: Equatable {
-    public let buttons: [ActionButton]
-
-    public init(buttons: [ActionButton]) {
-        self.buttons = buttons
     }
 }

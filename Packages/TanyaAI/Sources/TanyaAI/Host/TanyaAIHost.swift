@@ -14,7 +14,7 @@ import UIKit
 ///     theme: .sandbox,
 ///     deeplinkScheme: "ocbcid",
 ///     deeplinkHost: "mobile",
-///     makeSession: { SendbirdChatSessionAdapter(botUserId: "cet-bot") },
+///     makeSession: makeChatSession,
 ///     onDeeplink: { url in DeeplinkManager.instance.openUrlScheme(url) }
 /// )
 ///
@@ -36,16 +36,15 @@ import UIKit
 public final class TanyaAIHost: ObservableObject {
     private let theme: Theme
     private let themeProvider: (() -> Theme)?
-    private let authorizationService: TanyaAIAuthorizationService?
     private let deeplinkScheme: String
     private let deeplinkHost: String?
     private let initialPrompt: String?
-    private let shortcuts: [Suggestion]
     private let copy: CopyCatalog
-    private let historyItems: [ConversationSummary]
+    private let welcome: WelcomeConfiguration?
     private let makeSession: () -> TanyaAIChatSession
+    private let makeNewSession: (() -> TanyaAIChatSession)?
+    private let onHostFlow: TanyaAIHostFlowHandler?
     private let onDestination: ((Action, URL) -> Void)?
-    private let onConfirmation: ((ConfirmationPayload) -> Void)?
     private let onDeeplink: (URL) -> Void
 
     private weak var anchor: UIViewController?
@@ -56,53 +55,34 @@ public final class TanyaAIHost: ObservableObject {
         presented != nil
     }
 
-    /// - Parameters:
-    ///   - authorizationService: runs the in-feature PIN sheet. Only a
-    ///     confirmation with no `handoff` reaches it, so a host whose
-    ///     confirmations all open its own flows leaves this nil.
-    ///   - deeplinkScheme: the only scheme a bubble may hand back. Anything
-    ///     else is dropped, which is what stops a reply from sending the
-    ///     customer to `https://…` or into another application.
-    ///   - deeplinkHost: pins the link to one entry point. Nil accepts any
-    ///     host under the scheme.
-    ///   - copy: UI language and host overrides, captured for this host instance.
-    ///   - historyItems: host-provided conversation summaries; empty by default.
-    ///   - makeSession: called once per presentation. It must return a *new*
-    ///     session each time: the feature takes ownership of the session's
-    ///     callback and closes it on dismissal, so a shared instance would be
-    ///     torn out from under the next presentation.
-    ///   - onDestination: optional typed handler for deeplink/webview/browser.
-    ///   - onConfirmation: opens the host PIN flow after dismissal; carries the backend reference.
-    ///   - onDeeplink: the host's existing deeplink handler - the same one
-    ///     `scene(_:openURLContexts:)` calls. It is invoked only after the
-    ///     feature has finished dismissing.
+    /// Create one host outside the view body. Session factories return a fresh adapter per conversation.
+    /// onHostFlow presents existing document/PIN pages above chat and returns their result.
+    /// onDestination handles webview destinations; onDeeplink receives validated application routes.
     public init(
         theme: Theme,
         themeProvider: (() -> Theme)? = nil,
-        authorizationService: TanyaAIAuthorizationService? = nil,
         deeplinkScheme: String,
         deeplinkHost: String? = nil,
         initialPrompt: String? = nil,
-        shortcuts: [Suggestion] = [],
         copy: CopyCatalog = CopyCatalog(),
-        historyItems: [ConversationSummary] = [],
+        welcome: WelcomeConfiguration? = nil,
         makeSession: @escaping () -> TanyaAIChatSession,
+        makeNewSession: (() -> TanyaAIChatSession)? = nil,
         onDestination: ((Action, URL) -> Void)? = nil,
-        onConfirmation: ((ConfirmationPayload) -> Void)? = nil,
+        onHostFlow: TanyaAIHostFlowHandler? = nil,
         onDeeplink: @escaping (URL) -> Void
     ) {
         self.onDestination = onDestination
-        self.onConfirmation = onConfirmation
         self.theme = theme
         self.themeProvider = themeProvider
-        self.authorizationService = authorizationService
         self.deeplinkScheme = deeplinkScheme
         self.deeplinkHost = deeplinkHost
         self.initialPrompt = initialPrompt
-        self.shortcuts = shortcuts
         self.copy = copy
-        self.historyItems = historyItems
+        self.welcome = welcome
         self.makeSession = makeSession
+        self.makeNewSession = makeNewSession
+        self.onHostFlow = onHostFlow
         self.onDeeplink = onDeeplink
     }
 
@@ -120,16 +100,15 @@ public final class TanyaAIHost: ObservableObject {
         let controller = TanyaAIModule.makeViewController(
             configuration: TanyaAIConfiguration(
                 initialPrompt: initialPrompt,
-                shortcuts: shortcuts,
                 copy: copy,
-                historyItems: historyItems
+                welcome: welcome
             ),
             dependencies: TanyaAIDependencies(
                 chatSession: makeSession(),
-                authorizationService: authorizationService,
                 theme: presentationTheme
             ),
-            onConfirmation: confirmationCallback,
+            onHostFlow: onHostFlow,
+            makeNewSession: makeNewSession,
             onAction: { [weak self] action in self?.handle(action) }
         )
         presented = controller
@@ -170,15 +149,7 @@ public final class TanyaAIHost: ObservableObject {
         }
     }
 
-    /// PIN belongs to the host; wait until its presenting screen is available.
-    private var confirmationCallback: ((ConfirmationPayload) -> Void)? {
-        guard onConfirmation != nil else { return nil }
-        return { [weak self] payload in
-            self?.dismiss { [weak self] in self?.onConfirmation?(payload) }
-        }
-    }
-
-    /// The host still validates HTTPS domains before routing a browser or webview intent.
+    /// The host still validates HTTPS domains before routing a webview intent.
     func accepted(_ action: Action) -> URL? {
         if action.destinationType != .deeplink {
             guard onDestination != nil, let url = URL(string: action.deeplink),

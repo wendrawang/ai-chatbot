@@ -1,5 +1,3 @@
 "design.responding" = "Responding";
-"design.formattedResult" = "Formatted result";
 "design.loading" = "Loading";
-"design.digit" = "Digit {digit}";
-"design.deleteDigit" = "Delete digit";
+"design.stop" = "Stop generating";

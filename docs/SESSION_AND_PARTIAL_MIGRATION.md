@@ -4,9 +4,11 @@ The chat now models an open channel. Sending a prompt submits it to the SDK; a b
 
 ## Package and adapter update
 
-Update DesignKit and TanyaAI together. Copy the complete Tencent example root Swift files into the host target (exclude Tests). Keep `.tanyaAIHost(appState.tanyaAIHost)` and `host.present()`; SDK init/login/logout and group provisioning still belong to AppState/backend.
-
-`TanyaAIChatSession.send(text:context:requestIdentifier:)` now returns the assigned SDK message ID, or nil if the SDK assigns it later. The method is discardable. Emit `.sendSucceeded(requestIdentifier:messageIdentifier:)` or `.sendFailed(requestIdentifier:error:)` for that local submission. `.failed` / `.disconnected` describe the channel; `.historyFailed` describes history loading. Never use an incoming bot message as a send acknowledgement. ThreeDolphins' supplied API only confirms local submission and exposes no delivery receipt; Tencent/Sendbird use their send callbacks. No status here means the bot read the message.
+Update DesignKit and TanyaAI together. Keep `.tanyaAIHost(host)` and `host.present()`.
+Backend/vendor examples are removed during this UI stage; implement the SDK-neutral
+`TanyaAIChatSession` when the backend is chosen. Sending returns the assigned
+remote ID or nil and reports sendSucceeded/sendFailed for that submission.
+An incoming reply never acknowledges the last send.
 
 History precedes `.connected`; an adapter without history can report `.connected` directly. History failure can be followed by `.connected`, allowing the user to continue with a localized warning. On retry, guard SDK callbacks using a connection generation. Disconnect unregisters this screen's listeners; it does not log out the shared SDK or delete the group.
 
@@ -68,14 +70,20 @@ final class ChatOwner: ObservableObject {
 
 Also import `TanyaAIContracts` for `TanyaAIChatSession`. Own `ChatOwner` once with `@StateObject`, pass `owner.model` to `ChatScreen(viewModel:)`, and apply the theme at the screen boundary. Do not create the owner, repository, or adapter inside `body`. Every presentation receives a fresh adapter.
 
-`sendMessage(_:) -> Bool` reports whether the channel accepted the submission locally. False preserves the editor draft and selection. The editor draft is now local to `ComposerSection`; it is not `viewModel.inputText`. For custom editors, call `sendMessage(draft)` and clear your binding only when true. `draftRequest` carries an identified prefill from actions such as editing an approval.
+`sendMessage(_:) -> Bool` reports whether the channel accepted the submission locally. False preserves the editor draft and selection. The editor draft is now local to `ComposerSection`; it is not `viewModel.inputText`. For custom editors, call `sendMessage(draft)` and clear your binding only when true. `draftRequest` carries an identified prefill from response edit actions.
 
-Initial history blocks submission until the channel is ready. A configured `startInitialPrompt(_:)` is deferred until readiness and runs once; the default host configuration has no initial prompt or greeting. History retry uses the SDK snapshot, reuses known rows by SDK ID, preserves pending/failed outbox rows, and does not restore consumed options or settled approvals. Only the latest answer offers radio options.
+Initial history blocks submission until the channel is ready. A configured `startInitialPrompt(_:)` is deferred until readiness and runs once; the default host configuration has no initial prompt or greeting. History retry uses the SDK snapshot, reuses known rows by SDK ID, preserves pending/failed outbox rows, and does not reactivate consumed options . Only the latest response offers active radio options; older options remain visible as read-only history.
 
 Outgoing rows have pending/sent/failed status. Retry reuses the failed row with a new local submission ID. Local IDs never imply backend reply correlation. If delivery is uncertain, retry may produce another server message; backend idempotency is outside the current contract.
 
-History screens now use `ConversationHistoryScreen(items:)`. These are host-provided summaries; cross-group history selection and New Chat provisioning are not added by this migration.
+The menu creates a new empty session through `makeNewSession`, returning to the
+host-provided welcome. The factory returns a fresh adapter; actual backend session
+provisioning belongs to the host. Separate history/PIN screens are removed.
+The host supplies existing document/PIN pages through `onHostFlow` with a result
+callback. See [FIGMA_CHAT_UI.md](FIGMA_CHAT_UI.md).
+
+For consolidating the existing design system first, follow [DESIGNKIT_PHASED_MIGRATION.md](DESIGNKIT_PHASED_MIGRATION.md). Its first checkpoint covers Legacy compatibility, one token/font source, and one sizing implementation before adopting chat components.
 
 ## Validation and team conventions
 
-See [COMPONENT_STYLE.md](COMPONENT_STYLE.md) for naming/state/layout rules and [SESSION_VALIDATION.md](SESSION_VALIDATION.md) for tested behavior and device gates. UITableView is retained; cells use native UIHostingConfiguration when available and a contained hosting controller on iOS 15.
+See [COMPONENT_STYLE.md](COMPONENT_STYLE.md) for naming/state/layout rules and [FIGMA_CHAT_VALIDATION.md](FIGMA_CHAT_VALIDATION.md) for tested behavior and device gates. UITableView is retained; cells use native UIHostingConfiguration when available and a contained hosting controller on iOS 15.

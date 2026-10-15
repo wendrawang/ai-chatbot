@@ -6,7 +6,11 @@ extension MessageTableView.Coordinator {
         scrollControl = control
         guard let control, control.requestIdentifier != latestRequestIdentifier else { return }
         latestRequestIdentifier = control.requestIdentifier
+        activePromptIdentifier = nil
+        scrollRequestIdentifier += 1
         isFollowingLatestMessage = true
+        promptTrailingInset = 0
+        updateContentInset()
         parkAtBottom()
         scheduleScrollToBottom(animated: false)
     }
@@ -22,7 +26,9 @@ extension MessageTableView.Coordinator {
 
     func scrollViewWillBeginDragging(_ scrollView: UIScrollView) {
         isFollowingLatestMessage = false
+        activePromptIdentifier = nil
         scrollRequestIdentifier += 1
+        tableView?.window?.endEditing(true)
     }
 
     func scrollViewDidEndDragging(
@@ -32,11 +38,21 @@ extension MessageTableView.Coordinator {
         guard !isDecelerating else {
             return
         }
-        isFollowingLatestMessage = isNearBottom(scrollView)
+        finishDragging(scrollView)
     }
 
     func scrollViewDidEndDecelerating(_ scrollView: UIScrollView) {
+        finishDragging(scrollView)
+    }
+
+    private func finishDragging(_ scrollView: UIScrollView) {
         isFollowingLatestMessage = isNearBottom(scrollView)
+        if isFollowingLatestMessage {
+            promptTrailingInset = 0
+            updateContentInset()
+            parkAtBottom()
+        }
+        reportScrollPosition()
     }
 
     /// Scrolls to the end now, and keeps doing it until the height stops
@@ -54,6 +70,9 @@ extension MessageTableView.Coordinator {
         guard let tableView = tableView else {
             return
         }
+        guard !isAdjustingScroll else { return }
+        isAdjustingScroll = true
+        defer { isAdjustingScroll = false }
         var lastHeight: CGFloat = -1
         var passes = 0
         while passes < Self.maximumParkingPasses,
@@ -105,7 +124,7 @@ extension MessageTableView.Coordinator {
         let visibleBottom =
             scrollView.contentOffset.y
             + scrollView.bounds.height
-            - scrollView.adjustedContentInset.bottom
+            - (scrollView.adjustedContentInset.bottom - promptTrailingInset)
         let threshold = DesignKitMetrics.Layout.scrollFollowThreshold.sizeInArtwork
         return scrollView.contentSize.height - visibleBottom < threshold
     }

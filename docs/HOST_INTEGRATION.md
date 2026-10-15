@@ -1,195 +1,56 @@
-# Memasang TanyaAI di host app
+# Integrasi host UI terbaru
 
-Mulai dari dummy untuk memeriksa bubble. Setelah UI sesuai, ganti pembuat session
-ke adapter backend; komponen bubble tidak perlu diubah.
+Mulai dengan [migrasi DesignKit bertahap](DESIGNKIT_PHASED_MIGRATION.md), lalu
+pasang package TanyaAI. Backend/vendor belum dipilih; demo memakai
+MockTanyaAIChatSession.figma() pada Debug. Produksi mengimplementasikan
+TanyaAIChatSession untuk satu percakapan.
 
-## 1. Tambahkan package
-
-Pertahankan posisi kedua folder:
-
-```text
-Packages/
-  DesignKit/Package.swift
-  TanyaAI/Package.swift
-```
-
-Di Xcode, tambahkan local package `Packages/TanyaAI` dan `Packages/DesignKit`.
-Hubungkan product berikut ke target yang sesuai:
-
-| Target | Product |
-| --- | --- |
-| Host produksi | `TanyaAI`, `DesignKit` |
-| Target demo/Debug | `TanyaAI`, `DesignKit`, `TanyaAITestSupport` |
-
-Paling sederhana memakai target demo terpisah. `#if DEBUG` menjaga pemakaian
-source dummy, tetapi **tidak otomatis menghapus linkage package dari Release**.
-Pastikan target Release tidak menghubungkan `TanyaAITestSupport`.
-
-## 2. Jalankan dummy di host SwiftUI
-
-Salin dua file yang sudah tersedia ke target demo:
-
-- [DemoTanyaAIComposition.swift](../Examples/Demo/DemoTanyaAIComposition.swift)
-- [DemoTanyaAIScreen.swift](../Examples/Demo/DemoTanyaAIScreen.swift)
-
-Lalu gunakan pada menu developer atau halaman percobaan:
+1. Tambah DesignKit dan TanyaAI sebagai package dependency. Jangan memasukkan
+   TanyaAITestSupport ke Release host.
+2. Own satu TanyaAIHost pada AppState/session owner setelah login aplikasi.
+   Siapkan theme/copy/welcome dan factory sesi; jangan membuat graph di body.
+3. Pasang `.tanyaAIHost(host)` pada root yang sudah terlihat; panggil
+   `host.present()` dari tombol entry. Host optional boleh tetap nil sebelum login.
+4. Factory `makeSession` memberikan adapter baru setiap presentasi. Factory
+   `makeNewSession` memberikan percakapan baru/empty, bukan adapter sesi aktif
+   yang sama. Default tidak mengirim invisible prompt.
+5. `onDestination` membuka webview milik host; `onDeeplink` menerima URI app
+   yang sudah difilter scheme/host. Host tetap memvalidasi tujuan/domain.
+6. `onHostFlow` membuka dokumen/PIN existing di atas presenter yang diberikan.
+   Panggil completion setelah halaman selesai/dismiss. Kembalikan accepted,
+   cancelled, processing/completed atau failure; jangan mengirim PIN ke chat.
 
 ```swift
-#if DEBUG
-DemoTanyaAIScreen { url in
-    print("Demo hand-off:", url)
-}
-#endif
+let host = TanyaAIHost(
+    theme: theme,
+    deeplinkScheme: appScheme,
+    deeplinkHost: appEntryHost,
+    copy: copy,
+    welcome: welcome,
+    makeSession: makeChatSession,
+    makeNewSession: makeEmptyChatSession,
+    onDestination: openWebview,
+    onHostFlow: presentExistingDocumentOrPIN,
+    onDeeplink: handleDeeplink
+)
 ```
 
-Tap **Lihat semua bubble**. Chat otomatis mengirim `showcase` dan menampilkan
-fixture. Callback di atas hanya mencetak URL; sambungkan ke router host jika ingin
-menguji halaman tujuan. Fixture memakai `ocbcid://mobile`; filter demo sudah cocok.
+Nama fungsi/nilai contoh adalah dependency aplikasi host, bukan fungsi bawaan
+package. Signature bridge dan contoh request/result ada di
+[FIGMA_CHAT_UI.md](FIGMA_CHAT_UI.md). Untuk UIKit gunakan
+`TanyaAIModule.makeViewController(configuration:dependencies:onHostFlow:makeNewSession:onAction:)`
+dan present controller secara full screen.
 
-Tidak ada backend chat yang perlu dinyalakan. Gambar remote tetap membutuhkan
-internet; jika gagal, bubble menampilkan placeholder. PIN dummy yang diterima:
-**123456**. PIN lain menguji tampilan error. Tidak ada transaksi sungguhan.
+`TanyaAIHost` menunggu dismissal sebelum membuka stack host pada action
+webview/deeplink. `onHostFlow` mempertahankan chat/draft dan mempresentasikan
+halaman existing di atas chat. Completion terlambat/duplikat dari sesi lama
+maupun request yang sudah selesai tidak mengubah sesi baru.
 
-Ingin menulis wiring sendiri? Ini contoh lengkap pengganti dua file tersebut:
+Pada logout, dismiss lalu lepaskan host dan adapter. Model melepas callback/
+disconnect; adapter bertanggung jawab melepas listener/channel sendiri tanpa
+melogout SDK global milik flow lain. Theme adalah snapshot per presentasi;
+`themeProvider` bisa mengambil theme terkini saat chat dibuka.
 
-```swift
-#if DEBUG
-import SwiftUI
-import TanyaAI
-import TanyaAITestSupport
-
-struct ChatDemoPage: View {
-    @StateObject private var host = TanyaAIHost(
-        theme: .sandbox,
-        authorizationService: MockTanyaAIAuthorizationService(),
-        deeplinkScheme: "ocbcid",
-        deeplinkHost: "mobile",
-        initialPrompt: "showcase",
-        makeSession: { MockTanyaAIChatSession.sandbox() },
-        onDeeplink: { url in print("Demo hand-off:", url) }
-    )
-
-    var body: some View {
-        Button("Buka TanyaAI") { host.present() }
-            .tanyaAIHost(host)
-    }
-}
-#endif
-```
-
-`.tanyaAIHost(host)` dipasang sekali pada root yang memiliki host. `present()`
-baru bekerja setelah root tampil. Fitur dipresentasikan sebagai controller sendiri,
-bukan di-push ke NavigationView host. `@StateObject` mempertahankan identitas host;
-jangan membuat instance baru pada setiap evaluasi `body`.
-
-Jika host disimpan sebagai optional di AppState, gunakan langsung
-`.tanyaAIHost(appState.tanyaAIHost)`, tanpa `!`. Nil hanya menghilangkan anchor
-presentasi, sehingga konten dan state NavigationView tetap dipertahankan.
-Siapkan host sekali per sesi login sebelum `state = .loggedIn`; login SDK boleh
-dimulai dari method login AppState. Tombol chat menunggu login SDK berhasil.
-Contoh AppState dan cleanup Tencent ada di
-[panduan Tencent](../Examples/VendorChatSDK/Tencent/README.md).
-
-## 3. Cek bubble tertentu
-
-Hapus `initialPrompt: "showcase"` jika ingin mengetik manual.
-
-| Ketik persis | Respons dummy |
-| --- | --- |
-| `showcase` | Koleksi bubble untuk review |
-| `transfer` | Approval transfer dan alur PIN |
-| `currency` / `conversion` | Approval konversi mata uang |
-| `deposit` | Approval deposito |
-| `saving` | Approval tabungan berjangka |
-| `spending` | Chart pengeluaran |
-| `incoming` | Daftar dana masuk |
-| `bill` | Daftar tagihan |
-| `limit` | Informasi limit |
-| `deeplink` | Link menuju halaman host |
-| Teks lainnya | Portfolio |
-
-Keyword fixture memakai pencarian substring berbahasa Inggris; gunakan kata di
-tabel agar hasilnya pasti. `showcase` mencakup gambar, choices, HTML, live agent,
-dan suggestion. Gunakan [JSON bubble](BUBBLE_SCHEMA.md) untuk payload buatan sendiri.
-
-Tanpa host app, jalankan aplikasi sandbox dari root repository:
-
-```sh
-./Scripts/run_sandbox.sh --showcase
-```
-
-## 4. Gunakan tema dan font host
-
-Lakukan sekali saat setup pada main actor, sebelum membuat host:
-
-```swift
-import DesignKit
-
-try DesignKitFont.registerFonts()
-let manager = ThemeManager(fonts: .branded(), selected: .premier)
-let selectedTheme = manager.theme
-let defaultTheme = manager.resolve(isDefaultForced: true)
-```
-
-Masukkan `selectedTheme` atau `defaultTheme` ke parameter `theme:` pada
-`TanyaAIHost`, atau `DemoTanyaAIScreen(theme: selectedTheme, onDeeplink: handler)`.
-Tangani error registrasi font di setup aplikasi.
-
-`TanyaAIHost` menyimpan snapshot theme saat dibuat. Perubahan manager tidak
-mengubah chat UIKit yang sudah terbuka. Buat host dengan snapshot terbaru ketika
-mengganti konfigurasi tema, lalu attach host tersebut sebelum presentasi berikutnya.
-Untuk komponen SwiftUI langsung, `.theme(manager)` mengikuti perubahan secara live;
-`.theme(manager, isDefaultForced: true)` mengunci satu subtree ke default.
-
-Premier/Private masih dummy; Default dan size berupa transkripsi foto, bukan export
-resmi engine. Ganti dengan export asli sebelum menggunakan palette produksi.
-Lihat [panduan DesignKit](DESIGNKIT_THEMES.md) untuk mapping dan font tambahan.
-
-## 5. Ganti dummy dengan session backend
-
-Pertahankan view host. Ganti `makeSession` menjadi closure yang membuat adapter
-`TanyaAIChatSession` baru setiap chat dibuka. `TanyaAIHost` menerima:
-
-| Parameter | Isi |
-| --- | --- |
-| `theme` | Snapshot `Theme` |
-| `authorizationService` | Service PIN host; boleh nil jika semua approval memakai hand-off |
-| `deeplinkScheme`, `deeplinkHost` | Scheme/host URL yang boleh diteruskan |
-| `initialPrompt` | Pesan pertama otomatis; nil untuk tanpa pesan otomatis |
-| `shortcuts` | `[TanyaAISuggestion]` dari host, ditampilkan di atas input |
-| `makeSession` | Factory session baru per presentasi |
-| `onDeeplink` | Router host, dipanggil sesudah chat selesai ditutup |
-
-Contoh implementasi berada di [Examples/HostIntegration](../Examples/HostIntegration/)
-dan [Examples/VendorChatSDK](../Examples/VendorChatSDK/). Adapter vendor adalah
-referensi integrasi; cocokkan dengan versi SDK yang dipasang di host.
-
-Tanggung jawab adapter:
-
-1. `connect()`: baca history, emit `.history(...)`, lalu `.connected`.
-   Session tanpa history dapat langsung emit `.connected`.
-2. `send(...)`: kirim pertanyaan pengguna ke backend.
-3. Respons backend: terjemahkan menjadi event package seperti panduan JSON.
-4. Akhiri turn dengan `.messageCompleted(...)`, atau `.failed(error)` bila gagal.
-5. `disconnect()`: bersihkan callback/delegate milik fitur, bukan koneksi global SDK.
-
-Tanggung jawab authorization service: terima challenge dan PIN, panggil API host,
-lalu kembalikan status transaksi. Jangan gunakan mock authorization di produksi.
-PIN tidak boleh dicatat atau disimpan. Jika service nil dan approval tidak memiliki
-`handoff`, konfirmasi akan ditolak dengan pesan, bukan dianggap berhasil.
-
-Host tetap memvalidasi parameter dan hak akses deeplink sesudah filter scheme/host.
-Untuk UIKit murni, lihat [contoh presentasi UIKit](HOST_UIKIT.md).
-
-## Kenapa wiring ini tetap ringan?
-
-Satu host yang dipertahankan, satu session per presentasi, dan satu kali registrasi
-font. Gunakan renderer package; tidak perlu membuat ulang ViewModel, parser JSON,
-cache gambar, atau UITableView di host. Riwayat dan transcript aktif dibatasi 100
-pesan. Gambar di-downsample dan update streaming digabung sebelum layout.
-
-## Session-stream update
-
-See [SESSION_AND_PARTIAL_MIGRATION.md](SESSION_AND_PARTIAL_MIGRATION.md) for the current partial API. The editor draft is local; no chat UseCase is needed. A new prompt can be sent while the agent is typing. There is no Stop control and no assumption that a bot reply acknowledges the last submitted prompt. SDK send callbacks report the local submission ID. History failure produces a warning, not a silent empty archive.
-
-For a theme chosen after login, pass `themeProvider: { themeManager.theme }` alongside the initial `theme`. Keep the manager separate from the host; avoid capturing AppState strongly from a host it owns. Each opening reads the latest theme. An already-open chat remains a presentation snapshot.
+Katalog kontrak tampilan lama sudah dihapus. Gunakan `response.blocks` untuk
+jawaban terstruktur. `authorizationService`, `onConfirmation`, `shortcuts`
+dan `historyItems` tidak lagi merupakan parameter host/configuration.

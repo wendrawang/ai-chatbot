@@ -1,11 +1,12 @@
-import TanyaAI
 import SwiftUI
+import TanyaAI
 import UIKit
 
 final class SceneDelegate: UIResponder, UIWindowSceneDelegate {
     var window: UIWindow?
     private var tanyaAIGateway: TanyaAIPresentationGateway?
     private var deeplinkRouter: SandboxDeeplinkRouter?
+    private var figmaPresenter: SandboxFigmaPresenter?
 
     func scene(
         _ scene: UIScene,
@@ -43,19 +44,16 @@ final class SceneDelegate: UIResponder, UIWindowSceneDelegate {
     private func makeRootController(
         for launchMode: SandboxLaunchMode
     ) -> UIViewController {
-        let dependencies = SandboxTanyaAIFactory.makeDependencies(
-            isShowcaseVisible: launchMode.isFastStreamingEnabled
-        )
-
-        if launchMode.isStandaloneFeature {
-            return TanyaAIModule.makeViewController(
-                configuration: TanyaAIConfiguration(
-                    initialPrompt: launchMode.initialPrompt,
-                    shortcuts: SandboxTanyaAIFactory.shortcuts
-                ),
-                dependencies: dependencies
-            )
+        if case .previewBook = launchMode {
+            return UIHostingController(rootView: PreviewBookScreen())
         }
+        if case .figma = launchMode {
+            let presenter = SandboxFigmaPresenter()
+            figmaPresenter = presenter
+            return presenter.makeFeatureController()
+        }
+        let dependencies = SandboxTanyaAIFactory.makeDependencies()
+
         return makeLegacyRootController(
             dependencies: dependencies,
             launchMode: launchMode
@@ -69,8 +67,8 @@ final class SceneDelegate: UIResponder, UIWindowSceneDelegate {
         let gateway = TanyaAIPresentationGateway(
             dependencies: dependencies,
             configuration: TanyaAIConfiguration(
-                initialPrompt: launchMode.initialPrompt,
-                shortcuts: SandboxTanyaAIFactory.shortcuts
+                copy: SandboxTanyaAIFactory.figmaCopy,
+                welcome: SandboxTanyaAIFactory.figmaWelcome
             )
         )
         let router = makeDeeplinkRouter(gateway: gateway)

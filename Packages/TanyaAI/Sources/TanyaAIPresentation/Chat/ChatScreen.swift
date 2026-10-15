@@ -21,15 +21,15 @@ public struct ChatScreen: View {
             separator
             conversation
             errorBanner
-            shortcutStrip
             separator
             ComposerSection(
                 isEnabled: viewModel.isSendEnabled,
                 draftRequest: viewModel.draftRequest,
                 onSend: viewModel.sendMessage
             )
+            .id(viewModel.sessionIdentifier)
         }
-        .background(Color(theme.colors.background))
+        .background(ChatBackdrop())
     }
 
     /// The list stays mounted while restoring so it already has its real
@@ -38,6 +38,12 @@ public struct ChatScreen: View {
     private var conversation: some View {
         ZStack {
             MessageListView(viewModel: viewModel)
+            if !viewModel.isRestoring, viewModel.messages.isEmpty, let welcome = viewModel.welcome {
+                WelcomeSection(configuration: welcome) { action in
+                    viewModel.sendMessage(action.title)
+                }
+                .disabled(!viewModel.isSendEnabled)
+            }
             if viewModel.isRestoring {
                 LoadingStateView(label: copy.chat("chat.loading"))
                     .accessibilityIdentifier("chat.restoring")
@@ -47,43 +53,41 @@ public struct ChatScreen: View {
     }
 
     private var header: some View {
-        HStack(spacing: FigmaSize.spacing16.sizeInArtwork) {
+        NavigationHeader(title: copy.chat("chat.title")) {
             Button(action: viewModel.close) {
-                Image(systemName: "xmark")
-                    .designFont(.headline)
-                    .frame(
-                        width: DesignKitMetrics.Size.minimumTapTarget.tapTargetInArtwork,
-                        height: DesignKitMetrics.Size.minimumTapTarget.tapTargetInArtwork
-                    )
+                headerIcon("chevron.left")
             }
+            .foregroundColor(Color(theme.colors.accent))
             .accessibilityLabel(copy.chat("chat.close"))
-
-            VStack(alignment: .leading, spacing: DesignKitMetrics.Spacing.micro.sizeInArtwork) {
-                Text(copy.chat("chat.title"))
-                    .designFont(.headline)
-                    .foregroundColor(Color(theme.colors.primaryText))
-                if !copy.chat("chat.subtitle").isEmpty {
-                    Text(copy.chat("chat.subtitle"))
-                        .designFont(.caption)
-                        .foregroundColor(Color(theme.colors.secondaryText))
-                }
-            }
-
-            Spacer(minLength: FigmaSize.spacing8.sizeInArtwork)
-
-            Button(action: viewModel.openHistory) {
-                Image(systemName: "clock")
-                    .designFont(.headline)
-                    .frame(
-                        width: DesignKitMetrics.Size.minimumTapTarget.tapTargetInArtwork,
-                        height: DesignKitMetrics.Size.minimumTapTarget.tapTargetInArtwork
-                    )
-            }
-            .accessibilityLabel(copy.chat("chat.history"))
+            .accessibilityIdentifier("chat.close")
+        } trailing: {
+            headerAction
         }
-        .padding(.horizontal, FigmaSize.spacing8.sizeInArtwork)
-        .padding(.top, FigmaSize.spacing8.sizeInArtwork)
-        .foregroundColor(Color(theme.colors.accent))
+        .accessibilityIdentifier("chat.header")
+    }
+
+    private var headerAction: some View {
+        Button(action: viewModel.startNewSession) {
+            headerIcon("ellipsis").rotationEffect(.degrees(90))
+        }
+        .foregroundColor(Color(theme.colors.primaryText))
+        .disabled(!viewModel.isNewSessionEnabled)
+        .accessibilityLabel(copy.chat("chat.newSession"))
+        .accessibilityIdentifier("chat.newSession")
+    }
+
+    private func headerIcon(_ name: String) -> some View {
+        Image(systemName: name)
+            .resizable()
+            .scaledToFit()
+            .frame(
+                width: DesignKitMetrics.Size.icon.sizeInArtwork,
+                height: DesignKitMetrics.Size.icon.sizeInArtwork
+            )
+            .frame(
+                width: DesignKitMetrics.Size.minimumTapTarget.tapTargetInArtwork,
+                height: DesignKitMetrics.Size.minimumTapTarget.tapTargetInArtwork
+            )
     }
 
     @ViewBuilder
@@ -107,20 +111,6 @@ public struct ChatScreen: View {
             .frame(maxWidth: .infinity, alignment: .leading)
             .padding(.horizontal, FigmaSize.spacing16.sizeInArtwork)
             .padding(.vertical, FigmaSize.spacing8.sizeInArtwork)
-        }
-    }
-
-    @ViewBuilder
-    private var shortcutStrip: some View {
-        if viewModel.isShortcutRowVisible {
-            OptionStrip(
-                options: viewModel.shortcuts.map { SelectionOption(identifier: $0.identifier, title: $0.title) },
-                onSelect: { option in
-                    if let shortcut = viewModel.shortcuts.first(where: { $0.identifier == option.identifier }) {
-                        viewModel.sendShortcut(shortcut)
-                    }
-                }
-            )
         }
     }
 

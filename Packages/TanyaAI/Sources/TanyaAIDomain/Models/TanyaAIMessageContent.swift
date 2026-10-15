@@ -1,20 +1,5 @@
-import DesignKit
-
 public enum TanyaAIMessageContent: Equatable {
     case text(String)
-    case answer(AnswerPayload)
-    case image(ImagePayload)
-    case choices(ChoicesPayload)
-    case liveAgent(LiveAgentPayload)
-    case html(HTMLPayload)
-    case information(InformationPayload)
-    case chart(ChartPayload)
-    case portfolio(PortfolioPayload)
-    case financialList(FinancialListPayload)
-    case confirmation(ConfirmationPayload)
-    case approval(ApprovalPayload)
-    case receipt(ReceiptPayload)
-    case status(StatusPayload)
-    case actions(ActionPayload)
+    case response(ResponsePayload)
     case unsupported(String?)
 }

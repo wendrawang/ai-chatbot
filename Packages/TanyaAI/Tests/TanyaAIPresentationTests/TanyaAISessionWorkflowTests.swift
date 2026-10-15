@@ -65,25 +65,4 @@ final class TanyaAISessionWorkflowTests: XCTestCase {
         XCTAssertTrue(model.sendMessage("New message"))
     }
 
-    func testMultipleChoiceIsNotConsumedWhileUnavailableAndSendsWhileTyping() {
-        let repository = TanyaAIRepositoryStub()
-        let model = TanyaAIChatViewModel(repository: repository)
-        let payload = ChoicesPayload(
-            identifier: "choices", title: nil,
-            choices: [
-                .init(identifier: "one", title: "One", prompt: "One")
-            ], isMultipleSelectionAllowed: true, selected: ["one"])
-        repository.send(.content(messageIdentifier: "choices", content: .choices(payload)))
-        repository.send(.connectionChanged(.failed))
-        model.submitChoices(payload)
-        guard case .choices(let unchanged) = model.messages[0].content else { return XCTFail("Missing choices") }
-        XCTAssertFalse(unchanged.isSubmitted)
-        repository.send(.connectionChanged(.ready))
-        repository.send(.typing(true))
-        model.submitChoices(payload)
-        model.submitChoices(payload)
-        XCTAssertEqual(repository.receivedTexts, ["One"])
-        guard case .choices(let submitted) = model.messages[0].content else { return XCTFail("Missing choices") }
-        XCTAssertTrue(submitted.isSubmitted)
-    }
 }

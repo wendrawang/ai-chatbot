@@ -2,6 +2,7 @@ import SwiftUI
 import TanyaAITestSupport
 import UIKit
 import XCTest
+
 @testable import TanyaAI
 
 @MainActor
@@ -60,7 +61,7 @@ final class TanyaAIHostAnchorTests: XCTestCase {
     private func makeHost() -> TanyaAIHost {
         TanyaAIHost(
             theme: .sandbox, deeplinkScheme: "ocbcid", deeplinkHost: "mobile",
-            makeSession: { MockTanyaAIChatSession.sandbox() }, onDeeplink: { _ in }
+            makeSession: { MockTanyaAIChatSession.figma() }, onDeeplink: { _ in }
         )
     }
 
@@ -73,7 +74,8 @@ final class TanyaAIHostAnchorTests: XCTestCase {
 }
 
 private final class AnchorHostState: ObservableObject {
-    @Published var host: TanyaAIHost?
+    @Published
+    var host: TanyaAIHost?
 }
 
 private final class AnchorContentProbe {
@@ -82,7 +84,8 @@ private final class AnchorContentProbe {
 }
 
 private struct AnchorMainFixture: View {
-    @ObservedObject var state: AnchorHostState
+    @ObservedObject
+    var state: AnchorHostState
     let probe: AnchorContentProbe
 
     var body: some View {

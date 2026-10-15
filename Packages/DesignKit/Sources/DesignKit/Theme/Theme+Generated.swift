@@ -15,13 +15,6 @@ public extension Theme {
                 assistantBubble: UIColor(tokens.colorsSurfacePrimary),
                 assistantBubbleText: UIColor(tokens.colorsTextPrimaryDark),
                 divider: UIColor(tokens.colorsOutlineNetral),
-                chartTrack: UIColor(tokens.colorsSurfaceDisable),
-                chartColors: [
-                    UIColor(tokens.colorsIconColored),
-                    UIColor(tokens.colorsIconOngoing),
-                    UIColor(tokens.colorsIconHyperlink),
-                    UIColor(tokens.colorsIconSuccess)
-                ],
                 success: UIColor(tokens.colorsTextPositive),
                 warning: UIColor(tokens.colorsIconOngoing),
                 error: UIColor(tokens.colorsTextNegative),

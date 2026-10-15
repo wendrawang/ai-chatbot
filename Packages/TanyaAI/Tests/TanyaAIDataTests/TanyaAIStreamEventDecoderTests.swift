@@ -1,6 +1,7 @@
 import Foundation
 import TanyaAIDomain
 import XCTest
+
 @testable import TanyaAIData
 
 final class TanyaAIStreamEventDecoderTests: XCTestCase {
@@ -40,28 +41,10 @@ final class TanyaAIStreamEventDecoderTests: XCTestCase {
         )
     }
 
-    func testUnknownVisualValuesUseAllowlistedDefaults() throws {
-        let chartResult = try decoder.decode(
-            name: "content.chart",
-            json: json(chartPayload(type: "three-dimensional"))
-        )
-        let statusResult = try decoder.decode(
-            name: "content.status",
-            json: json(statusPayload(level: "critical"))
-        )
-
-        guard case .content(_, .chart(let chart)) = chartResult,
-              case .content(_, .status(let status)) = statusResult else {
-            return XCTFail("Expected typed content")
-        }
-        XCTAssertEqual(chart.chartType, .bar)
-        XCTAssertEqual(status.level, .neutral)
-    }
-
     func testMalformedKnownEventThrows() {
         XCTAssertThrowsError(
             try decoder.decode(
-                name: "content.chart",
+                name: "response",
                 json: Data("not-json".utf8)
             )
         )
@@ -74,27 +57,4 @@ final class TanyaAIStreamEventDecoderTests: XCTestCase {
         )) ?? Data()
     }
 
-    private func chartPayload(type: String) -> [String: Any] {
-        [
-            "messageIdentifier": "chart-message",
-            "title": "Sample chart",
-            "chartType": type,
-            "series": [
-                [
-                    "label": "Sample",
-                    "value": 1.0,
-                    "formattedValue": "1"
-                ]
-            ]
-        ]
-    }
-
-    private func statusPayload(level: String) -> [String: Any] {
-        [
-            "messageIdentifier": "status-message",
-            "title": "Sample status",
-            "detail": "Sanitized detail",
-            "level": level
-        ]
-    }
 }

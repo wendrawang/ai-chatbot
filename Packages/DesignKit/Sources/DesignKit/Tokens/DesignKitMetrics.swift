@@ -1,96 +1,48 @@
 import CoreGraphics
 
-/// The measurements the components are built from.
-///
-/// Here rather than typed into each view, so a revamp changes a scale in one
-/// place instead of hunting for the same number in fourteen files - and so
-/// the numbers can be read as a system rather than guessed at individually.
-///
-/// Colours and type are not here: those arrive as a `Theme`, which the
-/// host supplies so a bank's own palette wins. These are the values that stay
-/// the same whoever is using it.
+/// Measurements absent from the generated Figma scale, named by visual role.
+/// Existing padding and spacing always use FigmaSize directly.
 public enum DesignKitMetrics {
-    /// Spacing absent from the generated scale, plus compatibility aliases.
-    /// Components use FigmaSize directly whenever that token already exists.
     public enum Spacing {
-        public static let detail: CGFloat = 3
-        public static let micro: CGFloat = 2
-        public static let large: CGFloat = 20
-        public static let extraLarge: CGFloat = FigmaSize.spacingExtraLarge
-        public static let doubleExtraLarge: CGFloat = FigmaSize.spacingDoubleExtraLarge
-        public static let pixelGap: CGFloat = 1
-        public static let legend: CGFloat = 9
-        public static let medium: CGFloat = 10
-        public static let section: CGFloat = 13
-        /// 4 - between a label and the value directly under it.
-        public static let tight: CGFloat = FigmaSize.spacingSmall
-        /// 6 - rows of a stack that belong to one another.
         public static let snug: CGFloat = 6
-        /// 8 - between sibling rows: prompts, links.
-        public static let compact: CGFloat = FigmaSize.spacingMedium
-        /// 12 - a bubble's vertical padding, and the gap inside a row.
         public static let regular: CGFloat = 12
-        /// 14 - a caption's breathing room under artwork.
-        public static let roomy: CGFloat = 14
-        /// 16 - a bubble's horizontal padding, and the conversation's margin.
-        public static let wide: CGFloat = FigmaSize.spacingLarge
-        /// 18 - the large cards' own padding, matching their corner.
-        public static let card: CGFloat = 18
     }
 
-    /// Radius values are named by visual role, independently of spacing tokens.
     public enum Radius {
-        public static let keypad: CGFloat = 14
-        public static let sheet: CGFloat = 20
         public static let composer: CGFloat = 8
-        public static let swatch: CGFloat = 3
-        /// 12 - replies, prompts, hand-off links, image cards.
         public static let bubble: CGFloat = 12
-        /// 16 - the small notice cards: status and information.
-        public static let notice: CGFloat = 16
-        /// 18 - the large cards: approval, receipt, chart, portfolio, list.
-        ///
-        public static let card: CGFloat = 18
+        public static let quickAction: CGFloat = 8
+        public static let summary: CGFloat = 8
+        public static let media: CGFloat = 8
+        public static let action: CGFloat = 24
     }
 
-    /// How thick a drawn edge is.
     public enum Stroke {
         public static let divider: CGFloat = 0.5
-        public static let chart: CGFloat = 2
-        /// 1 - the outline around a reply, a prompt, a link.
         public static let hairline: CGFloat = FigmaSize.weightOutline
-        /// 1.5 - the prompt's circle, which has to hold its own against text.
-        public static let indicator: CGFloat = 1.5
     }
 
-    /// Sizes that are not spacing.
     public enum Size {
         public static let composerAction: CGFloat = 24
-        public static let keypadHeight: CGFloat = 54
-        public static let secureDigit: CGFloat = 14
         public static let estimatedRowHeight: CGFloat = 96
         public static let icon: CGFloat = 24
-        public static let successIcon: CGFloat = 64
-        public static let cardMaximumWidth: CGFloat = 340
-        public static let chartHeight: CGFloat = 120
-        public static let chartRing: CGFloat = 20
-        /// 44 - the smallest a tap target may be, from Apple's guidance.
         public static let minimumTapTarget: CGFloat = 44
-        /// 20 - the prompt's circle.
         public static let indicator: CGFloat = 20
-        /// 8 - one of the three waiting dots.
-        public static let dot: CGFloat = 8
-        /// 310 - how wide a bubble may grow.
-        ///
-        /// Short of the full width on purpose: a reply that reaches both
-        /// edges stops looking like something someone said.
         public static let bubbleMaximumWidth: CGFloat = 310
+        public static let emblem: CGFloat = 64
+        public static let itemIcon: CGFloat = 36
+        public static let actionChevron: CGFloat = 20
     }
 
-    /// Text laid out by hand rather than by the type scale.
+    public enum Table {
+        public static let maximumColumns = 3
+    }
+
+    public enum Media {
+        public static let aspectRatio: CGFloat = 1.5
+    }
+
     public enum Text {
         public static let maximumInputLines = 4
-        /// 4 - extra leading under a caption, which is set larger than body.
-        public static let captionLineSpacing: CGFloat = 4
     }
 }
