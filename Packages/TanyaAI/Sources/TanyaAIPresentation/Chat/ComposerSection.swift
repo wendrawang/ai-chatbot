@@ -19,8 +19,8 @@ struct ComposerSection: View {
             isEnabled: isEnabled,
             onSend: submit
         )
-        .padding(.horizontal, FigmaSize.spacing16.sizeInArtwork)
-        .padding(.vertical, FigmaSize.spacing8.sizeInArtwork)
+        .padding(.horizontal, FigmaSize.spacing16.scaledToArtwork)
+        .padding(.vertical, FigmaSize.spacing8.scaledToArtwork)
         .onChange(of: draftRequest) { request in
             if let request { text = request.text }
         }

@@ -48,7 +48,7 @@ struct RichText: View {
     @ViewBuilder
     private func row(for paragraph: MarkupParagraph) -> some View {
         if let marker = paragraph.marker {
-            HStack(alignment: .firstTextBaseline, spacing: FigmaSize.spacingSmall.sizeInArtwork) {
+            HStack(alignment: .firstTextBaseline, spacing: FigmaSize.spacingSmall.scaledToArtwork) {
                 Text(marker)
                     .fixedSize()
                     .accessibilityHidden(true)

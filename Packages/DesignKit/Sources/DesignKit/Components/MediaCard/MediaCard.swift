@@ -28,7 +28,7 @@ public struct MediaCard<Media: View>: View {
                 .overlay(media)
                 .clipped()
                 .accessibilityHidden(true)
-            VStack(alignment: .leading, spacing: FigmaSize.spacing4.sizeInArtwork) {
+            VStack(alignment: .leading, spacing: FigmaSize.spacing4.scaledToArtwork) {
                 Text(title)
                     .designFont(.button)
                     .foregroundColor(Color(theme.colors.primaryText))
@@ -39,11 +39,11 @@ public struct MediaCard<Media: View>: View {
                 }
             }
             .fixedSize(horizontal: false, vertical: true)
-            .padding(FigmaSize.spacing16.sizeInArtwork)
+            .padding(FigmaSize.spacing16.scaledToArtwork)
         }
         .frame(maxWidth: .infinity, alignment: .leading)
         .background(Color(theme.colors.surface))
-        .clipShape(RoundedRectangle(cornerRadius: DesignKitMetrics.Radius.media.sizeInArtwork))
+        .clipShape(RoundedRectangle(cornerRadius: DesignKitMetrics.Radius.media.scaledToArtwork))
         .accessibilityElement(children: .combine)
     }
 }

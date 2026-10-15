@@ -20,7 +20,7 @@ struct DemoHostKeypad: View {
     private let digitRows = [[1, 2, 3], [4, 5, 6], [7, 8, 9]]
 
     var body: some View {
-        VStack(spacing: FigmaSize.spacing8.sizeInArtwork) {
+        VStack(spacing: FigmaSize.spacing8.scaledToArtwork) {
             ForEach(digitRows.indices, id: \.self) { index in
                 digitRow(digitRows[index])
             }
@@ -30,7 +30,7 @@ struct DemoHostKeypad: View {
     }
 
     private func digitRow(_ digits: [Int]) -> some View {
-        HStack(spacing: DesignKitMetrics.Spacing.regular.sizeInArtwork) {
+        HStack(spacing: DesignKitMetrics.Spacing.regular.scaledToArtwork) {
             ForEach(digits, id: \.self) { digit in
                 digitButton(digit)
             }
@@ -38,7 +38,7 @@ struct DemoHostKeypad: View {
     }
 
     private var finalRow: some View {
-        HStack(spacing: DesignKitMetrics.Spacing.regular.sizeInArtwork) {
+        HStack(spacing: DesignKitMetrics.Spacing.regular.scaledToArtwork) {
             keypadSpacer
             digitButton(0)
             deleteButton
@@ -55,7 +55,7 @@ struct DemoHostKeypad: View {
                     .frame(maxWidth: .infinity)
                     .frame(minHeight: keyHeight.tapTargetInArtwork)
                     .background(Color(theme.colors.surface))
-                    .cornerRadius(FigmaSize.spacing16.sizeInArtwork)
+                    .cornerRadius(FigmaSize.spacing16.scaledToArtwork)
             }
         )
         .buttonStyle(PlainButtonStyle())

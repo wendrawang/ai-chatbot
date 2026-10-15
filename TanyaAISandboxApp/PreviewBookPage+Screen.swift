@@ -15,7 +15,7 @@ extension PreviewBookPage {
     }
 
     var chrome: some View {
-        VStack(spacing: FigmaSize.spacing32.sizeInArtwork) {
+        VStack(spacing: FigmaSize.spacing32.scaledToArtwork) {
             NavigationHeader(title: "Tanya AI") {
                 Button(action: { feedback = "Back callback" }, label: { headerIcon("chevron.left") })
                     .accessibilityLabel("Kembali")
@@ -37,7 +37,7 @@ extension PreviewBookPage {
     }
 
     var statusSamples: some View {
-        VStack(spacing: FigmaSize.spacing32.sizeInArtwork) {
+        VStack(spacing: FigmaSize.spacing32.scaledToArtwork) {
             ActivityStatus(text: "Processing the best answer for you…")
             ActivityStatus(text: PreviewBookSamples.longText)
             LoadingStateView(label: "Loading your conversation")
@@ -45,17 +45,17 @@ extension PreviewBookPage {
     }
 
     var artworkSamples: some View {
-        VStack(alignment: .leading, spacing: FigmaSize.spacing32.sizeInArtwork) {
+        VStack(alignment: .leading, spacing: FigmaSize.spacing32.scaledToArtwork) {
             Text("Seluruh artwork di halaman ini adalah dummy. TODO penggantian ada pada PreviewArtwork.")
                 .designFont(.caption)
             sample("Large emblem") {
-                HStack(spacing: FigmaSize.spacing16.sizeInArtwork) {
+                HStack(spacing: FigmaSize.spacing16.scaledToArtwork) {
                     emblem(tint: Color(theme.colors.accent), size: DesignKitMetrics.Size.emblem)
                     emblem(tint: .blue, size: DesignKitMetrics.Size.emblem)
                 }
             }
             sample("Small emblem") {
-                HStack(spacing: FigmaSize.spacing16.sizeInArtwork) {
+                HStack(spacing: FigmaSize.spacing16.scaledToArtwork) {
                     emblem(tint: Color(theme.colors.accent), size: DesignKitMetrics.Size.icon)
                     emblem(tint: .blue, size: DesignKitMetrics.Size.icon)
                 }
@@ -69,7 +69,7 @@ extension PreviewBookPage {
                                 height: DesignKitMetrics.Size.minimumTapTarget.tapTargetInArtwork
                             )
                             .clipShape(
-                                RoundedRectangle(cornerRadius: DesignKitMetrics.Radius.quickAction.sizeInArtwork))
+                                RoundedRectangle(cornerRadius: DesignKitMetrics.Radius.quickAction.scaledToArtwork))
                     }
                 }
             }
@@ -78,7 +78,7 @@ extension PreviewBookPage {
 
     private func emblem(tint: Color, size: CGFloat) -> some View {
         PreviewArtwork(symbolName: "sparkles", tint: tint)
-            .frame(width: size.sizeInArtwork, height: size.sizeInArtwork)
+            .frame(width: size.scaledToArtwork, height: size.scaledToArtwork)
             .clipShape(Circle())
     }
 
@@ -87,8 +87,8 @@ extension PreviewBookPage {
             .resizable()
             .scaledToFit()
             .frame(
-                width: DesignKitMetrics.Size.icon.sizeInArtwork,
-                height: DesignKitMetrics.Size.icon.sizeInArtwork
+                width: DesignKitMetrics.Size.icon.scaledToArtwork,
+                height: DesignKitMetrics.Size.icon.scaledToArtwork
             )
             .foregroundColor(Color(theme.colors.accent))
             .frame(

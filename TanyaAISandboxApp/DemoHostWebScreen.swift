@@ -11,12 +11,12 @@ struct DemoHostWebScreen: View {
             DemoHostHeader(title: "Webview dalam aplikasi", onClose: onClose)
             Text(url.absoluteString)
                 .designFont(.caption)
-                .padding(FigmaSize.spacing16.sizeInArtwork)
+                .padding(FigmaSize.spacing16.scaledToArtwork)
                 .accessibilityIdentifier("sandbox.webview.url")
             DemoOfflineWebView()
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
         }
-        .padding(.horizontal, FigmaSize.spacing16.sizeInArtwork)
+        .padding(.horizontal, FigmaSize.spacing16.scaledToArtwork)
         .background(Color.white)
         .accessibilityElement(children: .contain)
         .accessibilityIdentifier("sandbox.webview.screen")
@@ -28,7 +28,7 @@ struct DemoHostDestinationScreen: View {
     let onClose: () -> Void
 
     var body: some View {
-        VStack(spacing: FigmaSize.spacing16.sizeInArtwork) {
+        VStack(spacing: FigmaSize.spacing16.scaledToArtwork) {
             DemoHostHeader(title: "Halaman existing host", onClose: onClose)
             Text("Deeplink diterima oleh host").designFont(.headline)
             Text(url.absoluteString)
@@ -36,7 +36,7 @@ struct DemoHostDestinationScreen: View {
                 .accessibilityIdentifier("sandbox.deeplink.url")
             Spacer()
         }
-        .padding(.horizontal, FigmaSize.spacing16.sizeInArtwork)
+        .padding(.horizontal, FigmaSize.spacing16.scaledToArtwork)
         .background(Color.white)
         .accessibilityElement(children: .contain)
         .accessibilityIdentifier("sandbox.deeplink.screen")

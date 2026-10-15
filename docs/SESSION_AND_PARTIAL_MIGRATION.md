@@ -35,14 +35,14 @@ struct EmptyChatScreen: View {
                 sendLabel: sendLabel,
                 onSend: { if onSend(draft) { draft = "" } }
             )
-            .padding(.horizontal, FigmaSize.spacing16.sizeInArtwork)
-            .padding(.vertical, FigmaSize.spacing8.sizeInArtwork)
+            .padding(.horizontal, FigmaSize.spacing16.scaledToArtwork)
+            .padding(.vertical, FigmaSize.spacing8.scaledToArtwork)
         }
     }
 }
 ```
 
-Apply `.theme(selectedTheme)` at the parent. `.sizeInArtwork` reads the 375×812 reference internally; there is no artwork environment object or root modifier. The composer keeps a white surface, radius 8, visual send control 24, touch target at least 44, and grows through four lines before scrolling.
+Apply `.theme(selectedTheme)` at the parent. `.scaledToArtwork` reads the 375×812 reference internally; there is no artwork environment object or root modifier. The composer keeps a white surface, radius 8, visual send control 24, touch target at least 44, and grows through four lines before scrolling.
 
 The old `stopLabel`, `isGenerating`, and `onStop` arguments are removed. The host supplies localized placeholder/action labels. It may keep the field editable while `isEnabled` disables submission.
 

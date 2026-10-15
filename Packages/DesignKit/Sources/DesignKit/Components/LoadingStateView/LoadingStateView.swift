@@ -18,7 +18,7 @@ public struct LoadingStateView: View {
     }
 
     public var body: some View {
-        VStack(spacing: DesignKitMetrics.Spacing.regular.sizeInArtwork) {
+        VStack(spacing: DesignKitMetrics.Spacing.regular.scaledToArtwork) {
             ProgressView()
             Text(label)
                 .designFont(.footnote)

@@ -1,5 +1,6 @@
 import UIKit
 import XCTest
+
 @testable import DesignKit
 
 final class TypographyResolutionTests: XCTestCase {
@@ -11,9 +12,11 @@ final class TypographyResolutionTests: XCTestCase {
         let repeated = first.resolved(artwork: artwork, traits: traits)
         XCTAssertEqual(first.body.pointSize, repeated.body.pointSize)
         XCTAssertEqual(first, repeated)
-        let baseline = initial.resolved(artwork: artwork, traits: UITraitCollection(
-            preferredContentSizeCategory: .large
-        ))
+        let baseline = initial.resolved(
+            artwork: artwork,
+            traits: UITraitCollection(
+                preferredContentSizeCategory: .large
+            ))
         XCTAssertGreaterThan(first.body.pointSize, baseline.body.pointSize)
     }
 
@@ -26,6 +29,15 @@ final class TypographyResolutionTests: XCTestCase {
         let restored = larger.resolved(artwork: ArtworkMetrics(), traits: traits)
         let baseline = initial.resolved(artwork: ArtworkMetrics(), traits: traits)
         XCTAssertEqual(restored.body.pointSize, baseline.body.pointSize)
+    }
+
+    func testWideArtworkFontsFollowTheSameUncappedHostSizing() {
+        let artwork = ArtworkMetrics(containerSize: CGSize(width: 750, height: 812))
+        let typography = DesignKitTypography(postScriptName: "", size: 16, style: .body)
+        let font = typography.font(
+            compatibleWith: UITraitCollection(preferredContentSizeCategory: .large), artwork: artwork
+        )
+        XCTAssertEqual(font.pointSize, 32)
     }
 
     func testLineSpacingNeverClipsFontAndFollowsResolvedFontSize() throws {

@@ -19,7 +19,8 @@ extension MessageTableView.Coordinator {
             let prompt = tableView.rectForRow(at: IndexPath(row: row, section: 0))
             let desired = max(
                 -tableView.adjustedContentInset.top,
-                prompt.minY - tableView.adjustedContentInset.top - ChatLayoutMetrics.previousAnswerPreview.sizeInArtwork
+                prompt.minY - tableView.adjustedContentInset.top
+                    - ChatLayoutMetrics.previousAnswerPreview.scaledToArtwork
             )
             let actualBottom =
                 tableView.contentSize.height - tableView.bounds.height
@@ -36,7 +37,7 @@ extension MessageTableView.Coordinator {
 
     func updateContentInset() {
         guard let tableView else { return }
-        let margin = DesignKitMetrics.Spacing.snug.sizeInArtwork
+        let margin = DesignKitMetrics.Spacing.snug.scaledToArtwork
         let inset = UIEdgeInsets(top: margin, left: 0, bottom: margin + promptTrailingInset, right: 0)
         if tableView.contentInset != inset { tableView.contentInset = inset }
     }

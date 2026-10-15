@@ -8,10 +8,10 @@ public struct OutlinedBackground: View {
     public init() {}
 
     public var body: some View {
-        RoundedRectangle(cornerRadius: DesignKitMetrics.Radius.bubble.sizeInArtwork)
+        RoundedRectangle(cornerRadius: DesignKitMetrics.Radius.bubble.scaledToArtwork)
             .fill(Color(theme.colors.assistantBubble))
             .overlay(
-                RoundedRectangle(cornerRadius: DesignKitMetrics.Radius.bubble.sizeInArtwork)
+                RoundedRectangle(cornerRadius: DesignKitMetrics.Radius.bubble.scaledToArtwork)
                     .stroke(Color(theme.colors.divider), lineWidth: DesignKitMetrics.Stroke.hairline.strokeInArtwork)
             )
     }

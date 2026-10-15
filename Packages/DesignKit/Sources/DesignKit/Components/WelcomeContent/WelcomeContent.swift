@@ -25,7 +25,7 @@ public struct WelcomeContent<Emblem: View>: View {
     }
 
     public var body: some View {
-        VStack(spacing: FigmaSize.spacing32.sizeInArtwork) {
+        VStack(spacing: FigmaSize.spacing32.scaledToArtwork) {
             greeting
             QuickActionList(title: sectionTitle, actions: actions, onSelect: onSelect)
         }
@@ -35,11 +35,11 @@ public struct WelcomeContent<Emblem: View>: View {
     }
 
     private var greeting: some View {
-        VStack(spacing: FigmaSize.spacing16.sizeInArtwork) {
+        VStack(spacing: FigmaSize.spacing16.scaledToArtwork) {
             emblem
                 .frame(
-                    width: DesignKitMetrics.Size.emblem.sizeInArtwork,
-                    height: DesignKitMetrics.Size.emblem.sizeInArtwork
+                    width: DesignKitMetrics.Size.emblem.scaledToArtwork,
+                    height: DesignKitMetrics.Size.emblem.scaledToArtwork
                 )
                 .accessibilityHidden(true)
             Text(title)

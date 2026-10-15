@@ -25,15 +25,15 @@ public struct MetricSummary: View {
     }
 
     public var body: some View {
-        VStack(alignment: .leading, spacing: FigmaSize.spacing4.sizeInArtwork) {
+        VStack(alignment: .leading, spacing: FigmaSize.spacing4.scaledToArtwork) {
             header
             if isInline {
-                HStack(alignment: .firstTextBaseline, spacing: FigmaSize.spacing8.sizeInArtwork) {
+                HStack(alignment: .firstTextBaseline, spacing: FigmaSize.spacing8.scaledToArtwork) {
                     amount
                     changeLabel
                 }
             } else {
-                VStack(alignment: .leading, spacing: FigmaSize.spacing8.sizeInArtwork) {
+                VStack(alignment: .leading, spacing: FigmaSize.spacing8.scaledToArtwork) {
                     amount
                     changeLabel
                 }
@@ -72,7 +72,7 @@ public struct MetricSummary: View {
         let amountWidth = (value as NSString).size(withAttributes: [.font: theme.fonts.amount]).width
         let changeWidth = (change as NSString).size(withAttributes: [.font: theme.fonts.footnote]).width
         let iconWidth = theme.fonts.footnote.lineHeight
-        return amountWidth + changeWidth + iconWidth + FigmaSize.spacing8.sizeInArtwork * 2 <= availableWidth
+        return amountWidth + changeWidth + iconWidth + FigmaSize.spacing8.scaledToArtwork * 2 <= availableWidth
     }
 
     private var widthReader: some View {
@@ -82,7 +82,7 @@ public struct MetricSummary: View {
     }
 
     private var header: some View {
-        HStack(alignment: .firstTextBaseline, spacing: FigmaSize.spacing4.sizeInArtwork) {
+        HStack(alignment: .firstTextBaseline, spacing: FigmaSize.spacing4.scaledToArtwork) {
             Text(title)
                 .designFont(.caption)
                 .foregroundColor(Color(theme.colors.secondaryText))

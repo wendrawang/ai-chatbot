@@ -3,7 +3,7 @@ import SwiftUI
 
 extension PreviewBookPage {
     var textSamples: some View {
-        VStack(alignment: .leading, spacing: FigmaSize.spacing32.sizeInArtwork) {
+        VStack(alignment: .leading, spacing: FigmaSize.spacing32.scaledToArtwork) {
             sample("Outgoing: short & multiline") {
                 TextBubble(text: "Cek Portofolio", isUser: true).frame(maxWidth: .infinity, alignment: .trailing)
                 TextBubble(text: PreviewBookSamples.longText, isUser: true)
@@ -34,7 +34,7 @@ extension PreviewBookPage {
     }
 
     var tableSamples: some View {
-        VStack(alignment: .leading, spacing: FigmaSize.spacing32.sizeInArtwork) {
+        VStack(alignment: .leading, spacing: FigmaSize.spacing32.scaledToArtwork) {
             sample("Two columns: product & risk") {
                 if let data = try? PreviewBookSamples.riskTable() { DataTable(data: data) }
             }
@@ -47,7 +47,7 @@ extension PreviewBookPage {
     }
 
     var metricSamples: some View {
-        VStack(alignment: .leading, spacing: FigmaSize.spacing32.sizeInArtwork) {
+        VStack(alignment: .leading, spacing: FigmaSize.spacing32.scaledToArtwork) {
             MetricSummary(
                 title: "NAB · Rabu, 27 Des 2026", value: "IDR 1.783,04", change: "↗ 4,43% (IDR 76)",
                 infoLabel: "Informasi NAB", onInfo: { feedback = "Callback informasi" })

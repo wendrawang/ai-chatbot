@@ -11,10 +11,10 @@ public struct SuggestionList<Content: View>: View {
 
     public var body: some View {
         ScrollView(.horizontal, showsIndicators: false) {
-            HStack(spacing: FigmaSize.spacing8.sizeInArtwork) {
+            HStack(spacing: FigmaSize.spacing8.scaledToArtwork) {
                 content
             }
-            .padding(.vertical, FigmaSize.spacing4.sizeInArtwork)
+            .padding(.vertical, FigmaSize.spacing4.scaledToArtwork)
         }
         .frame(maxWidth: .infinity, alignment: .leading)
         .accessibilityElement(children: .contain)

@@ -44,25 +44,25 @@ public struct MessageComposer: View {
     }
 
     private var inputSurface: some View {
-        HStack(alignment: .bottom, spacing: FigmaSize.spacing8.sizeInArtwork) {
+        HStack(alignment: .bottom, spacing: FigmaSize.spacing8.scaledToArtwork) {
             field
             actionButton
         }
-        .padding(.horizontal, FigmaSize.spacing16.sizeInArtwork)
-        .padding(.vertical, FigmaSize.spacing8.sizeInArtwork)
+        .padding(.horizontal, FigmaSize.spacing16.scaledToArtwork)
+        .padding(.vertical, FigmaSize.spacing8.scaledToArtwork)
         .background(surface)
     }
 
     private var surface: some View {
-        RoundedRectangle(cornerRadius: DesignKitMetrics.Radius.composer.sizeInArtwork)
+        RoundedRectangle(cornerRadius: DesignKitMetrics.Radius.composer.scaledToArtwork)
             .fill(Color.white)
             .shadow(
                 color: Color.black.opacity(DesignKitMetrics.Shadow.composerOpacity),
-                radius: DesignKitMetrics.Shadow.composerRadius.sizeInArtwork,
-                y: DesignKitMetrics.Shadow.composerOffset.sizeInArtwork
+                radius: DesignKitMetrics.Shadow.composerRadius.scaledToArtwork,
+                y: DesignKitMetrics.Shadow.composerOffset.scaledToArtwork
             )
             .overlay(
-                RoundedRectangle(cornerRadius: DesignKitMetrics.Radius.composer.sizeInArtwork)
+                RoundedRectangle(cornerRadius: DesignKitMetrics.Radius.composer.scaledToArtwork)
                     .strokeBorder(
                         Color(theme.colors.divider),
                         lineWidth: DesignKitMetrics.Stroke.hairline.strokeInArtwork
@@ -96,7 +96,7 @@ public struct MessageComposer: View {
                     .allowsHitTesting(false)
             }
         }
-        .padding(.vertical, FigmaSize.spacing8.sizeInArtwork)
+        .padding(.vertical, FigmaSize.spacing8.scaledToArtwork)
     }
 
     private var actionButton: some View {
@@ -105,11 +105,11 @@ public struct MessageComposer: View {
             Image(systemName: isGenerating ? "stop.fill" : "arrow.up")
                 .resizable()
                 .scaledToFit()
-                .padding(FigmaSize.spacing4.sizeInArtwork)
+                .padding(FigmaSize.spacing4.scaledToArtwork)
                 .foregroundColor(Color(theme.colors.userBubbleText))
                 .frame(
-                    width: DesignKitMetrics.Size.composerAction.sizeInArtwork,
-                    height: DesignKitMetrics.Size.composerAction.sizeInArtwork
+                    width: DesignKitMetrics.Size.composerAction.scaledToArtwork,
+                    height: DesignKitMetrics.Size.composerAction.scaledToArtwork
                 )
                 .background(
                     Circle().fill(Color(isActionEnabled ? theme.colors.accent : theme.colors.secondaryText))

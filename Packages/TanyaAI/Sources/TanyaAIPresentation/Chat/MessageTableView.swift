@@ -28,12 +28,12 @@ struct MessageTableView: UIViewControllerRepresentable {
         tableView.separatorStyle = .none
         tableView.backgroundColor = .clear
         tableView.rowHeight = UITableView.automaticDimension
-        tableView.estimatedRowHeight = DesignKitMetrics.Size.estimatedRowHeight.sizeInArtwork
+        tableView.estimatedRowHeight = DesignKitMetrics.Size.estimatedRowHeight.scaledToArtwork
         tableView.keyboardDismissMode = .interactive
         tableView.contentInsetAdjustmentBehavior = .never
         tableView.contentInset = UIEdgeInsets(
-            top: DesignKitMetrics.Spacing.snug.sizeInArtwork, left: 0,
-            bottom: DesignKitMetrics.Spacing.snug.sizeInArtwork, right: 0
+            top: DesignKitMetrics.Spacing.snug.scaledToArtwork, left: 0,
+            bottom: DesignKitMetrics.Spacing.snug.scaledToArtwork, right: 0
         )
         tableView.accessibilityIdentifier = "chat.messageTable"
         tableView.register(

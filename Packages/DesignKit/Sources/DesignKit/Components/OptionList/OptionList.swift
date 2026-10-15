@@ -16,7 +16,7 @@ public struct OptionList: View {
         options: [SelectionOption],
         selectedIdentifier: String? = nil,
         isEnabled: Bool = true,
-        maximumWidth: CGFloat? = DesignKitMetrics.Size.bubbleMaximumWidth.sizeInArtwork,
+        maximumWidth: CGFloat? = DesignKitMetrics.Size.bubbleMaximumWidth.scaledToArtwork,
         onSelect: @escaping (SelectionOption) -> Void
     ) {
         self.title = title
@@ -30,7 +30,7 @@ public struct OptionList: View {
     public var body: some View {
         VStack(
             alignment: .leading,
-            spacing: DesignKitMetrics.Spacing.regular.sizeInArtwork
+            spacing: DesignKitMetrics.Spacing.regular.scaledToArtwork
         ) {
             heading
             rows
@@ -58,7 +58,7 @@ public struct OptionList: View {
     private var rows: some View {
         VStack(
             alignment: .leading,
-            spacing: FigmaSize.spacing8.sizeInArtwork
+            spacing: FigmaSize.spacing8.scaledToArtwork
         ) {
             ForEach(options, id: \.identifier) { option in
                 OptionRow(

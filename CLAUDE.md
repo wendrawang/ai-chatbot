@@ -46,8 +46,10 @@ Gunakan `docs/FIGMA_CHAT_UI.md`, `docs/DESIGNKIT_PHASED_MIGRATION.md` dan
 - Padding/spacing ambil FigmaSize langsung bila tersedia. Ukuran khusus di
   DesignKitMetrics, nama berdasarkan peran, tanpa alias duplikat generated.
 - Jangan edit Tokens/Generated; hanya ganti dengan export engine.
-- `.sizeInArtwork` membaca referensi hardcoded 375×812, skala lebar layar
-  dibatasi 1.25; tidak ada artwork environment object/root modifier.
+- `.scaledToArtwork` ada di `Extensions/CGFloat+Artwork.swift`. Rasio computed
+  `DesignKitMetrics.Artwork.currentRatio` = 375 / lebar UIScreen.main, lalu
+  ukuran = round(nilai / rasio), tanpa cap; tinggi referensi 812 hanya metadata.
+  Tidak ada alias `.sizeInArtwork`, artwork environment object atau root modifier.
 - Stroke `.strokeInArtwork`, tap `.tapTargetInArtwork`; opacity tidak di-scale.
 - Text memakai `.designFont(role)`; editor memakai font/leading yang sama.
 - Localized/injected UI copy, aset/font dari Bundle.module. Data dummy hanya

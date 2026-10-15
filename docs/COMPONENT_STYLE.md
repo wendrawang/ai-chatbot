@@ -17,6 +17,10 @@ that belong to the component stay in its folder. Foundations, tokens, typography
 and feature workflow retain their separate owners. PreviewBook groups by usage;
 it does not impose Atoms/Molecules/Organisms categories on source code.
 
+Extensions of standard types live in `Extensions/<Type>+<Responsibility>.swift`,
+for example `Extensions/CGFloat+Artwork.swift`. Artwork dimensions use
+`.scaledToArtwork`, avoiding a duplicate of the host's legacy `.sizeInArtwork`.
+
 Name components by role: `MessageComposer`, `OptionRow`, `SummaryCard`. A `View` suffix is optional for semantic component names; keep the established name within a component family. Use `Screen` for a page, `Sheet` for a modal, `ViewController` for UIKit, and `ViewModel` only for workflow/state owners. Use generic names in DesignKit. Feature-specific payload adapters belong in TanyaAIPresentation.
 
 Private visual sections are nouns: `header`, `content`, `footer`, `actionButton`. Parameterized helpers describe the item: `row(for:)`, `label(for:)`. Extract a dedicated `struct View` when reused, when it owns local state, or when it needs a separate dependency/update boundary. A computed `some View` property organizes code; it does not isolate observation by itself.
@@ -27,7 +31,7 @@ Order declarations as environment, binding/state, immutable inputs/callbacks, in
 
 The component owns inner padding, fill, stroke, and shadow. The screen owns outer margins and placement. For a framed surface, order modifiers as layout/inner padding → background/stroke/shadow → outer margin → accessibility. Multiple padding modifiers are appropriate when they implement these distinct boundaries.
 
-Use available `FigmaSize` values directly for padding/spacing. Define missing values by role in non-generated metrics. Never use a radius token as spacing just because the numbers match. Use `.sizeInArtwork` for artwork dimensions, `.strokeInArtwork` for drawn edges, and `.tapTargetInArtwork` for touch areas. Opacity is dimensionless and is not artwork-scaled. Keep the 375×812 reference; generated files are engine-owned.
+Use available `FigmaSize` values directly for padding/spacing. Define missing values by role in non-generated metrics. Never use a radius token as spacing just because the numbers match. Use `.scaledToArtwork` for artwork dimensions, `.strokeInArtwork` for drawn edges, and `.tapTargetInArtwork` for touch areas. Opacity is dimensionless and is not artwork-scaled. Keep the 375×812 reference; generated files are engine-owned.
 
 SwiftUI text uses `.designFont(role)`; the UIKit editor receives the same font and leading. Visual dimensions may follow Figma while touch areas remain at least 44 points. A visual send circle of 24 does not imply a 24-point touch target. The composer deliberately has a white surface with text resolved for light appearance. Other surfaces follow the selected theme. Respect Dynamic Type and Reduce Motion.
 

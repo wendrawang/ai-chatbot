@@ -10,7 +10,7 @@ struct ResponseBlocksView: View {
     let handlers: TanyaAIMessageRowHandlers
 
     var body: some View {
-        VStack(alignment: .leading, spacing: FigmaSize.spacing16.sizeInArtwork) {
+        VStack(alignment: .leading, spacing: FigmaSize.spacing16.scaledToArtwork) {
             ForEach(payload.blocks.indices, id: \.self) { index in
                 block(payload.blocks[index])
             }
@@ -71,8 +71,8 @@ struct ResponseBlocksView: View {
                 .overlay(
                     Image(systemName: media.symbolName ?? "photo").resizable().scaledToFit()
                         .frame(
-                            width: DesignKitMetrics.Size.emblem.sizeInArtwork,
-                            height: DesignKitMetrics.Size.emblem.sizeInArtwork
+                            width: DesignKitMetrics.Size.emblem.scaledToArtwork,
+                            height: DesignKitMetrics.Size.emblem.scaledToArtwork
                         )
                         .foregroundColor(Color(theme.colors.userBubbleText)))
         }
@@ -80,7 +80,7 @@ struct ResponseBlocksView: View {
     }
 
     private func actionList(_ actions: [ResponseAction]) -> some View {
-        VStack(alignment: .leading, spacing: FigmaSize.spacing8.sizeInArtwork) {
+        VStack(alignment: .leading, spacing: FigmaSize.spacing8.scaledToArtwork) {
             ForEach(actions, id: \.identifier) { action in
                 if isVisible(action) { responseAction(action) }
             }
@@ -110,7 +110,7 @@ struct ResponseBlocksView: View {
     }
 
     private func documentList(_ documents: ResponseDocuments) -> some View {
-        VStack(alignment: .leading, spacing: FigmaSize.spacing8.sizeInArtwork) {
+        VStack(alignment: .leading, spacing: FigmaSize.spacing8.scaledToArtwork) {
             ForEach(documents.documents, id: \.identifier) { document in
                 AcknowledgementRow(
                     title: document.title,

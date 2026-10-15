@@ -37,14 +37,14 @@ public struct OptionRow: View {
     }
 
     private var content: some View {
-        HStack(spacing: DesignKitMetrics.Spacing.regular.sizeInArtwork) {
+        HStack(spacing: DesignKitMetrics.Spacing.regular.scaledToArtwork) {
             Image(systemName: isSelected ? "checkmark.circle.fill" : "circle")
                 .resizable()
                 .scaledToFit()
                 .foregroundColor(Color(indicatorColor))
                 .frame(
-                    width: DesignKitMetrics.Size.indicator.sizeInArtwork,
-                    height: DesignKitMetrics.Size.indicator.sizeInArtwork
+                    width: DesignKitMetrics.Size.indicator.scaledToArtwork,
+                    height: DesignKitMetrics.Size.indicator.scaledToArtwork
                 )
                 .accessibilityHidden(true)
             Text(option.title)
@@ -58,8 +58,8 @@ public struct OptionRow: View {
             minHeight: DesignKitMetrics.Size.minimumTapTarget.tapTargetInArtwork,
             alignment: .leading
         )
-        .padding(.horizontal, FigmaSize.spacing16.sizeInArtwork)
-        .padding(.vertical, FigmaSize.spacing8.sizeInArtwork)
+        .padding(.horizontal, FigmaSize.spacing16.scaledToArtwork)
+        .padding(.vertical, FigmaSize.spacing8.scaledToArtwork)
         .background(OutlinedBackground())
     }
 

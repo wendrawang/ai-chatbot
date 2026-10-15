@@ -11,14 +11,14 @@ struct MessageRowView: View {
     let handlers: TanyaAIMessageRowHandlers
 
     var body: some View {
-        HStack(spacing: FigmaSize.spacing8.sizeInArtwork) {
+        HStack(spacing: FigmaSize.spacing8.scaledToArtwork) {
             if viewModel.role == .user {
-                Spacer(minLength: FigmaSize.spacing48.sizeInArtwork)
+                Spacer(minLength: FigmaSize.spacing48.scaledToArtwork)
             }
 
             VStack(
                 alignment: viewModel.role == .user ? .trailing : .leading,
-                spacing: FigmaSize.spacing4.sizeInArtwork
+                spacing: FigmaSize.spacing4.scaledToArtwork
             ) {
                 content
                 deliveryStatus

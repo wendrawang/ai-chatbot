@@ -31,7 +31,7 @@ SIZE_RULES = [
     rf"(?:spacing|lineWidth|cornerRadius|minLength|minWidth|maxWidth|width|height|minHeight|maxHeight):\s*{NUMBER}",
     rf"\.(?:padding|cornerRadius)\(\s*(?:\.[a-zA-Z]+,\s*)?{NUMBER}",
     rf"artwork\.(?:size|stroke|tapTarget)\(\s*{NUMBER}",
-    rf"(?:CGFloat\(\s*{NUMBER}\s*\)|\b{NUMBER})\.(?:sizeInArtwork|strokeInArtwork|tapTargetInArtwork)",
+    rf"(?:CGFloat\(\s*{NUMBER}\s*\)|\b{NUMBER})\.(?:scaledToArtwork|strokeInArtwork|tapTargetInArtwork)",
     rf"\.system(?:Font)?\((?:ofSize|size):\s*{NUMBER}",
     rf"(?:estimatedRowHeight|rowHeight)\s*=\s*{NUMBER}",
 ]
@@ -55,7 +55,9 @@ for path in sources():
         if re.search(r"\bimport\s+Tanya|\bTanya\w*", original):
             report(path, 1, "DesignKit must not reference a feature")
     if re.search(r"\\\.artwork\b|\bartworkLayout\(", text):
-        report(path, 1, "Use .sizeInArtwork properties; artwork environment/root setup is not supported")
+        report(path, 1, "Use .scaledToArtwork properties; artwork environment/root setup is not supported")
+    if re.search(r"\bvar\s+sizeInArtwork\b|\.\s*sizeInArtwork\b", text):
+        report(path, 1, "Use .scaledToArtwork; the legacy sizeInArtwork name belongs to the host")
     if re.search(r"(?:struct|class)\s+Tanya\w*\s*:\s*(?:View\b|UIView|UITableView|Shape\b)", text):
         report(path, 1, "Use a generic component name")
     references.update(re.findall(r'copy\.(?:chat|design)\("([^"]+)"', text))

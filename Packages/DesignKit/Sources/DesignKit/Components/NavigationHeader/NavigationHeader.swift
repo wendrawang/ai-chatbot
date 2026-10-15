@@ -19,7 +19,7 @@ public struct NavigationHeader<Leading: View, Trailing: View>: View {
     }
 
     public var body: some View {
-        HStack(spacing: FigmaSize.spacing8.sizeInArtwork) {
+        HStack(spacing: FigmaSize.spacing8.scaledToArtwork) {
             leading.frame(
                 width: DesignKitMetrics.Size.minimumTapTarget.tapTargetInArtwork,
                 height: DesignKitMetrics.Size.minimumTapTarget.tapTargetInArtwork
@@ -36,8 +36,8 @@ public struct NavigationHeader<Leading: View, Trailing: View>: View {
             )
         }
         .frame(minHeight: DesignKitMetrics.Size.minimumTapTarget.tapTargetInArtwork)
-        .padding(.horizontal, FigmaSize.spacing8.sizeInArtwork)
-        .padding(.top, FigmaSize.spacing8.sizeInArtwork)
+        .padding(.horizontal, FigmaSize.spacing8.scaledToArtwork)
+        .padding(.top, FigmaSize.spacing8.scaledToArtwork)
         .background(Color(theme.colors.background))
         .accessibilityElement(children: .contain)
     }

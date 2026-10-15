@@ -16,6 +16,6 @@ public struct DateSeparator: View {
             .foregroundColor(Color(theme.colors.secondaryText))
             .fixedSize(horizontal: false, vertical: true)
             .frame(maxWidth: .infinity, alignment: .center)
-            .padding(.vertical, FigmaSize.spacing8.sizeInArtwork)
+            .padding(.vertical, FigmaSize.spacing8.scaledToArtwork)
     }
 }
