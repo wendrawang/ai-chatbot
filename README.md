@@ -1,7 +1,7 @@
 # Tanya AI — starting point
 
 Baseline minimal untuk belajar dan migrasi bertahap, iOS 15. Menampilkan halaman
-kosong dan composer yang tumbuh sampai empat baris. Font Open Sans dari package;
+kosong dan composer yang tumbuh sampai empat baris. Tujuh font Fira Sans/Open Sans dari package;
 copy tersedia dalam English, Bahasa Indonesia, dan 简体中文.
 
 ```sh

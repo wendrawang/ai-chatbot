@@ -15,7 +15,7 @@ final class EditorTests: XCTestCase {
     func testEditorGrowsToFourLinesThenScrollsAndShrinksWhenCleared() throws {
         try FontFace.registerFonts()
         let editor = BoundedTextView(frame: CGRect(x: 0, y: 0, width: 220, height: 300))
-        editor.font = FontFace.regular.font(size: 16)
+        editor.font = FontFace.openSansRegular.font(size: 16)
         editor.textContainerInset = .zero
         editor.textContainer.lineFragmentPadding = 0
         editor.isScrollEnabled = false

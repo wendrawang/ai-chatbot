@@ -24,6 +24,11 @@ Contoh lengkap ada pada [StartingPointApp.swift](../TanyaAISandboxApp/StartingPo
 Font dibaca dari `Bundle.module` DesignKit; host tidak perlu menyalin file font
 atau menambahkan font package ke `UIAppFonts`.
 
+Registrasi ini memuat tujuh face Fira Sans/Open Sans. Untuk memilih font pada
+komponen, gunakan nama family/weight seperti `.firaSansRegular`,
+`.firaSansSemiBold`, atau `.openSansMedium`; lihat
+[katalog font](../Packages/DesignKit/Sources/DesignKit/Resources/Fonts/SOURCES.md).
+
 ## Root SwiftUI dengan NavigationView existing
 
 ```swift

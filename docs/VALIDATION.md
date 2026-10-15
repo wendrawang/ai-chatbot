@@ -4,7 +4,7 @@
 
 | Pemeriksaan | Hasil |
 | --- | --- |
-| DesignKit: font/glyph, hex, sizing, editor dan layout | 8 tes lulus |
+| DesignKit: registrasi tujuh font/glyph, hex, sizing, editor dan layout | 8 tes lulus |
 | TanyaAI: locale, optional anchor/identity, pergantian host, animator | 7 tes lulus |
 | Hosted unit: fullscreen, navigation stack, duplicate/offscreen/modal lain, dismiss, pelepasan memori | 4 tes lulus |
 | UI: tiga bahasa, empat baris, whitespace, callback ditolak, font terbesar, tutup/buka | 6 tes lulus |
@@ -34,8 +34,9 @@ Gambar tidak diedit atau dibuat dengan generator gambar.
 - [Accessibility XXXL](../Artifacts/Screenshots/starter-accessibility-zh-Hans.png)
 
 Action tetap terlihat dan berada di atas keyboard. Teks panjang scroll di dalam
-editor setelah empat baris. Font Open Sans terdaftar dengan PostScript name yang
-benar; Chinese memakai fallback glyph native, diuji tidak menghasilkan glyph 0.
+editor setelah empat baris. Ketujuh font Fira Sans/Open Sans terdaftar dengan
+PostScript name yang dibaca dari file aslinya. Registrasi dua kali diuji aman;
+Chinese memakai fallback glyph native pada setiap face, diuji tanpa glyph 0.
 SF Symbol send masih dummy TODO. Verifikasi font brand final tetap mengikuti aset
 resmi yang nanti diberikan, termasuk keputusan font Chinese brand.
 

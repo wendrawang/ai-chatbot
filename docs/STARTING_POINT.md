@@ -41,8 +41,12 @@ Packages/
    RGB, RRGGBB atau AARRGGBB dan memakai fallback nonoptional untuk input invalid.
 3. Daftarkan font dengan `FontFace.registerFonts()` saat bootstrap. `FontFace`
    memisahkan nama file dan nama PostScript; `FontLoader` memproses Bundle.module.
-   Open Sans Regular/Medium dan lisensinya ada di package. Chinese menggunakan
-   fallback glyph iOS; font Chinese brand final masih dapat diganti kemudian.
+   Package berisi Fira Sans Regular/Medium/SemiBold/Bold dan Open Sans
+   Regular/Medium/Bold beserta lisensinya. Gunakan nama eksplisit seperti
+   `.openSansRegular` atau `.firaSansMedium`; `.regular/.medium` lama diganti.
+   Composer default memakai `.openSansRegular`. Chinese menggunakan fallback
+   glyph iOS; font Chinese brand final masih dapat diganti kemudian. Pemetaan
+   file/PostScript dan sumbernya ada pada [katalog font](../Packages/DesignKit/Sources/DesignKit/Resources/Fonts/SOURCES.md).
 4. Buat `BoundedTextView`, lalu bridge `GrowingTextInput`. Intrinsic width tidak
    memaksa lebar konten; tinggi dibatasi empat baris, kemudian scrolling aktif.
 5. Buat composer: placeholder, field, action, surface. `@ScaledMetric` mengubah

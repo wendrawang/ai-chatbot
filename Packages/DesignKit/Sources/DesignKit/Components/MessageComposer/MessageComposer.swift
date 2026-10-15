@@ -23,7 +23,7 @@ public struct MessageComposer: View {
 
     public init(
         text: Binding<String>, placeholder: String, sendLabel: String,
-        isEnabled: Bool = InitialValues.isEnabled, fontFace: FontFace = .regular,
+        isEnabled: Bool = InitialValues.isEnabled, fontFace: FontFace = .openSansRegular,
         colors: any FigmaColorProtocol = DefaultColorConstants(), onSend: @escaping () -> Void
     ) {
         self._text = text

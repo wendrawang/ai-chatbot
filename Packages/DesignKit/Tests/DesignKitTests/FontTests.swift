@@ -15,20 +15,33 @@ final class FontTests: XCTestCase {
     func testBundledFontsRegisterWithTheirRealPostScriptNames() throws {
         try FontFace.registerFonts()
         try FontFace.registerFonts()
-        XCTAssertEqual(FontFace.regular.font(size: 16).fontName, "OpenSansRoman-Regular")
-        XCTAssertEqual(FontFace.medium.font(size: 16).fontName, "OpenSansRoman-Medium")
+        let expected: [(FontFace, String)] = [
+            (.firaSansRegular, "FiraSans-Regular"), (.firaSansMedium, "FiraSans-Medium"),
+            (.firaSansSemiBold, "FiraSans-SemiBold"), (.firaSansBold, "FiraSans-Bold"),
+            (.openSansRegular, "OpenSansRoman-Regular"), (.openSansMedium, "OpenSansRoman-Medium"),
+            (.openSansBold, "OpenSans-Bold")
+        ]
+        XCTAssertEqual(Set(FontFace.allCases), Set(expected.map(\.0)))
+        for (face, postScriptName) in expected {
+            XCTAssertEqual(face.postScriptName, postScriptName)
+            XCTAssertEqual(face.font(size: 16).fontName, postScriptName)
+            let font = try XCTUnwrap(UIFont(name: postScriptName, size: 16))
+            XCTAssertEqual(font.fontName, postScriptName)
+        }
     }
 
     func testChineseUsesRealFallbackGlyphsRatherThanMissingGlyphBoxes() throws {
         try FontFace.registerFonts()
-        let text = NSAttributedString(string: "你好，世界", attributes: [.font: FontFace.regular.font(size: 16)])
-        let line = CTLineCreateWithAttributedString(text as CFAttributedString)
-        let runs = CTLineGetGlyphRuns(line) as? [CTRun] ?? []
-        XCTAssertFalse(runs.isEmpty)
-        for run in runs {
-            var glyphs = Array(repeating: CGGlyph(0), count: CTRunGetGlyphCount(run))
-            CTRunGetGlyphs(run, CFRange(location: 0, length: 0), &glyphs)
-            XCTAssertFalse(glyphs.contains(0))
+        for face in FontFace.allCases {
+            let text = NSAttributedString(string: "你好，世界", attributes: [.font: face.font(size: 16)])
+            let line = CTLineCreateWithAttributedString(text as CFAttributedString)
+            let runs = CTLineGetGlyphRuns(line) as? [CTRun] ?? []
+            XCTAssertFalse(runs.isEmpty, face.rawValue)
+            for run in runs {
+                var glyphs = Array(repeating: CGGlyph(0), count: CTRunGetGlyphCount(run))
+                CTRunGetGlyphs(run, CFRange(location: 0, length: 0), &glyphs)
+                XCTAssertFalse(glyphs.contains(0), face.rawValue)
+            }
         }
     }
 }

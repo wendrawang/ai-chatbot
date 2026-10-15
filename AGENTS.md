@@ -43,6 +43,10 @@ tersedia pada history/main.
 
 - Font berada di `Resources/Fonts`; filename dan PostScript di `FontFace`.
   Register sekali saat bootstrap melalui CoreText/`Bundle.module`, idempotent.
+- Nama case menyertakan family dan weight: `firaSansRegular/Medium/SemiBold/Bold`
+  dan `openSansRegular/Medium/Bold`. Jangan memakai case `.regular/.medium` yang
+  ambigu antar-family. Tambahkan file asli beserta lisensi dan nama PostScript
+  yang dibaca dari metadata; jangan menyamakan nama file dengan PostScript.
 - Composer memakai `@ScaledMetric` agar font mengikuti Dynamic Type. Editor dan
   placeholder menerima UIFont yang sama; jangan menerapkan scaling dua kali.
   Glyph Chinese yang tidak ada di Open Sans menggunakan fallback native iOS.
