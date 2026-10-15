@@ -18,7 +18,6 @@ export DEVELOPER_DIR
 find "$PROJECT_ROOT/TanyaAISandboxApp" \
   "$PROJECT_ROOT/TanyaAISandboxUITests" \
   "$PROJECT_ROOT/Packages" \
-  "$PROJECT_ROOT/Examples" \
   "$PROJECT_ROOT/Scripts" \
   -type d \( -name .build -o -name .swiftpm -o -name Generated \) -prune -o \
   -name '*.swift' -print0 | while IFS= read -r -d '' source_file; do
@@ -45,7 +44,6 @@ MACOS_SDK="$(xcrun --sdk macosx --show-sdk-path)"
 find "$PROJECT_ROOT/TanyaAISandboxApp" \
   "$PROJECT_ROOT/TanyaAISandboxUITests" \
   "$PROJECT_ROOT/Packages" \
-  "$PROJECT_ROOT/Examples" \
   "$PROJECT_ROOT/Scripts" \
   -type d \( -name .build -o -name .swiftpm -o -name Generated \) -prune -o \
   -name '*.swift' -print0 | xargs -0 xcrun swift \

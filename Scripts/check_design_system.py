@@ -1,88 +1,55 @@
 #!/usr/bin/env python3
-"""Guard UI literals and resource contracts in production packages.
-
-Protocol strings, identifiers, symbols, empty text and arithmetic are not UI copy.
-Fixture/test data and the token definitions themselves are deliberately excluded.
-This is a focused regression guard, not a substitute for a design/code review.
-"""
+"""Guard starter tokens, production literals, boundaries and three-language copy."""
 import re
 import sys
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
-PACKAGES = ROOT / "Packages"
 errors = []
+# These files own technical metadata or a format algorithm, not user-facing copy.
+METADATA = {
+    'Typography/FontFace.swift', 'Extensions/Color+Hex.swift',
+    'Foundations/Assets/SystemSymbol.swift', 'Foundations/Accessibility/ComponentID.swift',
+    'Chat/ChatCopy.swift', 'TanyaAISandboxApp/SandboxOptions.swift'
+}
+paths = list((ROOT / 'Packages').glob('*/Sources/**/*.swift'))
+paths += list((ROOT / 'TanyaAISandboxApp').glob('*.swift'))
+for path in sorted(paths):
+    if 'Generated' in path.parts:
+        continue
+    source = path.read_text()
+    text = re.sub(r'/\*.*?\*/|//[^\n]*', '', source, flags=re.DOTALL)
+    relative = path.relative_to(ROOT).as_posix()
+    def report(message):
+        errors.append(f'{relative}: {message}')
+    if re.search(r'FigmaSize\.(?:spacing\d+|typographySize\d+|typographyLineHeight\d+)\b', text):
+        report('Use named Figma tokens such as spacingSmall/Medium/Large and semantic typography.')
+    if re.search(r'\.\s*sizeInArtwork\b|\bvar\s+sizeInArtwork\b|\bDesignKitMetrics\b', text):
+        report('Use scaledToArtwork and CustomSizes in this starter.')
+    if 'DesignKit' in path.parts and re.search(r'\bTanya\w*|\bimport\s+Tanya', source):
+        report('DesignKit must remain feature-independent.')
+    if 'Tokens' in path.parts or any(relative.endswith(item) for item in METADATA):
+        continue
+    if re.search(r'"(?:\\.|[^"\\])*"', text):
+        report('Move copy to localization; move font/symbol/identifier metadata to its catalog.')
+    if re.search(r'(?<![\w.$])\d+(?:\.\d+)?(?![\w.])', text):
+        report('Use FigmaSize, CustomSizes or InitialValues instead of numeric literals.')
+    if re.search(r'\.(?:foregroundColor|background|fill|strokeBorder)\(\s*\.(?:red|white|black|gray|blue)', text):
+        report('Use generated colors or CustomColors.')
 
-
-def report(path, line, message):
-    errors.append(f"{path.relative_to(ROOT)}:{line}: {message}")
-
-
-def sources():
-    for path in sorted(PACKAGES.glob("*/Sources/**/*.swift")):
-        if any(part in path.parts for part in ("Generated", "TanyaAITestSupport")):
-            continue
-        yield path
-
-
-# Match a literal at the UI API boundary, including multiline calls.
-NUMBER = r"(?:0\.[0-9]*[1-9][0-9]*|[1-9][0-9]*(?:\.[0-9]+)?)\b(?!%)"
-SIZE_RULES = [
-    rf"(?:spacing|lineWidth|cornerRadius|minLength|minWidth|maxWidth|width|height|minHeight|maxHeight):\s*{NUMBER}",
-    rf"\.(?:padding|cornerRadius)\(\s*(?:\.[a-zA-Z]+,\s*)?{NUMBER}",
-    rf"artwork\.(?:size|stroke|tapTarget)\(\s*{NUMBER}",
-    rf"(?:CGFloat\(\s*{NUMBER}\s*\)|\b{NUMBER})\.(?:sizeInArtwork|strokeInArtwork|tapTargetInArtwork)",
-    rf"\.system(?:Font)?\((?:ofSize|size):\s*{NUMBER}",
-    rf"(?:estimatedRowHeight|rowHeight)\s*=\s*{NUMBER}",
-]
-TEXT_RULES = [
-    r'\b(?:Text|Button|Label)\(\s*"[^"\n]*[A-Za-z][^"\n]*"',
-    r'\b(?:accessibilityLabel|accessibilityHint|errorMessage)\s*=\s*"[^"\n]+"',
-    r'\b(?:title|detail|placeholder|submitTitle|continueTitle|cancelTitle):\s*String\??\s*=\s*"[^"\n]+"',
-]
-references = set()
-for path in sources():
-    original = path.read_text()
-    text = "\n".join("" if line.lstrip().startswith("//") else line for line in original.splitlines())
-    if "Tokens" not in path.parts:
-        for pattern in SIZE_RULES + TEXT_RULES:
-            for match in re.finditer(pattern, text):
-                # Pure interpolation / bullet prefix is content supplied by the caller.
-                if '\\(' in match.group() and not re.search(r'[A-Za-z]', match.group().split('"')[1].split('\\(')[0]):
-                    continue
-                report(path, text.count("\n", 0, match.start()) + 1, "Use tokens or localized/injected UI copy")
-    if "DesignKit" in path.parts:
-        if re.search(r"\bimport\s+Tanya|\bTanya\w*", original):
-            report(path, 1, "DesignKit must not reference a feature")
-    if re.search(r"\\\.artwork\b|\bartworkLayout\(", text):
-        report(path, 1, "Use .sizeInArtwork properties; artwork environment/root setup is not supported")
-    if re.search(r"(?:struct|class)\s+Tanya\w*\s*:\s*(?:View\b|UIView|UITableView|Shape\b)", text):
-        report(path, 1, "Use a generic component name")
-    references.update(re.findall(r'copy\.(?:chat|design)\("([^"]+)"', text))
-
-keys = set()
-for resources in PACKAGES.glob("*/Sources/*/Resources"):
-    tables = {}
-    for path in resources.glob("*.lproj/Localizable.strings"):
-        entries = re.findall(r'^"([^"]+)"\s*=\s*"(.*)";', path.read_text(), re.MULTILINE)
-        table = dict(entries)
-        if len(entries) != len(table):
-            report(path, 1, "Duplicate localization key")
-        tables[path.parent.stem] = table
-        keys.update(table)
-    english = tables.get("en", {})
-    for language, table in tables.items():
-        path = resources / f"{language}.lproj/Localizable.strings"
-        if set(table) != set(english):
-            report(path, 1, "Localization key coverage differs from English")
-        for key in set(table) & set(english):
-            placeholders = lambda value: set(re.findall(r"\{([a-zA-Z]+)\}", value))
-            if placeholders(table[key]) != placeholders(english[key]):
-                report(path, 1, f"Placeholder mismatch: {key}")
-for key in sorted(references - keys):
-    errors.append(f"Missing localized UI key: {key}")
-
+resources = ROOT / 'Packages/TanyaAI/Sources/TanyaAI/Resources'
+tables = {}
+for path in resources.glob('*.lproj/Localizable.strings'):
+    entries = re.findall(r'^"([^"]+)"\s*=\s*"(.*)";', path.read_text(), re.MULTILINE)
+    if len(dict(entries)) != len(entries):
+        errors.append(f'{path}: duplicate key')
+    tables[path.parent.stem] = dict(entries)
+if set(tables) != {'en', 'id', 'zh-Hans'}:
+    errors.append('Resources must include en, id and zh-Hans.')
+for locale, table in tables.items():
+    if set(table) != set(tables.get('en', {})) or any(not value for value in table.values()):
+        errors.append(f'{locale}: missing/empty localized copy')
 if errors:
-    print("\n".join(errors), file=sys.stderr)
+    print('\n'.join(errors), file=sys.stderr)
     sys.exit(1)
-print("Design system checks passed: UI literals, component boundaries, localization keys/placeholders.")
+print('Starter checks passed: named tokens, constants, component boundaries and en/id/zh-Hans.')

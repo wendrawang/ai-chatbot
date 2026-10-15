@@ -1,28 +1,10 @@
-# Bundled font sources
+# Font resources
 
-Google Fonts repository commit `02cac32590ff3531408c3d221673d7aa32a98c11`:
+The starter bundles Open Sans Regular and Medium under the accompanying SIL Open
+Font License. Their PostScript names are OpenSansRoman-Regular and
+OpenSansRoman-Medium. Register via FontFace.registerFonts() before presentation.
 
-- Fira Sans: https://github.com/google/fonts/tree/02cac32590ff3531408c3d221673d7aa32a98c11/ofl/firasans
-- Open Sans: https://github.com/google/fonts/tree/02cac32590ff3531408c3d221673d7aa32a98c11/ofl/opensans
+Chinese glyphs use the iOS Core Text fallback cascade when a glyph is absent from
+Open Sans. Verify the final approved Chinese font before brand sign-off.
 
-Fira Sans files are unmodified upstream TTFs. Open Sans static instances were
-created from `OpenSans[wdth,wght].ttf` with fontTools varLib.instancer, setting
-`wdth=100` and `wght=400/500/700`, with `updateFontNames=True`.
-Their PostScript names are `OpenSansRoman-Regular`, `OpenSansRoman-Medium`, and
-`OpenSansRoman-Bold`. File names match the supplied design reference.
-
-Both families use SIL Open Font License 1.1. The full licenses and copyright
-notices are included as `FiraSans-OFL.txt` and `OpenSans-OFL.txt`.
-
-Reproduce each Open Sans instance with fontTools:
-
-```python
-from fontTools.ttLib import TTFont
-from fontTools.varLib.instancer import instantiateVariableFont
-
-source = TTFont("OpenSans[wdth,wght].ttf")
-result = instantiateVariableFont(
-    source, {"wdth": 100, "wght": 500}, updateFontNames=True
-)
-result.save("OpenSans-Medium.ttf")
-```
+Source: https://fonts.google.com/specimen/Open+Sans

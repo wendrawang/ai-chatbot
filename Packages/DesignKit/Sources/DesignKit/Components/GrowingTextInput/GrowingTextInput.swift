@@ -1,123 +1,86 @@
 import SwiftUI
 import UIKit
 
-/// A multiline composer that stays one to four lines tall on iOS 15.
+/// The UIKit bridge owns measurement and selection; the caller owns the draft and font.
+@MainActor
 public struct GrowingTextInput: UIViewRepresentable {
     @Binding
-    var text: String
-    let font: UIFont
-    let lineSpacing: CGFloat
-    let textColor: UIColor
-    let accessibilityLabel: String
+    private var text: String
+    private let font: UIFont
+    private let textColor: UIColor
+    private let lineSpacing: CGFloat
+    private let accessibilityLabel: String
 
     public init(
         text: Binding<String>, font: UIFont, textColor: UIColor,
-        lineSpacing: CGFloat = 0, accessibilityLabel: String
+        lineSpacing: CGFloat = InitialValues.zeroCGFloat, accessibilityLabel: String
     ) {
         self._text = text
         self.font = font
-        self.lineSpacing = lineSpacing
         self.textColor = textColor
+        self.lineSpacing = lineSpacing
         self.accessibilityLabel = accessibilityLabel
     }
 
     public func makeUIView(context: Context) -> BoundedTextView {
-        let textView = BoundedTextView()
-        textView.delegate = context.coordinator
-        textView.backgroundColor = .clear
-        textView.textContainerInset = .zero
-        textView.textContainer.lineFragmentPadding = 0
-        textView.adjustsFontForContentSizeCategory = false
-        textView.isScrollEnabled = false
-        textView.text = text
-        applyStyle(to: textView)
-        textView.accessibilityLabel = accessibilityLabel
-        textView.setContentHuggingPriority(.defaultLow, for: .horizontal)
-        return textView
+        let editor = BoundedTextView()
+        editor.delegate = context.coordinator
+        editor.backgroundColor = UIColor(CustomColors.transparent)
+        editor.textContainerInset = .zero
+        editor.textContainer.lineFragmentPadding = InitialValues.zeroCGFloat
+        editor.adjustsFontForContentSizeCategory = false
+        editor.isScrollEnabled = false
+        editor.text = text
+        editor.setContentHuggingPriority(.defaultLow, for: .horizontal)
+        applyStyle(to: editor)
+        editor.accessibilityLabel = accessibilityLabel
+        return editor
     }
 
-    public func updateUIView(_ textView: BoundedTextView, context: Context) {
+    public func updateUIView(_ editor: BoundedTextView, context: Context) {
         context.coordinator.parent = self
-        textView.accessibilityLabel = accessibilityLabel
-        if textView.font != font || textView.textColor != textColor || textView.lineSpacing != lineSpacing {
-            applyStyle(to: textView)
+        editor.accessibilityLabel = accessibilityLabel
+        if editor.font != font || editor.textColor != textColor || editor.lineSpacing != lineSpacing {
+            applyStyle(to: editor)
         }
-        if textView.text != text {
-            textView.text = text
-            applyStyle(to: textView)
+        if editor.text != text {
+            editor.text = text
+            applyStyle(to: editor)
         }
-        textView.setNeedsLayout()
+        editor.setNeedsLayout()
     }
 
-    private func applyStyle(to textView: BoundedTextView) {
-        guard textView.markedTextRange == nil else { return }
+    private func applyStyle(to editor: BoundedTextView) {
+        guard editor.markedTextRange == nil else { return }
         let paragraph = NSMutableParagraphStyle()
-        paragraph.lineSpacing = max(0, lineSpacing)
-        textView.lineSpacing = paragraph.lineSpacing
+        paragraph.lineSpacing = max(InitialValues.zeroCGFloat, lineSpacing)
+        editor.lineSpacing = paragraph.lineSpacing
         let attributes: [NSAttributedString.Key: Any] = [
             .font: font, .foregroundColor: textColor, .paragraphStyle: paragraph
         ]
-        textView.font = font
-        textView.textColor = textColor
-        textView.typingAttributes = attributes
-        let selection = textView.selectedRange
-        textView.textStorage.addAttributes(attributes, range: NSRange(location: 0, length: textView.textStorage.length))
-        textView.selectedRange = selection
+        editor.font = font
+        editor.textColor = textColor
+        editor.typingAttributes = attributes
+        let selection = editor.selectedRange
+        editor.textStorage.addAttributes(
+            attributes, range: NSRange(location: InitialValues.zeroInteger, length: editor.textStorage.length)
+        )
+        editor.selectedRange = selection
     }
 
-    public static func dismantleUIView(_ textView: BoundedTextView, coordinator: Coordinator) {
-        textView.delegate = nil
-    }
+    public func makeCoordinator() -> Coordinator { Coordinator(parent: self) }
 
-    public func makeCoordinator() -> Coordinator {
-        Coordinator(parent: self)
+    public static func dismantleUIView(_ editor: BoundedTextView, coordinator: Coordinator) {
+        editor.delegate = nil
     }
 
     public final class Coordinator: NSObject, UITextViewDelegate {
         var parent: GrowingTextInput
+        init(parent: GrowingTextInput) { self.parent = parent }
 
-        init(parent: GrowingTextInput) {
-            self.parent = parent
-        }
-
-        public func textViewDidChange(_ textView: UITextView) {
-            parent.text = textView.text
-            textView.setNeedsLayout()
-        }
-    }
-}
-
-public final class BoundedTextView: UITextView {
-    var lineSpacing: CGFloat = 0
-    private var measuredHeight: CGFloat = 0
-    private var isMeasuring = false
-
-    public override var intrinsicContentSize: CGSize {
-        let lineHeight = font?.lineHeight ?? UIFont.preferredFont(forTextStyle: .body).lineHeight
-        return CGSize(width: UIView.noIntrinsicMetric, height: max(measuredHeight, lineHeight))
-    }
-
-    public override func layoutSubviews() {
-        super.layoutSubviews()
-        guard bounds.width > 0, !isMeasuring else { return }
-
-        isMeasuring = true
-        let fittedHeight = sizeThatFits(
-            CGSize(width: bounds.width, height: .greatestFiniteMagnitude)
-        ).height
-        isMeasuring = false
-
-        let lineHeight = font?.lineHeight ?? UIFont.preferredFont(forTextStyle: .body).lineHeight
-        let lines = CGFloat(DesignKitMetrics.Text.maximumInputLines)
-        let maxHeight = ceil(lineHeight * lines + lineSpacing * (lines - 1))
-        let nextHeight = min(max(ceil(fittedHeight), ceil(lineHeight)), maxHeight)
-        let shouldScroll = fittedHeight > maxHeight + DesignKitMetrics.Layout.measurementTolerance
-        if isScrollEnabled != shouldScroll {
-            isScrollEnabled = shouldScroll
-        }
-        if abs(nextHeight - measuredHeight) > DesignKitMetrics.Layout.measurementTolerance {
-            measuredHeight = nextHeight
-            invalidateIntrinsicContentSize()
+        public func textViewDidChange(_ editor: UITextView) {
+            parent.text = editor.text
+            editor.setNeedsLayout()
         }
     }
 }
