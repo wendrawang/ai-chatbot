@@ -4,7 +4,6 @@ included:
   - TanyaAISandboxApp
   - TanyaAISandboxUITests
   - Packages
-  - Examples
   - Scripts
 
 # Approved Figma placeholder assets deliberately retain replacement TODOs.

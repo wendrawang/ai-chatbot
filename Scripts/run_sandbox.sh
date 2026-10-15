@@ -2,11 +2,11 @@
 
 # Builds the sandbox, installs it on a booted simulator, and launches it.
 #
-# Any argument is forwarded to the app, so the launch modes work directly:
+# Starter examples:
 #
-#   ./Scripts/run_sandbox.sh                 Figma UI and dummy host flows
-#   ./Scripts/run_sandbox.sh --host          isolated presentation on an existing host stack
-#   ./Scripts/run_sandbox.sh --previewbook   standalone DesignKit component catalog
+#   ./Scripts/run_sandbox.sh --language en
+#   ./Scripts/run_sandbox.sh --language id
+#   ./Scripts/run_sandbox.sh --language zh-Hans
 #
 # Override the device with TANYA_AI_SIMULATOR.
 

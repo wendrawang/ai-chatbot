@@ -13,6 +13,7 @@ FileUtils.rm_rf(PROJECT_PATH)
 project = Xcodeproj::Project.new(PROJECT_PATH)
 project.root_object.attributes['LastSwiftUpdateCheck'] = '2660'
 project.root_object.attributes['LastUpgradeCheck'] = '2660'
+project.root_object.known_regions = ['en', 'id', 'zh-Hans', 'Base']
 
 app_group = project.main_group.new_group(
   'TanyaAISandboxApp',
@@ -82,7 +83,7 @@ package_reference = project.new(
 package_reference.relative_path = 'Packages/TanyaAI'
 project.root_object.package_references << package_reference
 
-%w[TanyaAI TanyaAITestSupport].each do |product_name|
+%w[TanyaAI].each do |product_name|
   product = project.new(
     Xcodeproj::Project::Object::XCSwiftPackageProductDependency
   )

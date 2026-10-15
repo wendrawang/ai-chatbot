@@ -36,7 +36,7 @@ xcodebuild \
 
 cd "$PROJECT_ROOT/Packages/TanyaAI"
 xcodebuild \
-  -scheme TanyaAI-Package \
+  -scheme TanyaAI \
   -destination "$TEST_DESTINATION" \
   -parallel-testing-enabled NO \
   CODE_SIGNING_ALLOWED=NO \
