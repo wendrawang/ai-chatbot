@@ -1,8 +1,19 @@
-import CoreGraphics
+import UIKit
 
 /// Measurements absent from the generated Figma scale, named by visual role.
 /// Existing padding and spacing always use FigmaSize directly.
 public enum DesignKitMetrics {
+    public enum Artwork {
+        public static let width: CGFloat = 375
+        public static let height: CGFloat = 812
+        public static let defaultDisplayScale: CGFloat = 2
+
+        /// Reference width divided by the current screen width, read on every access.
+        public static var currentRatio: CGFloat {
+            width / UIScreen.main.bounds.width
+        }
+    }
+
     public enum Spacing {
         public static let snug: CGFloat = 6
         public static let regular: CGFloat = 12

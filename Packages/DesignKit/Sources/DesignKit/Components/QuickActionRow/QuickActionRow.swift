@@ -15,9 +15,9 @@ public struct QuickActionRow: View {
         Button {
             onSelect(action)
         } label: {
-            HStack(spacing: FigmaSize.spacing16.sizeInArtwork) {
+            HStack(spacing: FigmaSize.spacing16.scaledToArtwork) {
                 leadingIcon
-                VStack(alignment: .leading, spacing: FigmaSize.spacing4.sizeInArtwork) {
+                VStack(alignment: .leading, spacing: FigmaSize.spacing4.scaledToArtwork) {
                     Text(action.title)
                         .designFont(.button)
                         .foregroundColor(Color(theme.colors.primaryText))
@@ -31,16 +31,16 @@ public struct QuickActionRow: View {
                     .resizable()
                     .scaledToFit()
                     .frame(
-                        width: DesignKitMetrics.Size.actionChevron.sizeInArtwork,
-                        height: DesignKitMetrics.Size.actionChevron.sizeInArtwork
+                        width: DesignKitMetrics.Size.actionChevron.scaledToArtwork,
+                        height: DesignKitMetrics.Size.actionChevron.scaledToArtwork
                     )
                     .foregroundColor(Color(theme.colors.accent))
                     .accessibilityHidden(true)
             }
-            .padding(FigmaSize.spacing16.sizeInArtwork)
+            .padding(FigmaSize.spacing16.scaledToArtwork)
             .frame(minHeight: DesignKitMetrics.Size.minimumTapTarget.tapTargetInArtwork)
             .background(Color(theme.colors.surface))
-            .cornerRadius(DesignKitMetrics.Radius.quickAction.sizeInArtwork)
+            .cornerRadius(DesignKitMetrics.Radius.quickAction.scaledToArtwork)
             .contentShape(Rectangle())
         }
         .buttonStyle(.plain)
@@ -53,7 +53,9 @@ public struct QuickActionRow: View {
         Image(systemName: action.symbolName)
             .resizable()
             .scaledToFit()
-            .frame(width: DesignKitMetrics.Size.icon.sizeInArtwork, height: DesignKitMetrics.Size.icon.sizeInArtwork)
+            .frame(
+                width: DesignKitMetrics.Size.icon.scaledToArtwork, height: DesignKitMetrics.Size.icon.scaledToArtwork
+            )
             .foregroundColor(Color(theme.colors.accent))
             .accessibilityHidden(true)
     }

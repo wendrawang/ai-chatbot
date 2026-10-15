@@ -125,7 +125,7 @@ extension MessageTableView.Coordinator {
             scrollView.contentOffset.y
             + scrollView.bounds.height
             - (scrollView.adjustedContentInset.bottom - promptTrailingInset)
-        let threshold = DesignKitMetrics.Layout.scrollFollowThreshold.sizeInArtwork
+        let threshold = DesignKitMetrics.Layout.scrollFollowThreshold.scaledToArtwork
         return scrollView.contentSize.height - visibleBottom < threshold
     }
 }

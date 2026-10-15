@@ -25,8 +25,8 @@ struct MessageTableRow: View {
                     .accessibilityIdentifier("chat.timestamp")
             }
         }
-        .padding(.horizontal, FigmaSize.spacing16.sizeInArtwork)
-        .padding(.vertical, DesignKitMetrics.Spacing.snug.sizeInArtwork)
+        .padding(.horizontal, FigmaSize.spacing16.scaledToArtwork)
+        .padding(.vertical, DesignKitMetrics.Spacing.snug.scaledToArtwork)
         .theme(theme)
         .copyCatalog(copy)
     }

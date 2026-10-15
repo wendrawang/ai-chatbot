@@ -81,7 +81,7 @@ extension MessageTableView {
             self.handlers = handlers
             bindMessages(state.messages)
             tableView?.backgroundColor = .clear
-            tableView?.estimatedRowHeight = DesignKitMetrics.Size.estimatedRowHeight.sizeInArtwork
+            tableView?.estimatedRowHeight = DesignKitMetrics.Size.estimatedRowHeight.scaledToArtwork
             updateContentInset()
         }
 
@@ -202,7 +202,7 @@ extension MessageTableView {
             guard screenMetrics != current, let tableView else { return }
             screenMetrics = current
             theme = theme.resolved(traits: tableView.traitCollection)
-            tableView.estimatedRowHeight = DesignKitMetrics.Size.estimatedRowHeight.sizeInArtwork
+            tableView.estimatedRowHeight = DesignKitMetrics.Size.estimatedRowHeight.scaledToArtwork
             updateContentInset()
             tableView.reloadData()
         }

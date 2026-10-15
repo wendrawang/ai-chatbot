@@ -13,13 +13,13 @@ struct DemoHostDocumentScreen: View {
     let onFinish: (TanyaAIHostFlowResult) -> Void
 
     var body: some View {
-        VStack(spacing: FigmaSize.spacing16.sizeInArtwork) {
+        VStack(spacing: FigmaSize.spacing16.scaledToArtwork) {
             DemoHostHeader(title: title) { finish(.cancelled) }
             ScrollView {
                 Text(DemoHostCopy.documentBody)
                     .designFont(.body)
                     .frame(maxWidth: .infinity, alignment: .leading)
-                    .padding(FigmaSize.spacing16.sizeInArtwork)
+                    .padding(FigmaSize.spacing16.scaledToArtwork)
             }
             AcknowledgementRow(title: DemoHostCopy.acceptance, isAccepted: isAccepted, isEnabled: !isCompleting) {
                 isAccepted.toggle()
@@ -28,15 +28,15 @@ struct DemoHostDocumentScreen: View {
             Button("Lanjut") { finish(.accepted) }
                 .designFont(.button)
                 .foregroundColor(.white)
-                .padding(FigmaSize.spacing16.sizeInArtwork)
+                .padding(FigmaSize.spacing16.scaledToArtwork)
                 .frame(maxWidth: .infinity)
                 .background(Color(theme.colors.accent))
-                .cornerRadius(DesignKitMetrics.Radius.composer.sizeInArtwork)
+                .cornerRadius(DesignKitMetrics.Radius.composer.scaledToArtwork)
                 .disabled(!isAccepted || isCompleting)
                 .accessibilityIdentifier("sandbox.document.continue")
         }
-        .padding(.horizontal, FigmaSize.spacing16.sizeInArtwork)
-        .padding(.bottom, FigmaSize.spacing16.sizeInArtwork)
+        .padding(.horizontal, FigmaSize.spacing16.scaledToArtwork)
+        .padding(.bottom, FigmaSize.spacing16.scaledToArtwork)
         .background(Color.white)
         .accessibilityElement(children: .contain)
         .accessibilityIdentifier("sandbox.document.screen")
@@ -59,18 +59,18 @@ struct DemoHostPINScreen: View {
     let onFinish: (TanyaAIHostFlowResult) -> Void
 
     var body: some View {
-        VStack(spacing: FigmaSize.spacing32.sizeInArtwork) {
+        VStack(spacing: FigmaSize.spacing32.scaledToArtwork) {
             DemoHostHeader(title: "PIN Transaksi") { finish(.cancelled) }
             Text("Masukkan 6 digit PIN Transaksi").designFont(.body)
-            Spacer(minLength: FigmaSize.spacing16.sizeInArtwork)
+            Spacer(minLength: FigmaSize.spacing16.scaledToArtwork)
             Image(systemName: "lock").designFont(.title).accessibilityHidden(true)
-            HStack(spacing: FigmaSize.spacing16.sizeInArtwork) {
+            HStack(spacing: FigmaSize.spacing16.scaledToArtwork) {
                 ForEach(0..<6, id: \.self) { index in
                     Circle()
                         .fill(Color(index < digitCount ? theme.colors.accent : theme.colors.secondaryText))
                         .frame(
-                            width: DemoHostKeypad.digitSize.sizeInArtwork,
-                            height: DemoHostKeypad.digitSize.sizeInArtwork
+                            width: DemoHostKeypad.digitSize.scaledToArtwork,
+                            height: DemoHostKeypad.digitSize.scaledToArtwork
                         )
                 }
             }
@@ -85,9 +85,9 @@ struct DemoHostPINScreen: View {
             Text("Demo host · tidak menjalankan transaksi")
                 .designFont(.caption)
                 .foregroundColor(.secondary)
-            Spacer(minLength: FigmaSize.spacing16.sizeInArtwork)
+            Spacer(minLength: FigmaSize.spacing16.scaledToArtwork)
         }
-        .padding(.horizontal, FigmaSize.spacing16.sizeInArtwork)
+        .padding(.horizontal, FigmaSize.spacing16.scaledToArtwork)
         .background(Color.white)
         .accessibilityElement(children: .contain)
         .accessibilityIdentifier("sandbox.pin.screen")
@@ -114,7 +114,7 @@ struct DemoHostHeader: View {
     let onClose: () -> Void
 
     var body: some View {
-        HStack(spacing: FigmaSize.spacing8.sizeInArtwork) {
+        HStack(spacing: FigmaSize.spacing8.scaledToArtwork) {
             Button(action: onClose) {
                 Image(systemName: "chevron.left")
                     .designFont(.headline)
@@ -132,7 +132,7 @@ struct DemoHostHeader: View {
                 height: DesignKitMetrics.Size.minimumTapTarget.tapTargetInArtwork
             )
         }
-        .padding(.vertical, FigmaSize.spacing8.sizeInArtwork)
+        .padding(.vertical, FigmaSize.spacing8.scaledToArtwork)
     }
 }
 

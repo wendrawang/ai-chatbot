@@ -3,7 +3,7 @@ import SwiftUI
 
 extension PreviewBookPage {
     var composer: some View {
-        VStack(alignment: .leading, spacing: FigmaSize.spacing32.sizeInArtwork) {
+        VStack(alignment: .leading, spacing: FigmaSize.spacing32.scaledToArtwork) {
             sample("Empty / typing / send / stop") {
                 MessageComposer(
                     text: $draft, placeholder: "Tanya seputar keuangan & layanan…", sendLabel: "Kirim",
@@ -32,7 +32,7 @@ extension PreviewBookPage {
     }
 
     var selection: some View {
-        VStack(alignment: .leading, spacing: FigmaSize.spacing32.sizeInArtwork) {
+        VStack(alignment: .leading, spacing: FigmaSize.spacing32.scaledToArtwork) {
             sample("Active → selected & readonly") {
                 OptionList(
                     title: "Pilih produk:", options: PreviewBookSamples.options,

@@ -81,8 +81,8 @@ public struct ChatScreen: View {
             .resizable()
             .scaledToFit()
             .frame(
-                width: DesignKitMetrics.Size.icon.sizeInArtwork,
-                height: DesignKitMetrics.Size.icon.sizeInArtwork
+                width: DesignKitMetrics.Size.icon.scaledToArtwork,
+                height: DesignKitMetrics.Size.icon.scaledToArtwork
             )
             .frame(
                 width: DesignKitMetrics.Size.minimumTapTarget.tapTargetInArtwork,
@@ -95,7 +95,7 @@ public struct ChatScreen: View {
         if let errorMessage = viewModel.errorMessage
             ?? (viewModel.isHistoryUnavailable ? copy.chat("chat.historyUnavailable") : nil)
         {
-            HStack(spacing: FigmaSize.spacing8.sizeInArtwork) {
+            HStack(spacing: FigmaSize.spacing8.scaledToArtwork) {
                 Text(errorMessage)
                     .designFont(.footnote)
                     .foregroundColor(Color(theme.colors.error))
@@ -109,8 +109,8 @@ public struct ChatScreen: View {
                 }
             }
             .frame(maxWidth: .infinity, alignment: .leading)
-            .padding(.horizontal, FigmaSize.spacing16.sizeInArtwork)
-            .padding(.vertical, FigmaSize.spacing8.sizeInArtwork)
+            .padding(.horizontal, FigmaSize.spacing16.scaledToArtwork)
+            .padding(.vertical, FigmaSize.spacing8.scaledToArtwork)
         }
     }
 

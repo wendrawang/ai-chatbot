@@ -21,15 +21,15 @@ public struct DesignButtonStyle: ButtonStyle {
     public func makeBody(configuration: Configuration) -> some View {
         configuration.label
             .designFont(.button)
-            .padding(.horizontal, FigmaSize.spacing8.sizeInArtwork)
-            .padding(.vertical, FigmaSize.spacing4.sizeInArtwork)
+            .padding(.horizontal, FigmaSize.spacing8.scaledToArtwork)
+            .padding(.vertical, FigmaSize.spacing4.scaledToArtwork)
             .frame(
                 minWidth: DesignKitMetrics.Size.minimumTapTarget.tapTargetInArtwork,
                 minHeight: DesignKitMetrics.Size.minimumTapTarget.tapTargetInArtwork
             )
             .foregroundColor(Color(emphasis == .primary ? theme.colors.userBubbleText : theme.colors.primaryText))
             .background(Color(emphasis == .primary ? theme.colors.accent : theme.colors.background))
-            .cornerRadius(DesignKitMetrics.Radius.bubble.sizeInArtwork)
+            .cornerRadius(DesignKitMetrics.Radius.bubble.scaledToArtwork)
             .opacity(
                 isEnabled
                     ? (configuration.isPressed ? DesignKitMetrics.Opacity.pressed : 1)

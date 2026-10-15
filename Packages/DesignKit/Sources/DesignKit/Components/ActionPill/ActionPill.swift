@@ -18,7 +18,7 @@ public struct ActionPill: View {
 
     public var body: some View {
         Button(action: action) {
-            HStack(spacing: FigmaSize.spacing8.sizeInArtwork) {
+            HStack(spacing: FigmaSize.spacing8.scaledToArtwork) {
                 if let symbolName = symbolName {
                     Image(systemName: symbolName)
                         .foregroundColor(Color(theme.colors.accent))
@@ -30,10 +30,10 @@ public struct ActionPill: View {
                     .foregroundColor(Color(theme.colors.primaryText))
                     .fixedSize(horizontal: false, vertical: true)
             }
-            .padding(.horizontal, FigmaSize.spacing16.sizeInArtwork)
-            .padding(.vertical, FigmaSize.spacing8.sizeInArtwork)
+            .padding(.horizontal, FigmaSize.spacing16.scaledToArtwork)
+            .padding(.vertical, FigmaSize.spacing8.scaledToArtwork)
             .background(
-                RoundedRectangle(cornerRadius: DesignKitMetrics.Radius.action.sizeInArtwork).strokeBorder(
+                RoundedRectangle(cornerRadius: DesignKitMetrics.Radius.action.scaledToArtwork).strokeBorder(
                     Color(theme.colors.divider), lineWidth: DesignKitMetrics.Stroke.hairline.strokeInArtwork
                 )
             )

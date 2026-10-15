@@ -12,7 +12,7 @@ public struct ActivityStatus: View {
     }
 
     public var body: some View {
-        HStack(alignment: .firstTextBaseline, spacing: FigmaSize.spacing8.sizeInArtwork) {
+        HStack(alignment: .firstTextBaseline, spacing: FigmaSize.spacing8.scaledToArtwork) {
             // TODO: Replace the placeholder symbol with the approved processing emblem from Figma.
             Image(systemName: symbolName)
                 .foregroundColor(Color(theme.colors.accent))

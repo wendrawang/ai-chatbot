@@ -34,7 +34,8 @@ public struct TextBubble: View {
     public var body: some View {
         labelledBubble
             .frame(
-                maxWidth: maximumWidth ?? (isUser ? DesignKitMetrics.Size.bubbleMaximumWidth.sizeInArtwork : .infinity),
+                maxWidth: maximumWidth
+                    ?? (isUser ? DesignKitMetrics.Size.bubbleMaximumWidth.scaledToArtwork : .infinity),
                 alignment: isUser ? .trailing : .leading
             )
     }
@@ -48,8 +49,8 @@ public struct TextBubble: View {
             onLink: onLink
         )
         .lineSpacing(theme.fonts.lineSpacing(for: fontRole))
-        .padding(.horizontal, isUser ? FigmaSize.spacing16.sizeInArtwork : 0)
-        .padding(.vertical, isUser ? DesignKitMetrics.Spacing.regular.sizeInArtwork : 0)
+        .padding(.horizontal, isUser ? FigmaSize.spacing16.scaledToArtwork : 0)
+        .padding(.vertical, isUser ? DesignKitMetrics.Spacing.regular.scaledToArtwork : 0)
         .background(background)
     }
 
@@ -66,7 +67,7 @@ public struct TextBubble: View {
     @ViewBuilder
     private var background: some View {
         if isUser {
-            OutgoingBubbleShape(radius: DesignKitMetrics.Radius.bubble.sizeInArtwork)
+            OutgoingBubbleShape(radius: DesignKitMetrics.Radius.bubble.scaledToArtwork)
                 .fill(Color(theme.colors.userBubble))
         }
     }

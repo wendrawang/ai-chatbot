@@ -17,8 +17,8 @@ struct WelcomeSection: View {
                     actions: configuration.actions, onSelect: onSelect,
                     emblem: { emblem }
                 )
-                .padding(.horizontal, FigmaSize.spacing16.sizeInArtwork)
-                .padding(.vertical, FigmaSize.spacing16.sizeInArtwork)
+                .padding(.horizontal, FigmaSize.spacing16.scaledToArtwork)
+                .padding(.vertical, FigmaSize.spacing16.scaledToArtwork)
                 .frame(minHeight: geometry.size.height)
             }
         }
@@ -39,14 +39,14 @@ struct WelcomeSection: View {
                     .resizable()
                     .scaledToFit()
                     .frame(
-                        width: DesignKitMetrics.Size.itemIcon.sizeInArtwork,
-                        height: DesignKitMetrics.Size.itemIcon.sizeInArtwork
+                        width: DesignKitMetrics.Size.itemIcon.scaledToArtwork,
+                        height: DesignKitMetrics.Size.itemIcon.scaledToArtwork
                     )
                     .foregroundColor(Color(theme.colors.userBubbleText))
             )
             .frame(
-                width: DesignKitMetrics.Size.emblem.sizeInArtwork,
-                height: DesignKitMetrics.Size.emblem.sizeInArtwork
+                width: DesignKitMetrics.Size.emblem.scaledToArtwork,
+                height: DesignKitMetrics.Size.emblem.scaledToArtwork
             )
             .background(
                 Circle()

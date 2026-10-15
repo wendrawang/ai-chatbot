@@ -2,12 +2,6 @@ import CoreGraphics
 import Foundation
 
 public extension DesignKitMetrics {
-    enum Artwork {
-        public static let referenceSize = CGSize(width: 375, height: 812)
-        public static let maximumScale: CGFloat = 1.25
-        public static let defaultDisplayScale: CGFloat = 2
-    }
-
     enum Shadow {
         public static let composerOpacity: Double = 0.12
         public static let composerRadius: CGFloat = 4

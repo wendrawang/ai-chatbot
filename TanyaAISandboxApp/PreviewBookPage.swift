@@ -18,11 +18,11 @@ struct PreviewBookPage: View {
 
     var body: some View {
         ScrollView {
-            VStack(alignment: .leading, spacing: FigmaSize.spacing32.sizeInArtwork) {
+            VStack(alignment: .leading, spacing: FigmaSize.spacing32.scaledToArtwork) {
                 content
             }
             .frame(maxWidth: .infinity, alignment: .leading)
-            .padding(FigmaSize.spacing16.sizeInArtwork)
+            .padding(FigmaSize.spacing16.scaledToArtwork)
         }
         .background(Color(theme.colors.background))
         .navigationTitle(entry.title)
@@ -32,7 +32,7 @@ struct PreviewBookPage: View {
                 Text(feedback)
                     .designFont(.caption)
                     .lineLimit(2)
-                    .padding(FigmaSize.spacing8.sizeInArtwork)
+                    .padding(FigmaSize.spacing8.scaledToArtwork)
                     .frame(maxWidth: .infinity, alignment: .leading)
                     .background(Color(theme.colors.surface))
                     .accessibilityIdentifier("preview.feedback")
@@ -62,7 +62,7 @@ struct PreviewBookPage: View {
     }
 
     func sample<Content: View>(_ title: String, @ViewBuilder content: () -> Content) -> some View {
-        VStack(alignment: .leading, spacing: FigmaSize.spacing8.sizeInArtwork) {
+        VStack(alignment: .leading, spacing: FigmaSize.spacing8.scaledToArtwork) {
             Text(title)
                 .designFont(.headline)
                 .foregroundColor(Color(theme.colors.primaryText))

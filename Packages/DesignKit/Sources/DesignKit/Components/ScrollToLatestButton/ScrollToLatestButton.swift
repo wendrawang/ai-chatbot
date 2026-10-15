@@ -19,8 +19,8 @@ public struct ScrollToLatestButton: View {
                 .resizable()
                 .scaledToFit()
                 .frame(
-                    width: DesignKitMetrics.Size.icon.sizeInArtwork,
-                    height: DesignKitMetrics.Size.icon.sizeInArtwork
+                    width: DesignKitMetrics.Size.icon.scaledToArtwork,
+                    height: DesignKitMetrics.Size.icon.scaledToArtwork
                 )
                 .foregroundColor(Color(theme.colors.accent))
                 .frame(

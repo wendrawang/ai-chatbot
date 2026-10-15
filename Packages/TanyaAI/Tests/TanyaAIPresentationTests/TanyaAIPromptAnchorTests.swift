@@ -93,7 +93,7 @@ final class TanyaAIPromptAnchorTests: XCTestCase {
         let prompt = table.rectForRow(at: IndexPath(row: 2, section: 0))
         XCTAssertEqual(
             prompt.minY - table.contentOffset.y,
-            table.adjustedContentInset.top + ChatLayoutMetrics.previousAnswerPreview.sizeInArtwork,
+            table.adjustedContentInset.top + ChatLayoutMetrics.previousAnswerPreview.scaledToArtwork,
             accuracy: 1, file: file, line: line
         )
     }

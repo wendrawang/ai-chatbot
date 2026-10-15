@@ -14,7 +14,7 @@ public struct SummaryCard<Header: View>: View {
     }
 
     public var body: some View {
-        VStack(alignment: .leading, spacing: FigmaSize.spacing16.sizeInArtwork) {
+        VStack(alignment: .leading, spacing: FigmaSize.spacing16.scaledToArtwork) {
             header
             divider
             ForEach(fields.indices, id: \.self) { index in
@@ -22,16 +22,16 @@ public struct SummaryCard<Header: View>: View {
                 row(for: fields[index])
             }
         }
-        .padding(FigmaSize.spacing16.sizeInArtwork)
+        .padding(FigmaSize.spacing16.scaledToArtwork)
         .background(Color(theme.colors.surface))
-        .cornerRadius(DesignKitMetrics.Radius.summary.sizeInArtwork)
+        .cornerRadius(DesignKitMetrics.Radius.summary.scaledToArtwork)
         .frame(maxWidth: .infinity, alignment: .leading)
         .accessibilityElement(children: .contain)
         .accessibilityIdentifier("summary.card")
     }
 
     private func row(for field: SummaryField) -> some View {
-        HStack(alignment: .firstTextBaseline, spacing: FigmaSize.spacing16.sizeInArtwork) {
+        HStack(alignment: .firstTextBaseline, spacing: FigmaSize.spacing16.scaledToArtwork) {
             Text(field.label)
                 .fontWeight(field.isEmphasized ? .semibold : .regular)
                 .foregroundColor(Color(field.isEmphasized ? theme.colors.primaryText : theme.colors.secondaryText))

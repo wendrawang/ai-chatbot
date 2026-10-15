@@ -18,7 +18,7 @@ public struct AcknowledgementRow: View {
 
     public var body: some View {
         Button(action: action) {
-            HStack(spacing: FigmaSize.spacing16.sizeInArtwork) {
+            HStack(spacing: FigmaSize.spacing16.scaledToArtwork) {
                 Text(title)
                     .designFont(.subheadline)
                     .foregroundColor(Color(theme.colors.primaryText))
@@ -28,16 +28,16 @@ public struct AcknowledgementRow: View {
                     .resizable()
                     .scaledToFit()
                     .frame(
-                        width: DesignKitMetrics.Size.indicator.sizeInArtwork,
-                        height: DesignKitMetrics.Size.indicator.sizeInArtwork
+                        width: DesignKitMetrics.Size.indicator.scaledToArtwork,
+                        height: DesignKitMetrics.Size.indicator.scaledToArtwork
                     )
                     .foregroundColor(Color(isAccepted ? theme.colors.success : theme.colors.primaryText))
                     .accessibilityHidden(true)
             }
-            .padding(FigmaSize.spacing16.sizeInArtwork)
+            .padding(FigmaSize.spacing16.scaledToArtwork)
             .frame(minHeight: DesignKitMetrics.Size.minimumTapTarget.tapTargetInArtwork)
             .background(
-                RoundedRectangle(cornerRadius: DesignKitMetrics.Radius.summary.sizeInArtwork)
+                RoundedRectangle(cornerRadius: DesignKitMetrics.Radius.summary.scaledToArtwork)
                     .strokeBorder(
                         Color(isAccepted ? theme.colors.success : theme.colors.divider),
                         lineWidth: DesignKitMetrics.Stroke.hairline.strokeInArtwork

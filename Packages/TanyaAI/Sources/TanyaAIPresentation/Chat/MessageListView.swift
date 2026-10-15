@@ -39,7 +39,7 @@ struct MessageListView: View {
             if scrollControl.isAwayFromLatest && !viewModel.isRestoring {
                 ScrollToLatestButton(label: copy.chat("chat.latest"), onTap: scrollControl.returnToLatest)
                     .accessibilityIdentifier("chat.latest")
-                    .padding(.bottom, DesignKitMetrics.Spacing.regular.sizeInArtwork)
+                    .padding(.bottom, DesignKitMetrics.Spacing.regular.scaledToArtwork)
             }
         }
     }

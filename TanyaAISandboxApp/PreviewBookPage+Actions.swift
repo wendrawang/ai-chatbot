@@ -3,7 +3,7 @@ import SwiftUI
 
 extension PreviewBookPage {
     var actionSamples: some View {
-        VStack(alignment: .leading, spacing: FigmaSize.spacing32.sizeInArtwork) {
+        VStack(alignment: .leading, spacing: FigmaSize.spacing32.scaledToArtwork) {
             sample("Outlined: vertical actions") {
                 ForEach(PreviewBookSamples.suggestions, id: \.self) { title in
                     ActionPill(title: title, symbolName: "arrow.turn.down.right") { feedback = title }

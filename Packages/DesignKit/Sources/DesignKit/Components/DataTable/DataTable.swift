@@ -59,20 +59,20 @@ public struct DataTable: View {
                 divider
             }
             if let footer = data.footer {
-                VStack(alignment: .leading, spacing: FigmaSize.spacing8.sizeInArtwork) {
+                VStack(alignment: .leading, spacing: FigmaSize.spacing8.scaledToArtwork) {
                     ForEach(visibleColumns(span: footer.leadingColumnSpan), id: \.self) { index in
                         Text(footer.cells[index]).fontWeight(.semibold).designFont(.subheadline)
                     }
                 }
-                .padding(.vertical, FigmaSize.spacing8.sizeInArtwork)
+                .padding(.vertical, FigmaSize.spacing8.scaledToArtwork)
             }
         }
     }
 
     private func stackedRow(_ row: DataTableRow) -> some View {
-        VStack(alignment: .leading, spacing: FigmaSize.spacing16.sizeInArtwork) {
+        VStack(alignment: .leading, spacing: FigmaSize.spacing16.scaledToArtwork) {
             ForEach(visibleColumns(span: row.leadingColumnSpan), id: \.self) { index in
-                VStack(alignment: .leading, spacing: FigmaSize.spacing4.sizeInArtwork) {
+                VStack(alignment: .leading, spacing: FigmaSize.spacing4.scaledToArtwork) {
                     Text(data.columns[index].title)
                         .designFont(.footnote)
                         .foregroundColor(Color(theme.colors.secondaryText))
@@ -86,15 +86,15 @@ public struct DataTable: View {
                 .accessibilityElement(children: .combine)
             }
         }
-        .padding(.vertical, FigmaSize.spacing16.sizeInArtwork)
+        .padding(.vertical, FigmaSize.spacing16.scaledToArtwork)
     }
 
     private func row(
         cells: [String], isEmphasized: Bool, isHeader: Bool = false, leadingColumnSpan: Int = 1
     ) -> some View {
-        let widths = data.columnWidths(availableWidth: availableWidth, spacing: FigmaSize.spacing8.sizeInArtwork)
+        let widths = data.columnWidths(availableWidth: availableWidth, spacing: FigmaSize.spacing8.scaledToArtwork)
         let indices = visibleColumns(span: leadingColumnSpan)
-        return HStack(alignment: .top, spacing: FigmaSize.spacing8.sizeInArtwork) {
+        return HStack(alignment: .top, spacing: FigmaSize.spacing8.scaledToArtwork) {
             ForEach(indices, id: \.self) { index in
                 Text(cells[index])
                     .fontWeight(isEmphasized ? .semibold : .regular)
@@ -111,7 +111,7 @@ public struct DataTable: View {
                     .accessibilityLabel(accessibilityLabel(cells: cells, index: index, isHeader: isHeader))
             }
         }
-        .padding(.vertical, FigmaSize.spacing8.sizeInArtwork)
+        .padding(.vertical, FigmaSize.spacing8.scaledToArtwork)
     }
 
     private func visibleColumns(span: Int) -> [Int] {
@@ -122,7 +122,7 @@ public struct DataTable: View {
         guard availableWidth > 0 else { return nil }
         if index == 0 {
             return widths.prefix(leadingColumnSpan).reduce(0, +)
-                + FigmaSize.spacing8.sizeInArtwork * CGFloat(leadingColumnSpan - 1)
+                + FigmaSize.spacing8.scaledToArtwork * CGFloat(leadingColumnSpan - 1)
         }
         return widths[index]
     }

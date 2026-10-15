@@ -19,8 +19,8 @@ public struct QuickActionList: View {
     }
 
     public var body: some View {
-        VStack(alignment: .leading, spacing: FigmaSize.spacing8.sizeInArtwork) {
-            HStack(spacing: FigmaSize.spacing8.sizeInArtwork) {
+        VStack(alignment: .leading, spacing: FigmaSize.spacing8.scaledToArtwork) {
+            HStack(spacing: FigmaSize.spacing8.scaledToArtwork) {
                 if let symbolName = symbolName {
                     Image(systemName: symbolName)
                         .foregroundColor(Color(theme.colors.accent))
@@ -29,7 +29,7 @@ public struct QuickActionList: View {
                 Text(title).foregroundColor(Color(theme.colors.primaryText))
             }
             .designFont(.button)
-            .padding(.bottom, FigmaSize.spacing8.sizeInArtwork)
+            .padding(.bottom, FigmaSize.spacing8.scaledToArtwork)
             ForEach(actions.indices, id: \.self) { index in
                 QuickActionRow(action: actions[index], onSelect: onSelect)
             }

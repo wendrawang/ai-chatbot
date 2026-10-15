@@ -34,6 +34,7 @@ DesignKit
 ├── Tokens                    ukuran/warna tambahan di luar generated
 ├── Theme                     mapping semantik dan resolusi tema
 ├── Typography                resep font dan registrasi resource
+├── Extensions                extension tipe standar, misalnya CGFloat+Artwork
 ├── Foundations               sizing, warna dan akses asset
 ├── Components/<NamaKomponen>   komponen berdasarkan peran
 ├── Models / Support          data presentasi dan utilitas UI
@@ -48,7 +49,7 @@ nama seperti `LegacyButton` hanya jika ada bentrok nama dengan penggantinya.
 Folder tidak membuat namespace Swift secara otomatis.
 
 `Legacy/Compatibility` bukan tempat menyalin token generated, file font, atau
-implementasi `sizeInArtwork` kedua. Isinya hanya pemetaan yang masih dibutuhkan
+implementasi `scaledToArtwork` kedua. Isinya hanya pemetaan yang masih dibutuhkan
 oleh pemakai lama. Jangan menambahkan folder kosong atau komponen produksi
 fiktif di pilot untuk membuat struktur terlihat lengkap.
 
@@ -69,7 +70,7 @@ Salin tabel ini untuk setiap kelompok yang akan dipindahkan:
 | --- | --- | --- | --- | --- | --- |
 | Nama token spacing | Screen/komponen | Nilai dasar atau sudah scaled? | Token Figma yang sama | Alias nama lama | Ukuran tidak berubah dua kali |
 | Font/body style | Screen/komponen | PostScript, weight, size, leading | Resep typography | Mapping role lama | Font dan Dynamic Type benar |
-| `sizeInArtwork` | Extension/paket | Referensi, rumus, rounding | Satu extension DesignKit | Hapus deklarasi duplikat bersama update pemakai | Build dan lebar 320/375/414 |
+| `scaledToArtwork` | Extension/paket | Referensi, rumus, rounding | Satu extension DesignKit | Hapus deklarasi duplikat bersama update pemakai | Build dan lebar 320/375/414 |
 | Komponen + ViewModel | Screen | State tampilan atau alur async? | Legacy atau pengganti | Initializer/callback lama | Screen existing tetap bekerja |
 | Asset warna/gambar | Resource bundle | Nama, mode render, variasi | Satu bundle/pemilik | Akses lewat adapter jika perlu | Resource berhasil dimuat |
 
@@ -144,27 +145,56 @@ resep jika ingin resolusi otomatis dari nilai dasar.
 
 ### 1D. Sizing
 
-Satu implementasi `CGFloat.sizeInArtwork` dipakai komponen baru dan Legacy.
-Hapus deklarasi duplikat saat dependency diperbarui, bukan menyalin extension
-yang sama ke tiap package.
+API baru `CGFloat.scaledToArtwork` ada di
+`Sources/DesignKit/Extensions/CGFloat+Artwork.swift`, sehingga tidak bentrok
+dengan `sizeInArtwork` pada host existing. DesignKit tidak mendeklarasikan alias
+dengan nama lama. Komponen baru, TanyaAI dan PreviewBook memakai nama baru.
+Jika host masih mempertahankan nama lama selama migrasi, implementasinya cukup
+meneruskan ke `scaledToArtwork` setelah mengimpor DesignKit. Jangan menyalin
+rumus sizing ke tiap package.
 
 Kebijakan yang ada di DesignKit saat ini:
 
 ```text
 Referensi artwork: 375 × 812
-Scale: min(lebar UIScreen.main / 375, 1.25)
-Ukuran: round(nilai dasar Figma × scale)
+currentRatio: 375 / lebar UIScreen.main
+Ukuran: round(nilai dasar Figma / currentRatio)
 ```
 
-Referensi di-hardcode di metrics di luar generated. Tidak ada artwork environment
-object, root modifier, atau observer tambahan. Tinggi 812 adalah metadata
+Referensi `width`/`height` ada di `DesignKitMetrics.Artwork`, di luar generated.
+`currentRatio` adalah computed `static var`, bukan snapshot `static let`, dan
+skala tidak dibatasi. `ArtworkMetrics` tetap menjadi snapshot murni untuk
+resolusi font, pengujian geometri dan invalidasi tinggi baris; aritmetikanya sama
+dengan extension. Tidak ada artwork environment object, root modifier, atau
+observer tambahan. Tinggi 812 adalah metadata
 referensi; tinggi layar tidak memberi faktor scale kedua. Kebijakan berbasis
 layar ini juga berlaku pada sheet/split view, sehingga perlu ditinjau sebelum
 adopsi untuk layout yang lebarnya berbeda dari layar utama.
 
+Untuk mulai menulis input dari nol, gunakan urutan struktur berikut. Referensi
+`Tokens/Generated` existing tetap menjadi sumber nilai dasar.
+
+```text
+Sources/DesignKit/
+├── Extensions/CGFloat+Artwork.swift
+├── Tokens/
+│   ├── Generated/
+│   ├── DesignKitMetrics.swift
+│   └── DesignKitMetrics+Layout.swift
+├── Foundations/Layout/ArtworkMetrics.swift
+└── Components/
+    ├── GrowingTextInput/GrowingTextInput.swift
+    └── MessageComposer/MessageComposer.swift
+```
+
+Tree ini menunjukkan sizing dan komponen input. Memakai `MessageComposer`
+existing juga membutuhkan fondasi theme, typography dan localization yang
+diuraikan pada bagian sebelumnya. Untuk implementasi bertahap dari nol, input
+font/warna/copy dapat disuplai caller sebelum fondasi tersebut diadopsi.
+
 | Nilai | Cara pakai |
 | --- | --- |
-| Padding, gap, radius, visual icon, shadow radius/offset | Nilai dasar `.sizeInArtwork` |
+| Padding, gap, radius, visual icon, shadow radius/offset | Nilai dasar `.scaledToArtwork` |
 | Nilai baru yang belum ada di token | Metrics berdasarkan peran, di luar generated |
 | Area sentuh | `.tapTargetInArtwork`, minimum 44 point |
 | Stroke positif | `.strokeInArtwork`, minimum satu physical pixel |
@@ -228,8 +258,8 @@ struct ComposerPilotScreen: View {
                     if onSend(draft) { draft = "" }
                 }
             )
-            .padding(.horizontal, FigmaSize.spacing16.sizeInArtwork)
-            .padding(.vertical, FigmaSize.spacing8.sizeInArtwork)
+            .padding(.horizontal, FigmaSize.spacing16.scaledToArtwork)
+            .padding(.vertical, FigmaSize.spacing8.scaledToArtwork)
         }
         .theme(selectedTheme)
     }

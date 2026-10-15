@@ -62,7 +62,7 @@ terdaftar dari resource package.
 
 Padding/spacing menggunakan `FigmaSize` langsung. Nilai yang belum tersedia
 menggunakan `DesignKitMetrics.Size`, `Radius`, `Table`, `Shadow`, dan sebagainya.
-`.sizeInArtwork` untuk artwork, `.tapTargetInArtwork` untuk touch area ≥44,
+`.scaledToArtwork` untuk artwork, `.tapTargetInArtwork` untuk touch area ≥44,
 `.strokeInArtwork` untuk batas pixel. Opacity adalah nilai tanpa satuan.
 Komponen mengatur padding dalam; screen mengatur margin luar.
 

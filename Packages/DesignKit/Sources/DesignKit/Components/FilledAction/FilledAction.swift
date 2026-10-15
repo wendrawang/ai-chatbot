@@ -23,11 +23,11 @@ public struct FilledAction<Icon: View>: View {
 
     public var body: some View {
         Button(action: onTap) {
-            HStack(spacing: FigmaSize.spacing8.sizeInArtwork) {
+            HStack(spacing: FigmaSize.spacing8.scaledToArtwork) {
                 icon
                     .frame(
-                        width: DesignKitMetrics.Size.icon.sizeInArtwork,
-                        height: DesignKitMetrics.Size.icon.sizeInArtwork
+                        width: DesignKitMetrics.Size.icon.scaledToArtwork,
+                        height: DesignKitMetrics.Size.icon.scaledToArtwork
                     )
                     .accessibilityHidden(true)
                 Text(title)
@@ -35,10 +35,10 @@ public struct FilledAction<Icon: View>: View {
                     .fixedSize(horizontal: false, vertical: true)
             }
             .foregroundColor(Color(theme.colors.userBubbleText))
-            .padding(.horizontal, FigmaSize.spacing16.sizeInArtwork)
-            .padding(.vertical, FigmaSize.spacing8.sizeInArtwork)
+            .padding(.horizontal, FigmaSize.spacing16.scaledToArtwork)
+            .padding(.vertical, FigmaSize.spacing8.scaledToArtwork)
             .frame(minHeight: DesignKitMetrics.Size.minimumTapTarget.tapTargetInArtwork)
-            .background(RoundedRectangle(cornerRadius: DesignKitMetrics.Radius.action.sizeInArtwork).fill(background))
+            .background(RoundedRectangle(cornerRadius: DesignKitMetrics.Radius.action.scaledToArtwork).fill(background))
             .contentShape(Rectangle())
         }
         .buttonStyle(.plain)
