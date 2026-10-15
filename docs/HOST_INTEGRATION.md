@@ -1,8 +1,9 @@
 # Membuka Tanya AI dari host app
 
-API tahap minimal adalah `ChatScreen(isEnabled:onSend:)`. Modifier `.tanyaAIHost`
-dari flow sebelumnya tidak ada di branch `startingpoint`; untuk tahap ini host
-langsung menampilkan screen dan menyediakan callback kirim.
+Integrasi tetap mengikuti pola sebelumnya: pasang `.tanyaAIHost(host)` pada root
+host yang sudah terlihat, lalu panggil `host.present()` dari tombol, coordinator,
+atau entry point existing. Feature tampil fullscreen dengan animasi dari samping;
+navigation stack host tetap dimiliki host.
 
 ## Package dan font
 
@@ -19,78 +20,94 @@ try FontFace.registerFonts()
 ```
 
 Panggil dari konteks bootstrap yang menangani `throws` atau `do/catch` milik host.
-Jangan menggunakan `try?` yang menyembunyikan kegagalan registrasi. Contoh lengkap
-`do/catch` ada pada [StartingPointApp.swift](../TanyaAISandboxApp/StartingPointApp.swift).
+Contoh lengkap ada pada [StartingPointApp.swift](../TanyaAISandboxApp/StartingPointApp.swift).
 Font dibaca dari `Bundle.module` DesignKit; host tidak perlu menyalin file font
 atau menambahkan font package ke `UIAppFonts`.
 
-## Menggunakan NavigationView existing
-
-Letakkan `NavigationLink` di dalam `NavigationView` yang sudah dimiliki host.
-Contoh berikut menerima label lokal dan handler dari host:
+## Root SwiftUI dengan NavigationView existing
 
 ```swift
 import SwiftUI
 import TanyaAI
 
 @MainActor
-struct ChatEntryView: View {
-    let title: String
-    let onSend: (String) -> Bool
+struct HostRootView: View {
+    @StateObject private var tanyaAI = TanyaAIHost { _ in true }
+    let openTitle: String
 
     var body: some View {
-        NavigationLink {
-            ChatScreen(onSend: onSend)
-                .navigationTitle(title)
-                .navigationBarTitleDisplayMode(.inline)
-        } label: {
-            Text(title)
+        NavigationView {
+            Button(action: tanyaAI.present) {
+                Text(openTitle)
+            }
         }
+        .navigationViewStyle(.stack)
+        .tanyaAIHost(tanyaAI)
     }
 }
 ```
 
-`ChatEntryView(title:onSend:)` dipasang di screen/menu existing. `title` disuplai
-dari localization host, misalnya label menu Tanya AI. Tidak perlu membuat
-`NavigationView` kedua di dalam destination. Header/back button mengikuti
-navigation host; custom header Figma menjadi tahap implementasi berikutnya.
+`openTitle` berasal dari localization host. Di aplikasi Anda, pertahankan isi
+`NavigationView` existing, pasang modifier sekali pada root tersebut, dan panggil
+`present()` dari action existing. Tidak perlu memasang NavigationLink, binding
+sheet, atau destination ke stack host.
 
-Untuk pemeriksaan tampilan saja, handler `{ _ in true }` menerima draft dan
-mengosongkan input. Handler `{ _ in false }` mempertahankan draft. Belum ada
-pengiriman backend, bubble atau pembuatan session pada starter ini.
+`@StateObject` menjaga instance host tetap sama saat SwiftUI merender ulang.
+Jika AppState/session owner sudah memiliki `TanyaAIHost`, gunakan instance itu;
+jangan membuat instance baru di `body`. Modifier juga menerima `TanyaAIHost?`
+untuk host yang baru tersedia setelah login. Mengganti nil/host tidak mengganti
+identity konten utama.
 
-## Host yang mengatur presentasi sendiri
+Sandbox mendemonstrasikan pola yang sama pada
+[SandboxHostView.swift](../TanyaAISandboxApp/SandboxHostView.swift). Jalankan
+`Scripts/run_sandbox.sh --language id` lalu tekan “Buka Tanya AI”. Tombol kembali
+milik feature menutup presentasinya sendiri.
 
-Jika router host sudah melakukan push/present, destination-nya cukup:
+## Callback kirim dan penutupan
+
+`TanyaAIHost(isEnabled:onSend:)` menerima closure `(String) -> Bool` pada main
+actor. Contoh `{ _ in true }` hanya menerima draft dan membersihkan input untuk
+mencoba UI. `false` mempertahankan draft. Ganti closure dengan handler host saat
+migrasi pengiriman dimulai; host boleh menerima draft ke antrean untuk proses
+async. Nilai true bukan konfirmasi request network berhasil.
+
+Host dapat menutup feature dan melanjutkan routing setelah animasinya selesai:
 
 ```swift
-ChatScreen(onSend: onSend)
+tanyaAI.dismiss {
+    // Lanjutkan routing host dari sini setelah feature tertutup.
+}
 ```
 
-`onSend` adalah closure `(String) -> Bool` dari host, dipanggil pada main actor.
-`true` berarti host menerima submission lokal untuk diproses, bukan konfirmasi
-bahwa request network berhasil. Untuk proses async, host dapat memasukkan draft
-ke antrean miliknya dan segera mengembalikan status penerimaan. `isEnabled`
-dapat disuplai host ketika perlu mematikan tombol kirim.
+Permintaan present berulang saat feature sudah terbuka/ditutup diabaikan. Present
+sebelum root terpasang, saat root tidak terlihat, atau ketika host mempunyai
+modal lain juga diabaikan; panggil dari entry point saat root sudah terlihat.
+Menutup lalu membuka kembali membuat draft lokal baru. Starter belum mempunyai
+session/backend atau penyimpanan history; constructor SDK lama belum diperlukan.
 
 ## Bahasa dan appearance
 
-Secara default screen mengikuti locale environment host. Jika aplikasi mempunyai
-pengaturan bahasa sendiri, teruskan locale tersebut pada destination:
+Locale dibaca oleh anchor dari environment root dan diteruskan saat membuka
+feature. Jika host memiliki pengaturan bahasa sendiri, pasang pada root yang
+membawa anchor:
 
 ```swift
-ChatScreen(onSend: onSend)
-    .environment(\.locale, selectedLocale)
+NavigationView {
+    // Konten host existing.
+}
+.tanyaAIHost(tanyaAI)
+.environment(\.locale, selectedLocale)
 ```
 
-`selectedLocale` bertipe `Locale` dari pengaturan host. Copy package tersedia
-untuk `en`, `id`, dan `zh-Hans`. Daftarkan bahasa yang didukung host di konfigurasi
-localization target. Jika host belum mendeklarasikan semua bahasa package,
+`selectedLocale` bertipe `Locale` dari pengaturan host. Copy tersedia untuk `en`,
+`id`, dan `zh-Hans`, termasuk label kembali. Perubahan locale berlaku saat
+presentasi berikutnya. Daftarkan bahasa host pada konfigurasi localization target.
+Jika host belum mendeklarasikan semua bahasa package,
 `CFBundleAllowMixedLocalizations = YES` memungkinkan resource dependency ikut
 dipilih ([dokumentasi Apple](https://developer.apple.com/documentation/bundleresources/information-property-list/cfbundleallowmixedlocalizations)).
 Contoh konfigurasi ada pada [Info.plist](../TanyaAISandboxApp/Info.plist).
 
-Palette starter mengikuti light Figma. Jika host mempunyai mode gelap, samakan
-appearance route ini dengan `.preferredColorScheme(.light)` seperti sandbox.
-Composer memakai safe area/keyboard native: jangan menambahkan
-`.ignoresSafeArea(.keyboard)` pada route ini.
+Feature starter memakai light palette Figma dan menghormati safe area keyboard.
+Header native sederhana menyediakan judul/kembali untuk tahap ini; detail header
+Figma dan welcome mengikuti tahap migrasi UI berikutnya. Motion tetap memakai
+animasi fullscreen lama, menghormati Reduce Motion dan arah layout.

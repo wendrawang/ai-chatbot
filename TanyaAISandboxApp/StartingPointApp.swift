@@ -22,7 +22,7 @@ struct StartingPointApp: App {
 
     var body: some Scene {
         WindowGroup {
-            ChatScreen { _ in !options.isRejectingSend }
+            SandboxHostView(options: options)
                 .environment(\.locale, options.locale ?? .current)
                 .preferredColorScheme(.light)
         }

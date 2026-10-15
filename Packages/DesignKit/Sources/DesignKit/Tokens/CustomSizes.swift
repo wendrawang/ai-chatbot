@@ -38,4 +38,9 @@ public enum CustomSizes {
     public enum Layout {
         public static let measurementTolerance: CGFloat = 0.5
     }
+
+    public enum Motion {
+        public static let navigationParallax: CGFloat = 0.3
+        public static let navigationDuration: TimeInterval = 0.35
+    }
 }

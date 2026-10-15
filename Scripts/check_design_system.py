@@ -17,7 +17,7 @@ errors = []
 METADATA = {
     'Typography/FontFace.swift', 'Extensions/Color+Hex.swift',
     'Foundations/Assets/SystemSymbol.swift', 'Foundations/Accessibility/ComponentID.swift',
-    'Chat/ChatCopy.swift', 'TanyaAISandboxApp/SandboxOptions.swift'
+    'Chat/ChatCopy.swift', 'TanyaAISandboxApp/SandboxOptions.swift', 'TanyaAISandboxApp/SandboxCopy.swift'
 }
 paths = list((ROOT / 'Packages').glob('*/Sources/**/*.swift'))
 paths += list((ROOT / 'TanyaAISandboxApp').glob('*.swift'))

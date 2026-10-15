@@ -91,9 +91,28 @@ final class StartingPointUITests: XCTestCase {
         capture("starter-accessibility-zh-Hans")
     }
 
+    func testHostCanCloseAndReopenWithoutNavigationLink() {
+        launch(locale: "en")
+        let input = application.textViews["composer.input"]
+        XCTAssertTrue(input.waitForExistence(timeout: 10))
+        input.tap()
+        input.typeText("Unsaved draft")
+        application.buttons["Back"].tap()
+        let open = application.buttons["sandbox.open"]
+        XCTAssertTrue(open.waitForExistence(timeout: 10))
+        XCTAssertTrue(open.isHittable)
+        open.tap()
+        XCTAssertTrue(input.waitForExistence(timeout: 10))
+        XCTAssertEqual(input.value as? String, "")
+        XCTAssertFalse(application.buttons["composer.send"].isEnabled)
+    }
+
     private func launch(locale: String, extra: [String] = []) {
         application.launchArguments = ["--language", locale] + extra
         application.launch()
+        let open = application.buttons["sandbox.open"]
+        XCTAssertTrue(open.waitForExistence(timeout: 10))
+        open.tap()
     }
 
     private func capture(_ name: String) {

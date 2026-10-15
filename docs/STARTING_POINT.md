@@ -29,6 +29,7 @@ Packages/
 └── TanyaAI/
     └── Sources/TanyaAI/
         ├── Chat/ChatScreen.swift + ChatCopy.swift
+        ├── Host/                        # tanyaAIHost + fullscreen presentation
         └── Resources/en.lproj + id.lproj + zh-Hans.lproj/
 ```
 
@@ -49,19 +50,23 @@ Packages/
    Parent hanya memberi Binding, label, palette/font pilihan dan callback kirim.
 6. Buat screen: draft `@State`, area kosong, composer di bawah, margin luar.
    Baca locale host, resolve resource label dan kirimkan ke komponen.
+7. Pasang bridge `.tanyaAIHost(host)` pada root existing. Satu `TanyaAIHost`
+   dimiliki host/AppState atau `@StateObject`; panggil `host.present()` untuk
+   menampilkan feature fullscreen dengan animasi samping. Button kembali milik
+   feature melakukan dismiss; navigation stack host tetap terpisah.
 
 Screen menggunakan `ChatScreen(onSend:)`. Callback mendapat draft dan mengembalikan
 Bool: true membersihkan draft, false mempertahankan teks/seleksi. Draft whitespace
 menonaktifkan action. Callback belum mengimplikasikan pesan terkirim ke backend.
 
-Untuk membuka screen dari `NavigationView` host existing, lihat
+Untuk membuka feature di atas `NavigationView` host existing, lihat
 [contoh integrasi host](HOST_INTEGRATION.md), termasuk bootstrap font dan bahasa.
 
 ## Menjalankan dan bahasa
 
 `Scripts/run_sandbox.sh --language id`, `en`, atau `zh-Hans`. Tanpa override,
 locale mengikuti app. Host bisa menerapkan `.environment(\.locale, Locale(...))`;
-label di-resolve ulang ketika locale berubah. `Bundle.module` milik TanyaAI
+locale diteruskan dari root ber-modifier saat presentasi. `Bundle.module` milik TanyaAI
 menyimpan copy, DesignKit tidak menyimpan copy fitur.
 
 UI starter mengikuti light palette Figma; penggunaan theme/adaptive appearance

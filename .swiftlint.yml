@@ -2,6 +2,7 @@
 # linted the day it appears.
 included:
   - TanyaAISandboxApp
+  - TanyaAISandboxTests
   - TanyaAISandboxUITests
   - Packages
   - Scripts

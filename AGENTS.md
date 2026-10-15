@@ -2,7 +2,8 @@
 
 Scope branch ini adalah migrasi bertahap: fondasi DesignKit, font package, dan
 screen kosong dengan composer. iOS 15. Gunakan SwiftUI; UIKit hanya untuk editor
-multiline terukur. Flow chat lengkap tetap tersedia pada history/main.
+multiline terukur dan bridge presentasi terisolasi. Flow chat lengkap tetap
+tersedia pada history/main.
 
 ## Header file
 
@@ -62,6 +63,10 @@ multiline terukur. Flow chat lengkap tetap tersedia pada history/main.
   24, tap minimal 44. Kata panjang dan keyboard tidak menggeser action keluar.
 - `ChatScreen(onSend:)` mengosongkan draft hanya jika callback host mengembalikan
   true. Starter tidak mengirim network, tidak menyimpan atau log isi pesan.
+- Integrasi host tetap `.tanyaAIHost(host)` + `host.present()`/`dismiss()`.
+  Presentasi fullscreen dengan animasi samping, terpisah dari navigation stack
+  host. Jangan menggantinya dengan NavigationLink atau push pada stack host.
+  Host dimiliki AppState/session owner atau `@StateObject`, tidak dibuat di body.
 - UI owners `@MainActor`; putus delegate pada dismantle dan hindari retain cycle.
 - Private view sections berupa noun: `field`, `surface`, `actionButton`.
   Urutan environment, binding/state, input, init, body, sections, helper.

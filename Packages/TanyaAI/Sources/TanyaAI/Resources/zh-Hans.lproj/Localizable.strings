@@ -7,3 +7,5 @@
 
 "chat.placeholder" = "咨询财务及 OCBC 服务…";
 "chat.send" = "发送消息";
+"chat.title" = "Tanya AI";
+"chat.back" = "返回";
