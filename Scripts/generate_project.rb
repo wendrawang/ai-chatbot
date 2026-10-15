@@ -1,4 +1,10 @@
 #!/usr/bin/env ruby
+#
+#  generate_project.rb
+#  ai-chatbot
+#
+#  Created by Wendra on 15/10/26.
+#
 
 require 'fileutils'
 require 'xcodeproj'

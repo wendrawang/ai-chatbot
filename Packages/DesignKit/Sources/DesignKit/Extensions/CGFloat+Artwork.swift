@@ -1,3 +1,10 @@
+//
+//  CGFloat+Artwork.swift
+//  DesignKit
+//
+//  Created by Wendra on 15/10/26.
+//
+
 import UIKit
 
 public extension CGFloat {

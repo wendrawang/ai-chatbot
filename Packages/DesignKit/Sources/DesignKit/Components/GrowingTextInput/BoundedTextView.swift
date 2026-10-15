@@ -1,3 +1,10 @@
+//
+//  BoundedTextView.swift
+//  DesignKit
+//
+//  Created by Wendra on 15/10/26.
+//
+
 import UIKit
 
 /// A one-to-four-line editor; additional content scrolls inside the field.

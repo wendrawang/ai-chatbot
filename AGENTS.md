@@ -4,6 +4,18 @@ Scope branch ini adalah migrasi bertahap: fondasi DesignKit, font package, dan
 screen kosong dengan composer. iOS 15. Gunakan SwiftUI; UIKit hanya untuk editor
 multiline terukur. Flow chat lengkap tetap tersedia pada history/main.
 
+## Header file
+
+- Semua file kode yang dikelola repo (Swift, script, dan `.strings`) memiliki
+  header nama file, module/package, dan `Created by Wendra on dd/MM/yy.`.
+  File baru memakai tanggal pembuatan; jangan mengganti tanggal saat mengedit.
+- `// swift-tools-version` dan shebang tetap pada baris pertama, sebelum header.
+- Token generated juga memiliki header tersebut; perubahan ini hanya menambahkan
+  header, tanpa mengubah token atau menghapus catatan asal/provenance. Saat export
+  berikutnya, template engine perlu mengeluarkan header yang sama.
+- Jangan menambahkan kredit pribadi ke lisensi/font pihak ketiga, binary,
+  screenshot, atau file project yang dihasilkan Xcode/project generator.
+
 ## Token dan nilai
 
 - `Tokens/Generated` milik export engine. Jangan edit manual atau menduplikasi

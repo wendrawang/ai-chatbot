@@ -1,3 +1,10 @@
+//
+//  StartingPointUITests.swift
+//  TanyaAISandboxUITests
+//
+//  Created by Wendra on 15/10/26.
+//
+
 import XCTest
 
 final class StartingPointUITests: XCTestCase {

@@ -1,3 +1,10 @@
+//
+//  MessageComposer.swift
+//  DesignKit
+//
+//  Created by Wendra on 15/10/26.
+//
+
 import SwiftUI
 
 /// Inner spacing and appearance belong here; the screen owns outer margins.

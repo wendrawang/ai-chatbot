@@ -1,3 +1,10 @@
+//
+//  Color+Hex.swift
+//  DesignKit
+//
+//  Created by Wendra on 15/10/26.
+//
+
 import SwiftUI
 
 public extension Color {

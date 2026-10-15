@@ -54,6 +54,9 @@ Screen menggunakan `ChatScreen(onSend:)`. Callback mendapat draft dan mengembali
 Bool: true membersihkan draft, false mempertahankan teks/seleksi. Draft whitespace
 menonaktifkan action. Callback belum mengimplikasikan pesan terkirim ke backend.
 
+Untuk membuka screen dari `NavigationView` host existing, lihat
+[contoh integrasi host](HOST_INTEGRATION.md), termasuk bootstrap font dan bahasa.
+
 ## Menjalankan dan bahasa
 
 `Scripts/run_sandbox.sh --language id`, `en`, atau `zh-Hans`. Tanpa override,

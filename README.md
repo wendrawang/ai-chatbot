@@ -15,6 +15,7 @@ belum ada network atau bubble pesan. `--reject-send` mendemonstrasikan draft yan
 harus dipertahankan saat host menolak submission.
 
 - [Urutan belajar dan tree](docs/STARTING_POINT.md)
+- [Membuka screen dari host app](docs/HOST_INTEGRATION.md)
 - [Aturan implementasi](AGENTS.md)
 - [Hasil validasi](docs/VALIDATION.md)
 

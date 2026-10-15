@@ -1,2 +1,9 @@
+//
+//  Localizable.strings
+//  TanyaAI
+//
+//  Created by Wendra on 15/10/26.
+//
+
 "chat.placeholder" = "Tanya seputar keuangan & layanan OCBC...";
 "chat.send" = "Kirim pesan";

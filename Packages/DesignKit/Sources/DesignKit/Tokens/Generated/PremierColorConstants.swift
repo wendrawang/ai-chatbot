@@ -1,3 +1,10 @@
+//
+//  PremierColorConstants.swift
+//  DesignKit
+//
+//  Created by Wendra on 15/10/26.
+//
+
 // DUMMY palette for development; not an engine export or approved brand palette.
 // Replace this entire file with the corresponding engine output.
 import SwiftUI

@@ -1,3 +1,10 @@
+//
+//  SandboxOptions.swift
+//  TanyaAISandboxApp
+//
+//  Created by Wendra on 15/10/26.
+//
+
 import Foundation
 
 /// Developer-only launch metadata. The host callback accepts drafts without contacting a backend.
