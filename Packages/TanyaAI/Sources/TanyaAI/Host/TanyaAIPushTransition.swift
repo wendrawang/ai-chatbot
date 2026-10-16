@@ -36,6 +36,7 @@ final class TanyaAIPushTransition: NSObject, UIViewControllerTransitioningDelega
 /// trailing edge while the page behind it drifts a shorter distance the other
 /// way, which is what gives a push its depth.
 final class TanyaAIPushAnimator: NSObject, UIViewControllerAnimatedTransitioning {
+    private static let forwardDirection: CGFloat = 1
     /// How far the outgoing page travels, as a fraction of the incoming one.
     /// `UINavigationController` uses roughly a third.
     private static let parallax: CGFloat = CustomSizes.Motion.navigationParallax
@@ -69,7 +70,7 @@ final class TanyaAIPushAnimator: NSObject, UIViewControllerAnimatedTransitioning
         let direction: CGFloat =
             container
                 .effectiveUserInterfaceLayoutDirection == .rightToLeft
-            ? -InitialValues.unitCGFloat : InitialValues.unitCGFloat
+            ? -Self.forwardDirection : Self.forwardDirection
 
         if isPresenting {
             present(

@@ -15,15 +15,15 @@ struct HeaderDemoContent: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: FigmaSize.spacingLarge.scaledToArtwork) {
-            Text(SandboxCopy.demoTitle.text(locale: locale))
+            Text(String(resource: R.string.localizable.sandboxDemoTitle, locale: locale))
                 .font(
                     Font(FontFace.firaSansSemiBold.font(size: FigmaSize.typographySizeDisplayNormal16.scaledToArtwork))
                 )
                 .accessibilityIdentifier(SandboxOptions.demoStartIdentifier)
             ForEach(InitialValues.zeroInteger..<SandboxOptions.demoParagraphCount, id: \.self) { _ in
-                Text(SandboxCopy.demoBody.text(locale: locale))
+                Text(String(resource: R.string.localizable.sandboxDemoBody, locale: locale))
             }
-            Text(SandboxCopy.demoEnd.text(locale: locale))
+            Text(String(resource: R.string.localizable.sandboxDemoEnd, locale: locale))
                 .accessibilityIdentifier(SandboxOptions.demoEndIdentifier)
         }
         .font(Font(FontFace.openSansRegular.font(size: FigmaSize.typographySizeDisplaySmall14.scaledToArtwork)))

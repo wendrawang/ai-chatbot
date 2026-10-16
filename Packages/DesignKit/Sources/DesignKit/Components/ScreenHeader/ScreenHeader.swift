@@ -60,7 +60,7 @@ public struct ScreenHeader<Trailing: View>: View {
 
     private var backButton: some View {
         Button(action: onBack) {
-            SystemSymbol.back.image.resizable().scaledToFit()
+            Image(R.image.backArrow).resizable().scaledToFit()
                 .frame(
                     width: FigmaSize.weightIconSmall.scaledToArtwork,
                     height: FigmaSize.weightIconSmall.scaledToArtwork

@@ -1,4 +1,40 @@
-# Validasi starter — 16 Oktober 2026
+# Validasi starter
+
+## Perubahan R.swift — 17 Oktober 2026
+
+| Pemeriksaan perubahan terbaru | Hasil |
+| --- | --- |
+| SwiftLint, formatter, batas file/method, token/copy guard | Lulus, tanpa pelanggaran |
+| Manifest DesignKit/TanyaAI dan referensi plugin/runtime pada project | Lulus |
+| Generator R.swift untuk package dan sandbox project | Lulus |
+| Kompilasi modul DesignKit/TanyaAI terhadap SDK iOS Simulator, minimum iOS 15 | Lulus melalui swiftc |
+| Pemeriksaan tipe test kedua package dan sandbox dengan accessor generated | Lulus |
+| Resource localization fitur dan sandbox | 20 assertion lulus pada macOS |
+| Kompilasi tiga PDF imageset menjadi Assets.car | Lulus melalui actool |
+| Full xcodebuild dan pengujian runtime simulator | Belum berhasil dijalankan pada lingkungan saat ini |
+| Diff token generated dan tujuh font | Tidak berubah |
+
+Pemeriksaan localization menjalankan source `String+Resource.swift` dan accessor
+R.swift asli terhadap bundle berisi ketiga `.lproj`. Mencakup English, Indonesia,
+`zh-Hans`, pemilihan Chinese untuk `zh_CN`, dan fallback English untuk `fr_FR`.
+
+Pemeriksaan swiftc memakai source produksi dan generated resource asli. Karena
+dijalankan di luar SwiftPM, accessor `Bundle.module` sementara menunjuk `Bundle.main`
+untuk pemeriksaan kompilasi saja. Ini tidak memverifikasi packaging bundle atau
+eksekusi plugin dari build Xcode secara penuh. Tes `AssetTests` ditambahkan untuk
+memeriksa pemuatan gambar dari bundle package saat suite iOS berikutnya dijalankan.
+
+Lingkungan membatasi cache/proses sandbox milik Xcode dan koneksi CoreSimulator.
+Kompilasi resource dan assertion macOS di atas berhasil, tetapi tidak menggantikan
+suite UI/lifecycle. Jalankan `Scripts/verify.sh` pada Mac dengan simulator aktif
+sebelum merge. Screenshot dan 35 tes pada bagian berikut adalah **baseline
+16 Oktober**, bukan hasil pengujian ulang perubahan R.swift.
+
+Ikon send/back/more kini berupa PDF vector dummy dalam xcassets, diakses lewat
+R.swift. TODO penggantian export Figma ada pada README asset. Layout/padding,
+ukuran font tetap 14, dan batas empat baris tidak diubah.
+
+## Baseline — 16 Oktober 2026
 
 `Scripts/verify.sh` lulus pada simulator iPhone SE 375×667, iOS 26.5.
 Tiga tes UI header juga lulus saat dijalankan terpisah pada iPhone 17 Pro,

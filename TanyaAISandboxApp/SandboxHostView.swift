@@ -5,6 +5,7 @@
 //  Created by Wendra on 15/10/26.
 //
 
+import DesignKit
 import SwiftUI
 import TanyaAI
 
@@ -24,7 +25,7 @@ struct SandboxHostView: View {
     var body: some View {
         NavigationView {
             Button(action: open) {
-                Text(SandboxCopy.open.text(locale: locale))
+                Text(String(resource: R.string.localizable.sandboxOpen, locale: locale))
             }
             .accessibilityIdentifier(SandboxOptions.openIdentifier)
         }

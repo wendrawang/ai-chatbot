@@ -23,7 +23,7 @@ public struct MessageComposer: View {
 
     public init(
         text: Binding<String>, placeholder: String, sendLabel: String,
-        isEnabled: Bool = InitialValues.isEnabled, fontFace: FontFace = .openSansRegular,
+        isEnabled: Bool = true, fontFace: FontFace = .openSansRegular,
         colors: any FigmaColorProtocol = DefaultColorConstants(), onSend: @escaping () -> Void
     ) {
         self._text = text
@@ -73,7 +73,7 @@ public struct MessageComposer: View {
 
     private var actionButton: some View {
         Button(action: onSend) {
-            SystemSymbol.send.image.resizable().scaledToFit()
+            Image(R.image.sendArrow).resizable().scaledToFit()
                 .padding(CustomSizes.ActionButton.iconInset.scaledToArtwork)
                 .foregroundColor(colors.colorsIconLight)
                 .frame(

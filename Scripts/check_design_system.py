@@ -13,11 +13,12 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
 errors = []
-# These files own technical metadata or a format algorithm, not user-facing copy.
+# These files own technical metadata or format/transform arithmetic, not user-facing copy.
 METADATA = {
     'Typography/FontFace.swift', 'Extensions/Color+Hex.swift',
     'Foundations/Assets/SystemSymbol.swift', 'Foundations/Accessibility/ComponentID.swift',
-    'Chat/ChatCopy.swift', 'TanyaAISandboxApp/SandboxOptions.swift', 'TanyaAISandboxApp/SandboxCopy.swift'
+    'Host/TanyaAIPushTransition.swift', 'Chat/ChatCopy.swift', 'Chat/ChatElementID.swift',
+    'TanyaAISandboxApp/SandboxOptions.swift', 'TanyaAISandboxApp/SandboxCopy.swift'
 }
 paths = list((ROOT / 'Packages').glob('*/Sources/**/*.swift'))
 paths += list((ROOT / 'TanyaAISandboxApp').glob('*.swift'))
@@ -43,6 +44,13 @@ for path in sorted(paths):
         report('Use FigmaSize, CustomSizes or InitialValues instead of numeric literals.')
     if re.search(r'\.(?:foregroundColor|background|fill|strokeBorder)\(\s*\.(?:red|white|black|gray|blue)', text):
         report('Use generated colors or CustomColors.')
+
+initial_values = ROOT / 'Packages/DesignKit/Sources/DesignKit/Tokens/InitialValues.swift'
+if re.search(r'\b(?:true|false)\b|:\s*Bool\b', initial_values.read_text()):
+    errors.append('InitialValues must not contain Boolean aliases; use true/false at the call site.')
+if re.search(r'@(?:Observable|Model|Namespace|ScaledMetric)\b|#(?:externalMacro|Observable|Model)\b',
+             '\n'.join(path.read_text() for path in paths)):
+    errors.append('Starter uses basic SwiftUI wrappers only; no macros, Namespace or ScaledMetric.')
 
 resources = ROOT / 'Packages/TanyaAI/Sources/TanyaAI/Resources'
 tables = {}

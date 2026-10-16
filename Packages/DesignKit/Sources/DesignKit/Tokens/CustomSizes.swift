@@ -57,6 +57,7 @@ public enum CustomSizes {
 
     public enum Layout {
         public static let measurementTolerance: CGFloat = 0.5
+        public static let minimumStrokePixels: CGFloat = 1
     }
 
     public enum Motion {

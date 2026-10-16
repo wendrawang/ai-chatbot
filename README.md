@@ -24,6 +24,7 @@ saat scroll. Integrasi biasa tetap membuka area percakapan kosong.
 - [Urutan belajar dan tree](docs/STARTING_POINT.md)
 - [Tahap header dan checkpoint migrasi berikutnya](docs/SHARED_HEADER.md)
 - [Membuka screen dari host app](docs/HOST_INTEGRATION.md)
+- [Pola view dan resource R.swift](docs/VIEW_TEMPLATE.md)
 - [Aturan implementasi](AGENTS.md)
 - [Hasil validasi](docs/VALIDATION.md)
 

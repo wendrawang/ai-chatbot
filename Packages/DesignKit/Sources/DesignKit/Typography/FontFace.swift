@@ -37,7 +37,7 @@ public enum FontFace: String, CaseIterable {
 
     /// Call during bootstrap before presenting components; registration is process-scoped and idempotent.
     public static func registerFonts() throws {
-        try FontLoader.register(
+        _ = try FontLoader.register(
             fileNames: allCases.map(\.rawValue), bundle: .module, subdirectory: directoryName
         )
     }

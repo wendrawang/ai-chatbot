@@ -28,8 +28,11 @@ tersedia pada history/main.
 - `CustomSizes` hanya untuk ukuran yang belum mempunyai token dengan peran yang
   sesuai: diameter tombol, minimum tap, radius, shadow, jumlah baris, toleransi.
   Jangan membuat alias spacing generated atau memakai spacing sebagai radius.
-- `InitialValues` menyimpan nilai awal bersama, seperti string kosong dan angka
-  nol. UI/source tidak menuliskan literal angka/string default secara tersebar.
+- `InitialValues` hanya menyimpan data kosong/default bersama, seperti string
+  kosong dan angka nol. Jangan membuat alias Boolean: gunakan `true`/`false`
+  langsung. Batas baris/ukuran masuk `CustomSizes`; konstanta algoritma yang bukan
+  ukuran tetap private pada pemiliknya. UI/source tidak menuliskan literal
+  angka/string default secara tersebar.
   `.zero`, `.infinity`, enum UIKit/SwiftUI dan Boolean control flow adalah nilai
   bernama/logika, bukan token desain baru. Bit mask/radix/ASCII di parser hex
   adalah algoritma format, bukan ukuran UI. Tests boleh memiliki fixture literal.
@@ -55,8 +58,14 @@ tersedia pada history/main.
   Glyph Chinese yang tidak ada di Open Sans menggunakan fallback native iOS.
 - Copy fitur berada di resource `en`, `id`, `zh-Hans`. Screen membaca locale dari
   environment dan menyuplai label ke DesignKit. Tidak ada copy bisnis di DesignKit.
-- Technical identifiers, SF Symbols, filename, resource key dan diagnostic prefix
-  disimpan dalam catalog metadata. Artwork sementara mempunyai TODO penggantian.
+- Localization dan xcassets diakses melalui R.swift generated saat build, bukan
+  enum pemetaan key/nama asset manual. DesignKit memakai plugin public resources;
+  fitur dan sandbox memakai internal resources. Gunakan `String(resource:locale:)`
+  untuk mengikuti environment locale, dan `Image(R.image.namaAsset)` untuk gambar.
+  Jangan mengedit/commit R.generated.swift. Setelah menambah resource, build ulang;
+  Clean Build Folder jika accessor belum diperbarui oleh plugin.
+- Technical identifiers, filename/PostScript font dan diagnostic prefix tetap
+  metadata eksplisit. Artwork sementara mempunyai TODO penggantian.
 - ThemeManager/CopyCatalog belum diperlukan pada tahap ini. Warna light Figma
   digunakan langsung. Tambahkan mekanisme baru saat ada kebutuhan tahap berikutnya.
 
@@ -115,6 +124,10 @@ tersedia pada history/main.
 - UI owners `@MainActor`; putus delegate pada dismantle dan hindari retain cycle.
 - Private view sections berupa noun: `field`, `surface`, `actionButton`.
   Urutan environment, binding/state, input, init, body, sections, helper.
+- Ikuti [template view](docs/VIEW_TEMPLATE.md). Property wrapper SwiftUI standar,
+  `@ViewBuilder`, `@MainActor`, dan `@main` pada app mempunyai peran jelas.
+  Jangan menambahkan macro kustom, `@Observable`/`@Model`, wrapper baru atau
+  inheritance hanya untuk menyeragamkan layout.
 - Maksimal 250 baris/file, 50 baris fisik/method, 120 karakter/baris; Bool berawalan
   `is`, kecuali nama wajib protocol seperti `PreferenceKey.defaultValue` dengan
   pengecualian lint lokal beralasan. Jangan padatkan implementasi agar lolos batas.

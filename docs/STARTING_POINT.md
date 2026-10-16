@@ -20,10 +20,11 @@ Packages/
 │       ├── Extensions/
 │       │   ├── CGFloat+Artwork.swift
 │       │   ├── Color+Hex.swift
+│       │   ├── String+Resource.swift      # locale host + R.swift
 │       │   └── View+ScrollBoundary.swift  # observer umum untuk tahap header
 │       ├── Typography/FontFace.swift + FontLoader.swift
-│       ├── Resources/Fonts/
-│       ├── Foundations/Assets + Accessibility/
+│       ├── Resources/Fonts/ + Assets.xcassets/
+│       ├── Foundations/Accessibility/
 │       └── Components/
 │           ├── GrowingTextInput/         # bridge + BoundedTextView
 │           ├── MessageComposer/
@@ -31,7 +32,7 @@ Packages/
 │           └── ScreenContainer/          # header + scroll + footer otomatis
 └── TanyaAI/
     └── Sources/TanyaAI/
-        ├── Chat/ChatScreen.swift + ChatCopy.swift
+        ├── Chat/ChatScreen.swift + ChatElementID.swift
         ├── Host/                        # tanyaAIHost + fullscreen presentation
         └── Resources/en.lproj + id.lproj + zh-Hans.lproj/
 ```
@@ -39,8 +40,11 @@ Packages/
 ## Urutan implementasi
 
 1. Pasang package/resource dan pertahankan `Tokens/Generated` milik Anda.
+   R.swift 7.8.0 menghasilkan accessor localization/xcassets saat build; tidak
+   perlu menulis enum pemetaan. Ikuti [pola view dan resource](VIEW_TEMPLATE.md).
 2. Tulis `InitialValues`, `CustomSizes`, custom palette dan extension sizing/hex.
-   Padding mengambil `spacingSmall/Medium/Large` langsung. `Color(hex:)` menerima
+   `InitialValues` hanya data kosong/default: string kosong dan nol, tanpa alias
+   Boolean. Gunakan `true`/`false` langsung. Padding mengambil `spacingSmall/Medium/Large` langsung. `Color(hex:)` menerima
    RGB, RRGGBB atau AARRGGBB dan memakai fallback nonoptional untuk input invalid.
 3. Daftarkan font dengan `FontFace.registerFonts()` saat bootstrap. `FontFace`
    memisahkan nama file dan nama PostScript; `FontLoader` memproses Bundle.module.
@@ -72,7 +76,8 @@ Packages/
    berjarak 16 di kiri; inset vertikal field 10 ditambah padding luar 6 menjaga
    jarak teks multiline 16 di atas/bawah. Satu baris mengikuti pusat visual tombol.
 6. Buat screen: draft `@State`, area kosong, composer di bawah, margin luar.
-   Baca locale host, resolve resource label dan kirimkan ke komponen.
+   Baca locale host, resolve `R.string.localizable` melalui `String(resource:locale:)`
+   dan kirimkan label ke komponen.
 7. Pasang bridge `.tanyaAIHost(host)` pada root existing. Satu `TanyaAIHost`
    dimiliki host/AppState atau `@StateObject`; panggil `host.present()` untuk
    menampilkan feature fullscreen dengan animasi samping. Button kembali milik
@@ -93,7 +98,8 @@ locale diteruskan dari root ber-modifier saat presentasi. `Bundle.module` milik 
 menyimpan copy, DesignKit tidak menyimpan copy fitur.
 
 UI starter mengikuti light palette Figma; penggunaan theme/adaptive appearance
-menjadi tahap terpisah. SF Symbol send adalah dummy dengan TODO penggantian asset.
+menjadi tahap terpisah. Tiga PDF vector di xcassets masih dummy dengan TODO
+penggantian export Figma. Gunakan accessor generated `R.image`, tanpa catalog manual.
 Skala mengikuti lebar layar utama, sehingga sheet/split view memerlukan kebijakan
 container sebelum diadopsi. Ukuran/shadow tetap dapat disesuaikan melalui token.
 

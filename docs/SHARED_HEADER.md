@@ -8,12 +8,12 @@ DesignKit/Sources/DesignKit/
 ├── Components/ScreenHeader/ScreenHeader.swift
 ├── Components/ScreenContainer/ScreenContainer.swift
 ├── Extensions/View+ScrollBoundary.swift
-├── Tokens/CustomSizes.swift              # Header: tinggi, jumlah baris, rotasi
-└── Foundations/Assets/SystemSymbol.swift # back/more dummy + TODO
+├── Tokens/CustomSizes.swift              # Header: tinggi dan jumlah baris
+└── Resources/Assets.xcassets/            # back/more/send dummy; R.swift generated
 
 TanyaAI/Sources/TanyaAI/
 ├── Chat/ChatScreen.swift                 # content/menu/composer; layout dari container
-├── Chat/ChatCopy.swift                   # key label/menu dalam 3 bahasa
+├── Chat/ChatElementID.swift              # technical identifier, bukan pemetaan copy
 ├── Resources/{en,id,zh-Hans}.lproj/
 └── Host/                                # present/dismiss existing
 
@@ -116,7 +116,9 @@ belum ada reset draft atau flow sesi/welcome pada tahap ini.
 Jalankan `Scripts/run_sandbox.sh --language id --header-demo`, lalu buka feature.
 Mode ini memberi paragraf dummy yang cukup panjang untuk mencapai akhir, kembali
 ke atas, dan melihat teks di belakang header. Tanpa flag, area chat tetap kosong.
-Asset back/more/send masih SF Symbol sementara, dengan TODO di katalog icon.
+Asset back/more/send masih PDF vector sementara, dengan TODO di xcassets.
+Localization dan nama asset dibaca melalui R.swift generated; lihat
+[pola view dan resource](VIEW_TEMPLATE.md).
 
 ## Checkpoint sebelum lanjut
 

@@ -35,7 +35,3 @@ enum SupportedLanguage: String, CaseIterable {
     case indonesian = "id"
     case simplifiedChinese = "zh-Hans"
 }
-
-enum ChatElementID {
-    static let more = "chat.more"
-}

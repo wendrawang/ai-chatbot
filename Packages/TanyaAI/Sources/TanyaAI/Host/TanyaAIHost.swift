@@ -24,7 +24,7 @@ public final class TanyaAIHost: ObservableObject {
 
     /// Return true when the host accepts the draft; false keeps it in the composer.
     public init(
-        isEnabled: Bool = InitialValues.isEnabled, onNewConversation: (() -> Void)? = nil,
+        isEnabled: Bool = true, onNewConversation: (() -> Void)? = nil,
         onSend: @escaping (String) -> Bool
     ) {
         self.isEnabled = isEnabled
