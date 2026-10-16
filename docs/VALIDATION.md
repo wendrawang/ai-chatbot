@@ -11,24 +11,28 @@
 | Pemeriksaan tipe test kedua package dan sandbox dengan accessor generated | Lulus |
 | Resource localization fitur dan sandbox | 20 assertion lulus pada macOS |
 | Kompilasi tiga PDF imageset menjadi Assets.car | Lulus melalui actool |
-| Full xcodebuild dan pengujian runtime simulator | Belum berhasil dijalankan pada lingkungan saat ini |
+| Full xcodebuild generic iOS Simulator dengan plugin/resource bundle | Lulus setelah cleanup mapping lama |
+| Pengujian runtime simulator terbaru | Belum dijalankan ulang |
 | Diff token generated dan tujuh font | Tidak berubah |
 
 Pemeriksaan localization menjalankan source `String+Resource.swift` dan accessor
 R.swift asli terhadap bundle berisi ketiga `.lproj`. Mencakup English, Indonesia,
 `zh-Hans`, pemilihan Chinese untuk `zh_CN`, dan fallback English untuk `fr_FR`.
 
-Pemeriksaan swiftc memakai source produksi dan generated resource asli. Karena
-dijalankan di luar SwiftPM, accessor `Bundle.module` sementara menunjuk `Bundle.main`
-untuk pemeriksaan kompilasi saja. Ini tidak memverifikasi packaging bundle atau
-eksekusi plugin dari build Xcode secara penuh. Tes `AssetTests` ditambahkan untuk
-memeriksa pemuatan gambar dari bundle package saat suite iOS berikutnya dijalankan.
+Full `xcodebuild` setelah cleanup berhasil menjalankan plugin R.swift pada target
+package dan sandbox, mengompilasi xcassets serta membangun resource bundle asli.
+Pemeriksaan swiftc sebelumnya hanya memakai accessor `Bundle.module` sementara
+untuk pemeriksaan kompilasi. Tes `AssetTests` ditambahkan untuk memeriksa pemuatan
+gambar saat suite iOS berikutnya dijalankan.
 
-Lingkungan membatasi cache/proses sandbox milik Xcode dan koneksi CoreSimulator.
-Kompilasi resource dan assertion macOS di atas berhasil, tetapi tidak menggantikan
-suite UI/lifecycle. Jalankan `Scripts/verify.sh` pada Mac dengan simulator aktif
-sebelum merge. Screenshot dan 35 tes pada bagian berikut adalah **baseline
-16 Oktober**, bukan hasil pengujian ulang perubahan R.swift.
+Percobaan awal build sempat terhalang pembatasan lingkungan; build penuh sudah
+lulus setelah akses lingkungan diperbarui. Build dan assertion macOS tidak
+menggantikan suite UI/lifecycle. Jalankan `Scripts/verify.sh` pada Mac dengan
+simulator aktif sebelum merge. Screenshot dan 35 tes pada bagian berikut adalah
+**baseline 16 Oktober**, bukan hasil pengujian ulang perubahan R.swift.
+
+Tiga file mapping lama (`ChatCopy`, `SandboxCopy`, `SystemSymbol`) dan konstanta
+rotasi ikon yang tidak dipakai sudah dihapus setelah persetujuan pengguna.
 
 Ikon send/back/more kini berupa PDF vector dummy dalam xcassets, diakses lewat
 R.swift. TODO penggantian export Figma ada pada README asset. Layout/padding,

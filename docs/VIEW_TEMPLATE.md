@@ -111,10 +111,6 @@ copy internal tidak menjadi API publik. Ketiganya memakai versi R.swift yang sam
 Jangan membuat enum nama asset/localization key atau mengedit R.generated.swift.
 Source generated berada di build folder, bukan di repo.
 
-`ChatCopy.swift`, `SandboxCopy.swift`, dan `SystemSymbol.swift` lama sudah tidak
-dipanggil. File tersebut sementara masih disimpan menunggu persetujuan penghapusan;
-jangan menambahkan key atau asset baru ke mapping lama.
-
 R.swift 7.8.0 terkadang belum memperbarui accessor setelah perubahan resource
 secara incremental. Jika nama baru belum muncul, jalankan Clean Build Folder
 lalu build lagi. Saat Xcode meminta kepercayaan plugin untuk pertama kali,

@@ -23,7 +23,6 @@ public enum CustomSizes {
     public enum Header {
         public static let height: CGFloat = 56
         public static let titleLines = 1
-        public static let moreRotation: Double = 90
 
         /// Already scaled, while preserving the minimum action tap target.
         public static var scaledHeight: CGFloat {

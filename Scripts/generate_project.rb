@@ -14,7 +14,10 @@ PROJECT_PATH = File.join(ROOT_PATH, 'TanyaAISandbox.xcodeproj')
 APP_PATH = File.join(ROOT_PATH, 'TanyaAISandboxApp')
 UI_TEST_PATH = File.join(ROOT_PATH, 'TanyaAISandboxUITests')
 UNIT_TEST_PATH = File.join(ROOT_PATH, 'TanyaAISandboxTests')
+RESOLVED_PATH = File.join(PROJECT_PATH, 'project.xcworkspace/xcshareddata/swiftpm/Package.resolved')
 
+# Regenerating the project must preserve the dependency versions committed by the app.
+resolved_contents = File.binread(RESOLVED_PATH) if File.file?(RESOLVED_PATH)
 FileUtils.rm_rf(PROJECT_PATH)
 
 project = Xcodeproj::Project.new(PROJECT_PATH)
@@ -168,5 +171,10 @@ scheme = Xcodeproj::XCScheme.new
 scheme.configure_with_targets(target, ui_test_target, launch_target: true)
 scheme.add_test_target(unit_test_target)
 scheme.save_as(PROJECT_PATH, 'TanyaAISandbox', true)
+
+if resolved_contents
+  FileUtils.mkdir_p(File.dirname(RESOLVED_PATH))
+  File.binwrite(RESOLVED_PATH, resolved_contents)
+end
 
 puts "Generated #{PROJECT_PATH}"
