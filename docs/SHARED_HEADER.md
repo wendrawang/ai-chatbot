@@ -38,6 +38,8 @@ TanyaAISandboxApp/HeaderDemoContent.swift # fixture scroll, bukan UI produksi
    offset setiap pixel. Kembali ke atas mengembalikan surface awal.
 6. Pertahankan composer dan `.tanyaAIHost` existing. Header tidak mengubah font 14,
    batas empat baris, keyboard, callback kirim, atau navigation stack host.
+   `TanyaAIHost` menampilkan `ChatScreen` langsung. Hapus file `HostedChatScreen`
+   dari salinan lama; jangan ikut memigrasikan NavigationView/toolbar wrapper itu.
 
 `ScreenHeader` adalah view kecil tanpa ViewModel/BaseScreen. Ia bisa dipakai pada
 halaman lain dengan judul, back action dan trailing yang berbeda. `ChatScreen`

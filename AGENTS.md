@@ -94,6 +94,8 @@ tersedia pada history/main.
 - `ChatScreen(onSend:)` mengosongkan draft hanya jika callback host mengembalikan
   true. Starter tidak mengirim network, tidak menyimpan atau log isi pesan.
 - Integrasi host tetap `.tanyaAIHost(host)` + `host.present()`/`dismiss()`.
+  `TanyaAIHost` menampilkan `ChatScreen` langsung; jangan menambahkan wrapper
+  `HostedChatScreen`, NavigationView/NavigationStack atau toolbar native di SDK.
   Presentasi fullscreen dengan animasi samping, terpisah dari navigation stack
   host. Jangan menggantinya dengan NavigationLink atau push pada stack host.
   Host dimiliki AppState/session owner atau `@StateObject`, tidak dibuat di body.

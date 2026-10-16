@@ -43,9 +43,9 @@ public final class TanyaAIHost: ObservableObject {
         var presenter = anchor
         while let parent = presenter.parent { presenter = parent }
         guard presenter.presentedViewController == nil, !presenter.isBeingDismissed else { return }
-        let screen = HostedChatScreen(
-            isEnabled: isEnabled, onSend: onSend, onClose: { [weak self] in self?.dismiss() },
-            onNewConversation: onNewConversation, content: content()
+        let screen = ChatScreen(
+            isEnabled: isEnabled, onBack: { [weak self] in self?.dismiss() },
+            onNewConversation: onNewConversation, onSend: onSend, content: content
         )
         .environment(\.locale, locale)
         .preferredColorScheme(.light)

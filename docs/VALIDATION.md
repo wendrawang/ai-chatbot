@@ -93,3 +93,5 @@ opaque; pengaturan sistem ini belum diuji melalui otomasi UI.
 Tes hosted memastikan injected content dilepas setelah dismiss walaupun host
 masih dimiliki caller. Tes lifecycle existing juga lulus. Ini menguji ownership
 jalur present/dismiss yang tersedia, bukan audit Instruments seluruh aplikasi.
+Tes presentasi juga memastikan screen fitur tidak mempunyai UINavigationController
+di dalam hierarchy-nya, sementara navigation stack host tetap utuh.

@@ -124,6 +124,23 @@ Pemanggilan existing `TanyaAIHost { _ in true }`, `.tanyaAIHost(host)`, dan
 `host.present()` tetap berlaku. Feature sekarang memakai header SwiftUI sendiri;
 tidak perlu mengatur global `UINavigationBar.appearance()` pada host.
 
+`HostedChatScreen` lama sudah dihapus. Alur presentasi sekarang langsung:
+`.tanyaAIHost(host)` → `TanyaAIHost.present()` → `UIHostingController(ChatScreen)`.
+Package tidak membuat `NavigationView`, `NavigationStack`, navigation title atau
+toolbar native sendiri. `NavigationView` pada contoh di atas hanya milik host
+existing. Header fitur adalah `ScreenHeader` SwiftUI di dalam `ChatScreen`.
+UIKit pada bridge dipakai untuk present/dismiss fullscreen dan animasi samping;
+tidak ada navigation stack fitur tambahan.
+
+Folder `Host` hanya memerlukan tiga file:
+
+- `ChatHostAnchor.swift`: menghubungkan `.tanyaAIHost(host)` ke controller host yang terlihat.
+- `TanyaAIHost.swift`: membuat `ChatScreen` langsung dan menangani present/dismiss.
+- `TanyaAIPushTransition.swift`: mempertahankan animasi fullscreen dari samping.
+
+Bridge ini tetap diperlukan untuk pola presentasi existing. UI halaman dan
+header tetap SwiftUI; editor multiline terukur memakai bridge UITextView di DesignKit.
+
 Jika host sudah memiliki handler sesi baru, berikan `onNewConversation` saat
 membuat `TanyaAIHost`. Item “Percakapan baru” memanggil handler itu saja; package
 belum membuat sesi, membersihkan draft, atau menampilkan welcome. Closure ini
