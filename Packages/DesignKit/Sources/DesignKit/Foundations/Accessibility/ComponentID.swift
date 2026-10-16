@@ -6,6 +6,7 @@
 //
 
 enum ComponentID {
+    static let composer = "composer"
     static let input = "composer.input"
     static let send = "composer.send"
 }

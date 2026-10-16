@@ -24,6 +24,11 @@ public enum CustomSizes {
         public static let visualSize: CGFloat = 24
         public static let iconInset: CGFloat = 6
         public static let minimumTapSize: CGFloat = 44
+
+        /// Already scaled: the invisible inset on each side of the centered visual.
+        public static var tapAreaInset: CGFloat {
+            (minimumTapSize.tapTargetInArtwork - visualSize.scaledToArtwork) / 2
+        }
     }
 
     public enum Radius {

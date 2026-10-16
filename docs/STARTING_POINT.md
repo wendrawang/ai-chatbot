@@ -49,13 +49,20 @@ Packages/
    file/PostScript dan sumbernya ada pada [katalog font](../Packages/DesignKit/Sources/DesignKit/Resources/Fonts/SOURCES.md).
 4. Buat `BoundedTextView`, lalu bridge `GrowingTextInput`. Intrinsic width tidak
    memaksa lebar konten; tinggi dibatasi empat baris, kemudian scrolling aktif.
-5. Buat composer: placeholder, field, action, surface. `@ScaledMetric` mengubah
-   font dari ukuran token dasar; UIKit dan placeholder memakai UIFont yang sama.
+5. Buat composer: placeholder, field, action, surface. Token ukuran dasar memakai
+   `typographySizeDisplaySmall14` dengan leading 21 dari role yang sama.
+   `@ScaledMetric` mempertahankan Dynamic Type; UIKit dan placeholder memakai UIFont yang sama.
    Parent hanya memberi Binding, label, palette/font pilihan dan callback kirim.
    Field dan tombol mempunyai minimum tinggi row yang sama, sehingga satu baris
    sejajar tengah. HStack tetap memakai `.bottom`: ketika field membesar, tombol
    bertahan di bawah dan field tumbuh ke atas. Minimum row mengikuti font,
    leading, padding dan minimum tap target, termasuk untuk Dynamic Type.
+   Padding visual memakai `spacingLarge`: lingkaran 24 berada di tengah tap target
+   44, sehingga inset tiap sisi `(44 - 24) / 2 = 10`. Padding di luar tap target
+   menjadi `16 - 10 = 6`, agar jarak lingkaran ke border tetap 16. Field tetap
+   berjarak 16 di kiri; inset vertikal field 10 ditambah padding luar 6 menjaga
+   jarak teks multiline 16 di atas/bawah. Satu baris mengikuti pusat visual tombol;
+   Dynamic Type dapat memperbesar row agar teks dan tombol tetap bisa digunakan.
 6. Buat screen: draft `@State`, area kosong, composer di bawah, margin luar.
    Baca locale host, resolve resource label dan kirimkan ke komponen.
 7. Pasang bridge `.tanyaAIHost(host)` pada root existing. Satu `TanyaAIHost`
@@ -86,6 +93,7 @@ container sebelum diadopsi. Ukuran/shadow tetap dapat disesuaikan melalui token.
 
 - Input satu sampai empat baris lalu scroll, termasuk kata panjang dan Chinese.
 - Action tetap terlihat di atas keyboard, area tap minimal 44, visual 24.
+- Pada artwork 375, padding visual 16, termasuk tombol kanan/bawah dan teks kiri/atas multiline.
 - Draft hanya dibersihkan setelah host menerima callback.
 - Label English/Indonesia/Chinese benar dan font tidak menjadi kotak glyph kosong.
 - Dynamic Type terbesar tetap bisa digunakan, dan placeholder memakai font editor.

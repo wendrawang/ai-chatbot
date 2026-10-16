@@ -58,11 +58,27 @@ final class StartingPointUITests: XCTestCase {
         XCTAssertGreaterThanOrEqual(send.frame.height, 44)
         XCTAssertLessThanOrEqual(input.frame.maxX, send.frame.minX + 1)
         XCTAssertLessThanOrEqual(send.frame.maxY, application.keyboards.firstMatch.frame.minY + 1)
+        assertVisualInsets(isMultiline: true)
         capture("starter-four-lines-keyboard")
         send.tap()
         XCTAssertEqual(input.value as? String, "")
         XCTAssertFalse(send.isEnabled)
         XCTAssertEqual(input.frame.midY, send.frame.midY, accuracy: 1)
+    }
+
+    func testVisualInsetsAndEdgesOfTapTarget() {
+        launch(locale: "en")
+        let input = application.textViews["composer.input"]
+        XCTAssertTrue(input.waitForExistence(timeout: 10))
+        assertVisualInsets(isMultiline: false)
+        input.tap()
+        let send = application.buttons["composer.send"]
+        for (horizontal, vertical) in [(0.05, 0.5), (0.95, 0.5), (0.5, 0.05), (0.5, 0.95)] {
+            input.typeText("Tap edge")
+            send.coordinate(withNormalizedOffset: CGVector(dx: horizontal, dy: vertical)).tap()
+            XCTAssertEqual(input.value as? String, "")
+            XCTAssertFalse(send.isEnabled)
+        }
     }
 
     func testWhitespaceCannotBeSubmitted() {
@@ -127,6 +143,22 @@ final class StartingPointUITests: XCTestCase {
         let open = application.buttons["sandbox.open"]
         XCTAssertTrue(open.waitForExistence(timeout: 10))
         open.tap()
+    }
+
+    private func assertVisualInsets(isMultiline: Bool) {
+        let composer = application.otherElements["composer"].frame
+        let input = application.textViews["composer.input"].frame
+        let send = application.buttons["composer.send"].frame
+        XCTAssertEqual(send.width, 44, accuracy: 1)
+        XCTAssertEqual(send.height, 44, accuracy: 1)
+        XCTAssertEqual(input.minX - composer.minX, 16, accuracy: 1)
+        XCTAssertEqual(composer.maxX - (send.midX + 12), 16, accuracy: 1)
+        XCTAssertEqual(composer.maxY - (send.midY + 12), 16, accuracy: 1)
+        if isMultiline {
+            XCTAssertEqual(input.minY - composer.minY, 16, accuracy: 1)
+        } else {
+            XCTAssertEqual(send.midY - 12 - composer.minY, 16, accuracy: 1)
+        }
     }
 
     private func capture(_ name: String) {

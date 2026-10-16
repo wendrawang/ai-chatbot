@@ -7,12 +7,12 @@
 | DesignKit: registrasi tujuh font/glyph, hex, sizing, editor dan layout | 8 tes lulus |
 | TanyaAI: locale, optional anchor/identity, pergantian host, animator | 7 tes lulus |
 | Hosted unit: fullscreen, navigation stack, duplicate/offscreen/modal lain, dismiss, pelepasan memori | 4 tes lulus |
-| UI: tiga bahasa, posisi tombol satu/empat baris, whitespace, callback ditolak, font terbesar, tutup/buka | 6 tes lulus |
+| UI: tiga bahasa, posisi satu/empat baris, inset visual, tepi tap, whitespace, callback, font terbesar, tutup/buka | 7 tes lulus |
 | Build generic iOS Simulator, deployment minimum iOS 15 | Lulus |
 | SwiftLint/formatter, batas file/method, token/copy guard | Lulus |
 | Link dokumentasi dan generated token diff | Lulus; nilai token tidak berubah, header Wendra ditambahkan |
 
-Total **25 tes unik**. Unit layout mencakup lebar 320/375/430 dengan normal dan
+Total **26 tes unik**. Unit layout mencakup lebar 320/375/430 dengan normal dan
 accessibility XXXL. Sizing diuji sampai 1024 point tanpa cap. Ini bukan pengujian
 UI iPad, runtime iOS 15/device atau pengukuran rendered FPS.
 
@@ -43,6 +43,15 @@ PostScript name yang dibaca dari file aslinya. Registrasi dua kali diuji aman;
 Chinese memakai fallback glyph native pada setiap face, diuji tanpa glyph 0.
 SF Symbol send masih dummy TODO. Verifikasi font brand final tetap mengikuti aset
 resmi yang nanti diberikan, termasuk keputusan font Chinese brand.
+
+Ukuran dasar composer dan placeholder memakai token 14 dengan leading role 21;
+artwork scaling dan Dynamic Type tetap aktif. Pada artwork 375 dengan font normal,
+tes UI memeriksa jarak 16 antara border dan lingkaran tombol kanan/bawah, field
+kiri, serta field atas ketika multiline. Tap target tetap 44×44; tap dekat tepi
+atas/bawah/kiri/kanannya, di luar lingkaran 24, berhasil mengirim draft. Padding
+mengompensasi inset tiap sisi `(44 - 24) / 2 = 10`, sehingga padding luar area
+tap adalah 6. Pada Dynamic Type besar, minimum row dapat membesar untuk menjaga
+posisi tengah tombol terhadap satu baris teks.
 
 Screenshot sekarang diambil setelah membuka feature melalui `.tanyaAIHost(host)`
 dan `host.present()`. Header native sementara menyediakan judul dan tombol kembali;

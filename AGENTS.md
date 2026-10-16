@@ -47,7 +47,8 @@ tersedia pada history/main.
   dan `openSansRegular/Medium/Bold`. Jangan memakai case `.regular/.medium` yang
   ambigu antar-family. Tambahkan file asli beserta lisensi dan nama PostScript
   yang dibaca dari metadata; jangan menyamakan nama file dengan PostScript.
-- Composer memakai `@ScaledMetric` agar font mengikuti Dynamic Type. Editor dan
+- Composer memakai token `typographySizeDisplaySmall14` dan leading role yang
+  sama. `@ScaledMetric` mempertahankan Dynamic Type. Editor dan
   placeholder menerima UIFont yang sama; jangan menerapkan scaling dua kali.
   Glyph Chinese yang tidak ada di Open Sans menggunakan fallback native iOS.
 - Copy fitur berada di resource `en`, `id`, `zh-Hans`. Screen membaca locale dari
@@ -69,6 +70,13 @@ tersedia pada history/main.
   field dan tombol: satu baris sejajar tengah, multiline mempertahankan tombol
   di bawah. Minimum row mengikuti font/leading/padding dan minimum tap target;
   jangan menambahkan state jumlah baris untuk mengubah alignment.
+- Padding visual composer memakai `spacingLarge` (16 pada artwork 375). Hitung
+  inset tiap sisi tap target dari `(tapSize - visualSize) / 2`, setelah scaling
+  dan minimum tap diterapkan. Kurangi inset ini dari padding luar tombol dan
+  jarak field/tombol; jangan menambahkannya lagi ke jarak visual. Pada 44/24,
+  inset 10 menyisakan padding 6. Field memakai inset vertikal tersebut agar teks
+  multiline tetap berjarak 16 dari border. Dynamic Type boleh menambah tinggi
+  minimum row untuk mempertahankan posisi tengah tombol pada satu baris.
 - `ChatScreen(onSend:)` mengosongkan draft hanya jika callback host mengembalikan
   true. Starter tidak mengirim network, tidak menyimpan atau log isi pesan.
 - Integrasi host tetap `.tanyaAIHost(host)` + `host.present()`/`dismiss()`.
