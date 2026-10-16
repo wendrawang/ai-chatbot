@@ -15,12 +15,8 @@ public struct ChatScreen<Content: View>: View {
     private var locale
     @Environment(\.dismiss)
     private var dismiss
-    @Namespace
-    private var scrollSpace
     @State
     private var text = InitialValues.emptyString
-    @State
-    private var isScrolled = false
     private let isEnabled: Bool
     private let onBack: (() -> Void)?
     private let onNewConversation: (() -> Void)?
@@ -40,43 +36,10 @@ public struct ChatScreen<Content: View>: View {
     }
 
     public var body: some View {
-        VStack(spacing: InitialValues.zeroCGFloat) {
-            conversation
-            composer
-        }
-        .background(DefaultColorConstants().colorsSurfacePrimary.ignoresSafeArea())
-    }
-
-    private var conversation: some View {
-        ZStack(alignment: .top) {
-            ScrollView {
-                VStack(spacing: InitialValues.zeroCGFloat) {
-                    boundary
-                    content
-                        .frame(maxWidth: .infinity, alignment: .leading)
-                        .padding(.horizontal, FigmaSize.spacingLarge.scaledToArtwork)
-                        .padding(.top, headerHeight + FigmaSize.spacingLarge.scaledToArtwork)
-                        .padding(.bottom, FigmaSize.spacingLarge.scaledToArtwork)
-                }
-            }
-            .coordinateSpace(name: scrollSpace)
-            .onPreferenceChange(ScrollBoundaryKey.self) { isScrolled = $0 }
-            ScreenHeader(
-                title: ChatCopy.title.text(locale: locale), backLabel: ChatCopy.back.text(locale: locale),
-                isScrolled: isScrolled, onBack: close
-            ) { moreMenu }
-        }
-    }
-
-    private var boundary: some View {
-        GeometryReader { geometry in
-            Color.clear.preference(
-                key: ScrollBoundaryKey.self,
-                value: geometry.frame(in: .named(scrollSpace)).minY < -CustomSizes.Layout.measurementTolerance
-            )
-        }
-        .frame(height: InitialValues.zeroCGFloat)
-        .accessibilityHidden(true)
+        ScreenContainer(
+            title: ChatCopy.title.text(locale: locale), backLabel: ChatCopy.back.text(locale: locale),
+            onBack: close, content: { content }, trailing: { moreMenu }, footer: { composer }
+        )
     }
 
     private var moreMenu: some View {
@@ -111,10 +74,6 @@ public struct ChatScreen<Content: View>: View {
         .padding(.vertical, FigmaSize.spacingMedium.scaledToArtwork)
     }
 
-    private var headerHeight: CGFloat {
-        max(CustomSizes.Header.height.scaledToArtwork, CustomSizes.ActionButton.minimumTapSize.tapTargetInArtwork)
-    }
-
     private func close() {
         if let onBack { onBack() } else { dismiss() }
     }
@@ -136,11 +95,4 @@ extension ChatScreen where Content == EmptyView {
             onSend: onSend, content: { EmptyView() }
         )
     }
-}
-
-private struct ScrollBoundaryKey: PreferenceKey {
-    // PreferenceKey requires this property name.
-    // swiftlint:disable:next boolean_prefix
-    static let defaultValue = false
-    static func reduce(value: inout Bool, nextValue: () -> Bool) { value = value || nextValue() }
 }

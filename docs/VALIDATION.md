@@ -8,13 +8,13 @@ iOS 26.5 (402×874 point).
 | --- | --- |
 | DesignKit: registrasi tujuh font/glyph, hex, sizing, editor, header dan layout | 9 tes lulus |
 | TanyaAI: locale, optional anchor/identity, pergantian host, animator | 7 tes lulus |
-| Hosted unit: presentasi, lifecycle, pelepasan konten, caret pada tujuh font | 6 tes lulus |
+| Hosted unit: presentasi, lifecycle, caret, reusable container dan isolasi boundary | 8 tes lulus |
 | UI: composer/caret, tiga bahasa, header, scroll, menu, keyboard dan tutup/buka | 11 tes lulus |
 | Build generic iOS Simulator, deployment minimum iOS 15 | Lulus |
 | SwiftLint/formatter, batas file/method, token/copy guard | Lulus |
 | Link dokumentasi dan generated token diff | Lulus; generated token tidak berubah |
 
-Total **33 tes unik**. Unit layout mencakup lebar 320/375/430 dengan normal dan
+Total **35 tes unik**. Unit layout mencakup lebar 320/375/430 dengan normal dan
 accessibility XXXL (font composer tetap). Sizing diuji sampai 1024 point tanpa cap.
 Ini bukan pengujian UI iPad, runtime iOS 15/device atau pengukuran rendered FPS.
 
@@ -95,3 +95,19 @@ masih dimiliki caller. Tes lifecycle existing juga lulus. Ini menguji ownership
 jalur present/dismiss yang tersedia, bukan audit Instruments seluruh aplikasi.
 Tes presentasi juga memastikan screen fitur tidak mempunyai UINavigationController
 di dalam hierarchy-nya, sementara navigation stack host tetap utuh.
+
+## Reuse dan pembatasan update scroll
+
+`ChatScreen` menggunakan `ScreenContainer` DesignKit. Container menyimpan satu
+Boolean, memakai namespace lokal, dan memasang header/scroll/footer otomatis.
+Modifier `.onScrollBoundaryChange` juga diuji terpisah dari fitur chat pada dua
+ScrollView bertingkat: menggeser inner tidak mengubah status outer, dan sebaliknya.
+Offset 0,2 point di bawah toleransi tidak memicu transisi. Enam perpindahan offset
+di sisi boundary yang sama hanya menghasilkan satu transisi Boolean; kembali ke
+atas menghasilkan satu transisi lagi. Nilai awal dikirim sekali saat muncul.
+
+Tes container dengan beberapa child ViewBuilder memastikan inset header dan
+margin diterapkan satu kali pada keseluruhan konten, bukan berulang per child.
+Callback count ini membatasi update state; GeometryReader tetap mengevaluasi
+geometri saat layout scroll berubah. Tidak ada klaim hasil FPS atau profiling
+Instruments berdasarkan tes callback tersebut.

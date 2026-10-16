@@ -47,7 +47,7 @@ public struct ScreenHeader<Trailing: View>: View {
             Color.clear.frame(width: tapSize, height: tapSize).overlay(trailing)
         }
         .padding(.horizontal, actionPadding)
-        .frame(height: max(tapSize, CustomSizes.Header.height.scaledToArtwork))
+        .frame(height: CustomSizes.Header.scaledHeight)
         .background(surface.ignoresSafeArea(edges: .top))
         .overlay(alignment: .bottom) {
             if isScrolled {

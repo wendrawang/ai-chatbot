@@ -129,6 +129,9 @@ tidak perlu mengatur global `UINavigationBar.appearance()` pada host.
 Package tidak membuat `NavigationView`, `NavigationStack`, navigation title atau
 toolbar native sendiri. `NavigationView` pada contoh di atas hanya milik host
 existing. Header fitur adalah `ScreenHeader` SwiftUI di dalam `ChatScreen`.
+`ChatScreen` memakai `ScreenContainer` DesignKit untuk memasang header, scroll,
+inset dan footer secara konsisten. Halaman lain bisa memakai container yang sama
+tanpa mengulang setup header; lihat [contoh pemakaian](SHARED_HEADER.md).
 UIKit pada bridge dipakai untuk present/dismiss fullscreen dan animasi samping;
 tidak ada navigation stack fitur tambahan.
 

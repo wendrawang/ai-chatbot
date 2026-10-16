@@ -6,11 +6,13 @@ satu; tidak perlu menyalin seluruh flow chat lama.
 ```text
 DesignKit/Sources/DesignKit/
 ├── Components/ScreenHeader/ScreenHeader.swift
+├── Components/ScreenContainer/ScreenContainer.swift
+├── Extensions/View+ScrollBoundary.swift
 ├── Tokens/CustomSizes.swift              # Header: tinggi, jumlah baris, rotasi
 └── Foundations/Assets/SystemSymbol.swift # back/more dummy + TODO
 
 TanyaAI/Sources/TanyaAI/
-├── Chat/ChatScreen.swift                 # scroll + boundary + header + composer
+├── Chat/ChatScreen.swift                 # content/menu/composer; layout dari container
 ├── Chat/ChatCopy.swift                   # key label/menu dalam 3 bahasa
 ├── Resources/{en,id,zh-Hans}.lproj/
 └── Host/                                # present/dismiss existing
@@ -29,21 +31,77 @@ TanyaAISandboxApp/HeaderDemoContent.swift # fixture scroll, bukan UI produksi
 3. Surface biasa opaque. Saat `isScrolled`, gunakan `.ultraThinMaterial` dan
    separator token outline di bawah. Jika Reduce Transparency aktif, pertahankan
    separator dengan surface opaque. Tidak ada blur pada teks/judul/icon sendiri.
-4. Di `ChatScreen`, letakkan header sebagai overlay di atas ScrollView. Padding
+4. Buat `ScreenContainer` untuk menyusun header sebagai overlay di atas ScrollView. Padding
    awal konten adalah tinggi header ditambah `spacingLarge`, jadi konten tidak
    tertutup saat posisi teratas. Konten dapat bergerak di belakang material ketika
    digulir. Header tidak menggambar status bar palsu; safe area tetap milik iOS.
-5. Marker awal memakai GeometryReader + PreferenceKey untuk mengirim Boolean
-   ketika offset melewati toleransi. `@State` hanya menyimpan `isScrolled`, bukan
-   offset setiap pixel. Kembali ke atas mengembalikan surface awal.
+5. `.onScrollBoundaryChange` memakai GeometryReader di background root konten.
+   Callback memberi nilai awal, lalu `.onChange` mengamati Boolean ketika offset
+   melewati toleransi. Tidak diperlukan PreferenceKey bersama antar observer.
+   Container hanya menyimpan `isScrolled`, bukan offset setiap pixel. Kembali ke
+   atas mengembalikan surface awal. `@Namespace` memberi coordinate space unik.
 6. Pertahankan composer dan `.tanyaAIHost` existing. Header tidak mengubah font 14,
    batas empat baris, keyboard, callback kirim, atau navigation stack host.
    `TanyaAIHost` menampilkan `ChatScreen` langsung. Hapus file `HostedChatScreen`
    dari salinan lama; jangan ikut memigrasikan NavigationView/toolbar wrapper itu.
 
-`ScreenHeader` adalah view kecil tanpa ViewModel/BaseScreen. Ia bisa dipakai pada
-halaman lain dengan judul, back action dan trailing yang berbeda. `ChatScreen`
-menyusun komponen dan memiliki scroll state, sementara host memiliki navigasi.
+`ScreenContainer` adalah reusable layout dengan composition, tanpa inheritance,
+ViewModel, AnyView, atau navigation stack baru. `ChatScreen` cukup memberi judul,
+back callback, content, menu sebagai trailing dan composer sebagai footer. Header,
+inset dan scroll state otomatis ditangani container. Host tetap memiliki navigasi.
+`ScreenHeader` tetap tersedia terpisah jika screen mempunyai List/scroll owner sendiri.
+
+Contoh screen biasa tanpa trailing atau footer:
+
+```swift
+ScreenContainer(title: title, backLabel: backLabel, onBack: onBack) {
+    FormContent()
+}
+```
+
+Contoh dengan action kanan dan footer tetap:
+
+```swift
+ScreenContainer(title: title, backLabel: backLabel, onBack: onBack) {
+    FormContent()
+} trailing: {
+    MenuAction()
+} footer: {
+    SubmitAction()
+}
+```
+
+Judul/label berasal dari localization fitur. Contoh view di atas milik screen;
+footer mengatur margin luarnya sendiri. Container memberi margin horizontal 16
+dan inset header sekali untuk seluruh konten, termasuk beberapa child builder.
+Jangan membungkus screen dengan NavigationView baru untuk menggunakan container.
+
+Deteksi boundary juga bisa dipakai sendiri pada scroll view lain:
+
+```swift
+@Namespace private var scrollSpace
+@State private var isScrolled = false
+
+// Di body:
+ScrollView {
+    FormContent()
+        .onScrollBoundaryChange(in: scrollSpace) { isScrolled = $0 }
+}
+.coordinateSpace(name: scrollSpace)
+```
+
+Pasang modifier pada satu root konten, setelah padding, bukan pada ScrollView
+yang diam. Untuk beberapa child, bungkus dalam VStack/LazyVStack terlebih dulu.
+Setiap ScrollView memakai namespace masing-masing. Threshold default adalah
+toleransi layout pada `CustomSizes`; parameter threshold opsional memakai point
+aktual. Observer tidak menambah ukuran atau menangkap sentuhan.
+
+Reusability ini mengikuti [composition SwiftUI](https://developer.apple.com/videos/play/meet-with-apple/269/).
+Observer memakai [onChange(of:perform:)](https://developer.apple.com/documentation/swiftui/view/onchange(of:perform:))
+agar tetap cocok dengan minimum iOS 15. Satu GeometryReader tetap membaca geometri
+saat scroll; yang dibatasi adalah callback dan state update, bukan klaim bahwa
+semua layout/renderer berhenti bekerja. Tes menghitung transisi callback dan
+isolasi nested scroll; pengukuran FPS/Instruments terpisah.
 
 ## Menu dan demo
 

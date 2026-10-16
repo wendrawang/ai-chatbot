@@ -19,14 +19,16 @@ Packages/
 │       │   └── CustomColors.swift        # warna tambahan + opacity
 │       ├── Extensions/
 │       │   ├── CGFloat+Artwork.swift
-│       │   └── Color+Hex.swift
+│       │   ├── Color+Hex.swift
+│       │   └── View+ScrollBoundary.swift  # observer umum untuk tahap header
 │       ├── Typography/FontFace.swift + FontLoader.swift
 │       ├── Resources/Fonts/
 │       ├── Foundations/Assets + Accessibility/
 │       └── Components/
 │           ├── GrowingTextInput/         # bridge + BoundedTextView
 │           ├── MessageComposer/
-│           └── ScreenHeader/             # tahap header berikutnya
+│           ├── ScreenHeader/             # komponen header
+│           └── ScreenContainer/          # header + scroll + footer otomatis
 └── TanyaAI/
     └── Sources/TanyaAI/
         ├── Chat/ChatScreen.swift + ChatCopy.swift

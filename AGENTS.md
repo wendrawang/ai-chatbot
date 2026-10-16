@@ -64,11 +64,19 @@ tersedia pada history/main.
 
 - Struktur `Components/<NamaKomponen>`, `Extensions/<Type>+<Responsibility>.swift`.
   Nama DesignKit umum, tanpa prefix fitur. Jangan membuat ViewModel per komponen.
-- `ScreenHeader` menerima title, label/aksi back, state `isScrolled`, dan trailing
-  action opsional. Screen memiliki ScrollView dan mengirim Boolean saat boundary
-  terlewati; jangan menyimpan offset setiap pixel atau membuat BaseScreen untuk
-  tahap ini. Material hanya saat scrolled, dengan fallback opaque jika Reduce
-  Transparency aktif. Status bar dan safe area tetap milik sistem.
+- Screen standar memakai composition `ScreenContainer` dari DesignKit: header,
+  area scroll, trailing action dan footer. Container memiliki satu `isScrolled`
+  dan namespace sendiri. Jangan membuat inheritance/BaseScreen protocol, ViewModel
+  layout atau navigation container tambahan. Content tidak menambahkan ScrollView
+  vertikal lagi. Footer memiliki margin sesuai komponen caller.
+- `ScreenHeader` tetap komponen standalone untuk layout dengan scroll owner lain
+  seperti List. Label/aksi back dan trailing berasal dari caller. Material hanya
+  saat scrolled, fallback opaque jika Reduce Transparency aktif. Status bar dan
+  safe area tetap milik sistem.
+- `.onScrollBoundaryChange(in:threshold:perform:)` reusable di DesignKit. Pasang
+  pada root konten scroll setelah padding; namespace sama dengan ScrollView owner.
+  Callback memberi nilai awal lalu perubahan Boolean saja, tanpa state offset
+  setiap pixel, global PreferenceKey atau AnyView. Jaga isolasi nested scroll.
 - Menu/sesi adalah tanggung jawab fitur/host. `onNewConversation` hanya callback;
   tanpa handler, item menu disabled. Jangan menambah session, welcome, reset draft,
   intent, bubble atau database pada tahap header.
