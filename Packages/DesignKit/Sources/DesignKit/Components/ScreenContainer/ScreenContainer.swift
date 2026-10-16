@@ -5,14 +5,16 @@
 //  Created by Wendra on 16/10/26.
 //
 
+import Foundation
 import SwiftUI
 
 /// Shared scrolling screen layout. Supply content, not another vertical ScrollView.
 /// Navigation callbacks and the footer's padding belong to the caller.
 @MainActor
 public struct ScreenContainer<Content: View, Trailing: View, Footer: View>: View {
-    @Namespace
-    private var scrollSpace
+    // Keep the coordinate-space ID stable when the parent view updates.
+    @State
+    private var scrollSpaceID = UUID()
     @State
     private var isScrolled = false
     private let title: String
@@ -53,9 +55,9 @@ public struct ScreenContainer<Content: View, Trailing: View, Footer: View>: View
                     .padding(.horizontal, FigmaSize.spacingLarge.scaledToArtwork)
                     .padding(.top, CustomSizes.Header.scaledHeight + FigmaSize.spacingLarge.scaledToArtwork)
                     .padding(.bottom, FigmaSize.spacingLarge.scaledToArtwork)
-                    .onScrollBoundaryChange(in: scrollSpace) { isScrolled = $0 }
+                    .onScrollBoundaryChange(in: scrollSpaceID) { isScrolled = $0 }
             }
-            .coordinateSpace(name: scrollSpace)
+            .coordinateSpace(name: scrollSpaceID)
             ScreenHeader(
                 title: title, backLabel: backLabel, isScrolled: isScrolled,
                 colors: colors, onBack: onBack, trailing: { trailing }

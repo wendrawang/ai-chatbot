@@ -56,10 +56,10 @@ private final class BoundaryProbe {
 }
 
 private struct NestedScrollFixture: View {
-    @Namespace
-    private var outerSpace
-    @Namespace
-    private var innerSpace
+    @State
+    private var outerSpaceID = UUID()
+    @State
+    private var innerSpaceID = UUID()
     let outer: BoundaryProbe
     let inner: BoundaryProbe
 
@@ -68,14 +68,14 @@ private struct NestedScrollFixture: View {
             VStack(spacing: 0) {
                 ScrollView {
                     Color.clear.frame(height: 1_600)
-                        .onScrollBoundaryChange(in: innerSpace, perform: inner.record)
+                        .onScrollBoundaryChange(in: innerSpaceID, perform: inner.record)
                 }
-                .coordinateSpace(name: innerSpace)
+                .coordinateSpace(name: innerSpaceID)
                 .frame(height: 200)
                 Color.clear.frame(height: 1_600)
             }
-            .onScrollBoundaryChange(in: outerSpace, perform: outer.record)
+            .onScrollBoundaryChange(in: outerSpaceID, perform: outer.record)
         }
-        .coordinateSpace(name: outerSpace)
+        .coordinateSpace(name: outerSpaceID)
     }
 }

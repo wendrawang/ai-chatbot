@@ -39,7 +39,8 @@ TanyaAISandboxApp/HeaderDemoContent.swift # fixture scroll, bukan UI produksi
    Callback memberi nilai awal, lalu `.onChange` mengamati Boolean ketika offset
    melewati toleransi. Tidak diperlukan PreferenceKey bersama antar observer.
    Container hanya menyimpan `isScrolled`, bukan offset setiap pixel. Kembali ke
-   atas mengembalikan surface awal. `@Namespace` memberi coordinate space unik.
+   atas mengembalikan surface awal. ID area scroll adalah UUID lokal yang disimpan
+   dengan `@State`, sehingga nilainya tetap saat parent merender ulang.
 6. Pertahankan composer dan `.tanyaAIHost` existing. Header tidak mengubah font 14,
    batas empat baris, keyboard, callback kirim, atau navigation stack host.
    `TanyaAIHost` menampilkan `ChatScreen` langsung. Hapus file `HostedChatScreen`
@@ -79,20 +80,23 @@ Jangan membungkus screen dengan NavigationView baru untuk menggunakan container.
 Deteksi boundary juga bisa dipakai sendiri pada scroll view lain:
 
 ```swift
-@Namespace private var scrollSpace
+@State private var scrollSpaceID = UUID()
 @State private var isScrolled = false
 
 // Di body:
 ScrollView {
     FormContent()
-        .onScrollBoundaryChange(in: scrollSpace) { isScrolled = $0 }
+        .onScrollBoundaryChange(in: scrollSpaceID) { isScrolled = $0 }
 }
-.coordinateSpace(name: scrollSpace)
+.coordinateSpace(name: scrollSpaceID)
 ```
 
 Pasang modifier pada satu root konten, setelah padding, bukan pada ScrollView
 yang diam. Untuk beberapa child, bungkus dalam VStack/LazyVStack terlebih dulu.
-Setiap ScrollView memakai namespace masing-masing. Threshold default adalah
+Setiap ScrollView memakai ID lokal masing-masing. ID hanya menjadi nama area
+untuk mengukur posisi konten relatif ke ScrollView yang tepat. Simpan UUID pada
+`@State`; jangan membuat `UUID()` baru pada body. Tidak diperlukan `@Namespace`
+untuk kebutuhan ini. Threshold default adalah
 toleransi layout pada `CustomSizes`; parameter threshold opsional memakai point
 aktual. Observer tidak menambah ukuran atau menangkap sentuhan.
 

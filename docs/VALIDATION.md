@@ -99,7 +99,7 @@ di dalam hierarchy-nya, sementara navigation stack host tetap utuh.
 ## Reuse dan pembatasan update scroll
 
 `ChatScreen` menggunakan `ScreenContainer` DesignKit. Container menyimpan satu
-Boolean, memakai namespace lokal, dan memasang header/scroll/footer otomatis.
+Boolean, memakai ID UUID lokal melalui `@State`, dan memasang header/scroll/footer otomatis.
 Modifier `.onScrollBoundaryChange` juga diuji terpisah dari fitur chat pada dua
 ScrollView bertingkat: menggeser inner tidak mengubah status outer, dan sebaliknya.
 Offset 0,2 point di bawah toleransi tidak memicu transisi. Enam perpindahan offset

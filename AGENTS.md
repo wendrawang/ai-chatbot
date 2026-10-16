@@ -66,7 +66,7 @@ tersedia pada history/main.
   Nama DesignKit umum, tanpa prefix fitur. Jangan membuat ViewModel per komponen.
 - Screen standar memakai composition `ScreenContainer` dari DesignKit: header,
   area scroll, trailing action dan footer. Container memiliki satu `isScrolled`
-  dan namespace sendiri. Jangan membuat inheritance/BaseScreen protocol, ViewModel
+  dan ID coordinate space lokal. Jangan membuat inheritance/BaseScreen protocol, ViewModel
   layout atau navigation container tambahan. Content tidak menambahkan ScrollView
   vertikal lagi. Footer memiliki margin sesuai komponen caller.
 - `ScreenHeader` tetap komponen standalone untuk layout dengan scroll owner lain
@@ -74,9 +74,14 @@ tersedia pada history/main.
   saat scrolled, fallback opaque jika Reduce Transparency aktif. Status bar dan
   safe area tetap milik sistem.
 - `.onScrollBoundaryChange(in:threshold:perform:)` reusable di DesignKit. Pasang
-  pada root konten scroll setelah padding; namespace sama dengan ScrollView owner.
+  pada root konten scroll setelah padding; ID sama dengan ScrollView owner.
   Callback memberi nilai awal lalu perubahan Boolean saja, tanpa state offset
   setiap pixel, global PreferenceKey atau AnyView. Jaga isolasi nested scroll.
+- Utamakan API SwiftUI sederhana yang familiar bagi tim. Untuk identitas area
+  scroll, gunakan `@State private var scrollSpaceID = UUID()`, tanpa `@Namespace`.
+  State mempertahankan nilai ID selama view yang sama hidup. Jangan membuat ID
+  baru di body atau memakai satu ID global untuk beberapa area scroll. Tambahkan
+  konsep/property wrapper lain hanya ketika ada kebutuhan yang jelas.
 - Menu/sesi adalah tanggung jawab fitur/host. `onNewConversation` hanya callback;
   tanpa handler, item menu disabled. Jangan menambah session, welcome, reset draft,
   intent, bubble atau database pada tahap header.
