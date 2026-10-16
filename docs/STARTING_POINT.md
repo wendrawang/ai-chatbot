@@ -49,14 +49,15 @@ Packages/
    file/PostScript dan sumbernya ada pada [katalog font](../Packages/DesignKit/Sources/DesignKit/Resources/Fonts/SOURCES.md).
 4. Buat `BoundedTextView`, lalu bridge `GrowingTextInput`. Intrinsic width tidak
    memaksa lebar konten; tinggi dibatasi empat baris, kemudian scrolling aktif.
-   Saat kosong, pusat caret disamakan dengan pusat bounds editor. Metrik custom
-   font dapat membuat caret native sedikit naik walaupun frame sudah di tengah.
-   Ketika ada teks, UIKit tetap menentukan geometri caret dan seleksi.
+   UIKit menentukan geometri caret/seleksi pada semua state. Jangan menggeser
+   caret hanya saat kosong: posisinya harus tetap sama dengan saat mengetik.
 5. Buat composer: placeholder, field, action, surface. Token ukuran dasar memakai
    `typographySizeDisplaySmall14` dengan leading 21 dari role yang sama.
    Font/leading hanya memakai `.scaledToArtwork`, tanpa `@ScaledMetric` atau
    UIFontMetrics. Pengaturan ukuran teks pengguna tidak mengubah ukuran composer.
    UIKit dan placeholder memakai UIFont fixed yang sama.
+   ZStack field memakai `.leading` agar placeholder berada di tengah field,
+   sementara geometri caret tetap mengikuti baseline native UIKit.
    Parent hanya memberi Binding, label, palette/font pilihan dan callback kirim.
    Field dan tombol mempunyai minimum tinggi row yang sama, sehingga satu baris
    sejajar tengah. HStack tetap memakai `.bottom`: ketika field membesar, tombol
@@ -99,7 +100,7 @@ container sebelum diadopsi. Ukuran/shadow tetap dapat disesuaikan melalui token.
 - Action tetap terlihat di atas keyboard, area tap minimal 44, visual 24.
 - Pada artwork 375, padding visual 16, termasuk tombol kanan/bawah dan teks kiri/atas multiline.
 - Draft hanya dibersihkan setelah host menerima callback.
-- Caret sejajar tengah ketika field kosong/fokus dan setelah draft dihapus.
+- Posisi caret sama sebelum mengetik, setelah huruf pertama dan setelah draft dihapus.
 - Label English/Indonesia/Chinese benar dan font tidak menjadi kotak glyph kosong.
 - Composer tetap berukuran sama pada pengaturan teks normal maupun accessibility XXXL;
   placeholder memakai font editor. Artwork scaling tetap mengikuti lebar layar.

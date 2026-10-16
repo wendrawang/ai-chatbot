@@ -51,7 +51,7 @@ public struct MessageComposer: View {
     }
 
     private var field: some View {
-        ZStack(alignment: .topLeading) {
+        ZStack(alignment: .leading) {
             GrowingTextInput(
                 text: $text, font: inputFont, textColor: UIColor(colors.colorsTextPrimaryDark),
                 lineSpacing: lineSpacing, accessibilityLabel: placeholder

@@ -11,7 +11,7 @@ import XCTest
 
 @MainActor
 final class ComposerCaretTests: XCTestCase {
-    func testEmptyFocusedCaretIsCenteredAcrossFontCatalogAndAfterClearing() throws {
+    func testEmptyCaretMatchesTypedCaretAcrossFontCatalogAndAfterClearing() throws {
         try FontFace.registerFonts()
         for face in FontFace.allCases {
             let fixture = try HostWindowFixture(ComposerFixture(fontFace: face).frame(width: 343))
@@ -19,16 +19,18 @@ final class ComposerCaretTests: XCTestCase {
             let editor = try XCTUnwrap(findEditor(in: fixture.controller.view))
             XCTAssertTrue(editor.becomeFirstResponder())
             fixture.settle()
-            XCTAssertEqual(editor.caretRect(for: editor.beginningOfDocument).midY, editor.bounds.midY, accuracy: 0.01)
+            let emptyCaret = editor.caretRect(for: editor.beginningOfDocument)
             let emptyHeight = editor.bounds.height
             editor.insertText("Ag")
             fixture.settle()
+            let typedCaret = editor.caretRect(for: editor.beginningOfDocument)
+            XCTAssertEqual(emptyCaret, typedCaret, face.rawValue)
             editor.deleteBackward()
             editor.deleteBackward()
             fixture.settle()
             XCTAssertTrue(editor.text.isEmpty)
             XCTAssertEqual(editor.bounds.height, emptyHeight, accuracy: 0.01)
-            XCTAssertEqual(editor.caretRect(for: editor.beginningOfDocument).midY, editor.bounds.midY, accuracy: 0.01)
+            XCTAssertEqual(editor.caretRect(for: editor.beginningOfDocument), typedCaret, face.rawValue)
         }
     }
 

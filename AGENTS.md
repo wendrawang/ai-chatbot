@@ -78,9 +78,10 @@ tersedia pada history/main.
   inset 10 menyisakan padding 6. Field memakai inset vertikal tersebut agar teks
   multiline tetap berjarak 16 dari border. Pengaturan ukuran teks pengguna tidak
   mengubah tinggi row atau batas empat baris composer.
-- Caret editor kosong harus mengikuti pusat bounds field aktual, termasuk setelah
-  draft dihapus. Pertahankan ukuran caret native dan geometri native ketika sudah
-  ada teks; jangan menambah offset font tertentu atau menggeser padding composer.
+- Hint memakai font input yang sama dan alignment `.leading` pada ZStack agar
+  berada di tengah field saat kosong. Pertahankan geometri caret native pada
+  semua state: kosong, mengetik dan sesudah hapus. Jangan memusatkan caret kosong
+  secara terpisah ke bounds, karena referensinya berbeda dari baseline saat mengetik.
 - `ChatScreen(onSend:)` mengosongkan draft hanya jika callback host mengembalikan
   true. Starter tidak mengirim network, tidak menyimpan atau log isi pesan.
 - Integrasi host tetap `.tanyaAIHost(host)` + `host.present()`/`dismiss()`.
