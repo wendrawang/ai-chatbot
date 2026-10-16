@@ -1,7 +1,8 @@
 # Starting point — aturan implementasi
 
-Scope branch ini adalah migrasi bertahap: fondasi DesignKit, font package, dan
-screen kosong dengan composer. iOS 15. Gunakan SwiftUI; UIKit hanya untuk editor
+Scope branch ini adalah migrasi bertahap: fondasi DesignKit, font package,
+screen kosong dengan composer, dan shared header dengan boundary/blur scroll.
+Konten dummy untuk mengecek scroll hanya berada pada sandbox. iOS 15. Gunakan SwiftUI; UIKit hanya untuk editor
 multiline terukur dan bridge presentasi terisolasi. Flow chat lengkap tetap
 tersedia pada history/main.
 
@@ -63,6 +64,14 @@ tersedia pada history/main.
 
 - Struktur `Components/<NamaKomponen>`, `Extensions/<Type>+<Responsibility>.swift`.
   Nama DesignKit umum, tanpa prefix fitur. Jangan membuat ViewModel per komponen.
+- `ScreenHeader` menerima title, label/aksi back, state `isScrolled`, dan trailing
+  action opsional. Screen memiliki ScrollView dan mengirim Boolean saat boundary
+  terlewati; jangan menyimpan offset setiap pixel atau membuat BaseScreen untuk
+  tahap ini. Material hanya saat scrolled, dengan fallback opaque jika Reduce
+  Transparency aktif. Status bar dan safe area tetap milik sistem.
+- Menu/sesi adalah tanggung jawab fitur/host. `onNewConversation` hanya callback;
+  tanpa handler, item menu disabled. Jangan menambah session, welcome, reset draft,
+  intent, bubble atau database pada tahap header.
 - `let` untuk input, `@Binding` untuk state caller, `@State` untuk draft lokal.
   Screen memiliki margin luar; komponen memiliki padding dalam/surface/shadow.
 - Tinggi editor satu sampai empat baris; teks berikutnya scroll. Button visual
@@ -92,7 +101,8 @@ tersedia pada history/main.
 - Private view sections berupa noun: `field`, `surface`, `actionButton`.
   Urutan environment, binding/state, input, init, body, sections, helper.
 - Maksimal 250 baris/file, 50 baris fisik/method, 120 karakter/baris; Bool berawalan
-  `is`. Jangan padatkan implementasi agar lolos batas.
+  `is`, kecuali nama wajib protocol seperti `PreferenceKey.defaultValue` dengan
+  pengecualian lint lokal beralasan. Jangan padatkan implementasi agar lolos batas.
 
 ## Validasi
 

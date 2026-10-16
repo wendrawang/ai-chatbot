@@ -13,6 +13,8 @@ enum ChatCopy: String, CaseIterable {
     case back = "chat.back"
     case placeholder = "chat.placeholder"
     case send = "chat.send"
+    case more = "chat.more"
+    case newConversation = "chat.newConversation"
 
     private static let fileExtension = "lproj"
 
@@ -32,4 +34,8 @@ enum SupportedLanguage: String, CaseIterable {
     case english = "en"
     case indonesian = "id"
     case simplifiedChinese = "zh-Hans"
+}
+
+enum ChatElementID {
+    static let more = "chat.more"
 }

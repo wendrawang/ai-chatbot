@@ -5,31 +5,21 @@
 //  Created by Wendra on 15/10/26.
 //
 
-import DesignKit
 import SwiftUI
 
-/// The feature owns its close control; the host's NavigationView stays underneath the presentation.
+/// The feature owns its header; the host's NavigationView stays underneath the presentation.
 @MainActor
-struct HostedChatScreen: View {
-    @Environment(\.locale)
-    private var locale
+struct HostedChatScreen<Content: View>: View {
     let isEnabled: Bool
     let onSend: (String) -> Bool
     let onClose: () -> Void
+    let onNewConversation: (() -> Void)?
+    let content: Content
 
     var body: some View {
-        NavigationView {
-            ChatScreen(isEnabled: isEnabled, onSend: onSend)
-                .navigationTitle(ChatCopy.title.text(locale: locale))
-                .navigationBarTitleDisplayMode(.inline)
-                .toolbar {
-                    ToolbarItem(placement: .navigationBarLeading) {
-                        Button(action: onClose) { SystemSymbol.back.image }
-                            .accessibilityLabel(ChatCopy.back.text(locale: locale))
-                    }
-                }
-        }
-        .navigationViewStyle(.stack)
-        .accentColor(DefaultColorConstants().colorsButtonActive)
+        ChatScreen(
+            isEnabled: isEnabled, onBack: onClose, onNewConversation: onNewConversation,
+            onSend: onSend, content: { content }
+        )
     }
 }

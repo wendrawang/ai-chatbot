@@ -10,6 +10,9 @@ import Foundation
 /// Demo-host copy stays in the application bundle, outside the feature and DesignKit.
 enum SandboxCopy: String {
     case open = "sandbox.open"
+    case demoTitle = "sandbox.demo.title"
+    case demoBody = "sandbox.demo.body"
+    case demoEnd = "sandbox.demo.end"
 
     private static let languages = ["en", "id", "zh-Hans"]
     private static let fileExtension = "lproj"

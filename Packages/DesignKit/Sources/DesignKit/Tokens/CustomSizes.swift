@@ -20,6 +20,16 @@ public enum CustomSizes {
         public static let maximumLines = 4
     }
 
+    public enum Header {
+        public static let height: CGFloat = 56
+        public static let titleLines = 1
+        public static let moreRotation: Double = 90
+
+        public static var actionInset: CGFloat {
+            (ActionButton.minimumTapSize.tapTargetInArtwork - FigmaSize.weightIconSmall.scaledToArtwork) / 2
+        }
+    }
+
     public enum ActionButton {
         public static let visualSize: CGFloat = 24
         public static let iconInset: CGFloat = 6

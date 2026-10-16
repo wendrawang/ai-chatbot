@@ -25,7 +25,8 @@ Packages/
 │       ├── Foundations/Assets + Accessibility/
 │       └── Components/
 │           ├── GrowingTextInput/         # bridge + BoundedTextView
-│           └── MessageComposer/
+│           ├── MessageComposer/
+│           └── ScreenHeader/             # tahap header berikutnya
 └── TanyaAI/
     └── Sources/TanyaAI/
         ├── Chat/ChatScreen.swift + ChatCopy.swift
@@ -105,5 +106,7 @@ container sebelum diadopsi. Ukuran/shadow tetap dapat disesuaikan melalui token.
 - Composer tetap berukuran sama pada pengaturan teks normal maupun accessibility XXXL;
   placeholder memakai font editor. Artwork scaling tetap mengikuti lebar layar.
 
-Setelah tahap ini diterima, tambahkan header/welcome, lalu bubble dan data. Migrasi
-komponen existing ke `Legacy` bisa menjadi PR terpisah setelah fondasi stabil.
+Tahap setelah composer adalah [shared header dan scroll](SHARED_HEADER.md).
+Checkpoint berikutnya berjalan satu per satu: model intent/step, satu flow dummy,
+bridge host, kemudian history lokal setelah model stabil. Welcome/sesi bukan
+bagian tahap header. Migrasi komponen existing ke `Legacy` tetap terpisah.

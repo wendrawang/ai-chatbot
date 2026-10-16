@@ -70,7 +70,7 @@ milik feature menutup presentasinya sendiri.
 
 ## Callback kirim dan penutupan
 
-`TanyaAIHost(isEnabled:onSend:)` menerima closure `(String) -> Bool` pada main
+`TanyaAIHost(isEnabled:onNewConversation:onSend:)` menerima closure `(String) -> Bool` pada main
 actor. Contoh `{ _ in true }` hanya menerima draft dan membersihkan input untuk
 mencoba UI. `false` mempertahankan draft. Ganti closure dengan handler host saat
 migrasi pengiriman dimulai; host boleh menerima draft ke antrean untuk proses
@@ -113,6 +113,26 @@ dipilih ([dokumentasi Apple](https://developer.apple.com/documentation/bundleres
 Contoh konfigurasi ada pada [Info.plist](../TanyaAISandboxApp/Info.plist).
 
 Feature starter memakai light palette Figma dan menghormati safe area keyboard.
-Header native sederhana menyediakan judul/kembali untuk tahap ini; detail header
-Figma dan welcome mengikuti tahap migrasi UI berikutnya. Motion tetap memakai
+Header SwiftUI memakai `ScreenHeader` dari DesignKit: judul di tengah, kembali,
+menu titik tiga, separator dan material saat scroll. Welcome mengikuti tahap
+terpisah. Motion tetap memakai
 animasi fullscreen lama, menghormati Reduce Motion dan arah layout.
+
+## Tahap header
+
+Pemanggilan existing `TanyaAIHost { _ in true }`, `.tanyaAIHost(host)`, dan
+`host.present()` tetap berlaku. Feature sekarang memakai header SwiftUI sendiri;
+tidak perlu mengatur global `UINavigationBar.appearance()` pada host.
+
+Jika host sudah memiliki handler sesi baru, berikan `onNewConversation` saat
+membuat `TanyaAIHost`. Item “Percakapan baru” memanggil handler itu saja; package
+belum membuat sesi, membersihkan draft, atau menampilkan welcome. Closure ini
+dimiliki host selama host hidup; gunakan capture lemah untuk owner/coordinator
+yang juga memiliki host. Tanpa handler, item menu disabled.
+
+Overload `host.present { ContentView() }` menerima konten SwiftUI untuk area
+scroll. Konten tidak perlu mempunyai ScrollView, header, atau composer sendiri.
+Closure builder dievaluasi saat presentasi dan tidak disimpan oleh host; konten
+dilepas setelah dismiss. Untuk migrasi UI sekarang, sandbox memakai overload ini
+hanya pada mode `--header-demo`. Mode default tetap kosong. Lihat
+[panduan header](SHARED_HEADER.md).

@@ -13,6 +13,7 @@ import UIKit
 @MainActor
 public final class TanyaAIHost: ObservableObject {
     private let isEnabled: Bool
+    private let onNewConversation: (() -> Void)?
     private let onSend: (String) -> Bool
     private let pushTransition = TanyaAIPushTransition()
     private var locale = Locale.current
@@ -22,20 +23,30 @@ public final class TanyaAIHost: ObservableObject {
     public var isPresenting: Bool { presented != nil }
 
     /// Return true when the host accepts the draft; false keeps it in the composer.
-    public init(isEnabled: Bool = InitialValues.isEnabled, onSend: @escaping (String) -> Bool) {
+    public init(
+        isEnabled: Bool = InitialValues.isEnabled, onNewConversation: (() -> Void)? = nil,
+        onSend: @escaping (String) -> Bool
+    ) {
         self.isEnabled = isEnabled
+        self.onNewConversation = onNewConversation
         self.onSend = onSend
     }
 
     /// Presents independently of the host navigation stack. Repeated/offscreen requests are ignored.
     public func present() {
+        present { EmptyView() }
+    }
+
+    /// Supplies a scrollable UI fixture or feature content, without changing host navigation.
+    public func present<Content: View>(@ViewBuilder content: () -> Content) {
         guard presented == nil, let anchor, anchor.viewIfLoaded?.window != nil else { return }
         var presenter = anchor
         while let parent = presenter.parent { presenter = parent }
         guard presenter.presentedViewController == nil, !presenter.isBeingDismissed else { return }
-        let screen = HostedChatScreen(isEnabled: isEnabled, onSend: onSend) { [weak self] in
-            self?.dismiss()
-        }
+        let screen = HostedChatScreen(
+            isEnabled: isEnabled, onSend: onSend, onClose: { [weak self] in self?.dismiss() },
+            onNewConversation: onNewConversation, content: content()
+        )
         .environment(\.locale, locale)
         .preferredColorScheme(.light)
         let controller = UIHostingController(rootView: screen)
