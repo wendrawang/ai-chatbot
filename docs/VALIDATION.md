@@ -6,7 +6,7 @@
 | --- | --- |
 | DesignKit: registrasi tujuh font/glyph, hex, sizing, editor dan layout | 8 tes lulus |
 | TanyaAI: locale, optional anchor/identity, pergantian host, animator | 7 tes lulus |
-| Hosted unit: presentasi, lifecycle, caret kosong/fokus sesudah hapus pada tujuh font | 5 tes lulus |
+| Hosted unit: presentasi, lifecycle, caret kosong/mengetik/sesudah hapus pada tujuh font | 5 tes lulus |
 | UI: tiga bahasa, satu/empat baris, inset, tepi tap, caret kosong, whitespace, callback, font fixed, tutup/buka | 8 tes lulus |
 | Build generic iOS Simulator, deployment minimum iOS 15 | Lulus |
 | SwiftLint/formatter, batas file/method, token/copy guard | Lulus |
@@ -57,11 +57,12 @@ atas/bawah/kiri/kanannya, di luar lingkaran 24, berhasil mengirim draft. Padding
 mengompensasi inset tiap sisi `(44 - 24) / 2 = 10`, sehingga padding luar area
 tap adalah 6, termasuk saat pengaturan ukuran teks pengguna diperbesar.
 
-Regresi caret direproduksi pada ketujuh font: sebelum perbaikan, titik tengah
-caret kosong berada 0,25–0,5 point di atas pusat bounds editor pada ukuran 14.
-Tes hosted gagal sebelum perbaikan dan lulus setelah caret kosong dipusatkan ke
-bounds aktual, termasuk setelah mengetik lalu menghapus draft. Bentuk/ukuran
-caret native dipertahankan; saat ada teks, geometri caret tetap milik UIKit.
+Regresi caret direproduksi pada ketujuh font: koreksi yang hanya memusatkan caret
+kosong ke bounds membuat posisinya berbeda 0,25–0,5 point dari caret saat mengetik.
+Tes hosted gagal sebelum perbaikan dan lulus setelah geometri native dipakai pada
+semua state. Rect caret di awal dokumen dibandingkan saat kosong, setelah mengetik
+dan setelah menghapus draft: semuanya tetap sama. Hint dan input memakai font
+yang sama; ZStack `.leading` memusatkan hint secara vertikal pada field.
 
 Screenshot sekarang diambil setelah membuka feature melalui `.tanyaAIHost(host)`
 dan `host.present()`. Header native sementara menyediakan judul dan tombol kembali;
