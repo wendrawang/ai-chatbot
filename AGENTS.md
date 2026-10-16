@@ -78,6 +78,9 @@ tersedia pada history/main.
   inset 10 menyisakan padding 6. Field memakai inset vertikal tersebut agar teks
   multiline tetap berjarak 16 dari border. Pengaturan ukuran teks pengguna tidak
   mengubah tinggi row atau batas empat baris composer.
+- Caret editor kosong harus mengikuti pusat bounds field aktual, termasuk setelah
+  draft dihapus. Pertahankan ukuran caret native dan geometri native ketika sudah
+  ada teks; jangan menambah offset font tertentu atau menggeser padding composer.
 - `ChatScreen(onSend:)` mengosongkan draft hanya jika callback host mengembalikan
   true. Starter tidak mengirim network, tidak menyimpan atau log isi pesan.
 - Integrasi host tetap `.tanyaAIHost(host)` + `host.present()`/`dismiss()`.

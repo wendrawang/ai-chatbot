@@ -19,6 +19,13 @@ public final class BoundedTextView: UITextView {
         return CGSize(width: UIView.noIntrinsicMetric, height: max(measuredHeight, lineHeight))
     }
 
+    public override func caretRect(for position: UITextPosition) -> CGRect {
+        let caret = super.caretRect(for: position)
+        guard !hasText, !caret.isNull, !caret.isInfinite else { return caret }
+        // Custom font metrics can place the empty caret above its line box's center.
+        return caret.offsetBy(dx: InitialValues.zeroCGFloat, dy: bounds.midY - caret.midY)
+    }
+
     public override func layoutSubviews() {
         super.layoutSubviews()
         guard bounds.width > InitialValues.zeroCGFloat, !isMeasuring else { return }

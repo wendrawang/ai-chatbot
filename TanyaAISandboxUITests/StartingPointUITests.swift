@@ -90,6 +90,22 @@ final class StartingPointUITests: XCTestCase {
         XCTAssertFalse(application.buttons["composer.send"].isEnabled)
     }
 
+    func testEmptyFocusedInputAndCaretAfterClearing() {
+        launch(locale: "en")
+        let input = application.textViews["composer.input"]
+        XCTAssertTrue(input.waitForExistence(timeout: 10))
+        input.tap()
+        XCTAssertTrue(application.keyboards.firstMatch.waitForExistence(timeout: 5))
+        XCTAssertTrue(input.isHittable)
+        capture("starter-empty-focused")
+        input.typeText("Ag")
+        capture("starter-caret-one-line")
+        input.typeText(String(repeating: XCUIKeyboardKey.delete.rawValue, count: 2))
+        XCTAssertEqual(input.value as? String, "")
+        XCTAssertEqual(input.frame.midY, application.buttons["composer.send"].frame.midY, accuracy: 1)
+        capture("starter-empty-after-clearing")
+    }
+
     func testRejectedSubmissionKeepsDraft() {
         launch(locale: "en", extra: ["--reject-send"])
         let input = application.textViews["composer.input"]

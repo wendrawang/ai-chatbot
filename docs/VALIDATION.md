@@ -6,13 +6,13 @@
 | --- | --- |
 | DesignKit: registrasi tujuh font/glyph, hex, sizing, editor dan layout | 8 tes lulus |
 | TanyaAI: locale, optional anchor/identity, pergantian host, animator | 7 tes lulus |
-| Hosted unit: fullscreen, navigation stack, duplicate/offscreen/modal lain, dismiss, pelepasan memori | 4 tes lulus |
-| UI: tiga bahasa, satu/empat baris, inset visual, tepi tap, whitespace, callback, font fixed, tutup/buka | 7 tes lulus |
+| Hosted unit: presentasi, lifecycle, caret kosong/fokus sesudah hapus pada tujuh font | 5 tes lulus |
+| UI: tiga bahasa, satu/empat baris, inset, tepi tap, caret kosong, whitespace, callback, font fixed, tutup/buka | 8 tes lulus |
 | Build generic iOS Simulator, deployment minimum iOS 15 | Lulus |
 | SwiftLint/formatter, batas file/method, token/copy guard | Lulus |
 | Link dokumentasi dan generated token diff | Lulus; nilai token tidak berubah, header Wendra ditambahkan |
 
-Total **26 tes unik**. Unit layout mencakup lebar 320/375/430 dengan normal dan
+Total **28 tes unik**. Unit layout mencakup lebar 320/375/430 dengan normal dan
 accessibility XXXL (font composer tetap). Sizing diuji sampai 1024 point tanpa cap.
 Ini bukan pengujian UI iPad, runtime iOS 15/device atau pengukuran rendered FPS.
 
@@ -24,7 +24,7 @@ minimum iOS 17 sesuai XCTest toolchain; minimum app/package tetap iOS 15.
 
 ## Pemeriksaan visual
 
-Keenam screenshot native berikut diekspor dari hasil UI test dan diperiksa.
+Kesembilan screenshot native berikut diekspor dari hasil UI test dan diperiksa.
 Gambar tidak diedit atau dibuat dengan generator gambar.
 
 - [English](../Artifacts/Screenshots/starter-en.png)
@@ -33,6 +33,9 @@ Gambar tidak diedit atau dibuat dengan generator gambar.
 - [Satu baris dan keyboard](../Artifacts/Screenshots/starter-one-line-keyboard.png)
 - [Empat baris dan keyboard](../Artifacts/Screenshots/starter-four-lines-keyboard.png)
 - [Pengaturan accessibility XXXL, font composer tetap](../Artifacts/Screenshots/starter-accessibility-zh-Hans.png)
+- [Kosong dan fokus](../Artifacts/Screenshots/starter-empty-focused.png)
+- [Caret setelah mengetik](../Artifacts/Screenshots/starter-caret-one-line.png)
+- [Kosong setelah dihapus](../Artifacts/Screenshots/starter-empty-after-clearing.png)
 
 Action tetap terlihat dan berada di atas keyboard. Teks panjang scroll di dalam
 editor setelah empat baris. UI test memeriksa pusat field/tombol sejajar saat
@@ -53,6 +56,12 @@ kiri, serta field atas ketika multiline. Tap target tetap 44×44; tap dekat tepi
 atas/bawah/kiri/kanannya, di luar lingkaran 24, berhasil mengirim draft. Padding
 mengompensasi inset tiap sisi `(44 - 24) / 2 = 10`, sehingga padding luar area
 tap adalah 6, termasuk saat pengaturan ukuran teks pengguna diperbesar.
+
+Regresi caret direproduksi pada ketujuh font: sebelum perbaikan, titik tengah
+caret kosong berada 0,25–0,5 point di atas pusat bounds editor pada ukuran 14.
+Tes hosted gagal sebelum perbaikan dan lulus setelah caret kosong dipusatkan ke
+bounds aktual, termasuk setelah mengetik lalu menghapus draft. Bentuk/ukuran
+caret native dipertahankan; saat ada teks, geometri caret tetap milik UIKit.
 
 Screenshot sekarang diambil setelah membuka feature melalui `.tanyaAIHost(host)`
 dan `host.present()`. Header native sementara menyediakan judul dan tombol kembali;
