@@ -1,3 +1,10 @@
+//
+//  BoundedTextView.swift
+//  DesignKit
+//
+//  Created by Wendra on 15/10/26.
+//
+
 import UIKit
 
 /// A one-to-four-line editor; additional content scrolls inside the field.
@@ -10,6 +17,13 @@ public final class BoundedTextView: UITextView {
     public override var intrinsicContentSize: CGSize {
         let lineHeight = font?.lineHeight ?? UIFont.preferredFont(forTextStyle: .body).lineHeight
         return CGSize(width: UIView.noIntrinsicMetric, height: max(measuredHeight, lineHeight))
+    }
+
+    public override func caretRect(for position: UITextPosition) -> CGRect {
+        let caret = super.caretRect(for: position)
+        guard !hasText, !caret.isNull, !caret.isInfinite else { return caret }
+        // Custom font metrics can place the empty caret above its line box's center.
+        return caret.offsetBy(dx: InitialValues.zeroCGFloat, dy: bounds.midY - caret.midY)
     }
 
     public override func layoutSubviews() {

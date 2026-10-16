@@ -1,3 +1,10 @@
+//
+//  MessageComposer.swift
+//  DesignKit
+//
+//  Created by Wendra on 15/10/26.
+//
+
 import SwiftUI
 
 /// Inner spacing and appearance belong here; the screen owns outer margins.
@@ -5,8 +12,8 @@ import SwiftUI
 public struct MessageComposer: View {
     @Binding
     private var text: String
-    @ScaledMetric(relativeTo: .body)
-    private var fontSize = FigmaSize.typographySizeDisplayNormal16.scaledToArtwork
+    // Figma typography follows artwork scaling only, independent of the user's text size setting.
+    private let fontSize = FigmaSize.typographySizeDisplaySmall14.scaledToArtwork
     private let placeholder: String
     private let sendLabel: String
     private let isEnabled: Bool
@@ -16,7 +23,7 @@ public struct MessageComposer: View {
 
     public init(
         text: Binding<String>, placeholder: String, sendLabel: String,
-        isEnabled: Bool = InitialValues.isEnabled, fontFace: FontFace = .regular,
+        isEnabled: Bool = InitialValues.isEnabled, fontFace: FontFace = .openSansRegular,
         colors: any FigmaColorProtocol = DefaultColorConstants(), onSend: @escaping () -> Void
     ) {
         self._text = text
@@ -29,14 +36,18 @@ public struct MessageComposer: View {
     }
 
     public var body: some View {
-        HStack(alignment: .bottom, spacing: FigmaSize.spacingMedium.scaledToArtwork) {
+        HStack(alignment: .bottom, spacing: actionPadding) {
             field
+                .frame(minHeight: minimumRowHeight)
             actionButton
+                .frame(minHeight: minimumRowHeight)
         }
-        .padding(.horizontal, FigmaSize.spacingLarge.scaledToArtwork)
-        .padding(.vertical, FigmaSize.spacingMedium.scaledToArtwork)
+        .padding(.leading, FigmaSize.spacingLarge.scaledToArtwork)
+        .padding(.trailing, actionPadding)
+        .padding(.vertical, actionPadding)
         .background(surface)
         .accessibilityElement(children: .contain)
+        .accessibilityIdentifier(ComponentID.composer)
     }
 
     private var field: some View {
@@ -57,7 +68,7 @@ public struct MessageComposer: View {
                     .allowsHitTesting(false)
             }
         }
-        .padding(.vertical, FigmaSize.spacingMedium.scaledToArtwork)
+        .padding(.vertical, CustomSizes.ActionButton.tapAreaInset)
     }
 
     private var actionButton: some View {
@@ -97,10 +108,20 @@ public struct MessageComposer: View {
 
     private var inputFont: UIFont { fontFace.font(size: fontSize) }
 
+    /// Measure spacing from the visible circle, allowing its larger tap target into the padding.
+    private var actionPadding: CGFloat {
+        max(InitialValues.zeroCGFloat, FigmaSize.spacingLarge.scaledToArtwork - CustomSizes.ActionButton.tapAreaInset)
+    }
+
+    /// Equal single-line rows center the field/button; a taller field keeps the button at its bottom.
+    private var minimumRowHeight: CGFloat {
+        let padding = CustomSizes.ActionButton.tapAreaInset
+        let singleLineHeight = ceil(inputFont.lineHeight + lineSpacing) + padding + padding
+        return max(CustomSizes.ActionButton.minimumTapSize.tapTargetInArtwork, singleLineHeight)
+    }
+
     private var lineSpacing: CGFloat {
-        let leading =
-            FigmaSize.typographyLineHeightDisplayNormal16
-            * fontSize / FigmaSize.typographySizeDisplayNormal16
+        let leading = FigmaSize.typographyLineHeightDisplaySmall14.scaledToArtwork
         return max(InitialValues.zeroCGFloat, leading - inputFont.lineHeight)
     }
 

@@ -1,4 +1,10 @@
 #!/bin/sh
+#
+#  run_sandbox.sh
+#  ai-chatbot
+#
+#  Created by Wendra on 15/10/26.
+#
 
 # Builds the sandbox, installs it on a booted simulator, and launches it.
 #

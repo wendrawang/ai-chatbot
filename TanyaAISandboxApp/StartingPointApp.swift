@@ -1,3 +1,10 @@
+//
+//  StartingPointApp.swift
+//  TanyaAISandboxApp
+//
+//  Created by Wendra on 15/10/26.
+//
+
 import DesignKit
 import SwiftUI
 import TanyaAI
@@ -15,7 +22,7 @@ struct StartingPointApp: App {
 
     var body: some Scene {
         WindowGroup {
-            ChatScreen { _ in !options.isRejectingSend }
+            SandboxHostView(options: options)
                 .environment(\.locale, options.locale ?? .current)
                 .preferredColorScheme(.light)
         }

@@ -1,4 +1,11 @@
 #!/usr/bin/env python3
+#
+#  simulator_destination.py
+#  ai-chatbot
+#
+#  Created by Wendra on 15/10/26.
+#
+
 """Select the newest installed iOS runtime containing the requested device."""
 import json
 import os

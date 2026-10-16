@@ -1,3 +1,10 @@
+//
+//  FontLoader.swift
+//  DesignKit
+//
+//  Created by Wendra on 15/10/26.
+//
+
 import CoreText
 import Foundation
 
@@ -18,17 +25,22 @@ public enum FontLoader {
         lock.lock()
         defer { lock.unlock() }
         if let names = registered[url] { return names }
-        guard let descriptors = CTFontManagerCreateFontDescriptorsFromURL(url as CFURL)
-            as? [CTFontDescriptor], !descriptors.isEmpty else {
+        guard
+            let descriptors = CTFontManagerCreateFontDescriptorsFromURL(url as CFURL)
+                as? [CTFontDescriptor], !descriptors.isEmpty
+        else {
             throw Failure.invalidFont(url)
         }
         var error: Unmanaged<CFError>?
         let isRegistered = CTFontManagerRegisterFontsForURL(url as CFURL, .process, &error)
         let failure = error?.takeRetainedValue()
-        guard isRegistered || failure.map({
-            CFErrorGetDomain($0) as String == kCTFontManagerErrorDomain as String
-                && CFErrorGetCode($0) == CTFontManagerError.alreadyRegistered.rawValue
-        }) == true else {
+        guard
+            isRegistered
+                || failure.map({
+                    CFErrorGetDomain($0) as String == kCTFontManagerErrorDomain as String
+                        && CFErrorGetCode($0) == CTFontManagerError.alreadyRegistered.rawValue
+                }) == true
+        else {
             throw Failure.registration(url)
         }
         let names = descriptors.compactMap {
@@ -45,9 +57,11 @@ public enum FontLoader {
         subdirectory: String? = nil
     ) throws -> [String] {
         try fileNames.flatMap { fileName in
-            guard let resource = bundle.url(
-                forResource: fileName, withExtension: nil, subdirectory: subdirectory
-            ) else {
+            guard
+                let resource = bundle.url(
+                    forResource: fileName, withExtension: nil, subdirectory: subdirectory
+                )
+            else {
                 throw Failure.missingResource(fileName)
             }
             return try register(url: resource)

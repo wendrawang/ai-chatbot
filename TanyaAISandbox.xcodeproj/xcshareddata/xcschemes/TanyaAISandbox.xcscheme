@@ -14,7 +14,7 @@
             buildForAnalyzing = "YES">
             <BuildableReference
                BuildableIdentifier = "primary"
-               BlueprintIdentifier = "199ADB7202D0FBBCAB75FAAF"
+               BlueprintIdentifier = "3E31A20F5290CD99E2DB4330"
                BuildableName = "Tanya AI Sandbox.app"
                BlueprintName = "TanyaAISandbox"
                ReferencedContainer = "container:TanyaAISandbox.xcodeproj">
@@ -28,7 +28,7 @@
             buildForAnalyzing = "NO">
             <BuildableReference
                BuildableIdentifier = "primary"
-               BlueprintIdentifier = "0A162CDD8ED9654D6C1B6BCD"
+               BlueprintIdentifier = "71B11421E8E05D24B6B9CB2D"
                BuildableName = "TanyaAISandboxUITests.xctest"
                BlueprintName = "TanyaAISandboxUITests"
                ReferencedContainer = "container:TanyaAISandbox.xcodeproj">
@@ -44,7 +44,7 @@
       <MacroExpansion>
          <BuildableReference
             BuildableIdentifier = "primary"
-            BlueprintIdentifier = "199ADB7202D0FBBCAB75FAAF"
+            BlueprintIdentifier = "3E31A20F5290CD99E2DB4330"
             BuildableName = "Tanya AI Sandbox.app"
             BlueprintName = "TanyaAISandbox"
             ReferencedContainer = "container:TanyaAISandbox.xcodeproj">
@@ -55,9 +55,19 @@
             skipped = "NO">
             <BuildableReference
                BuildableIdentifier = "primary"
-               BlueprintIdentifier = "0A162CDD8ED9654D6C1B6BCD"
+               BlueprintIdentifier = "71B11421E8E05D24B6B9CB2D"
                BuildableName = "TanyaAISandboxUITests.xctest"
                BlueprintName = "TanyaAISandboxUITests"
+               ReferencedContainer = "container:TanyaAISandbox.xcodeproj">
+            </BuildableReference>
+         </TestableReference>
+         <TestableReference
+            skipped = "NO">
+            <BuildableReference
+               BuildableIdentifier = "primary"
+               BlueprintIdentifier = "FB96397586D0738C1A486914"
+               BuildableName = "TanyaAISandboxTests.xctest"
+               BlueprintName = "TanyaAISandboxTests"
                ReferencedContainer = "container:TanyaAISandbox.xcodeproj">
             </BuildableReference>
          </TestableReference>
@@ -77,7 +87,7 @@
          runnableDebuggingMode = "0">
          <BuildableReference
             BuildableIdentifier = "primary"
-            BlueprintIdentifier = "199ADB7202D0FBBCAB75FAAF"
+            BlueprintIdentifier = "3E31A20F5290CD99E2DB4330"
             BuildableName = "Tanya AI Sandbox.app"
             BlueprintName = "TanyaAISandbox"
             ReferencedContainer = "container:TanyaAISandbox.xcodeproj">
@@ -94,7 +104,7 @@
          runnableDebuggingMode = "0">
          <BuildableReference
             BuildableIdentifier = "primary"
-            BlueprintIdentifier = "199ADB7202D0FBBCAB75FAAF"
+            BlueprintIdentifier = "3E31A20F5290CD99E2DB4330"
             BuildableName = "Tanya AI Sandbox.app"
             BlueprintName = "TanyaAISandbox"
             ReferencedContainer = "container:TanyaAISandbox.xcodeproj">

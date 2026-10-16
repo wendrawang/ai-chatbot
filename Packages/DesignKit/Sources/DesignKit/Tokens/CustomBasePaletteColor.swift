@@ -1,3 +1,10 @@
+//
+//  CustomBasePaletteColor.swift
+//  DesignKit
+//
+//  Created by Wendra on 15/10/26.
+//
+
 import SwiftUI
 
 /// Raw palette additions absent from the generated Figma colors.

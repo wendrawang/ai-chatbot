@@ -1,3 +1,10 @@
+//
+//  CustomSizes.swift
+//  DesignKit
+//
+//  Created by Wendra on 15/10/26.
+//
+
 import UIKit
 
 /// Measurements absent from generated tokens. Use FigmaSize's named spacing directly.
@@ -17,6 +24,11 @@ public enum CustomSizes {
         public static let visualSize: CGFloat = 24
         public static let iconInset: CGFloat = 6
         public static let minimumTapSize: CGFloat = 44
+
+        /// Already scaled: the invisible inset on each side of the centered visual.
+        public static var tapAreaInset: CGFloat {
+            (minimumTapSize.tapTargetInArtwork - visualSize.scaledToArtwork) / 2
+        }
     }
 
     public enum Radius {
@@ -30,5 +42,10 @@ public enum CustomSizes {
 
     public enum Layout {
         public static let measurementTolerance: CGFloat = 0.5
+    }
+
+    public enum Motion {
+        public static let navigationParallax: CGFloat = 0.3
+        public static let navigationDuration: TimeInterval = 0.35
     }
 }

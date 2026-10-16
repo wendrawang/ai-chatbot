@@ -1,4 +1,10 @@
 #!/bin/sh
+#
+#  check_style.sh
+#  ai-chatbot
+#
+#  Created by Wendra on 15/10/26.
+#
 
 set -eu
 
@@ -16,6 +22,7 @@ export DEVELOPER_DIR
 # Every package under Packages/, so a new one is covered the day it appears
 # rather than the day someone notices it was not.
 find "$PROJECT_ROOT/TanyaAISandboxApp" \
+  "$PROJECT_ROOT/TanyaAISandboxTests" \
   "$PROJECT_ROOT/TanyaAISandboxUITests" \
   "$PROJECT_ROOT/Packages" \
   "$PROJECT_ROOT/Scripts" \
@@ -42,6 +49,7 @@ TOOLCHAIN_ROOT="$(dirname "$(dirname "$(xcrun --find swift)")")"
 SWIFT_HOST_LIBS="$TOOLCHAIN_ROOT/lib/swift/host"
 MACOS_SDK="$(xcrun --sdk macosx --show-sdk-path)"
 find "$PROJECT_ROOT/TanyaAISandboxApp" \
+  "$PROJECT_ROOT/TanyaAISandboxTests" \
   "$PROJECT_ROOT/TanyaAISandboxUITests" \
   "$PROJECT_ROOT/Packages" \
   "$PROJECT_ROOT/Scripts" \

@@ -1,7 +1,7 @@
 # Tanya AI — starting point
 
 Baseline minimal untuk belajar dan migrasi bertahap, iOS 15. Menampilkan halaman
-kosong dan composer yang tumbuh sampai empat baris. Font Open Sans dari package;
+kosong dan composer yang tumbuh sampai empat baris. Tujuh font Fira Sans/Open Sans dari package;
 copy tersedia dalam English, Bahasa Indonesia, dan 简体中文.
 
 ```sh
@@ -14,7 +14,12 @@ Tombol kirim memanggil callback host. Sandbox menerima draft dan membersihkannya
 belum ada network atau bubble pesan. `--reject-send` mendemonstrasikan draft yang
 harus dipertahankan saat host menolak submission.
 
+Pada sandbox, tekan “Buka Tanya AI” untuk membuka feature fullscreen melalui
+`.tanyaAIHost(host)` + `host.present()`, dengan animasi dari samping seperti flow
+sebelumnya. Tombol kembali menutup feature dan mengembalikan layar host.
+
 - [Urutan belajar dan tree](docs/STARTING_POINT.md)
+- [Membuka screen dari host app](docs/HOST_INTEGRATION.md)
 - [Aturan implementasi](AGENTS.md)
 - [Hasil validasi](docs/VALIDATION.md)
 

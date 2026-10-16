@@ -2,7 +2,20 @@
 
 Scope branch ini adalah migrasi bertahap: fondasi DesignKit, font package, dan
 screen kosong dengan composer. iOS 15. Gunakan SwiftUI; UIKit hanya untuk editor
-multiline terukur. Flow chat lengkap tetap tersedia pada history/main.
+multiline terukur dan bridge presentasi terisolasi. Flow chat lengkap tetap
+tersedia pada history/main.
+
+## Header file
+
+- Semua file kode yang dikelola repo (Swift, script, dan `.strings`) memiliki
+  header nama file, module/package, dan `Created by Wendra on dd/MM/yy.`.
+  File baru memakai tanggal pembuatan; jangan mengganti tanggal saat mengedit.
+- `// swift-tools-version` dan shebang tetap pada baris pertama, sebelum header.
+- Token generated juga memiliki header tersebut; perubahan ini hanya menambahkan
+  header, tanpa mengubah token atau menghapus catatan asal/provenance. Saat export
+  berikutnya, template engine perlu mengeluarkan header yang sama.
+- Jangan menambahkan kredit pribadi ke lisensi/font pihak ketiga, binary,
+  screenshot, atau file project yang dihasilkan Xcode/project generator.
 
 ## Token dan nilai
 
@@ -30,8 +43,14 @@ multiline terukur. Flow chat lengkap tetap tersedia pada history/main.
 
 - Font berada di `Resources/Fonts`; filename dan PostScript di `FontFace`.
   Register sekali saat bootstrap melalui CoreText/`Bundle.module`, idempotent.
-- Composer memakai `@ScaledMetric` agar font mengikuti Dynamic Type. Editor dan
-  placeholder menerima UIFont yang sama; jangan menerapkan scaling dua kali.
+- Nama case menyertakan family dan weight: `firaSansRegular/Medium/SemiBold/Bold`
+  dan `openSansRegular/Medium/Bold`. Jangan memakai case `.regular/.medium` yang
+  ambigu antar-family. Tambahkan file asli beserta lisensi dan nama PostScript
+  yang dibaca dari metadata; jangan menyamakan nama file dengan PostScript.
+- Composer memakai token `typographySizeDisplaySmall14` dan leading role yang
+  sama, hanya dengan `.scaledToArtwork`. Ukuran font/leading tidak mengikuti
+  pengaturan Dynamic Type pengguna; jangan menambahkan `@ScaledMetric` atau
+  UIFontMetrics. Editor dan placeholder menerima UIFont fixed yang sama.
   Glyph Chinese yang tidak ada di Open Sans menggunakan fallback native iOS.
 - Copy fitur berada di resource `en`, `id`, `zh-Hans`. Screen membaca locale dari
   environment dan menyuplai label ke DesignKit. Tidak ada copy bisnis di DesignKit.
@@ -48,8 +67,26 @@ multiline terukur. Flow chat lengkap tetap tersedia pada history/main.
   Screen memiliki margin luar; komponen memiliki padding dalam/surface/shadow.
 - Tinggi editor satu sampai empat baris; teks berikutnya scroll. Button visual
   24, tap minimal 44. Kata panjang dan keyboard tidak menggeser action keluar.
+- Composer memakai alignment bawah dengan minimum tinggi row yang sama pada
+  field dan tombol: satu baris sejajar tengah, multiline mempertahankan tombol
+  di bawah. Minimum row mengikuti font/leading/padding dan minimum tap target;
+  jangan menambahkan state jumlah baris untuk mengubah alignment.
+- Padding visual composer memakai `spacingLarge` (16 pada artwork 375). Hitung
+  inset tiap sisi tap target dari `(tapSize - visualSize) / 2`, setelah scaling
+  dan minimum tap diterapkan. Kurangi inset ini dari padding luar tombol dan
+  jarak field/tombol; jangan menambahkannya lagi ke jarak visual. Pada 44/24,
+  inset 10 menyisakan padding 6. Field memakai inset vertikal tersebut agar teks
+  multiline tetap berjarak 16 dari border. Pengaturan ukuran teks pengguna tidak
+  mengubah tinggi row atau batas empat baris composer.
+- Caret editor kosong harus mengikuti pusat bounds field aktual, termasuk setelah
+  draft dihapus. Pertahankan ukuran caret native dan geometri native ketika sudah
+  ada teks; jangan menambah offset font tertentu atau menggeser padding composer.
 - `ChatScreen(onSend:)` mengosongkan draft hanya jika callback host mengembalikan
   true. Starter tidak mengirim network, tidak menyimpan atau log isi pesan.
+- Integrasi host tetap `.tanyaAIHost(host)` + `host.present()`/`dismiss()`.
+  Presentasi fullscreen dengan animasi samping, terpisah dari navigation stack
+  host. Jangan menggantinya dengan NavigationLink atau push pada stack host.
+  Host dimiliki AppState/session owner atau `@StateObject`, tidak dibuat di body.
 - UI owners `@MainActor`; putus delegate pada dismantle dan hindari retain cycle.
 - Private view sections berupa noun: `field`, `surface`, `actionButton`.
   Urutan environment, binding/state, input, init, body, sections, helper.

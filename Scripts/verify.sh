@@ -1,4 +1,10 @@
 #!/bin/sh
+#
+#  verify.sh
+#  ai-chatbot
+#
+#  Created by Wendra on 15/10/26.
+#
 
 set -eu
 

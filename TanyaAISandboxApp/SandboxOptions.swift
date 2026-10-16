@@ -1,8 +1,16 @@
+//
+//  SandboxOptions.swift
+//  TanyaAISandboxApp
+//
+//  Created by Wendra on 15/10/26.
+//
+
 import Foundation
 
 /// Developer-only launch metadata. The host callback accepts drafts without contacting a backend.
 struct SandboxOptions {
     static let fontFailure = "Font registration failed: "
+    static let openIdentifier = "sandbox.open"
     private static let languageFlag = "--language"
     private static let rejectFlag = "--reject-send"
 

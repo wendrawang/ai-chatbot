@@ -1,4 +1,11 @@
 #!/usr/bin/env python3
+#
+#  check_design_system.py
+#  ai-chatbot
+#
+#  Created by Wendra on 15/10/26.
+#
+
 """Guard starter tokens, production literals, boundaries and three-language copy."""
 import re
 import sys
@@ -10,7 +17,7 @@ errors = []
 METADATA = {
     'Typography/FontFace.swift', 'Extensions/Color+Hex.swift',
     'Foundations/Assets/SystemSymbol.swift', 'Foundations/Accessibility/ComponentID.swift',
-    'Chat/ChatCopy.swift', 'TanyaAISandboxApp/SandboxOptions.swift'
+    'Chat/ChatCopy.swift', 'TanyaAISandboxApp/SandboxOptions.swift', 'TanyaAISandboxApp/SandboxCopy.swift'
 }
 paths = list((ROOT / 'Packages').glob('*/Sources/**/*.swift'))
 paths += list((ROOT / 'TanyaAISandboxApp').glob('*.swift'))

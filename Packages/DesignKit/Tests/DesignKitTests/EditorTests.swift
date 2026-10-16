@@ -1,3 +1,10 @@
+//
+//  EditorTests.swift
+//  DesignKit
+//
+//  Created by Wendra on 15/10/26.
+//
+
 import SwiftUI
 import XCTest
 
@@ -8,7 +15,7 @@ final class EditorTests: XCTestCase {
     func testEditorGrowsToFourLinesThenScrollsAndShrinksWhenCleared() throws {
         try FontFace.registerFonts()
         let editor = BoundedTextView(frame: CGRect(x: 0, y: 0, width: 220, height: 300))
-        editor.font = FontFace.regular.font(size: 16)
+        editor.font = FontFace.openSansRegular.font(size: 16)
         editor.textContainerInset = .zero
         editor.textContainer.lineFragmentPadding = 0
         editor.isScrollEnabled = false
@@ -30,7 +37,7 @@ final class EditorTests: XCTestCase {
         XCTAssertFalse(editor.isScrollEnabled)
     }
 
-    func testComposerAdaptsFontAndWrapsWithoutGrowingHorizontally() throws {
+    func testComposerWrapsWithoutGrowingHorizontallyAcrossTextSizeSettings() throws {
         try FontFace.registerFonts()
         for width: CGFloat in [320, 375, 430] {
             for category: ContentSizeCategory in [.large, .accessibilityExtraExtraExtraLarge] {
