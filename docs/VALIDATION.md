@@ -12,7 +12,8 @@
 | Resource localization fitur dan sandbox | 20 assertion lulus pada macOS |
 | Kompilasi tiga PDF imageset menjadi Assets.car | Lulus melalui actool |
 | Full xcodebuild generic iOS Simulator dengan plugin/resource bundle | Lulus setelah cleanup mapping lama |
-| Pengujian runtime simulator terbaru | Belum dijalankan ulang |
+| Unit package pada simulator iOS 26.5 | 18 tes lulus: DesignKit 11, TanyaAI 7 |
+| Hosted test dan UI automation terbaru | Terhalang ketidakcocokan versi CoreSimulator |
 | Diff token generated dan tujuh font | Tidak berubah |
 
 Pemeriksaan localization menjalankan source `String+Resource.swift` dan accessor
@@ -22,14 +23,56 @@ R.swift asli terhadap bundle berisi ketiga `.lproj`. Mencakup English, Indonesia
 Full `xcodebuild` setelah cleanup berhasil menjalankan plugin R.swift pada target
 package dan sandbox, mengompilasi xcassets serta membangun resource bundle asli.
 Pemeriksaan swiftc sebelumnya hanya memakai accessor `Bundle.module` sementara
-untuk pemeriksaan kompilasi. Tes `AssetTests` ditambahkan untuk memeriksa pemuatan
-gambar saat suite iOS berikutnya dijalankan.
+untuk pemeriksaan kompilasi. `AssetTests` kini lulus saat memuat ketiga ikon dari
+bundle package yang sebenarnya pada simulator.
 
 Percobaan awal build sempat terhalang pembatasan lingkungan; build penuh sudah
-lulus setelah akses lingkungan diperbarui. Build dan assertion macOS tidak
-menggantikan suite UI/lifecycle. Jalankan `Scripts/verify.sh` pada Mac dengan
-simulator aktif sebelum merge. Screenshot dan 35 tes pada bagian berikut adalah
-**baseline 16 Oktober**, bukan hasil pengujian ulang perubahan R.swift.
+lulus setelah akses lingkungan diperbarui. Unit package dibangun dengan
+`xcodebuild build-for-testing`, lalu dijalankan langsung lewat runner `xctest`
+pada simulator terpasang. Jalur `xcodebuild test` menolak CoreSimulator 1171.7
+karena Xcode yang aktif meminta 1174.9.2. Suite hosted/UI belum bisa diulang
+melalui jalur tersebut. Jalankan `Scripts/verify.sh` setelah versi Xcode dan
+CoreSimulator sesuai. Screenshot dan 35 tes pada bagian berikut adalah
+**baseline 16 Oktober**, bukan seluruhnya hasil pengujian ulang perubahan R.swift.
+
+Audit terbaru juga menambahkan uji paste 19.000 karakter campuran Chinese/English.
+Editor mempertahankan batas empat baris, scrolling aktif, menyusut setelah
+dibersihkan, dan instance editor dilepas setelah pemiliknya berakhir. Ini menguji
+tinggi dan lifecycle editor; bukan pengukuran FPS/latensi paste atau bukti bahwa
+semua jalur aplikasi bebas memory leak.
+
+App sandbox berhasil dipasang dan dijalankan pada simulator iPhone SE iOS 26.5;
+layar host dengan tombol “Buka Tanya AI” terlihat. Ini tidak menggantikan pengujian
+interaksi header/composer. Tidak ada klaim bahwa suite UI berhasil dijalankan.
+
+## Audit readability dan biaya runtime
+
+View utama berukuran 79–131 baris, sedangkan screen fitur 98 baris. API SwiftUI
+standar, input immutable, state lokal, dan callback eksplisit membuat alur mudah
+ditelusuri. Bagian lebih kompleks terisolasi pada editor UIKit dan animator
+presentasi, dengan komentar alasan perilaku khusus. Pola view, callback dan
+penempatan komponen ada pada [panduan view](VIEW_TEMPLATE.md).
+
+- `ScreenContainer`, `ScreenHeader`, `MessageComposer`, `GrowingTextInput`, sizing,
+  font dan scroll boundary sudah berada di DesignKit, tanpa ketergantungan fitur.
+- Callback sederhana tetap memakai tipe closure langsung. Typealias hanya
+  diperlukan ketika memberi nama kontrak domain yang kompleks/berulang.
+- R.swift menghasilkan source saat build. Akses runtime tetap lookup resource.
+  Microbenchmark macOS untuk enam label bersama mencatat sekitar 0,11 ms per
+  kelompok pada 30.000 iterasi. Ini bukan benchmark rendering pada iPhone.
+- Scroll menyimpan status Boolean dan melapor saat boundary berubah. Geometri
+  tetap dibaca saat layout; tidak ada klaim bahwa cost scroll menjadi nol.
+- Font didaftarkan sekali; editor menginvalidasi tinggi hanya ketika ukuran
+  berubah. Measurement teks tetap dipengaruhi panjang input meskipun tinggi
+  editor dibatasi empat baris.
+- Audit reference menemukan weak anchor/presented controller, weak callback back,
+  serta delegate yang diputus saat dismantle. Callback dari host tetap perlu
+  capture ownership yang sesuai agar caller tidak membuat siklus sendiri.
+
+Struktur ini layak sebagai baseline migrasi bertahap. Belum ada profil Instruments
+Leaks/Allocations, frame time pada device, atau pengujian UI terbaru; jangan
+mengartikan hasil unit test sebagai jaminan performa/bebas leak pada semua flow.
+Pengukuran body/dependency mengikuti [panduan performa Apple](https://developer.apple.com/documentation/xcode/understanding-and-improving-swiftui-performance).
 
 Tiga file mapping lama (`ChatCopy`, `SandboxCopy`, `SystemSymbol`) dan konstanta
 rotasi ikon yang tidak dipakai sudah dihapus setelah persetujuan pengguna.

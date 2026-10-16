@@ -58,6 +58,50 @@ Screen memiliki draft; `MessageComposer` menerima Binding dan callback. Presente
 host tetap `.tanyaAIHost(host)` dengan satu `TanyaAIHost` milik `@StateObject` atau
 session owner. Host tidak dibuat ulang di `body`.
 
+## Callback dan typealias
+
+Callback sederhana ditulis langsung pada pemiliknya:
+
+```swift
+private let onBack: () -> Void
+private let onSend: (String) -> Bool
+```
+
+Nama menyatakan aksi. Kontrak hasil wajib jelas: pada starter, `onSend` mengembalikan
+`true` ketika host menerima submission sehingga draft boleh dibersihkan; `false`
+mempertahankan draft. Ini bukan status sukses pengiriman ke backend.
+
+Tidak perlu satu file `TypeAliases.swift` untuk `Action`, `VoidCallback`, dan
+alias callback lain yang sudah mudah dibaca. Gunakan typealias ketika signature
+cukup kompleks atau menjadi kontrak domain yang dipakai beberapa API. Letakkan
+dekat domain pemilik, dengan nama sesuai tanggung jawab. Typealias hanya nama lain
+untuk tipe; tidak memberi penghematan runtime.
+
+Closure bisa mempertahankan reference object. Jika object menyimpan callback yang
+menangkap object itu sendiri, gunakan capture yang sesuai, misalnya `[weak self]`.
+Tidak perlu menambahkan weak capture pada setiap closure SwiftUI secara otomatis.
+
+## Kapan dipindahkan menjadi komponen bersama
+
+| Tanggung jawab | Tempat |
+| --- | --- |
+| Header, container, composer, editor umum | `DesignKit/Components` |
+| Scroll boundary, sizing, locale resource | `DesignKit/Extensions` |
+| Token, custom size/color, registrasi font | `DesignKit/Tokens` dan `Typography` |
+| Draft, menu sesi, aturan menerima submission | Screen/fitur pemilik |
+| Bridge presentasi TanyaAI | `TanyaAI/Host` |
+
+Komponen umum yang sudah dibutuhkan beberapa caller dibuat reusable. Potongan
+yang baru *mungkin* dipakai ulang boleh tetap private sampai tanggung jawabnya
+jelas atau ada caller berikutnya. Saat memisahkan, kirim data dan callback dari
+caller; jangan memasukkan nama screen, routing fitur atau state bisnis ke DesignKit.
+
+Bagian rumit saat ini terisolasi: `GrowingTextInput`/`BoundedTextView` mengatur
+measurement, seleksi dan delegate editor; `TanyaAIPushTransition` mengatur transisi
+UIKit. Screen baru cukup memakai API publiknya. Lifecycle bridge mengikuti urutan
+make/update/dismantle, dan delegate diputus saat dismantle. Komentar menjelaskan
+alasan perilaku khusus, bukan mengulang arti setiap baris.
+
 ## Annotation yang digunakan
 
 | API standar | Alasan |
@@ -135,3 +179,11 @@ State scroll hanya Boolean saat boundary berubah. Potongan view private membuat
 kode terbaca; pemisahan tersebut sendiri bukan jaminan performa. Ukur ketika
 ada workload yang nyata, dan jalankan pemeriksaan layout/lifecycle existing
 sebelum mengubah ownership atau layout bersama.
+
+Properti `private var field: some View` tetap dievaluasi bersama body pemiliknya;
+ini bukan batas update tersendiri. Gunakan `struct View` terpisah bila bagian itu
+memiliki state/dependency sendiri yang perlu diisolasi. Jangan menambah cache,
+ViewModel, typealias, atau generic helper hanya dengan dugaan akan lebih cepat.
+Batas empat baris membatasi tinggi editor; panjang teks tetap memengaruhi biaya
+measurement. Pengujian paste panjang tidak berarti panjang input tak terbatas
+akan selalu murah.

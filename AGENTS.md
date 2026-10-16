@@ -96,6 +96,11 @@ tersedia pada history/main.
   intent, bubble atau database pada tahap header.
 - `let` untuk input, `@Binding` untuk state caller, `@State` untuk draft lokal.
   Screen memiliki margin luar; komponen memiliki padding dalam/surface/shadow.
+- Callback sederhana ditulis langsung (`() -> Void`, `(String) -> Bool`) dengan
+  nama aksi dan kontrak hasil yang jelas. Typealias hanya untuk signature kompleks
+  atau kontrak domain bersama, diletakkan dekat pemiliknya, bukan catalog global.
+  Potongan yang baru mungkin reusable tetap private sampai tanggung jawab/caller
+  berikutnya jelas; ekstrak komponen umum yang memang diperlukan.
 - Tinggi editor satu sampai empat baris; teks berikutnya scroll. Button visual
   24, tap minimal 44. Kata panjang dan keyboard tidak menggeser action keluar.
 - Composer memakai alignment bawah dengan minimum tinggi row yang sama pada
