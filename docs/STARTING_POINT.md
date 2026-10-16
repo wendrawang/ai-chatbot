@@ -69,12 +69,11 @@ Packages/
    Field dan tombol mempunyai minimum tinggi row yang sama, sehingga satu baris
    sejajar tengah. HStack tetap memakai `.bottom`: ketika field membesar, tombol
    bertahan di bawah dan field tumbuh ke atas. Minimum row mengikuti font,
-   leading, padding dan minimum tap target.
-   Padding visual memakai `spacingLarge`: lingkaran 24 berada di tengah tap target
-   44, sehingga inset tiap sisi `(44 - 24) / 2 = 10`. Padding di luar tap target
-   menjadi `16 - 10 = 6`, agar jarak lingkaran ke border tetap 16. Field tetap
-   berjarak 16 di kiri; inset vertikal field 10 ditambah padding luar 6 menjaga
-   jarak teks multiline 16 di atas/bawah. Satu baris mengikuti pusat visual tombol.
+   leading dan ukuran visual tombol.
+   Padding semua sisi dan jarak field/tombol memakai `spacingLarge` langsung.
+   Pada artwork 375, tombol visual 24 dan padding 16 mengikuti desain, tanpa
+   frame interaksi tambahan atau perhitungan kompensasi padding. Frame tombol
+   dan tebal stroke memakai `.scaledToArtwork`; tidak ada batas minimum dari SDK.
 6. Buat screen: draft `@State`, area kosong, composer di bawah, margin luar.
    Baca locale host, resolve `R.string.localizable` melalui `String(resource:locale:)`
    dan kirimkan label ke komponen.
@@ -106,7 +105,7 @@ container sebelum diadopsi. Ukuran/shadow tetap dapat disesuaikan melalui token.
 ## Checkpoint
 
 - Input satu sampai empat baris lalu scroll, termasuk kata panjang dan Chinese.
-- Action tetap terlihat di atas keyboard, area tap minimal 44, visual 24.
+- Action tetap terlihat di atas keyboard, dengan ukuran mengikuti desain UI/UX.
 - Pada artwork 375, padding visual 16, termasuk tombol kanan/bawah dan teks kiri/atas multiline.
 - Draft hanya dibersihkan setelah host menerima callback.
 - Posisi caret sama sebelum mengetik, setelah huruf pertama dan setelah draft dihapus.

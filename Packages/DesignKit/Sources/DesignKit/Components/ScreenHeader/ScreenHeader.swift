@@ -44,14 +44,14 @@ public struct ScreenHeader<Trailing: View>: View {
                 .frame(maxWidth: .infinity)
                 .accessibilityAddTraits(.isHeader)
                 .accessibilityIdentifier(ComponentID.headerTitle)
-            Color.clear.frame(width: tapSize, height: tapSize).overlay(trailing)
+            Color.clear.frame(width: actionSize, height: actionSize).overlay(trailing)
         }
-        .padding(.horizontal, actionPadding)
-        .frame(height: CustomSizes.Header.scaledHeight)
+        .padding(.horizontal, FigmaSize.spacingLarge.scaledToArtwork)
+        .frame(height: CustomSizes.Header.height.scaledToArtwork)
         .background(surface.ignoresSafeArea(edges: .top))
         .overlay(alignment: .bottom) {
             if isScrolled {
-                colors.colorsOutlineNetral.frame(height: FigmaSize.weightOutline.strokeInArtwork)
+                colors.colorsOutlineNetral.frame(height: FigmaSize.weightOutline.scaledToArtwork)
             }
         }
         .accessibilityElement(children: .contain)
@@ -62,11 +62,10 @@ public struct ScreenHeader<Trailing: View>: View {
         Button(action: onBack) {
             Image(R.image.backArrow).resizable().scaledToFit()
                 .frame(
-                    width: FigmaSize.weightIconSmall.scaledToArtwork,
-                    height: FigmaSize.weightIconSmall.scaledToArtwork
+                    width: actionSize,
+                    height: actionSize
                 )
                 .foregroundColor(colors.colorsIconColored)
-                .frame(width: tapSize, height: tapSize)
                 .contentShape(Rectangle())
         }
         .buttonStyle(.plain)
@@ -82,11 +81,12 @@ public struct ScreenHeader<Trailing: View>: View {
             colors.colorsSurfacePrimary
         }
     }
+}
 
-    private var tapSize: CGFloat { CustomSizes.ActionButton.minimumTapSize.tapTargetInArtwork }
-    private var actionPadding: CGFloat {
-        max(InitialValues.zeroCGFloat, FigmaSize.spacingLarge.scaledToArtwork - CustomSizes.Header.actionInset)
-    }
+// MARK: - Helpers
+
+private extension ScreenHeader {
+    var actionSize: CGFloat { FigmaSize.weightIconSmall.scaledToArtwork }
 }
 
 extension ScreenHeader where Trailing == EmptyView {

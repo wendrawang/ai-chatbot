@@ -26,7 +26,7 @@ tersedia pada history/main.
   `spacingExtraLarge`, atau `spacingDoubleExtraLarge`, sesuai peran. Jangan memakai
   `spacing4/8/16/...`. Typography memakai nama role, bukan token numerik polos.
 - `CustomSizes` hanya untuk ukuran yang belum mempunyai token dengan peran yang
-  sesuai: diameter tombol, minimum tap, radius, shadow, jumlah baris, toleransi.
+  sesuai: diameter tombol, radius, shadow, jumlah baris, toleransi.
   Jangan membuat alias spacing generated atau memakai spacing sebagai radius.
 - `InitialValues` hanya menyimpan data kosong/default bersama, seperti string
   kosong dan angka nol. Jangan membuat alias Boolean: gunakan `true`/`false`
@@ -40,8 +40,11 @@ tersedia pada history/main.
   `CustomColors` mengatur penggunaan semantik/opacity. Warna yang sudah memiliki
   token Figma dipakai langsung; jangan disalin ulang sebagai custom color.
 - `.scaledToArtwork`: round(nilai / (375 / lebar UIScreen.main)), tanpa cap.
-  Reference height 812 hanya metadata. Stroke minimum satu pixel; tap minimum
-  44 point. Opacity dan jumlah baris tidak di-scale. Tidak ada `sizeInArtwork` alias.
+  Reference height 812 hanya metadata. Semua dimensi termasuk stroke dan area
+  tombol memakai `.scaledToArtwork` langsung dari nilai desain. Jangan menambahkan
+  batas minimum tap/stroke, hit frame tambahan, atau helper scaling terpisah.
+  Ukuran interaksi mengikuti keputusan UI/UX. Opacity dan jumlah baris tidak
+  di-scale. Tidak ada `sizeInArtwork` alias.
 
 ## Font, resource, copy
 
@@ -101,19 +104,17 @@ tersedia pada history/main.
   atau kontrak domain bersama, diletakkan dekat pemiliknya, bukan catalog global.
   Potongan yang baru mungkin reusable tetap private sampai tanggung jawab/caller
   berikutnya jelas; ekstrak komponen umum yang memang diperlukan.
-- Tinggi editor satu sampai empat baris; teks berikutnya scroll. Button visual
-  24, tap minimal 44. Kata panjang dan keyboard tidak menggeser action keluar.
+- Tinggi editor satu sampai empat baris; teks berikutnya scroll. Ukuran tombol
+  mengikuti nilai desain, tanpa minimum tap tambahan. Kata panjang dan keyboard
+  tidak menggeser action keluar.
 - Composer memakai alignment bawah dengan minimum tinggi row yang sama pada
   field dan tombol: satu baris sejajar tengah, multiline mempertahankan tombol
-  di bawah. Minimum row mengikuti font/leading/padding dan minimum tap target;
+  di bawah. Tinggi row satu baris mengikuti font/leading dan ukuran visual tombol;
   jangan menambahkan state jumlah baris untuk mengubah alignment.
-- Padding visual composer memakai `spacingLarge` (16 pada artwork 375). Hitung
-  inset tiap sisi tap target dari `(tapSize - visualSize) / 2`, setelah scaling
-  dan minimum tap diterapkan. Kurangi inset ini dari padding luar tombol dan
-  jarak field/tombol; jangan menambahkannya lagi ke jarak visual. Pada 44/24,
-  inset 10 menyisakan padding 6. Field memakai inset vertikal tersebut agar teks
-  multiline tetap berjarak 16 dari border. Pengaturan ukuran teks pengguna tidak
-  mengubah tinggi row atau batas empat baris composer.
+- Padding composer di semua sisi dan jarak field/tombol memakai `spacingLarge`
+  (16 pada artwork 375), tanpa kompensasi area tap. Frame tombol mengikuti ukuran
+  visual desain. Pengaturan ukuran teks pengguna tidak mengubah tinggi row atau
+  batas empat baris composer.
 - Hint memakai font input yang sama dan alignment `.leading` pada ZStack agar
   berada di tengah field saat kosong. Pertahankan geometri caret native pada
   semua state: kosong, mengetik dan sesudah hapus. Jangan memusatkan caret kosong
@@ -128,7 +129,13 @@ tersedia pada history/main.
   Host dimiliki AppState/session owner atau `@StateObject`, tidak dibuat di body.
 - UI owners `@MainActor`; putus delegate pada dismantle dan hindari retain cycle.
 - Private view sections berupa noun: `field`, `surface`, `actionButton`.
-  Urutan environment, binding/state, input, init, body, sections, helper.
+  Deklarasi utama berurutan environment, binding/state, input, init, body, sections.
+  Computed setup/perhitungan/validasi berada di `private extension` pada file yang
+  sama, dengan `// MARK: - Helpers`. Handler memakai `// MARK: - Actions` dan
+  private extension tersendiri bila ada. Stored properties/property wrapper tetap
+  pada deklarasi utama; jangan mengubahnya menjadi computed hanya agar pindah.
+  Lifecycle protocol/override UIKit tetap pada tipe pemilik. Jangan membuat
+  extension kosong atau memisahkan setiap helper menjadi extension sendiri.
 - Ikuti [template view](docs/VIEW_TEMPLATE.md). Property wrapper SwiftUI standar,
   `@ViewBuilder`, `@MainActor`, dan `@main` pada app mempunyai peran jelas.
   Jangan menambahkan macro kustom, `@Observable`/`@Model`, wrapper baru atau

@@ -53,7 +53,7 @@ public struct ScreenContainer<Content: View, Trailing: View, Footer: View>: View
                 VStack(spacing: InitialValues.zeroCGFloat) { content }
                     .frame(maxWidth: .infinity, alignment: .leading)
                     .padding(.horizontal, FigmaSize.spacingLarge.scaledToArtwork)
-                    .padding(.top, CustomSizes.Header.scaledHeight + FigmaSize.spacingLarge.scaledToArtwork)
+                    .padding(.top, CustomSizes.Header.height.scaledToArtwork + FigmaSize.spacingLarge.scaledToArtwork)
                     .padding(.bottom, FigmaSize.spacingLarge.scaledToArtwork)
                     .onScrollBoundaryChange(in: scrollSpaceID) { isScrolled = $0 }
             }

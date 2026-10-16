@@ -12,15 +12,6 @@ public extension CGFloat {
     var scaledToArtwork: CGFloat {
         scaledToArtwork(ratio: CustomSizes.Artwork.currentRatio)
     }
-
-    var strokeInArtwork: CGFloat {
-        guard isFinite, self > InitialValues.zeroCGFloat else { return InitialValues.zeroCGFloat }
-        return Swift.max(CustomSizes.Layout.minimumStrokePixels / UIScreen.main.scale, scaledToArtwork)
-    }
-
-    var tapTargetInArtwork: CGFloat {
-        Swift.max(CustomSizes.ActionButton.minimumTapSize, scaledToArtwork)
-    }
 }
 
 extension CGFloat {

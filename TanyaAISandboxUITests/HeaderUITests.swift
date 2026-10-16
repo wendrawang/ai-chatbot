@@ -88,10 +88,11 @@ final class HeaderUITests: XCTestCase {
         let back = application.buttons["header.back"].frame
         let more = application.buttons["chat.more"].frame
         let title = application.staticTexts["header.title"].frame
-        XCTAssertGreaterThanOrEqual(back.width, 44)
-        XCTAssertGreaterThanOrEqual(back.height, 44)
-        XCTAssertGreaterThanOrEqual(more.width, 44)
-        XCTAssertGreaterThanOrEqual(more.height, 44)
+        let actionSize = (24 * application.frame.width / 375).rounded()
+        XCTAssertEqual(back.width, actionSize, accuracy: 1)
+        XCTAssertEqual(back.height, actionSize, accuracy: 1)
+        XCTAssertEqual(more.width, actionSize, accuracy: 1)
+        XCTAssertEqual(more.height, actionSize, accuracy: 1)
         XCTAssertEqual(title.midX, application.frame.midX, accuracy: 1)
         XCTAssertGreaterThanOrEqual(title.minX, back.maxX)
         XCTAssertLessThanOrEqual(title.maxX, more.minX)

@@ -32,8 +32,12 @@ struct SandboxHostView: View {
         .navigationViewStyle(.stack)
         .tanyaAIHost(host)
     }
+}
 
-    private func open() {
+// MARK: - Actions
+
+private extension SandboxHostView {
+    func open() {
         if isHeaderDemo {
             host.present { HeaderDemoContent() }
         } else {

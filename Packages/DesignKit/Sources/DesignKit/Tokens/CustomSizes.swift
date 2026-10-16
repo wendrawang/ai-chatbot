@@ -23,26 +23,11 @@ public enum CustomSizes {
     public enum Header {
         public static let height: CGFloat = 56
         public static let titleLines = 1
-
-        /// Already scaled, while preserving the minimum action tap target.
-        public static var scaledHeight: CGFloat {
-            max(height.scaledToArtwork, ActionButton.minimumTapSize.tapTargetInArtwork)
-        }
-
-        public static var actionInset: CGFloat {
-            (ActionButton.minimumTapSize.tapTargetInArtwork - FigmaSize.weightIconSmall.scaledToArtwork) / 2
-        }
     }
 
     public enum ActionButton {
         public static let visualSize: CGFloat = 24
         public static let iconInset: CGFloat = 6
-        public static let minimumTapSize: CGFloat = 44
-
-        /// Already scaled: the invisible inset on each side of the centered visual.
-        public static var tapAreaInset: CGFloat {
-            (minimumTapSize.tapTargetInArtwork - visualSize.scaledToArtwork) / 2
-        }
     }
 
     public enum Radius {
@@ -56,7 +41,6 @@ public enum CustomSizes {
 
     public enum Layout {
         public static let measurementTolerance: CGFloat = 0.5
-        public static let minimumStrokePixels: CGFloat = 1
     }
 
     public enum Motion {

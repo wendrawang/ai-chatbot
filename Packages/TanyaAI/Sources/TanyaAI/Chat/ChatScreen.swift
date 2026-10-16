@@ -54,10 +54,6 @@ public struct ChatScreen<Content: View>: View {
                     height: FigmaSize.weightIconSmall.scaledToArtwork
                 )
                 .foregroundColor(DefaultColorConstants().colorsIconDark)
-                .frame(
-                    width: CustomSizes.ActionButton.minimumTapSize.tapTargetInArtwork,
-                    height: CustomSizes.ActionButton.minimumTapSize.tapTargetInArtwork
-                )
                 .contentShape(Rectangle())
         }
         .accessibilityLabel(String(resource: R.string.localizable.chatMore, locale: locale))
@@ -73,12 +69,16 @@ public struct ChatScreen<Content: View>: View {
         .padding(.horizontal, FigmaSize.spacingLarge.scaledToArtwork)
         .padding(.vertical, FigmaSize.spacingMedium.scaledToArtwork)
     }
+}
 
-    private func close() {
+// MARK: - Actions
+
+private extension ChatScreen {
+    func close() {
         if let onBack { onBack() } else { dismiss() }
     }
 
-    private func submit() {
+    func submit() {
         guard onSend(text) else { return }
         text = InitialValues.emptyString
     }

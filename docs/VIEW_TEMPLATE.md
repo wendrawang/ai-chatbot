@@ -12,8 +12,26 @@ dipisah menjadi properti private bernama benda, seperti `field`, `surface`, atau
 3. `@Binding` untuk data caller dan `@State` untuk state lokal.
 4. Input immutable `private let`, termasuk callback.
 5. Initializer public dengan nama parameter yang jelas.
-6. `body`, bagian visual private, kemudian helper/aksi.
-7. Extension initializer tambahan hanya bila mengurangi pekerjaan caller.
+6. `body`, kemudian bagian visual private yang menghasilkan `View`.
+7. `private extension` pada file yang sama untuk helper setup/perhitungan/validasi.
+8. `private extension` untuk handler/aksi bila diperlukan.
+9. Extension initializer tambahan hanya bila mengurangi pekerjaan caller.
+
+Deklarasi utama memperlihatkan susunan tampilan; extension memperlihatkan
+perhitungan dan aksi pendukung. Gunakan `// MARK: - Helpers` dan
+`// MARK: - Actions` agar pembagian terlihat di source dan navigator Xcode.
+Contoh pada `MessageComposer`: `field`, `actionButton`, dan `surface` tetap di
+struct utama; `inputFont`, `singleLineRowHeight`, `lineSpacing`, dan
+`isSendEnabled` berada di private extension. `ChatScreen.close/submit` berada di
+extension Actions.
+
+Stored properties, `@State`, `@Binding`, `@Environment`, dan input callback tetap
+di deklarasi utama. Extension tidak menambah stored property. Pertahankan
+stored/computed semantics saat merapikan: jangan mengubah waktu perhitungan nilai
+hanya untuk memindahkannya. Lifecycle `UIViewRepresentable` dan override UIKit
+tetap pada tipe pemilik; helper seperti `applyStyle` dapat dipindahkan ke extension.
+View tanpa helper tidak perlu extension tambahan. Pemindahan ke extension adalah
+pengorganisasian source, tanpa penambahan object, state, atau cache saat runtime.
 
 Contoh komponen sederhana; semua label diberikan caller agar DesignKit tetap umum:
 
@@ -170,9 +188,15 @@ file dan nama PostScript berbeda; ketujuh font existing tetap dipertahankan.
   `zeroInteger`, `zeroCGFloat`). Boolean ditulis langsung `true`/`false`.
 - `FigmaSize`: spacing role `small/medium/large` dan typography generated.
 - `CustomSizes`: ukuran/batas yang belum mempunyai role token, misalnya empat
-  baris editor dan minimum tap target 44.
+  baris editor dan ukuran visual tombol yang ditentukan UI/UX.
 - `CustomColors`: semantik warna tambahan; hex hanya di custom base palette.
 - Konstanta algoritma yang bukan data awal/ukuran disimpan private dekat pemiliknya.
+
+Semua dimensi, termasuk frame tombol dan tebal stroke, memakai `.scaledToArtwork`
+langsung dari token/nilai desain. Tidak ada minimum tap/stroke, pembesaran area
+tap oleh SDK, atau kompensasi padding untuk frame interaksi tambahan. Padding
+composer tetap memakai `spacingLarge` di semua sisi; ukuran interaksi mengikuti
+desain UI/UX.
 
 Body tidak melakukan registrasi font, network, parsing berat, atau penyimpanan.
 State scroll hanya Boolean saat boundary berubah. Potongan view private membuat

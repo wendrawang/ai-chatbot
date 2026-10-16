@@ -57,7 +57,27 @@ public struct GrowingTextInput: UIViewRepresentable {
         editor.setNeedsLayout()
     }
 
-    private func applyStyle(to editor: BoundedTextView) {
+    public func makeCoordinator() -> Coordinator { Coordinator(parent: self) }
+
+    public static func dismantleUIView(_ editor: BoundedTextView, coordinator: Coordinator) {
+        editor.delegate = nil
+    }
+
+    public final class Coordinator: NSObject, UITextViewDelegate {
+        var parent: GrowingTextInput
+        init(parent: GrowingTextInput) { self.parent = parent }
+
+        public func textViewDidChange(_ editor: UITextView) {
+            parent.text = editor.text
+            editor.setNeedsLayout()
+        }
+    }
+}
+
+// MARK: - Helpers
+
+private extension GrowingTextInput {
+    func applyStyle(to editor: BoundedTextView) {
         guard editor.markedTextRange == nil else { return }
         let paragraph = NSMutableParagraphStyle()
         paragraph.lineSpacing = max(InitialValues.zeroCGFloat, lineSpacing)
@@ -73,21 +93,5 @@ public struct GrowingTextInput: UIViewRepresentable {
             attributes, range: NSRange(location: InitialValues.zeroInteger, length: editor.textStorage.length)
         )
         editor.selectedRange = selection
-    }
-
-    public func makeCoordinator() -> Coordinator { Coordinator(parent: self) }
-
-    public static func dismantleUIView(_ editor: BoundedTextView, coordinator: Coordinator) {
-        editor.delegate = nil
-    }
-
-    public final class Coordinator: NSObject, UITextViewDelegate {
-        var parent: GrowingTextInput
-        init(parent: GrowingTextInput) { self.parent = parent }
-
-        public func textViewDidChange(_ editor: UITextView) {
-            parent.text = editor.text
-            editor.setNeedsLayout()
-        }
     }
 }

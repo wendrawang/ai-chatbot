@@ -1,5 +1,32 @@
 # Validasi starter
 
+## Pembagian view dan ukuran desain — 17 Oktober 2026
+
+Deklarasi view utama menyimpan input/state, initializer, `body`, dan bagian visual.
+Setup, perhitungan dan validasi dipisah ke `private extension` Helpers pada file
+yang sama; handler dipisah ke extension Actions. Stored properties tetap pada
+deklarasi utama. Pemisahan source tidak menambah object, state, atau cache runtime.
+
+Ukuran interaksi dan tebal stroke sekarang mengikuti nilai desain melalui
+`.scaledToArtwork` langsung. Tidak ada minimum tap/stroke atau frame interaksi
+tambahan dari SDK. Padding composer memakai `spacingLarge` di semua sisi tanpa
+kompensasi inset. Font input tetap 14, maksimum empat baris, satu baris sejajar
+tengah, dan tombol bertahan di bawah ketika editor membesar.
+
+Verifikasi terbaru menggunakan `xcodebuild test` pada iPhone SE, iOS 26.5:
+
+| Suite | Hasil |
+| --- | --- |
+| DesignKit: font, asset, sizing, editor, header, paste panjang/release | 11 lulus |
+| TanyaAI: localization, anchor, animator | 7 lulus |
+| Hosted: present/dismiss, release, caret, container, scroll boundary | 8 lulus |
+| UI: tiga bahasa, padding desain, keyboard, empat baris, header/menu | 11 lulus |
+
+Total **37 tes lulus**, tanpa kegagalan atau skip. Build dan lint lulus. Screenshot
+native input kosong, empat baris dengan keyboard, serta header setelah scroll
+diekspor dari hasil test dan diperiksa. Test UI sekarang memeriksa ukuran desain
+langsung, tanpa mengasumsikan minimum tap SDK. Tidak ada pengukuran FPS/Instruments.
+
 ## Perubahan R.swift — 17 Oktober 2026
 
 | Pemeriksaan perubahan terbaru | Hasil |
@@ -13,7 +40,7 @@
 | Kompilasi tiga PDF imageset menjadi Assets.car | Lulus melalui actool |
 | Full xcodebuild generic iOS Simulator dengan plugin/resource bundle | Lulus setelah cleanup mapping lama |
 | Unit package pada simulator iOS 26.5 | 18 tes lulus: DesignKit 11, TanyaAI 7 |
-| Hosted test dan UI automation terbaru | Terhalang ketidakcocokan versi CoreSimulator |
+| Hosted test dan UI automation terbaru | 19 tes lulus: hosted 8, UI 11 |
 | Diff token generated dan tujuh font | Tidak berubah |
 
 Pemeriksaan localization menjalankan source `String+Resource.swift` dan accessor
@@ -26,14 +53,11 @@ Pemeriksaan swiftc sebelumnya hanya memakai accessor `Bundle.module` sementara
 untuk pemeriksaan kompilasi. `AssetTests` kini lulus saat memuat ketiga ikon dari
 bundle package yang sebenarnya pada simulator.
 
-Percobaan awal build sempat terhalang pembatasan lingkungan; build penuh sudah
-lulus setelah akses lingkungan diperbarui. Unit package dibangun dengan
-`xcodebuild build-for-testing`, lalu dijalankan langsung lewat runner `xctest`
-pada simulator terpasang. Jalur `xcodebuild test` menolak CoreSimulator 1171.7
-karena Xcode yang aktif meminta 1174.9.2. Suite hosted/UI belum bisa diulang
-melalui jalur tersebut. Jalankan `Scripts/verify.sh` setelah versi Xcode dan
-CoreSimulator sesuai. Screenshot dan 35 tes pada bagian berikut adalah
-**baseline 16 Oktober**, bukan seluruhnya hasil pengujian ulang perubahan R.swift.
+Percobaan awal sempat terhalang lingkungan dan ketidakcocokan CoreSimulator.
+Setelah versi simulator sesuai, ketiga suite dijalankan ulang melalui
+`xcodebuild test`: total 37 tes lulus seperti tercatat di atas. Screenshot dan
+35 tes pada bagian berikut tetap **baseline 16 Oktober**; screenshot baseline
+tidak menggambarkan seluruh perubahan asset dan aturan ukuran terbaru.
 
 Audit terbaru juga menambahkan uji paste 19.000 karakter campuran Chinese/English.
 Editor mempertahankan batas empat baris, scrolling aktif, menyusut setelah
@@ -41,14 +65,14 @@ dibersihkan, dan instance editor dilepas setelah pemiliknya berakhir. Ini menguj
 tinggi dan lifecycle editor; bukan pengukuran FPS/latensi paste atau bukti bahwa
 semua jalur aplikasi bebas memory leak.
 
-App sandbox berhasil dipasang dan dijalankan pada simulator iPhone SE iOS 26.5;
-layar host dengan tombol “Buka Tanya AI” terlihat. Ini tidak menggantikan pengujian
-interaksi header/composer. Tidak ada klaim bahwa suite UI berhasil dijalankan.
+App sandbox berhasil dipasang dan dijalankan pada simulator iPhone SE iOS 26.5.
+Tes UI membuka fitur lewat tombol host, berinteraksi dengan header/composer,
+lalu menutup dan membuka fitur kembali.
 
 ## Audit readability dan biaya runtime
 
-View utama berukuran 79–131 baris, sedangkan screen fitur 98 baris. API SwiftUI
-standar, input immutable, state lokal, dan callback eksplisit membuat alur mudah
+View utama memiliki body ringkas dengan helper/aksi pada extension terpisah.
+API SwiftUI standar, input immutable, state lokal, dan callback eksplisit membuat alur mudah
 ditelusuri. Bagian lebih kompleks terisolasi pada editor UIKit dan animator
 presentasi, dengan komentar alasan perilaku khusus. Pola view, callback dan
 penempatan komponen ada pada [panduan view](VIEW_TEMPLATE.md).
@@ -70,7 +94,7 @@ penempatan komponen ada pada [panduan view](VIEW_TEMPLATE.md).
   capture ownership yang sesuai agar caller tidak membuat siklus sendiri.
 
 Struktur ini layak sebagai baseline migrasi bertahap. Belum ada profil Instruments
-Leaks/Allocations, frame time pada device, atau pengujian UI terbaru; jangan
+Leaks/Allocations atau frame time pada device; jangan
 mengartikan hasil unit test sebagai jaminan performa/bebas leak pada semua flow.
 Pengukuran body/dependency mengikuti [panduan performa Apple](https://developer.apple.com/documentation/xcode/understanding-and-improving-swiftui-performance).
 
@@ -141,11 +165,11 @@ Composer dan placeholder memakai token 14 dengan leading role 21, hanya mengikut
 artwork scaling; Dynamic Type tidak mengubah font/leading composer. UI test
 membandingkan ukuran field kosong, satu baris, empat baris dan composer pada
 pengaturan normal dengan accessibility XXXL: semuanya tetap sama.
-Pada artwork 375, tes UI memeriksa jarak 16 antara border dan lingkaran tombol kanan/bawah, field
-kiri, serta field atas ketika multiline. Tap target tetap 44×44; tap dekat tepi
-atas/bawah/kiri/kanannya, di luar lingkaran 24, berhasil mengirim draft. Padding
-mengompensasi inset tiap sisi `(44 - 24) / 2 = 10`, sehingga padding luar area
-tap adalah 6, termasuk saat pengaturan ukuran teks pengguna diperbesar.
+Pada artwork 375, tes UI baseline memeriksa jarak 16 antara border dan lingkaran
+tombol kanan/bawah, field kiri, serta field atas ketika multiline. Baseline saat
+itu mempunyai area interaksi tambahan; aturan tersebut sudah diganti dengan
+ukuran desain langsung pada 17 Oktober. Screenshot baseline tidak menjadi acuan
+area interaksi implementasi terbaru.
 
 Regresi caret direproduksi pada ketujuh font: koreksi yang hanya memusatkan caret
 kosong ke bounds membuat posisinya berbeda 0,25–0,5 point dari caret saat mengetik.
@@ -161,7 +185,7 @@ menutup feature dan presentasi berikutnya memulai draft kosong.
 
 ## Header dan scroll
 
-Tes UI memeriksa judul di tengah, tap target back/more minimum 44, jarak awal
+Tes UI memeriksa judul di tengah, frame action back/more, jarak awal
 konten dari header, perubahan boundary ketika scroll, mencapai akhir, lalu
 kembali ke state awal. Header dan composer tetap pada posisi yang sama. Header
 tetap stabil dengan keyboard dan input empat baris, termasuk pada pengaturan

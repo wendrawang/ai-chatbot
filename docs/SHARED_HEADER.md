@@ -25,8 +25,9 @@ TanyaAISandboxApp/HeaderDemoContent.swift # fixture scroll, bukan UI produksi
    Fira Sans SemiBold, role `typographySizeDisplayNormal16`, hanya artwork scaling.
    Spacing memakai `spacingMedium/Large`; generated token tetap sumber tunggal.
 2. Buat `ScreenHeader`: slot kiri/kanan sama besar supaya judul tetap di tengah,
-   termasuk ketika trailing kosong. Back dan trailing action mempunyai tap target
-   minimum 44. Label dan action datang dari caller; tidak ada copy TanyaAI di sini.
+   termasuk ketika trailing kosong. Ukuran back dan trailing mengikuti token icon
+   dengan `.scaledToArtwork`, tanpa batas minimum SDK. Label dan action datang
+   dari caller; tidak ada copy TanyaAI di sini.
    Trailing slot untuk satu action; caller memberi label/tap target yang sesuai.
 3. Surface biasa opaque. Saat `isScrolled`, gunakan `.ultraThinMaterial` dan
    separator token outline di bawah. Jika Reduce Transparency aktif, pertahankan
@@ -122,7 +123,7 @@ Localization dan nama asset dibaca melalui R.swift generated; lihat
 
 ## Checkpoint sebelum lanjut
 
-- Judul di tengah; action kiri/kanan dapat ditekan dengan tap target minimum 44.
+- Judul di tengah; ukuran action kiri/kanan mengikuti token desain.
 - Posisi awal berjarak dari header. Scroll menampilkan separator dan blur,
   kembali ke atas menghilangkan keduanya, tanpa menggeser header/composer.
 - Keyboard dan input empat baris tidak mengubah posisi header. Back menutup

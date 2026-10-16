@@ -31,7 +31,7 @@ final class ScreenContainerTests: XCTestCase {
         XCTAssertEqual(secondFrame.width, firstFrame.width, accuracy: 1)
         let expectedTop =
             fixture.controller.view.safeAreaInsets.top
-            + CustomSizes.Header.scaledHeight + FigmaSize.spacingLarge.scaledToArtwork
+            + CustomSizes.Header.height.scaledToArtwork + FigmaSize.spacingLarge.scaledToArtwork
         XCTAssertEqual(firstFrame.minY, expectedTop, accuracy: 1)
     }
 }

@@ -54,8 +54,6 @@ final class StartingPointUITests: XCTestCase {
         XCTAssertEqual(input.frame.width, initialWidth, accuracy: 1)
         XCTAssertEqual(send.frame.midY, initialButtonCenter, accuracy: 1)
         XCTAssertTrue(send.isHittable)
-        XCTAssertGreaterThanOrEqual(send.frame.width, 44)
-        XCTAssertGreaterThanOrEqual(send.frame.height, 44)
         XCTAssertLessThanOrEqual(input.frame.maxX, send.frame.minX + 1)
         XCTAssertLessThanOrEqual(send.frame.maxY, application.keyboards.firstMatch.frame.minY + 1)
         assertVisualInsets(isMultiline: true)
@@ -66,7 +64,7 @@ final class StartingPointUITests: XCTestCase {
         XCTAssertEqual(input.frame.midY, send.frame.midY, accuracy: 1)
     }
 
-    func testVisualInsetsAndEdgesOfTapTarget() {
+    func testVisualInsetsAndButtonEdges() {
         launch(locale: "en")
         let input = application.textViews["composer.input"]
         XCTAssertTrue(input.waitForExistence(timeout: 10))
@@ -179,15 +177,18 @@ final class StartingPointUITests: XCTestCase {
         let composer = application.otherElements["composer"].frame
         let input = application.textViews["composer.input"].frame
         let send = application.buttons["composer.send"].frame
-        XCTAssertEqual(send.width, 44, accuracy: 1)
-        XCTAssertEqual(send.height, 44, accuracy: 1)
-        XCTAssertEqual(input.minX - composer.minX, 16, accuracy: 1)
-        XCTAssertEqual(composer.maxX - (send.midX + 12), 16, accuracy: 1)
-        XCTAssertEqual(composer.maxY - (send.midY + 12), 16, accuracy: 1)
+        let scale = application.frame.width / 375
+        let buttonSize = (24 * scale).rounded()
+        let padding = (16 * scale).rounded()
+        XCTAssertEqual(send.width, buttonSize, accuracy: 1)
+        XCTAssertEqual(send.height, buttonSize, accuracy: 1)
+        XCTAssertEqual(input.minX - composer.minX, padding, accuracy: 1)
+        XCTAssertEqual(composer.maxX - send.maxX, padding, accuracy: 1)
+        XCTAssertEqual(composer.maxY - send.maxY, padding, accuracy: 1)
         if isMultiline {
-            XCTAssertEqual(input.minY - composer.minY, 16, accuracy: 1)
+            XCTAssertEqual(input.minY - composer.minY, padding, accuracy: 1)
         } else {
-            XCTAssertEqual(send.midY - 12 - composer.minY, 16, accuracy: 1)
+            XCTAssertEqual(send.minY - composer.minY, padding, accuracy: 1)
         }
     }
 
