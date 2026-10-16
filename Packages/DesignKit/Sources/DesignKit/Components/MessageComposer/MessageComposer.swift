@@ -12,8 +12,8 @@ import SwiftUI
 public struct MessageComposer: View {
     @Binding
     private var text: String
-    @ScaledMetric(relativeTo: .body)
-    private var fontSize = FigmaSize.typographySizeDisplaySmall14.scaledToArtwork
+    // Figma typography follows artwork scaling only, independent of the user's text size setting.
+    private let fontSize = FigmaSize.typographySizeDisplaySmall14.scaledToArtwork
     private let placeholder: String
     private let sendLabel: String
     private let isEnabled: Bool
@@ -121,9 +121,7 @@ public struct MessageComposer: View {
     }
 
     private var lineSpacing: CGFloat {
-        let leading =
-            FigmaSize.typographyLineHeightDisplaySmall14
-            * fontSize / FigmaSize.typographySizeDisplaySmall14
+        let leading = FigmaSize.typographyLineHeightDisplaySmall14.scaledToArtwork
         return max(InitialValues.zeroCGFloat, leading - inputFont.lineHeight)
     }
 

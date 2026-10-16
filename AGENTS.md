@@ -48,8 +48,9 @@ tersedia pada history/main.
   ambigu antar-family. Tambahkan file asli beserta lisensi dan nama PostScript
   yang dibaca dari metadata; jangan menyamakan nama file dengan PostScript.
 - Composer memakai token `typographySizeDisplaySmall14` dan leading role yang
-  sama. `@ScaledMetric` mempertahankan Dynamic Type. Editor dan
-  placeholder menerima UIFont yang sama; jangan menerapkan scaling dua kali.
+  sama, hanya dengan `.scaledToArtwork`. Ukuran font/leading tidak mengikuti
+  pengaturan Dynamic Type pengguna; jangan menambahkan `@ScaledMetric` atau
+  UIFontMetrics. Editor dan placeholder menerima UIFont fixed yang sama.
   Glyph Chinese yang tidak ada di Open Sans menggunakan fallback native iOS.
 - Copy fitur berada di resource `en`, `id`, `zh-Hans`. Screen membaca locale dari
   environment dan menyuplai label ke DesignKit. Tidak ada copy bisnis di DesignKit.
@@ -75,8 +76,8 @@ tersedia pada history/main.
   dan minimum tap diterapkan. Kurangi inset ini dari padding luar tombol dan
   jarak field/tombol; jangan menambahkannya lagi ke jarak visual. Pada 44/24,
   inset 10 menyisakan padding 6. Field memakai inset vertikal tersebut agar teks
-  multiline tetap berjarak 16 dari border. Dynamic Type boleh menambah tinggi
-  minimum row untuk mempertahankan posisi tengah tombol pada satu baris.
+  multiline tetap berjarak 16 dari border. Pengaturan ukuran teks pengguna tidak
+  mengubah tinggi row atau batas empat baris composer.
 - `ChatScreen(onSend:)` mengosongkan draft hanya jika callback host mengembalikan
   true. Starter tidak mengirim network, tidak menyimpan atau log isi pesan.
 - Integrasi host tetap `.tanyaAIHost(host)` + `host.present()`/`dismiss()`.

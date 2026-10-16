@@ -100,25 +100,39 @@ final class StartingPointUITests: XCTestCase {
         XCTAssertEqual(input.value as? String, "Keep my draft")
     }
 
-    func testLargestTextKeepsComposerAndActionVisible() {
-        launch(
-            locale: "zh-Hans",
-            extra: ["-UIPreferredContentSizeCategoryName", "UICTContentSizeCategoryAccessibilityXXXL"])
-        let input = application.textViews["composer.input"]
-        XCTAssertTrue(input.waitForExistence(timeout: 10))
-        let send = application.buttons["composer.send"]
-        XCTAssertEqual(input.frame.midY, send.frame.midY, accuracy: 1)
-        input.tap()
-        input.typeText("First")
-        let initialButtonCenter = send.frame.midY
-        XCTAssertEqual(input.frame.midY, initialButtonCenter, accuracy: 1)
-        input.typeText("\nSecond\nThird\nFourth\nFifth")
-        XCTAssertEqual(send.frame.midY, initialButtonCenter, accuracy: 1)
-        XCTAssertGreaterThan(send.frame.midY, input.frame.midY)
-        XCTAssertTrue(send.isHittable)
-        XCTAssertLessThanOrEqual(input.frame.maxX, send.frame.minX + 1)
-        XCTAssertLessThanOrEqual(send.frame.maxX, application.frame.maxX)
-        capture("starter-accessibility-zh-Hans")
+    func testTextSizeSettingKeepsComposerFontAndLayoutFixed() {
+        var referenceSizes: [CGSize]?
+        for category in ["UICTContentSizeCategoryL", "UICTContentSizeCategoryAccessibilityXXXL"] {
+            launch(locale: "zh-Hans", extra: ["-UIPreferredContentSizeCategoryName", category])
+            let input = application.textViews["composer.input"]
+            XCTAssertTrue(input.waitForExistence(timeout: 10))
+            let send = application.buttons["composer.send"]
+            XCTAssertEqual(input.frame.midY, send.frame.midY, accuracy: 1)
+            let emptySize = input.frame.size
+            input.tap()
+            input.typeText("First")
+            let singleLineSize = input.frame.size
+            let initialButtonCenter = send.frame.midY
+            XCTAssertEqual(input.frame.midY, initialButtonCenter, accuracy: 1)
+            input.typeText("\nSecond\nThird\nFourth\nFifth")
+            XCTAssertEqual(send.frame.midY, initialButtonCenter, accuracy: 1)
+            XCTAssertGreaterThan(send.frame.midY, input.frame.midY)
+            XCTAssertTrue(send.isHittable)
+            XCTAssertLessThanOrEqual(input.frame.maxX, send.frame.minX + 1)
+            XCTAssertLessThanOrEqual(send.frame.maxX, application.frame.maxX)
+            let sizes = [emptySize, singleLineSize, input.frame.size, application.otherElements["composer"].frame.size]
+            if let referenceSizes {
+                for (actual, reference) in zip(sizes, referenceSizes) {
+                    XCTAssertEqual(actual.width, reference.width, accuracy: 1)
+                    XCTAssertEqual(actual.height, reference.height, accuracy: 1)
+                }
+                assertVisualInsets(isMultiline: true)
+                capture("starter-accessibility-zh-Hans")
+            } else {
+                referenceSizes = sizes
+            }
+            application.terminate()
+        }
     }
 
     func testHostCanCloseAndReopenWithoutNavigationLink() {

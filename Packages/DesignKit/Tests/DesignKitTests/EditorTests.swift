@@ -37,7 +37,7 @@ final class EditorTests: XCTestCase {
         XCTAssertFalse(editor.isScrollEnabled)
     }
 
-    func testComposerAdaptsFontAndWrapsWithoutGrowingHorizontally() throws {
+    func testComposerWrapsWithoutGrowingHorizontallyAcrossTextSizeSettings() throws {
         try FontFace.registerFonts()
         for width: CGFloat in [320, 375, 430] {
             for category: ContentSizeCategory in [.large, .accessibilityExtraExtraExtraLarge] {
