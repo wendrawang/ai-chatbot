@@ -52,6 +52,10 @@ Packages/
 5. Buat composer: placeholder, field, action, surface. `@ScaledMetric` mengubah
    font dari ukuran token dasar; UIKit dan placeholder memakai UIFont yang sama.
    Parent hanya memberi Binding, label, palette/font pilihan dan callback kirim.
+   Field dan tombol mempunyai minimum tinggi row yang sama, sehingga satu baris
+   sejajar tengah. HStack tetap memakai `.bottom`: ketika field membesar, tombol
+   bertahan di bawah dan field tumbuh ke atas. Minimum row mengikuti font,
+   leading, padding dan minimum tap target, termasuk untuk Dynamic Type.
 6. Buat screen: draft `@State`, area kosong, composer di bawah, margin luar.
    Baca locale host, resolve resource label dan kirimkan ke komponen.
 7. Pasang bridge `.tanyaAIHost(host)` pada root existing. Satu `TanyaAIHost`

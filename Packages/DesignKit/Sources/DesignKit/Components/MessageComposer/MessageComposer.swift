@@ -38,7 +38,9 @@ public struct MessageComposer: View {
     public var body: some View {
         HStack(alignment: .bottom, spacing: FigmaSize.spacingMedium.scaledToArtwork) {
             field
+                .frame(minHeight: minimumRowHeight)
             actionButton
+                .frame(minHeight: minimumRowHeight)
         }
         .padding(.horizontal, FigmaSize.spacingLarge.scaledToArtwork)
         .padding(.vertical, FigmaSize.spacingMedium.scaledToArtwork)
@@ -103,6 +105,13 @@ public struct MessageComposer: View {
     }
 
     private var inputFont: UIFont { fontFace.font(size: fontSize) }
+
+    /// Equal single-line rows center the field/button; a taller field keeps the button at its bottom.
+    private var minimumRowHeight: CGFloat {
+        let padding = FigmaSize.spacingMedium.scaledToArtwork
+        let singleLineHeight = ceil(inputFont.lineHeight + lineSpacing) + padding + padding
+        return max(CustomSizes.ActionButton.minimumTapSize.tapTargetInArtwork, singleLineHeight)
+    }
 
     private var lineSpacing: CGFloat {
         let leading =

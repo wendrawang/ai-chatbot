@@ -65,6 +65,10 @@ tersedia pada history/main.
   Screen memiliki margin luar; komponen memiliki padding dalam/surface/shadow.
 - Tinggi editor satu sampai empat baris; teks berikutnya scroll. Button visual
   24, tap minimal 44. Kata panjang dan keyboard tidak menggeser action keluar.
+- Composer memakai alignment bawah dengan minimum tinggi row yang sama pada
+  field dan tombol: satu baris sejajar tengah, multiline mempertahankan tombol
+  di bawah. Minimum row mengikuti font/leading/padding dan minimum tap target;
+  jangan menambahkan state jumlah baris untuk mengubah alignment.
 - `ChatScreen(onSend:)` mengosongkan draft hanya jika callback host mengembalikan
   true. Starter tidak mengirim network, tidak menyimpan atau log isi pesan.
 - Integrasi host tetap `.tanyaAIHost(host)` + `host.present()`/`dismiss()`.

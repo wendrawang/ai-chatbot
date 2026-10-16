@@ -26,6 +26,7 @@ final class StartingPointUITests: XCTestCase {
             XCTAssertEqual(send.label, label)
             XCTAssertFalse(input.label.isEmpty)
             XCTAssertLessThanOrEqual(input.frame.maxX, send.frame.minX + 1)
+            XCTAssertEqual(input.frame.midY, send.frame.midY, accuracy: 1)
             capture("starter-" + locale)
             application.terminate()
         }
@@ -39,13 +40,19 @@ final class StartingPointUITests: XCTestCase {
         input.typeText("First")
         let firstHeight = input.frame.height
         let initialWidth = input.frame.width
+        let send = application.buttons["composer.send"]
+        let initialButtonCenter = send.frame.midY
+        XCTAssertEqual(input.frame.midY, initialButtonCenter, accuracy: 1)
+        capture("starter-one-line-keyboard")
         input.typeText("\nSecond\nThird\nFourth")
         let fourthHeight = input.frame.height
         XCTAssertGreaterThan(fourthHeight, firstHeight)
+        XCTAssertEqual(send.frame.midY, initialButtonCenter, accuracy: 1)
+        XCTAssertGreaterThan(send.frame.midY, input.frame.midY)
         input.typeText("\nFifth\n" + String(repeating: "m", count: 128))
         XCTAssertEqual(input.frame.height, fourthHeight, accuracy: 1)
         XCTAssertEqual(input.frame.width, initialWidth, accuracy: 1)
-        let send = application.buttons["composer.send"]
+        XCTAssertEqual(send.frame.midY, initialButtonCenter, accuracy: 1)
         XCTAssertTrue(send.isHittable)
         XCTAssertGreaterThanOrEqual(send.frame.width, 44)
         XCTAssertGreaterThanOrEqual(send.frame.height, 44)
@@ -55,6 +62,7 @@ final class StartingPointUITests: XCTestCase {
         send.tap()
         XCTAssertEqual(input.value as? String, "")
         XCTAssertFalse(send.isEnabled)
+        XCTAssertEqual(input.frame.midY, send.frame.midY, accuracy: 1)
     }
 
     func testWhitespaceCannotBeSubmitted() {
@@ -82,9 +90,15 @@ final class StartingPointUITests: XCTestCase {
             extra: ["-UIPreferredContentSizeCategoryName", "UICTContentSizeCategoryAccessibilityXXXL"])
         let input = application.textViews["composer.input"]
         XCTAssertTrue(input.waitForExistence(timeout: 10))
-        input.tap()
-        input.typeText("First\nSecond\nThird\nFourth\nFifth")
         let send = application.buttons["composer.send"]
+        XCTAssertEqual(input.frame.midY, send.frame.midY, accuracy: 1)
+        input.tap()
+        input.typeText("First")
+        let initialButtonCenter = send.frame.midY
+        XCTAssertEqual(input.frame.midY, initialButtonCenter, accuracy: 1)
+        input.typeText("\nSecond\nThird\nFourth\nFifth")
+        XCTAssertEqual(send.frame.midY, initialButtonCenter, accuracy: 1)
+        XCTAssertGreaterThan(send.frame.midY, input.frame.midY)
         XCTAssertTrue(send.isHittable)
         XCTAssertLessThanOrEqual(input.frame.maxX, send.frame.minX + 1)
         XCTAssertLessThanOrEqual(send.frame.maxX, application.frame.maxX)
