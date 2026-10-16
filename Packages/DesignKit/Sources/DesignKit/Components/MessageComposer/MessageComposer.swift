@@ -1,137 +1,80 @@
+//
+//  MessageComposer.swift
+//  DesignKit
+//
+//  Created by Wendra on 16/10/26.
+//
+
 import SwiftUI
 
-/// The composer.
-///
-/// A rounded container holds both the growing field and its trailing action.
-/// The action stays at the bottom as the field grows to four lines.
-public struct MessageComposer: View {
-    @Environment(\.copyCatalog)
-    private var copy
-    @Environment(\.theme)
-    private var theme
-    @Binding
-    private var text: String
+public struct MessageComposer: View
+{
+    @Binding private var text: String
     private let placeholder: String
     private let sendLabel: String
-    private let isEnabled: Bool
-    private let isGenerating: Bool
-    private let stopLabel: String?
-    private let onStop: (() -> Void)?
     private let onSend: () -> Void
-
-    public init(
-        text: Binding<String>,
-        placeholder: String,
-        sendLabel: String,
-        isEnabled: Bool = true,
-        isGenerating: Bool = false,
-        stopLabel: String? = nil,
-        onStop: (() -> Void)? = nil,
-        onSend: @escaping () -> Void
-    ) {
-        self._text = text
+    public init(text: Binding<String>, placeholder: String, sendLabel: String, onSend: @escaping () -> Void)
+    {
+        _text = text
         self.placeholder = placeholder
         self.sendLabel = sendLabel
-        self.isEnabled = isEnabled
-        self.isGenerating = isGenerating
-        self.stopLabel = stopLabel
-        self.onStop = onStop
         self.onSend = onSend
     }
 
-    public var body: some View {
-        inputSurface.accessibilityElement(children: .contain)
-    }
+    public var body: some View
+    {
+        HStack(alignment: .bottom, spacing: FigmaSize.spacingMedium)
+        {
+            field.padding(.vertical, tapInset)
+                .frame(minHeight: CustomSizes.minimumTap)
+            Button(action: onSend)
+            {
+                Image(systemName: "arrow.up").font(Font(DesignTypography.composer).weight(.bold))
+                    .foregroundColor(CustomColors.palette.colorsTextPrimaryLight)
+                    .frame(width: CustomSizes.icon, height: CustomSizes.icon)
+                    .background(isSendEnabled ? CustomColors.accent : CustomColors.palette.colorsButtonDisable)
+                    .clipShape(Circle())
+                    .frame(width: CustomSizes.minimumTap, height: CustomSizes.minimumTap)
+                    .contentShape(Rectangle())
+            }
 
-    private var inputSurface: some View {
-        HStack(alignment: .bottom, spacing: FigmaSize.spacing8.scaledToArtwork) {
-            field
-            actionButton
+            .buttonStyle(.plain).disabled(!isSendEnabled).accessibilityLabel(sendLabel)
         }
-        .padding(.horizontal, FigmaSize.spacing16.scaledToArtwork)
-        .padding(.vertical, FigmaSize.spacing8.scaledToArtwork)
-        .background(surface)
+
+        .padding(.leading, FigmaSize.spacingLarge)
+        .padding(.trailing, FigmaSize.spacingLarge - tapInset)
+        .padding(.vertical, FigmaSize.spacingLarge - tapInset)
+        .background(CustomColors.background)
+        .cornerRadius(CustomSizes.radius)
+        .overlay(RoundedRectangle(cornerRadius: CustomSizes.radius)
+            .stroke(CustomColors.divider, lineWidth: CustomSizes.stroke))
     }
 
-    private var surface: some View {
-        RoundedRectangle(cornerRadius: DesignKitMetrics.Radius.composer.scaledToArtwork)
-            .fill(Color.white)
-            .shadow(
-                color: Color.black.opacity(DesignKitMetrics.Shadow.composerOpacity),
-                radius: DesignKitMetrics.Shadow.composerRadius.scaledToArtwork,
-                y: DesignKitMetrics.Shadow.composerOffset.scaledToArtwork
-            )
-            .overlay(
-                RoundedRectangle(cornerRadius: DesignKitMetrics.Radius.composer.scaledToArtwork)
-                    .strokeBorder(
-                        Color(theme.colors.divider),
-                        lineWidth: DesignKitMetrics.Stroke.hairline.strokeInArtwork
-                    )
-            )
+    private var tapInset: CGFloat
+    {
+        (CustomSizes.minimumTap - CustomSizes.icon) / 2
     }
 
-    private var field: some View {
-        ZStack(alignment: .topLeading) {
+    private var isSendEnabled: Bool
+    {
+        !text.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
+    }
+
+    private var field: some View
+    {
+        ZStack(alignment: .leading)
+        {
             GrowingTextInput(
                 text: $text,
-                font: theme.fonts.body,
-                textColor: theme.colors.primaryText.resolvedColor(with: UITraitCollection(userInterfaceStyle: .light)),
-                lineSpacing: theme.fonts.lineSpacing(for: .body),
-                accessibilityLabel: placeholder
-            )
-            .fixedSize(horizontal: false, vertical: true)
-            .frame(maxWidth: .infinity)
-
-            if text.isEmpty {
-                Text(placeholder)
-                    .lineLimit(1)
-                    .designFont(.body)
-                    .foregroundColor(
-                        Color(
-                            theme.colors.secondaryText.resolvedColor(
-                                with: UITraitCollection(userInterfaceStyle: .light)
-                            ))
-                    )
-                    .accessibilityHidden(true)
-                    .allowsHitTesting(false)
+                font: DesignTypography.composer,
+                textColor: UIColor(CustomColors.text),
+                accessibilityLabel: placeholder)
+                .fixedSize(horizontal: false, vertical: true).frame(maxWidth: .infinity)
+            if text.isEmpty
+            {
+                Text(placeholder).font(Font(DesignTypography.composer)).lineLimit(1)
+                    .foregroundColor(CustomColors.secondaryText).allowsHitTesting(false).accessibilityHidden(true)
             }
         }
-        .padding(.vertical, FigmaSize.spacing8.scaledToArtwork)
-    }
-
-    private var actionButton: some View {
-        Button(action: isGenerating ? (onStop ?? {}) : onSend) {
-            // TODO: Replace the symbol with the approved send/stop artwork exported from Figma.
-            Image(systemName: isGenerating ? "stop.fill" : "arrow.up")
-                .resizable()
-                .scaledToFit()
-                .padding(FigmaSize.spacing4.scaledToArtwork)
-                .foregroundColor(Color(theme.colors.userBubbleText))
-                .frame(
-                    width: DesignKitMetrics.Size.composerAction.scaledToArtwork,
-                    height: DesignKitMetrics.Size.composerAction.scaledToArtwork
-                )
-                .background(
-                    Circle().fill(Color(isActionEnabled ? theme.colors.accent : theme.colors.secondaryText))
-                )
-                .frame(
-                    width: DesignKitMetrics.Size.minimumTapTarget.tapTargetInArtwork,
-                    height: DesignKitMetrics.Size.minimumTapTarget.tapTargetInArtwork
-                )
-                .contentShape(Rectangle())
-        }
-        .buttonStyle(.plain)
-        .disabled(!isActionEnabled)
-        .accessibilityLabel(isGenerating ? (stopLabel ?? copy.design("design.stop")) : sendLabel)
-        .accessibilityIdentifier(isGenerating ? "composer.stop" : "composer.send")
-    }
-
-    private var isActionEnabled: Bool { isGenerating ? onStop != nil : isSendEnabled }
-
-    private var isSendEnabled: Bool {
-        isEnabled
-            && text.trimmingCharacters(
-                in: .whitespacesAndNewlines
-            ).isEmpty == false
     }
 }

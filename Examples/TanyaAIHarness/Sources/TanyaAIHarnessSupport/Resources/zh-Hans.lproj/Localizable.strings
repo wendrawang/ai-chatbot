@@ -1,0 +1,17 @@
+"demo" = "演示模式 — 不会进行真实交易";
+"destination" = "链接目标";
+"done" = "完成";
+"duplicateScenario" = "重复意图";
+"fallback" = "本演示仅支持 BI FAST 转账。请点击建议或输入“转账”。";
+"historyNotice" = "本演示会话仅在内存中保留记录，重启应用后会丢失。";
+"inquiryScenario" = "查询首次失败";
+"language" = "语言";
+"lateScenario" = "查询延迟";
+"newDemo" = "开始新演示";
+"openChat" = "打开 TanyaAI";
+"pendingScenario" = "待处理后成功";
+"pinScenario" = "PIN 首次被拒绝";
+"resume" = "继续保留的会话";
+"scenario" = "演示场景";
+"successScenario" = "成功";
+"intro" = "你好！这是[bold]转账演示[/bold]。[color=success]已就绪[/color]。[strike]真实交易[/strike]暂不提供。\n• 试用 BI FAST 转账。\n• [link]https://example.com|查看演示链接[/link]，或[link=demoapp://transfer]打开演示深层链接[/link]。";

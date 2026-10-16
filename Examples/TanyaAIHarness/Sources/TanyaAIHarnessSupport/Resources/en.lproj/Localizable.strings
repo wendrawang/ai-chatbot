@@ -1,0 +1,17 @@
+"demo" = "Demo mode — no real transactions";
+"destination" = "Link destination";
+"done" = "Done";
+"duplicateScenario" = "Duplicate intent";
+"fallback" = "This demo supports BI FAST transfers only. Tap the suggestion or type “transfer”.";
+"historyNotice" = "History is retained in memory for this demo session and is lost after app restart.";
+"inquiryScenario" = "Inquiry fails once";
+"language" = "Language";
+"lateScenario" = "Late inquiry";
+"newDemo" = "Start new demo";
+"openChat" = "Open TanyaAI";
+"pendingScenario" = "Pending, then success";
+"pinScenario" = "PIN rejected once";
+"resume" = "Resume retained session";
+"scenario" = "Demo scenario";
+"successScenario" = "Success";
+"intro" = "Hello! This is a [bold]transfer demo[/bold]. [color=success]Ready[/color]. [strike]Real transactions[/strike] are unavailable.\n• Try a BI FAST transfer.\n• [link]https://example.com|View demo link[/link] or [link=demoapp://transfer]open a demo deeplink[/link].";

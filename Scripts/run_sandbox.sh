@@ -1,14 +1,9 @@
 #!/bin/sh
 
-# Builds the sandbox, installs it on a booted simulator, and launches it.
-#
-# Any argument is forwarded to the app, so the launch modes work directly:
-#
-#   ./Scripts/run_sandbox.sh                 Figma UI and dummy host flows
-#   ./Scripts/run_sandbox.sh --host          isolated presentation on an existing host stack
-#   ./Scripts/run_sandbox.sh --previewbook   standalone DesignKit component catalog
-#
-# Override the device with TANYA_AI_SIMULATOR.
+# Created by Wendra on 16/10/26.
+# Requires a simulator runtime compatible with the selected Xcode.
+# ./Scripts/run_sandbox.sh --chat --language id --scenario success
+# Scenarios: success, inquiryFailure, pinRejection, pending, duplicateIntent, lateInquiry.
 
 set -eu
 
@@ -31,6 +26,7 @@ xcodebuild \
   -scheme TanyaAISandbox \
   -destination "$SIMULATOR_DESTINATION" \
   -derivedDataPath "$DERIVED_DATA_ROOT" \
+  -skipPackagePluginValidation \
   CODE_SIGNING_ALLOWED=NO \
   build \
   -quiet

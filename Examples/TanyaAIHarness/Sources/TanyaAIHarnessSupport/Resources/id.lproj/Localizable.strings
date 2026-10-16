@@ -1,0 +1,17 @@
+"demo" = "Mode demo — tidak ada transaksi nyata";
+"destination" = "Tujuan link";
+"done" = "Selesai";
+"duplicateScenario" = "Intent duplikat";
+"fallback" = "Demo ini hanya mendukung transfer BI FAST. Tekan suggestion atau ketik “transfer”.";
+"historyNotice" = "Riwayat disimpan di memory selama sesi demo dan hilang setelah aplikasi dimulai ulang.";
+"inquiryScenario" = "Inquiry gagal sekali";
+"language" = "Bahasa";
+"lateScenario" = "Inquiry terlambat";
+"newDemo" = "Mulai demo baru";
+"openChat" = "Buka TanyaAI";
+"pendingScenario" = "Pending, lalu sukses";
+"pinScenario" = "PIN ditolak sekali";
+"resume" = "Lanjutkan sesi tersimpan";
+"scenario" = "Skenario demo";
+"successScenario" = "Sukses";
+"intro" = "Halo! Ini [bold]demo transfer[/bold]. [color=success]Siap[/color]. [strike]Transaksi nyata[/strike] tidak tersedia.\n• Coba transfer BI FAST.\n• [link]https://example.com|Lihat link demo[/link] atau [link=demoapp://transfer]buka deeplink demo[/link].";

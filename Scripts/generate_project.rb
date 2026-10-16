@@ -1,4 +1,5 @@
 #!/usr/bin/env ruby
+# Created by Wendra on 16/10/26.
 
 require 'fileutils'
 require 'xcodeproj'
@@ -32,7 +33,7 @@ ui_test_target = project.new_target(
   '15.0'
 )
 
-source_paths = Dir.glob(File.join(APP_PATH, '*.swift')).sort
+source_paths = %w[AppDelegate.swift SceneDelegate.swift].map { |name| File.join(APP_PATH, name) }
 source_references = source_paths.map do |source_path|
   app_group.new_file(File.basename(source_path))
 end
@@ -58,7 +59,7 @@ ui_test_group = project.main_group.new_group(
   'TanyaAISandboxUITests',
   'TanyaAISandboxUITests'
 )
-ui_test_paths = Dir.glob(File.join(UI_TEST_PATH, '*.swift')).sort
+ui_test_paths = Dir.glob(File.join(UI_TEST_PATH, 'Prototype*.swift')).sort
 ui_test_references = ui_test_paths.map do |source_path|
   ui_test_group.new_file(File.basename(source_path))
 end
@@ -79,10 +80,10 @@ end
 package_reference = project.new(
   Xcodeproj::Project::Object::XCLocalSwiftPackageReference
 )
-package_reference.relative_path = 'Packages/TanyaAI'
+package_reference.relative_path = 'Examples/TanyaAIHarness'
 project.root_object.package_references << package_reference
 
-%w[TanyaAI TanyaAITestSupport].each do |product_name|
+%w[TanyaAIHarnessSupport].each do |product_name|
   product = project.new(
     Xcodeproj::Project::Object::XCSwiftPackageProductDependency
   )

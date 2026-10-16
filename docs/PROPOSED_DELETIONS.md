@@ -1,0 +1,357 @@
+# Usulan penghapusan — menunggu konfirmasi Wendra
+
+File-file berikut sudah dipulihkan dan BELUM dihapus. Daftar ini mengacu pada
+`main` (`9a88d91`). Penghapusan hanya dijalankan setelah konfirmasi.
+
+`Tokens/Generated`, ketujuh font beserta lisensinya, dan implementasi editor serta
+containment hosting cell tetap dipertahankan. Nama package DesignKit tetap dipakai.
+
+Kode pengganti dan test akan diverifikasi terlebih dahulu. Untuk sementara, manifest
+build memilih source prototype secara eksplisit agar file lama dapat tetap ada.
+
+## Tooling formatter dan pemeriksaan yang akan digantikan aturan Allman (5 file)
+
+- `.swift-format`
+- `Scripts/check_design_system.py`
+- `Scripts/check_style.sh`
+- `Scripts/format_changed.py`
+- `Scripts/verify.sh`
+
+## Artefak screenshot milestone lama (93 file)
+
+- `Artifacts/Screenshots/figma-components-horizontal-suggestions.png`
+- `Artifacts/Screenshots/figma-components-media-and-actions.png`
+- `Artifacts/Screenshots/figma-documents-both-accepted.png`
+- `Artifacts/Screenshots/figma-documents-none-accepted.png`
+- `Artifacts/Screenshots/figma-documents-one-accepted.png`
+- `Artifacts/Screenshots/figma-existing-host-document-doc-product.png`
+- `Artifacts/Screenshots/figma-existing-host-document-doc-terms.png`
+- `Artifacts/Screenshots/figma-existing-host-pin.png`
+- `Artifacts/Screenshots/figma-inline-deeplink.png`
+- `Artifacts/Screenshots/figma-inline-webview.png`
+- `Artifacts/Screenshots/figma-investment-three-column-table.png`
+- `Artifacts/Screenshots/figma-long-answer-latest-arrow.png`
+- `Artifacts/Screenshots/figma-long-answer-latest.png`
+- `Artifacts/Screenshots/figma-native-formatted-reply.png`
+- `Artifacts/Screenshots/figma-new-prompt-anchor-and-preview.png`
+- `Artifacts/Screenshots/figma-new-session-empty.png`
+- `Artifacts/Screenshots/figma-portfolio-bullets.png`
+- `Artifacts/Screenshots/figma-product-nab-summary.png`
+- `Artifacts/Screenshots/figma-product-options-read-only.png`
+- `Artifacts/Screenshots/figma-product-options-unselected.png`
+- `Artifacts/Screenshots/figma-product-two-column-table.png`
+- `Artifacts/Screenshots/figma-purchase-summary.png`
+- `Artifacts/Screenshots/figma-result-deeplink-host.png`
+- `Artifacts/Screenshots/figma-stress-a11y-composer-keyboard.png`
+- `Artifacts/Screenshots/figma-stress-a11y-metric-top.png`
+- `Artifacts/Screenshots/figma-stress-a11y-metric.png`
+- `Artifacts/Screenshots/figma-stress-a11y-options-top.png`
+- `Artifacts/Screenshots/figma-stress-a11y-options.png`
+- `Artifacts/Screenshots/figma-stress-a11y-summary-top.png`
+- `Artifacts/Screenshots/figma-stress-a11y-summary.png`
+- `Artifacts/Screenshots/figma-stress-a11y-table-top.png`
+- `Artifacts/Screenshots/figma-stress-a11y-table.png`
+- `Artifacts/Screenshots/figma-stress-a11y-welcome.png`
+- `Artifacts/Screenshots/figma-stress-composer-keyboard.png`
+- `Artifacts/Screenshots/figma-stress-metric-top.png`
+- `Artifacts/Screenshots/figma-stress-metric.png`
+- `Artifacts/Screenshots/figma-stress-options-top.png`
+- `Artifacts/Screenshots/figma-stress-options.png`
+- `Artifacts/Screenshots/figma-stress-summary-top.png`
+- `Artifacts/Screenshots/figma-stress-summary.png`
+- `Artifacts/Screenshots/figma-stress-table-top.png`
+- `Artifacts/Screenshots/figma-stress-table.png`
+- `Artifacts/Screenshots/figma-stress-welcome.png`
+- `Artifacts/Screenshots/figma-transaction-result.png`
+- `Artifacts/Screenshots/figma-welcome-three-actions.png`
+- `Artifacts/Screenshots/previewbook/accessibility/previewbook-actions-scrolled.png`
+- `Artifacts/Screenshots/previewbook/accessibility/previewbook-actions.png`
+- `Artifacts/Screenshots/previewbook/accessibility/previewbook-artwork.png`
+- `Artifacts/Screenshots/previewbook/accessibility/previewbook-catalog.png`
+- `Artifacts/Screenshots/previewbook/accessibility/previewbook-chrome.png`
+- `Artifacts/Screenshots/previewbook/accessibility/previewbook-composer-multiline.png`
+- `Artifacts/Screenshots/previewbook/accessibility/previewbook-composer-scrolled.png`
+- `Artifacts/Screenshots/previewbook/accessibility/previewbook-composer-stop.png`
+- `Artifacts/Screenshots/previewbook/accessibility/previewbook-composer.png`
+- `Artifacts/Screenshots/previewbook/accessibility/previewbook-documents-accepted.png`
+- `Artifacts/Screenshots/previewbook/accessibility/previewbook-documents.png`
+- `Artifacts/Screenshots/previewbook/accessibility/previewbook-feedback.png`
+- `Artifacts/Screenshots/previewbook/accessibility/previewbook-media-scrolled.png`
+- `Artifacts/Screenshots/previewbook/accessibility/previewbook-media.png`
+- `Artifacts/Screenshots/previewbook/accessibility/previewbook-metric.png`
+- `Artifacts/Screenshots/previewbook/accessibility/previewbook-options-readonly.png`
+- `Artifacts/Screenshots/previewbook/accessibility/previewbook-selection.png`
+- `Artifacts/Screenshots/previewbook/accessibility/previewbook-summary-scrolled.png`
+- `Artifacts/Screenshots/previewbook/accessibility/previewbook-summary.png`
+- `Artifacts/Screenshots/previewbook/accessibility/previewbook-table-scrolled.png`
+- `Artifacts/Screenshots/previewbook/accessibility/previewbook-table.png`
+- `Artifacts/Screenshots/previewbook/accessibility/previewbook-text-scrolled.png`
+- `Artifacts/Screenshots/previewbook/accessibility/previewbook-text.png`
+- `Artifacts/Screenshots/previewbook/accessibility/previewbook-welcome.png`
+- `Artifacts/Screenshots/previewbook/normal/previewbook-actions-scrolled.png`
+- `Artifacts/Screenshots/previewbook/normal/previewbook-actions.png`
+- `Artifacts/Screenshots/previewbook/normal/previewbook-artwork.png`
+- `Artifacts/Screenshots/previewbook/normal/previewbook-catalog.png`
+- `Artifacts/Screenshots/previewbook/normal/previewbook-chrome.png`
+- `Artifacts/Screenshots/previewbook/normal/previewbook-composer-multiline.png`
+- `Artifacts/Screenshots/previewbook/normal/previewbook-composer-scrolled.png`
+- `Artifacts/Screenshots/previewbook/normal/previewbook-composer-stop.png`
+- `Artifacts/Screenshots/previewbook/normal/previewbook-composer.png`
+- `Artifacts/Screenshots/previewbook/normal/previewbook-documents-accepted.png`
+- `Artifacts/Screenshots/previewbook/normal/previewbook-documents.png`
+- `Artifacts/Screenshots/previewbook/normal/previewbook-feedback.png`
+- `Artifacts/Screenshots/previewbook/normal/previewbook-media-scrolled.png`
+- `Artifacts/Screenshots/previewbook/normal/previewbook-media.png`
+- `Artifacts/Screenshots/previewbook/normal/previewbook-metric.png`
+- `Artifacts/Screenshots/previewbook/normal/previewbook-options-readonly.png`
+- `Artifacts/Screenshots/previewbook/normal/previewbook-selection.png`
+- `Artifacts/Screenshots/previewbook/normal/previewbook-summary-scrolled.png`
+- `Artifacts/Screenshots/previewbook/normal/previewbook-summary.png`
+- `Artifacts/Screenshots/previewbook/normal/previewbook-table-scrolled.png`
+- `Artifacts/Screenshots/previewbook/normal/previewbook-table.png`
+- `Artifacts/Screenshots/previewbook/normal/previewbook-text-scrolled.png`
+- `Artifacts/Screenshots/previewbook/normal/previewbook-text.png`
+- `Artifacts/Screenshots/previewbook/normal/previewbook-welcome.png`
+
+## Contoh integrasi milestone sebelumnya (6 file)
+
+- `Examples/Demo/DemoTanyaAIComposition.swift`
+- `Examples/Demo/DemoTanyaAIScreen.swift`
+- `Examples/Demo/README.md`
+- `Examples/HostIntegration/HostTanyaAITheme.swift`
+- `Examples/HostIntegration/README.md`
+- `Examples/README.md`
+
+## Komponen, theme manager, helper dan test di luar kebutuhan prototype (66 file)
+
+- `Packages/DesignKit/Sources/DesignKit/Components/AcknowledgementRow/AcknowledgementRow.swift`
+- `Packages/DesignKit/Sources/DesignKit/Components/ActionPill/ActionPill.swift`
+- `Packages/DesignKit/Sources/DesignKit/Components/ActivityStatus/ActivityStatus.swift`
+- `Packages/DesignKit/Sources/DesignKit/Components/DataTable/DataTable.swift`
+- `Packages/DesignKit/Sources/DesignKit/Components/DateSeparator/DateSeparator.swift`
+- `Packages/DesignKit/Sources/DesignKit/Components/DesignButtonStyle/DesignButtonStyle.swift`
+- `Packages/DesignKit/Sources/DesignKit/Components/FilledAction/FilledAction.swift`
+- `Packages/DesignKit/Sources/DesignKit/Components/ItemHeader/ItemHeader.swift`
+- `Packages/DesignKit/Sources/DesignKit/Components/LinkAction/LinkAction.swift`
+- `Packages/DesignKit/Sources/DesignKit/Components/LoadingStateView/LoadingStateView.swift`
+- `Packages/DesignKit/Sources/DesignKit/Components/MediaCard/MediaCard.swift`
+- `Packages/DesignKit/Sources/DesignKit/Components/MetricSummary/MetricSummary.swift`
+- `Packages/DesignKit/Sources/DesignKit/Components/NavigationHeader/NavigationHeader.swift`
+- `Packages/DesignKit/Sources/DesignKit/Components/OptionList/OptionList.swift`
+- `Packages/DesignKit/Sources/DesignKit/Components/OptionRow/OptionRow.swift`
+- `Packages/DesignKit/Sources/DesignKit/Components/OutlinedBackground/OutlinedBackground.swift`
+- `Packages/DesignKit/Sources/DesignKit/Components/QuickActionList/QuickActionList.swift`
+- `Packages/DesignKit/Sources/DesignKit/Components/QuickActionRow/QuickActionRow.swift`
+- `Packages/DesignKit/Sources/DesignKit/Components/RichText/RichText.swift`
+- `Packages/DesignKit/Sources/DesignKit/Components/ScrollToLatestButton/ScrollToLatestButton.swift`
+- `Packages/DesignKit/Sources/DesignKit/Components/SuggestionList/SuggestionList.swift`
+- `Packages/DesignKit/Sources/DesignKit/Components/SummaryCard/SummaryCard.swift`
+- `Packages/DesignKit/Sources/DesignKit/Components/TextBubble/TextBubble.swift`
+- `Packages/DesignKit/Sources/DesignKit/Components/WelcomeContent/WelcomeContent.swift`
+- `Packages/DesignKit/Sources/DesignKit/Extensions/CGFloat+Artwork.swift`
+- `Packages/DesignKit/Sources/DesignKit/Foundations/Layout/ArtworkMetrics.swift`
+- `Packages/DesignKit/Sources/DesignKit/Foundations/Localization/CopyCatalog.swift`
+- `Packages/DesignKit/Sources/DesignKit/Foundations/Localization/CopyEnvironment.swift`
+- `Packages/DesignKit/Sources/DesignKit/Models/DataTableData.swift`
+- `Packages/DesignKit/Sources/DesignKit/Models/QuickActionData.swift`
+- `Packages/DesignKit/Sources/DesignKit/Models/SelectionOption.swift`
+- `Packages/DesignKit/Sources/DesignKit/Models/SummaryField.swift`
+- `Packages/DesignKit/Sources/DesignKit/Support/DesignCopy.swift`
+- `Packages/DesignKit/Sources/DesignKit/Support/Markup/Markup.swift`
+- `Packages/DesignKit/Sources/DesignKit/Support/Markup/MarkupParser+Links.swift`
+- `Packages/DesignKit/Sources/DesignKit/Support/Markup/MarkupParser+Paragraphs.swift`
+- `Packages/DesignKit/Sources/DesignKit/Support/Markup/MarkupParser+Text.swift`
+- `Packages/DesignKit/Sources/DesignKit/Support/UIKit/LayoutTrackingTableView.swift`
+- `Packages/DesignKit/Sources/DesignKit/Theme/ManagedTheme.swift`
+- `Packages/DesignKit/Sources/DesignKit/Theme/Theme+Generated.swift`
+- `Packages/DesignKit/Sources/DesignKit/Theme/ThemeManager.swift`
+- `Packages/DesignKit/Sources/DesignKit/Theme/ThemeResolution.swift`
+- `Packages/DesignKit/Sources/DesignKit/Tokens/Colors.swift`
+- `Packages/DesignKit/Sources/DesignKit/Tokens/DesignKitMetrics+Layout.swift`
+- `Packages/DesignKit/Sources/DesignKit/Tokens/DesignKitMetrics.swift`
+- `Packages/DesignKit/Sources/DesignKit/Tokens/Fonts.swift`
+- `Packages/DesignKit/Sources/DesignKit/Tokens/Theme.swift`
+- `Packages/DesignKit/Sources/DesignKit/Tokens/ThemeEnvironment.swift`
+- `Packages/DesignKit/Sources/DesignKit/Typography/DesignFontModifier.swift`
+- `Packages/DesignKit/Sources/DesignKit/Typography/DesignKitFont.swift`
+- `Packages/DesignKit/Sources/DesignKit/Typography/DesignKitTypography.swift`
+- `Packages/DesignKit/Sources/DesignKit/Typography/Fonts+Generated.swift`
+- `Packages/DesignKit/Sources/DesignKit/Typography/Fonts+Resolving.swift`
+- `Packages/DesignKit/Tests/DesignKitTests/ArtworkMetricsTests.swift`
+- `Packages/DesignKit/Tests/DesignKitTests/ComponentLayoutStressTests+Widths.swift`
+- `Packages/DesignKit/Tests/DesignKitTests/ComponentLayoutStressTests.swift`
+- `Packages/DesignKit/Tests/DesignKitTests/CopyCatalogTests.swift`
+- `Packages/DesignKit/Tests/DesignKitTests/DataTableTests.swift`
+- `Packages/DesignKit/Tests/DesignKitTests/FontLoaderTests.swift`
+- `Packages/DesignKit/Tests/DesignKitTests/HostingCellLifecycleTests.swift`
+- `Packages/DesignKit/Tests/DesignKitTests/MarkupLinkTests.swift`
+- `Packages/DesignKit/Tests/DesignKitTests/MarkupParagraphTests.swift`
+- `Packages/DesignKit/Tests/DesignKitTests/MarkupParserTests.swift`
+- `Packages/DesignKit/Tests/DesignKitTests/RichTextTests.swift`
+- `Packages/DesignKit/Tests/DesignKitTests/ThemeManagerTests.swift`
+- `Packages/DesignKit/Tests/DesignKitTests/TypographyResolutionTests.swift`
+
+## Implementasi chat dan adapter lama yang digantikan target domain/feature (76 file)
+
+- `Packages/TanyaAI/Sources/TanyaAI/Composition/TanyaAIDependencyContainer.swift`
+- `Packages/TanyaAI/Sources/TanyaAI/Host/ChatHostAnchor.swift`
+- `Packages/TanyaAI/Sources/TanyaAI/Host/TanyaAIHost.swift`
+- `Packages/TanyaAI/Sources/TanyaAI/Navigation/ChatContainerViewController.swift`
+- `Packages/TanyaAI/Sources/TanyaAI/Navigation/TanyaAICoordinator.swift`
+- `Packages/TanyaAI/Sources/TanyaAI/Navigation/TanyaAIPushTransition.swift`
+- `Packages/TanyaAI/Sources/TanyaAI/Public/TanyaAIActionAliases.swift`
+- `Packages/TanyaAI/Sources/TanyaAI/Public/TanyaAIConfiguration.swift`
+- `Packages/TanyaAI/Sources/TanyaAI/Public/TanyaAIContractAliases.swift`
+- `Packages/TanyaAI/Sources/TanyaAI/Public/TanyaAIDependencies.swift`
+- `Packages/TanyaAI/Sources/TanyaAI/Public/TanyaAIHostFlowHandler.swift`
+- `Packages/TanyaAI/Sources/TanyaAI/Public/TanyaAIModule.swift`
+- `Packages/TanyaAI/Sources/TanyaAI/Public/TanyaAIThemeAlias.swift`
+- `Packages/TanyaAI/Sources/TanyaAIContracts/TanyaAIChatSession.swift`
+- `Packages/TanyaAI/Sources/TanyaAIContracts/TanyaAIChatSessionElement.swift`
+- `Packages/TanyaAI/Sources/TanyaAIContracts/TanyaAIChatSessionEvent+Wire.swift`
+- `Packages/TanyaAI/Sources/TanyaAIContracts/TanyaAIContext.swift`
+- `Packages/TanyaAI/Sources/TanyaAIContracts/TanyaAIEventName.swift`
+- `Packages/TanyaAI/Sources/TanyaAIContracts/TanyaAIHostFlow.swift`
+- `Packages/TanyaAI/Sources/TanyaAIData/DTO/TanyaAIStreamDTO.swift`
+- `Packages/TanyaAI/Sources/TanyaAIData/Mapper/TanyaAIStreamEventDecoder+Response.swift`
+- `Packages/TanyaAI/Sources/TanyaAIData/Mapper/TanyaAIStreamEventDecoder.swift`
+- `Packages/TanyaAI/Sources/TanyaAIData/Repositories/TanyaAISessionRepository+History.swift`
+- `Packages/TanyaAI/Sources/TanyaAIData/Repositories/TanyaAISessionRepository.swift`
+- `Packages/TanyaAI/Sources/TanyaAIDomain/Models/Action.swift`
+- `Packages/TanyaAI/Sources/TanyaAIDomain/Models/ResponseDocuments.swift`
+- `Packages/TanyaAI/Sources/TanyaAIDomain/Models/ResponsePayload+Interaction.swift`
+- `Packages/TanyaAI/Sources/TanyaAIDomain/Models/ResponsePayload.swift`
+- `Packages/TanyaAI/Sources/TanyaAIDomain/Models/ResponsePresentation.swift`
+- `Packages/TanyaAI/Sources/TanyaAIDomain/Models/ResponseSelection.swift`
+- `Packages/TanyaAI/Sources/TanyaAIDomain/Models/TanyaAIConnectionState.swift`
+- `Packages/TanyaAI/Sources/TanyaAIDomain/Models/TanyaAIMessage.swift`
+- `Packages/TanyaAI/Sources/TanyaAIDomain/Models/TanyaAIMessageContent.swift`
+- `Packages/TanyaAI/Sources/TanyaAIDomain/Models/TanyaAIStreamEvent.swift`
+- `Packages/TanyaAI/Sources/TanyaAIDomain/Repositories/TanyaAIRepository.swift`
+- `Packages/TanyaAI/Sources/TanyaAIPresentation/Chat/ChatBackdrop.swift`
+- `Packages/TanyaAI/Sources/TanyaAIPresentation/Chat/ChatDateFormat.swift`
+- `Packages/TanyaAI/Sources/TanyaAIPresentation/Chat/ChatLayoutMetrics.swift`
+- `Packages/TanyaAI/Sources/TanyaAIPresentation/Chat/ChatScreen.swift`
+- `Packages/TanyaAI/Sources/TanyaAIPresentation/Chat/ComposerSection.swift`
+- `Packages/TanyaAI/Sources/TanyaAIPresentation/Chat/MessageHostingCell.swift`
+- `Packages/TanyaAI/Sources/TanyaAIPresentation/Chat/MessageListView.swift`
+- `Packages/TanyaAI/Sources/TanyaAIPresentation/Chat/MessageTableRow.swift`
+- `Packages/TanyaAI/Sources/TanyaAIPresentation/Chat/MessageTableView+Coordinator.swift`
+- `Packages/TanyaAI/Sources/TanyaAIPresentation/Chat/MessageTableView+PromptAnchor.swift`
+- `Packages/TanyaAI/Sources/TanyaAIPresentation/Chat/MessageTableView+Scroll.swift`
+- `Packages/TanyaAI/Sources/TanyaAIPresentation/Chat/MessageTableView.swift`
+- `Packages/TanyaAI/Sources/TanyaAIPresentation/Chat/TanyaAIChatOutput.swift`
+- `Packages/TanyaAI/Sources/TanyaAIPresentation/Chat/TanyaAIChatViewModel+Composing.swift`
+- `Packages/TanyaAI/Sources/TanyaAIPresentation/Chat/TanyaAIChatViewModel+Content.swift`
+- `Packages/TanyaAI/Sources/TanyaAIPresentation/Chat/TanyaAIChatViewModel+Delivery.swift`
+- `Packages/TanyaAI/Sources/TanyaAIPresentation/Chat/TanyaAIChatViewModel+Events.swift`
+- `Packages/TanyaAI/Sources/TanyaAIPresentation/Chat/TanyaAIChatViewModel+History.swift`
+- `Packages/TanyaAI/Sources/TanyaAIPresentation/Chat/TanyaAIChatViewModel+HostFlow.swift`
+- `Packages/TanyaAI/Sources/TanyaAIPresentation/Chat/TanyaAIChatViewModel+Lookup.swift`
+- `Packages/TanyaAI/Sources/TanyaAIPresentation/Chat/TanyaAIChatViewModel+Response.swift`
+- `Packages/TanyaAI/Sources/TanyaAIPresentation/Chat/TanyaAIChatViewModel.swift`
+- `Packages/TanyaAI/Sources/TanyaAIPresentation/Chat/TanyaAIMessageItemViewModel.swift`
+- `Packages/TanyaAI/Sources/TanyaAIPresentation/Chat/TanyaAIMessageListState.swift`
+- `Packages/TanyaAI/Sources/TanyaAIPresentation/Chat/TanyaAIMessageRowHandlers.swift`
+- `Packages/TanyaAI/Sources/TanyaAIPresentation/Chat/TanyaAIMessageScrollControl.swift`
+- `Packages/TanyaAI/Sources/TanyaAIPresentation/Chat/TanyaAITextDeltaBuffer.swift`
+- `Packages/TanyaAI/Sources/TanyaAIPresentation/Chat/WelcomeSection.swift`
+- `Packages/TanyaAI/Sources/TanyaAIPresentation/Components/Chat/ChatCopy.swift`
+- `Packages/TanyaAI/Sources/TanyaAIPresentation/Components/Chat/ResponseBlocksView+Actions.swift`
+- `Packages/TanyaAI/Sources/TanyaAIPresentation/Components/Chat/ResponseBlocksView.swift`
+- `Packages/TanyaAI/Sources/TanyaAIPresentation/Components/MessageRowView.swift`
+- `Packages/TanyaAI/Sources/TanyaAIPresentation/Resources/en.lproj/Localizable.strings`
+- `Packages/TanyaAI/Sources/TanyaAIPresentation/Resources/id.lproj/Localizable.strings`
+- `Packages/TanyaAI/Sources/TanyaAITestSupport/MockFigmaResponseFixture+Components.swift`
+- `Packages/TanyaAI/Sources/TanyaAITestSupport/MockFigmaResponseFixture+Portfolio.swift`
+- `Packages/TanyaAI/Sources/TanyaAITestSupport/MockFigmaResponseFixture+Purchase.swift`
+- `Packages/TanyaAI/Sources/TanyaAITestSupport/MockFigmaResponseFixture+Stress.swift`
+- `Packages/TanyaAI/Sources/TanyaAITestSupport/MockFigmaResponseFixture.swift`
+- `Packages/TanyaAI/Sources/TanyaAITestSupport/MockTanyaAIChatSession+Figma.swift`
+- `Packages/TanyaAI/Sources/TanyaAITestSupport/MockTanyaAIChatSession.swift`
+
+## Test kontrak dan flow lama yang digantikan test prototype (36 file)
+
+- `Packages/TanyaAI/Tests/TanyaAIDataTests/MockFigmaResponseFixtureTests.swift`
+- `Packages/TanyaAI/Tests/TanyaAIDataTests/SessionRecorder.swift`
+- `Packages/TanyaAI/Tests/TanyaAIDataTests/TanyaAIEventNameTests.swift`
+- `Packages/TanyaAI/Tests/TanyaAIDataTests/TanyaAIResponseDecodingTests.swift`
+- `Packages/TanyaAI/Tests/TanyaAIDataTests/TanyaAISessionHistoryTests.swift`
+- `Packages/TanyaAI/Tests/TanyaAIDataTests/TanyaAISessionRepositoryTests.swift`
+- `Packages/TanyaAI/Tests/TanyaAIDataTests/TanyaAISessionSpy.swift`
+- `Packages/TanyaAI/Tests/TanyaAIDataTests/TanyaAISessionStartupTests.swift`
+- `Packages/TanyaAI/Tests/TanyaAIDataTests/TanyaAIStreamEventDecoderTests.swift`
+- `Packages/TanyaAI/Tests/TanyaAINavigationTests/TanyaAIHostAnchorTests.swift`
+- `Packages/TanyaAI/Tests/TanyaAINavigationTests/TanyaAIHostDestinationTests.swift`
+- `Packages/TanyaAI/Tests/TanyaAINavigationTests/TanyaAIHostFlowTests.swift`
+- `Packages/TanyaAI/Tests/TanyaAINavigationTests/TanyaAIHostThemeTests.swift`
+- `Packages/TanyaAI/Tests/TanyaAINavigationTests/TanyaAINewSessionTests.swift`
+- `Packages/TanyaAI/Tests/TanyaAINavigationTests/TanyaAIPushTransitionTests.swift`
+- `Packages/TanyaAI/Tests/TanyaAIPerformanceTests/TanyaAIFrameRateMonitor.swift`
+- `Packages/TanyaAI/Tests/TanyaAIPerformanceTests/TanyaAIFrameRateTests.swift`
+- `Packages/TanyaAI/Tests/TanyaAIPerformanceTests/TanyaAILifecycleTests.swift`
+- `Packages/TanyaAI/Tests/TanyaAIPerformanceTests/TanyaAIPerformanceFixtures.swift`
+- `Packages/TanyaAI/Tests/TanyaAIPresentationTests/ChatCopyTests.swift`
+- `Packages/TanyaAI/Tests/TanyaAIPresentationTests/TanyaAIBubbleHeightTests.swift`
+- `Packages/TanyaAI/Tests/TanyaAIPresentationTests/TanyaAIChatBehaviorTests.swift`
+- `Packages/TanyaAI/Tests/TanyaAIPresentationTests/TanyaAIChatRestoreTests.swift`
+- `Packages/TanyaAI/Tests/TanyaAIPresentationTests/TanyaAIChatViewModelTests.swift`
+- `Packages/TanyaAI/Tests/TanyaAIPresentationTests/TanyaAIGrowingTextViewTests.swift`
+- `Packages/TanyaAI/Tests/TanyaAIPresentationTests/TanyaAIInlineLinkBehaviorTests.swift`
+- `Packages/TanyaAI/Tests/TanyaAIPresentationTests/TanyaAIMessageListTests.swift`
+- `Packages/TanyaAI/Tests/TanyaAIPresentationTests/TanyaAIMessageRetentionTests.swift`
+- `Packages/TanyaAI/Tests/TanyaAIPresentationTests/TanyaAIPromptAnchorTests.swift`
+- `Packages/TanyaAI/Tests/TanyaAIPresentationTests/TanyaAIRepositoryStub.swift`
+- `Packages/TanyaAI/Tests/TanyaAIPresentationTests/TanyaAIRequestLifetimeTests.swift`
+- `Packages/TanyaAI/Tests/TanyaAIPresentationTests/TanyaAIResponseBehaviorTests.swift`
+- `Packages/TanyaAI/Tests/TanyaAIPresentationTests/TanyaAIRowRefreshTests.swift`
+- `Packages/TanyaAI/Tests/TanyaAIPresentationTests/TanyaAIScrollControlTests.swift`
+- `Packages/TanyaAI/Tests/TanyaAIPresentationTests/TanyaAISessionWorkflowTests.swift`
+- `Packages/TanyaAI/Tests/TanyaAIPresentationTests/TanyaAITextDeltaBufferTests.swift`
+
+## Harness PreviewBook/investasi/integrasi legacy (30 file)
+
+- `TanyaAISandboxApp/AppDelegate.swift`
+- `TanyaAISandboxApp/DemoHostFlowScreen.swift`
+- `TanyaAISandboxApp/DemoHostKeypad.swift`
+- `TanyaAISandboxApp/DemoHostWebScreen.swift`
+- `TanyaAISandboxApp/LegacyDetailScreen.swift`
+- `TanyaAISandboxApp/LegacyRootScreen.swift`
+- `TanyaAISandboxApp/PreviewArtwork.swift`
+- `TanyaAISandboxApp/PreviewBookPage+Actions.swift`
+- `TanyaAISandboxApp/PreviewBookPage+Content.swift`
+- `TanyaAISandboxApp/PreviewBookPage+Input.swift`
+- `TanyaAISandboxApp/PreviewBookPage+Screen.swift`
+- `TanyaAISandboxApp/PreviewBookPage.swift`
+- `TanyaAISandboxApp/PreviewBookSamples.swift`
+- `TanyaAISandboxApp/PreviewBookScreen.swift`
+- `TanyaAISandboxApp/SandboxDeeplink.swift`
+- `TanyaAISandboxApp/SandboxDeeplinkRouter.swift`
+- `TanyaAISandboxApp/SandboxDeeplinkTargetScreen.swift`
+- `TanyaAISandboxApp/SandboxFigmaPresenter.swift`
+- `TanyaAISandboxApp/SandboxLaunchMode.swift`
+- `TanyaAISandboxApp/SandboxTanyaAIFactory+Figma.swift`
+- `TanyaAISandboxApp/SandboxTanyaAIFactory.swift`
+- `TanyaAISandboxApp/SceneDelegate.swift`
+- `TanyaAISandboxApp/TanyaAIPresentationGateway.swift`
+- `TanyaAISandboxApp/TanyaAIPresenting.swift`
+- `TanyaAISandboxUITests/PreviewBookUITests.swift`
+- `TanyaAISandboxUITests/TanyaAIFigmaUITests+Components.swift`
+- `TanyaAISandboxUITests/TanyaAIFigmaUITests+Steps.swift`
+- `TanyaAISandboxUITests/TanyaAIFigmaUITests+Stress.swift`
+- `TanyaAISandboxUITests/TanyaAIFigmaUITests.swift`
+- `TanyaAISandboxUITests/TanyaAILegacyIntegrationTests.swift`
+
+## Dokumentasi scope lama yang akan digantikan panduan prototype (11 file)
+
+- `docs/COMPONENT_STYLE.md`
+- `docs/DESIGNKIT_COPY_AND_COMPONENTS.md`
+- `docs/DESIGNKIT_FONT_USAGE.md`
+- `docs/DESIGNKIT_PHASED_MIGRATION.md`
+- `docs/DESIGNKIT_THEMES.md`
+- `docs/FIGMA_CHAT_UI.md`
+- `docs/FIGMA_CHAT_VALIDATION.md`
+- `docs/HOST_INTEGRATION.md`
+- `docs/PERFORMANCE.md`
+- `docs/PREVIEWBOOK.md`
+- `docs/SESSION_AND_PARTIAL_MIGRATION.md`

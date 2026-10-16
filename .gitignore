@@ -14,3 +14,7 @@ xcuserdata/
 *.mobileprovision
 *.env
 Secrets.*
+
+.tools/
+
+__pycache__/

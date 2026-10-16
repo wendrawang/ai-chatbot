@@ -1,15 +1,20 @@
+//
+//  AppDelegate.swift
+//  TanyaAIHarness
+//
+//  Created by Wendra on 16/10/26.
+//
+
 import UIKit
 
-@UIApplicationMain
-final class AppDelegate: UIResponder, UIApplicationDelegate {
+@main
+final class AppDelegate: UIResponder, UIApplicationDelegate
+{
     func application(
-        _ application: UIApplication,
+        _: UIApplication,
         configurationForConnecting connectingSceneSession: UISceneSession,
-        options: UIScene.ConnectionOptions
-    ) -> UISceneConfiguration {
-        UISceneConfiguration(
-            name: "Default Configuration",
-            sessionRole: connectingSceneSession.role
-        )
+        options _: UIScene.ConnectionOptions) -> UISceneConfiguration
+    {
+        UISceneConfiguration(name: "Default Configuration", sessionRole: connectingSceneSession.role)
     }
 }

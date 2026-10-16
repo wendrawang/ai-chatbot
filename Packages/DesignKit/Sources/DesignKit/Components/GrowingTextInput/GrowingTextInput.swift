@@ -1,8 +1,16 @@
+//
+//  GrowingTextInput.swift
+//  DesignKit
+//
+//  Created by Wendra on 16/10/26.
+//
+
 import SwiftUI
 import UIKit
 
 /// A multiline composer that stays one to four lines tall on iOS 15.
-public struct GrowingTextInput: UIViewRepresentable {
+public struct GrowingTextInput: UIViewRepresentable
+{
     @Binding
     var text: String
     let font: UIFont
@@ -12,8 +20,8 @@ public struct GrowingTextInput: UIViewRepresentable {
 
     public init(
         text: Binding<String>, font: UIFont, textColor: UIColor,
-        lineSpacing: CGFloat = 0, accessibilityLabel: String
-    ) {
+        lineSpacing: CGFloat = 0, accessibilityLabel: String)
+    {
         self._text = text
         self.font = font
         self.lineSpacing = lineSpacing
@@ -21,7 +29,8 @@ public struct GrowingTextInput: UIViewRepresentable {
         self.accessibilityLabel = accessibilityLabel
     }
 
-    public func makeUIView(context: Context) -> BoundedTextView {
+    public func makeUIView(context: Context) -> BoundedTextView
+    {
         let textView = BoundedTextView()
         textView.delegate = context.coordinator
         textView.backgroundColor = .clear
@@ -36,26 +45,37 @@ public struct GrowingTextInput: UIViewRepresentable {
         return textView
     }
 
-    public func updateUIView(_ textView: BoundedTextView, context: Context) {
+    public func updateUIView(_ textView: BoundedTextView, context: Context)
+    {
         context.coordinator.parent = self
         textView.accessibilityLabel = accessibilityLabel
-        if textView.font != font || textView.textColor != textColor || textView.lineSpacing != lineSpacing {
+        if textView.font != font || textView.textColor != textColor || textView.lineSpacing != lineSpacing
+        {
             applyStyle(to: textView)
         }
-        if textView.text != text {
+
+        if textView.text != text
+        {
             textView.text = text
             applyStyle(to: textView)
         }
+
         textView.setNeedsLayout()
     }
 
-    private func applyStyle(to textView: BoundedTextView) {
-        guard textView.markedTextRange == nil else { return }
+    private func applyStyle(to textView: BoundedTextView)
+    {
+        guard textView.markedTextRange == nil
+        else
+        {
+            return
+        }
+
         let paragraph = NSMutableParagraphStyle()
         paragraph.lineSpacing = max(0, lineSpacing)
         textView.lineSpacing = paragraph.lineSpacing
         let attributes: [NSAttributedString.Key: Any] = [
-            .font: font, .foregroundColor: textColor, .paragraphStyle: paragraph
+            .font: font, .foregroundColor: textColor, .paragraphStyle: paragraph,
         ]
         textView.font = font
         textView.textColor = textColor
@@ -65,59 +85,29 @@ public struct GrowingTextInput: UIViewRepresentable {
         textView.selectedRange = selection
     }
 
-    public static func dismantleUIView(_ textView: BoundedTextView, coordinator: Coordinator) {
+    public static func dismantleUIView(_ textView: BoundedTextView, coordinator _: Coordinator)
+    {
         textView.delegate = nil
     }
 
-    public func makeCoordinator() -> Coordinator {
+    public func makeCoordinator() -> Coordinator
+    {
         Coordinator(parent: self)
     }
 
-    public final class Coordinator: NSObject, UITextViewDelegate {
+    public final class Coordinator: NSObject, UITextViewDelegate
+    {
         var parent: GrowingTextInput
 
-        init(parent: GrowingTextInput) {
+        init(parent: GrowingTextInput)
+        {
             self.parent = parent
         }
 
-        public func textViewDidChange(_ textView: UITextView) {
+        public func textViewDidChange(_ textView: UITextView)
+        {
             parent.text = textView.text
             textView.setNeedsLayout()
-        }
-    }
-}
-
-public final class BoundedTextView: UITextView {
-    var lineSpacing: CGFloat = 0
-    private var measuredHeight: CGFloat = 0
-    private var isMeasuring = false
-
-    public override var intrinsicContentSize: CGSize {
-        let lineHeight = font?.lineHeight ?? UIFont.preferredFont(forTextStyle: .body).lineHeight
-        return CGSize(width: UIView.noIntrinsicMetric, height: max(measuredHeight, lineHeight))
-    }
-
-    public override func layoutSubviews() {
-        super.layoutSubviews()
-        guard bounds.width > 0, !isMeasuring else { return }
-
-        isMeasuring = true
-        let fittedHeight = sizeThatFits(
-            CGSize(width: bounds.width, height: .greatestFiniteMagnitude)
-        ).height
-        isMeasuring = false
-
-        let lineHeight = font?.lineHeight ?? UIFont.preferredFont(forTextStyle: .body).lineHeight
-        let lines = CGFloat(DesignKitMetrics.Text.maximumInputLines)
-        let maxHeight = ceil(lineHeight * lines + lineSpacing * (lines - 1))
-        let nextHeight = min(max(ceil(fittedHeight), ceil(lineHeight)), maxHeight)
-        let shouldScroll = fittedHeight > maxHeight + DesignKitMetrics.Layout.measurementTolerance
-        if isScrollEnabled != shouldScroll {
-            isScrollEnabled = shouldScroll
-        }
-        if abs(nextHeight - measuredHeight) > DesignKitMetrics.Layout.measurementTolerance {
-            measuredHeight = nextHeight
-            invalidateIntrinsicContentSize()
         }
     }
 }

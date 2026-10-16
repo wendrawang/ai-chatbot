@@ -1,31 +1,73 @@
 // swift-tools-version: 5.7
-
+// Created by Wendra on 16/10/26.
 import PackageDescription
 
-/// The design system, as a package of its own.
-///
-/// It knows nothing about the feature using it: no session, no view
-/// model, no navigation - and nothing in here is named after one.
-/// The dependency runs one way - the feature package depends on this one - so
-/// this can be lifted out and used by another feature without bringing a chat
-/// along with it.
 let package = Package(
     name: "DesignKit",
     defaultLocalization: "en",
-    platforms: [
-        .iOS(.v15)
-    ],
-    products: [
-        .library(name: "DesignKit", targets: ["DesignKit"])
-    ],
+    platforms: [.iOS(.v15)],
+    products: [.library(name: "DesignKit", targets: ["DesignKit"])],
+    dependencies: [.package(url: "https://github.com/mac-cain13/R.swift.git", exact: "7.8.0")],
     targets: [
         .target(
             name: "DesignKit",
-            resources: [.copy("Resources/Fonts"), .process("Resources/en.lproj"), .process("Resources/id.lproj")]
-        ),
-        .testTarget(
-            name: "DesignKitTests",
-            dependencies: ["DesignKit"]
-        )
-    ]
-)
+            dependencies: [.product(name: "RswiftLibrary", package: "R.swift")],
+            exclude: [
+                "Components/AcknowledgementRow/AcknowledgementRow.swift",
+                "Components/ActionPill/ActionPill.swift",
+                "Components/ActivityStatus/ActivityStatus.swift",
+                "Components/DataTable/DataTable.swift",
+                "Components/DateSeparator/DateSeparator.swift",
+                "Components/DesignButtonStyle/DesignButtonStyle.swift",
+                "Components/FilledAction/FilledAction.swift",
+                "Components/ItemHeader/ItemHeader.swift",
+                "Components/LinkAction/LinkAction.swift",
+                "Components/LoadingStateView/LoadingStateView.swift",
+                "Components/MediaCard/MediaCard.swift",
+                "Components/MetricSummary/MetricSummary.swift",
+                "Components/NavigationHeader/NavigationHeader.swift",
+                "Components/OptionList/OptionList.swift",
+                "Components/OptionRow/OptionRow.swift",
+                "Components/OutlinedBackground/OutlinedBackground.swift",
+                "Components/QuickActionList/QuickActionList.swift",
+                "Components/QuickActionRow/QuickActionRow.swift",
+                "Components/RichText/RichText.swift",
+                "Components/ScrollToLatestButton/ScrollToLatestButton.swift",
+                "Components/SuggestionList/SuggestionList.swift",
+                "Components/SummaryCard/SummaryCard.swift",
+                "Components/TextBubble/TextBubble.swift",
+                "Components/WelcomeContent/WelcomeContent.swift",
+                "Extensions/CGFloat+Artwork.swift",
+                "Foundations/Layout/ArtworkMetrics.swift",
+                "Foundations/Localization/CopyCatalog.swift",
+                "Foundations/Localization/CopyEnvironment.swift",
+                "Models/DataTableData.swift",
+                "Models/QuickActionData.swift",
+                "Models/SelectionOption.swift",
+                "Models/SummaryField.swift",
+                "Support/DesignCopy.swift",
+                "Support/Markup/Markup.swift",
+                "Support/Markup/MarkupParser+Links.swift",
+                "Support/Markup/MarkupParser+Paragraphs.swift",
+                "Support/Markup/MarkupParser+Text.swift",
+                "Support/UIKit/LayoutTrackingTableView.swift",
+                "Theme/ManagedTheme.swift",
+                "Theme/Theme+Generated.swift",
+                "Theme/ThemeManager.swift",
+                "Theme/ThemeResolution.swift",
+                "Tokens/Colors.swift",
+                "Tokens/DesignKitMetrics+Layout.swift",
+                "Tokens/DesignKitMetrics.swift",
+                "Tokens/Fonts.swift",
+                "Tokens/Theme.swift",
+                "Tokens/ThemeEnvironment.swift",
+                "Typography/DesignFontModifier.swift",
+                "Typography/DesignKitFont.swift",
+                "Typography/DesignKitTypography.swift",
+                "Typography/Fonts+Generated.swift",
+                "Typography/Fonts+Resolving.swift",
+            ],
+            resources: [.process("Resources")],
+            plugins: [.plugin(name: "RswiftGenerateInternalResources", package: "R.swift")]),
+        .testTarget(name: "DesignKitTests", dependencies: ["DesignKit"], path: "Tests/PrototypeTests"),
+    ])

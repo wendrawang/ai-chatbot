@@ -1,0 +1,14 @@
+--allman true
+--indent 4
+--max-width 120
+--wraparguments before-first
+--wrapparameters before-first
+--closingparen same-line
+--empty-braces linebreak
+--header ignore
+--self remove
+--disable redundantSelf,sortImports
+--exclude **/Generated/**,**/.build/**,**/.swiftpm/**
+--enable wrapGuardStatementBodies,wrapCaseBodies
+--semicolons never
+--swift-version 5.7

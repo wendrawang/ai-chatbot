@@ -1,98 +1,41 @@
 // swift-tools-version: 5.7
-
+// Created by Wendra on 16/10/26.
 import PackageDescription
 
 let package = Package(
     name: "TanyaAI",
     defaultLocalization: "en",
-    platforms: [
-        .iOS(.v15)
-    ],
-    products: [
-        .library(name: "TanyaAI", targets: ["TanyaAI"]),
-        .library(
-            name: "TanyaAITestSupport",
-            targets: ["TanyaAITestSupport"]
-        )
-    ],
-    dependencies: [
-        // The design system is its own package, so it can be lifted out for
-        // another feature. The dependency only ever runs this way.
-        .package(path: "../DesignKit")
-    ],
+    platforms: [.iOS(.v15)],
+    products: [.library(name: "TanyaAIFeature", targets: ["TanyaAIFeature"]),
+               .library(name: "TanyaAIDomain", targets: ["TanyaAIDomain"])],
+    dependencies: [.package(path: "../DesignKit"),
+                   .package(url: "https://github.com/mac-cain13/R.swift.git", exact: "7.8.0")],
     targets: [
-        .target(name: "TanyaAIContracts"),
         .target(
             name: "TanyaAIDomain",
-            dependencies: [
-                "TanyaAIContracts",
-                .product(name: "DesignKit", package: "DesignKit")
-            ]
-        ),
+            exclude: [
+                "Models/Action.swift",
+                "Models/ResponseDocuments.swift",
+                "Models/ResponsePayload+Interaction.swift",
+                "Models/ResponsePayload.swift",
+                "Models/ResponsePresentation.swift",
+                "Models/ResponseSelection.swift",
+                "Models/TanyaAIConnectionState.swift",
+                "Models/TanyaAIMessage.swift",
+                "Models/TanyaAIMessageContent.swift",
+                "Models/TanyaAIStreamEvent.swift",
+                "Repositories/TanyaAIRepository.swift",
+            ]),
         .target(
-            name: "TanyaAIData",
+            name: "TanyaAIFeature",
             dependencies: [
-                "TanyaAIContracts",
-                "TanyaAIDomain"
-            ]
-        ),
-        .target(
-            name: "TanyaAIPresentation",
-            dependencies: [
-                "TanyaAIContracts",
                 "TanyaAIDomain",
-                .product(name: "DesignKit", package: "DesignKit")
+                "DesignKit",
+                .product(name: "RswiftLibrary", package: "R.swift"),
             ],
-            resources: [.process("Resources")]
-        ),
-        .target(
-            name: "TanyaAI",
-            dependencies: [
-                "TanyaAIContracts",
-                "TanyaAIDomain",
-                "TanyaAIData",
-                "TanyaAIPresentation",
-                .product(name: "DesignKit", package: "DesignKit")
-            ]
-        ),
-        .target(
-            name: "TanyaAITestSupport",
-            dependencies: ["TanyaAIContracts"]
-        ),
-        .testTarget(
-            name: "TanyaAIDataTests",
-            dependencies: [
-                "TanyaAIData",
-                "TanyaAIDomain",
-                "TanyaAITestSupport"
-            ]
-        ),
-        .testTarget(
-            name: "TanyaAIPresentationTests",
-            dependencies: [
-                "TanyaAIPresentation",
-                "TanyaAIDomain",
-                "TanyaAITestSupport",
-                .product(name: "DesignKit", package: "DesignKit")
-            ]
-        ),
-        .testTarget(
-            name: "TanyaAINavigationTests",
-            dependencies: [
-                "TanyaAI",
-                "TanyaAITestSupport"
-            ]
-        ),
-        .testTarget(
-            name: "TanyaAIPerformanceTests",
-            dependencies: [
-                "TanyaAI",
-                "TanyaAIContracts",
-                "TanyaAIData",
-                "TanyaAIDomain",
-                "TanyaAIPresentation",
-                "TanyaAITestSupport"
-            ]
-        )
-    ]
-)
+            resources: [.process("Resources")],
+            plugins: [.plugin(
+                name: "RswiftGenerateInternalResources",
+                package: "R.swift")]),
+        .testTarget(name: "TanyaAIFeatureTests", dependencies: ["TanyaAIFeature", "TanyaAIDomain"]),
+    ])
