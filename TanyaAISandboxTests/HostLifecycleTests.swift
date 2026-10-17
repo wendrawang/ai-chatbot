@@ -103,6 +103,27 @@ final class HostLifecycleTests: XCTestCase {
         XCTAssertEqual(probe.locale?.identifier, "id")
     }
 
+    func testLanguageAndThemeChangesReachAnOpenFeature() async throws {
+        let host = TanyaAIHost { _ in true }
+        let settings = HostSettingsState()
+        let fixture = try HostWindowFixture(HostSettingsFixture(settings: settings, host: host))
+        defer { fixture.close() }
+        let probe = EnvironmentProbe()
+        host.present { EnvironmentReader(probe: probe) }
+        await fixture.waitForPresentation()
+        XCTAssertTrue(probe.colors is DefaultColorConstants)
+        XCTAssertEqual(probe.locale?.identifier, "en")
+        settings.language = "id"
+        settings.isPremier = true
+        let updated = XCTNSPredicateExpectation(
+            predicate: NSPredicate { _, _ in probe.colors is PremierColorConstants && probe.locale?.identifier == "id"
+            },
+            object: nil
+        )
+        await fulfillment(of: [updated], timeout: 2)
+        XCTAssertTrue(host.isPresenting)
+    }
+
     func testReplacingTheWindowRootClosesTheFeature() async throws {
         let host = TanyaAIHost { _ in true }
         let fixture = try HostWindowFixture(Text("Main").tanyaAIHost(host))
@@ -136,6 +157,27 @@ private struct RootSessionFixture: View {
         } else {
             Text("Prelogin")
         }
+    }
+}
+
+private final class HostSettingsState: ObservableObject {
+    @Published
+    var language = "en"
+    @Published
+    var isPremier = false
+}
+
+/// Host meniru setting bahasa dan hasil inquiry proposition yang berubah saat fitur terbuka.
+private struct HostSettingsFixture: View {
+    @ObservedObject
+    var settings: HostSettingsState
+    let host: TanyaAIHost
+
+    var body: some View {
+        Text("Main")
+            .tanyaAIHost(host)
+            .environment(\.locale, Locale(identifier: settings.language))
+            .designColors(settings.isPremier ? PremierColorConstants() : DefaultColorConstants())
     }
 }
 

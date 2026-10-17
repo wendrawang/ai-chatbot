@@ -142,8 +142,8 @@ NavigationView {
 ```
 
 `selectedLocale` bertipe `Locale` dari pengaturan host. Copy tersedia untuk `en`,
-`id`, dan `zh-Hans`, termasuk label kembali. Perubahan locale/theme berlaku saat
-presentasi berikutnya. Daftarkan bahasa host pada konfigurasi localization target.
+`id`, dan `zh-Hans`, termasuk label kembali. Perubahan locale/theme langsung
+diterapkan, juga ketika feature sedang terbuka; draft di composer tidak hilang. Daftarkan bahasa host pada konfigurasi localization target.
 Jika host belum mendeklarasikan semua bahasa package,
 `CFBundleAllowMixedLocalizations = YES` memungkinkan resource dependency ikut
 dipilih ([dokumentasi Apple](https://developer.apple.com/documentation/bundleresources/information-property-list/cfbundleallowmixedlocalizations)).
@@ -156,6 +156,51 @@ terpisah. Motion tetap memakai animasi fullscreen lama, menghormati Reduce Motio
 dan arah layout. Swipe dari tepi kiri (kanan untuk RTL) menutup feature secara
 interaktif dan bisa dibatalkan; dengan Reduce Motion, swipe langsung menutup tanpa
 animasi geser.
+
+## Theme dari inquiry proposition dan bahasa dari setting
+
+Host cukup menyimpan dua nilai di state yang sudah ada, lalu memasangnya sebagai
+environment pada root main. Tidak ada API tambahan di `TanyaAIHost`.
+
+```swift
+import DesignKit
+
+@MainActor
+final class AppSession: ObservableObject {
+    let tanyaAI = TanyaAIHost { _ in true }
+    @Published var palette: any FigmaColorProtocol = DefaultColorConstants()
+    @Published var language = Locale(identifier: "id")
+
+    // Dipanggil saat inquiry proposition berhasil.
+    func didLoadProposition(_ proposition: CustomerProposition) {
+        switch proposition {
+        case .premier: palette = PremierColorConstants()
+        case .privateBanking: palette = PrivateColorConstants()
+        default: palette = DefaultColorConstants()
+        }
+    }
+
+    // Dipanggil dari halaman Setting > Language milik host.
+    func didChangeLanguage(code: String) {
+        language = Locale(identifier: code)   // "id", "en", "zh-Hans"
+    }
+}
+
+MainRoot()
+    .tanyaAIHost(session.tanyaAI)
+    .environment(\.locale, session.language)
+    .designColors(session.palette)
+```
+
+`CustomerProposition` adalah tipe milik host; pemetaannya ke palette tetap di host
+karena aturan bisnis tidak masuk DesignKit. Sebelum inquiry selesai, feature
+memakai palette default. Begitu nilai berubah, header, composer, dan konten
+mengikuti tanpa membuka ulang feature.
+
+Bahasa otomatis **hanya jika** pilihan host diteruskan sebagai `\.locale`. Jika
+host memakai language manager sendiri (bundle kustom atau `AppleLanguages` +
+restart), package tidak bisa membacanya; pasang satu baris `.environment(\.locale, ...)`
+dari nilai setting tersebut. Tanpa itu, Tanya AI mengikuti bahasa perangkat.
 
 ## Tahap header
 
@@ -174,12 +219,13 @@ tanpa mengulang setup header; lihat [contoh pemakaian](SHARED_HEADER.md).
 UIKit pada bridge dipakai untuk present/dismiss fullscreen dan animasi samping;
 tidak ada navigation stack fitur tambahan.
 
-Folder `Host` berisi empat file:
+Folder `Host` berisi lima file:
 
 - `ChatHostAnchor.swift`: menghubungkan `.tanyaAIHost(host)` ke controller host yang terlihat.
 - `TanyaAIHost.swift`: membuat `ChatScreen` langsung dan menangani present/dismiss.
 - `TanyaAIPushTransition.swift`: mempertahankan animasi fullscreen dari samping.
 - `TanyaAIPushInteraction.swift`: swipe-back interaktif dari tepi layar.
+- `TanyaAIHostEnvironment.swift`: meneruskan locale/theme host ke feature yang terbuka.
 
 Bridge ini tetap diperlukan untuk pola presentasi existing. UI halaman dan
 header tetap SwiftUI; editor multiline terukur memakai bridge UITextView di DesignKit.

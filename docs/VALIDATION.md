@@ -15,10 +15,10 @@ Saat dijalankan tanpa trust plugin R.swift, `xcodebuild` memerlukan
 | --- | --- |
 | DesignKit: + theme environment (3), editor remeasure saat lebar berubah (1) | 15 lulus |
 | TanyaAI: + animator saat host tertutup/swipe batal, interaksi swipe (3) | 10 lulus |
-| Hosted: + present Bool, completion ganda, swipe batal + deeplink, main→prelogin, root UIKit diganti, theme/locale | 14 lulus |
+| Hosted: + present Bool, completion ganda, swipe batal + deeplink, main→prelogin, root UIKit diganti, theme/locale awal dan saat terbuka | 15 lulus |
 | UI: tiga bahasa, padding desain, keyboard, empat baris, header/menu | 11 lulus |
 
-Total **50 tes lulus**. Belum ada pengukuran Instruments/FPS; swipe-back diuji
+Total **51 tes lulus**. Belum ada pengukuran Instruments/FPS; swipe-back diuji
 secara programatik melalui `UIPercentDrivenInteractiveTransition`, belum dengan
 gesture jari pada device.
 

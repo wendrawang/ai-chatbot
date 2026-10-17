@@ -16,8 +16,7 @@ public final class TanyaAIHost: ObservableObject {
     private let onNewConversation: (() -> Void)?
     private let onSend: (String) -> Bool
     private let pushTransition = TanyaAIPushTransition()
-    private var locale = Locale.current
-    private var colors = EnvironmentValues().designColors
+    private let hostEnvironment = TanyaAIHostEnvironment()
     private var dismissCompletions: [() -> Void] = []
     private weak var anchor: UIViewController?
     private weak var presented: UIViewController?
@@ -45,12 +44,14 @@ public final class TanyaAIHost: ObservableObject {
     @discardableResult
     public func present<Content: View>(@ViewBuilder content: () -> Content) -> Bool {
         guard presented == nil, let presenter = availablePresenter() else { return false }
-        let screen = ChatScreen(
-            isEnabled: isEnabled, onBack: { [weak self] in self?.dismiss() },
-            onNewConversation: onNewConversation, onSend: onSend, content: content
+        hostEnvironment.apply()
+        let screen = HostEnvironmentReader(
+            environment: hostEnvironment,
+            content: ChatScreen(
+                isEnabled: isEnabled, onBack: { [weak self] in self?.dismiss() },
+                onNewConversation: onNewConversation, onSend: onSend, content: content
+            )
         )
-        .environment(\.locale, locale)
-        .designColors(colors)
         .preferredColorScheme(.light)
         let controller = UIHostingController(rootView: screen)
         controller.modalPresentationStyle = .overFullScreen
@@ -68,10 +69,10 @@ public final class TanyaAIHost: ObservableObject {
         dismiss(isAnimated: true, completion: completion)
     }
 
+    /// Dipanggil setiap root host berubah, termasuk saat fitur terbuka; locale/theme baru langsung diteruskan.
     func attach(anchor: UIViewController, locale: Locale, colors: any FigmaColorProtocol) {
         self.anchor = anchor
-        self.locale = locale
-        self.colors = colors
+        hostEnvironment.receive(locale: locale, colors: colors)
     }
 
     /// Anchor hilang berarti root pemilik fitur (mis. main) sudah diganti; fitur ikut ditutup.

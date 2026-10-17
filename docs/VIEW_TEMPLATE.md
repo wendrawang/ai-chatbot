@@ -161,7 +161,7 @@ PromoBanner()
 ```
 
 Tanpa `.designColors`, nilainya `DefaultColorConstants`. `TanyaAIHost` meneruskan
-palette dan locale dari root host ke fitur saat `present()`. Warna di luar palette
+palette dan locale dari root host ke fitur, termasuk perubahan saat fitur terbuka. Warna di luar palette
 generated tetap memakai `CustomColors` dan tidak ikut theme.
 
 ## Localization otomatis
