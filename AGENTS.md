@@ -71,8 +71,11 @@ tersedia pada history/main.
   dan `openSansRegular/Medium/Bold`. Jangan memakai case `.regular/.medium` yang
   ambigu antar-family. Tambahkan file asli beserta lisensi dan nama PostScript
   yang dibaca dari metadata; jangan menyamakan nama file dengan PostScript.
-- Composer memakai token `typographySizeDisplaySmall14` dan leading role yang
-  sama, hanya dengan `.scaledToArtwork`. Ukuran font/leading tidak mengikuti
+- Teks memakai preset peran `DesignTextStyle` (`Typography/DesignTextStyle+Roles.swift`)
+  dengan `.designFont(.body)`; UIKit memakai `style.uiFont` dan `style.lineSpacing`.
+  Jangan merakit `FontFace.font(size:)` + token di view; script menolaknya di luar
+  `Typography`. Tambah peran baru (heading, button, hyperlink) saat ada pemakainya.
+  Composer memakai `.body` (Display Small 14/21), hanya dengan `.scaledToArtwork`. Ukuran font/leading tidak mengikuti
   pengaturan Dynamic Type pengguna; jangan menambahkan `@ScaledMetric` atau
   UIFontMetrics. Editor dan placeholder menerima UIFont fixed yang sama.
   Glyph Chinese yang tidak ada di Open Sans menggunakan fallback native iOS.
@@ -99,6 +102,12 @@ tersedia pada history/main.
 
 - Struktur `Components/<NamaKomponen>`, `Extensions/<Type>+<Responsibility>.swift`.
   Nama DesignKit umum, tanpa prefix fitur. Jangan membuat ViewModel per komponen.
+- Identifier UI test dikelompokkan per komponen (`ComponentIdentifier.Header.title`,
+  `ComponentIdentifier.Composer.send`). String identifier adalah kontrak UI test.
+- Tidak ada alias untuk nilai sistem: `.clear`, bukan `CustomColors.transparent`.
+- TanyaAI dipisah per tanggung jawab: `Chat/` (screen dan section), `Host/` (API
+  untuk host), `Transition/` (gerak halaman). Folder baru seperti `Messages/` atau
+  `Service/` dibuat saat file pertamanya ada, bukan lebih awal.
 - Screen standar memakai composition `ScreenContainer` dari DesignKit: header,
   area scroll, trailing action dan footer. Container memiliki satu `isScrolled`
   dan ID coordinate space lokal. Jangan membuat inheritance/BaseScreen protocol, ViewModel

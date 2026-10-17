@@ -18,9 +18,7 @@ struct HeaderDemoContent: View {
     var body: some View {
         VStack(alignment: .leading, spacing: FigmaSize.spacingLarge.scaledToArtwork) {
             Text(String(resource: R.string.localizable.sandboxDemoTitle, locale: locale))
-                .font(
-                    Font(FontFace.firaSansSemiBold.font(size: FigmaSize.typographySizeDisplayNormal16.scaledToArtwork))
-                )
+                .designFont(.screenTitle)
                 .accessibilityIdentifier(SandboxOptions.demoStartIdentifier)
             ForEach(Int.zero..<SandboxOptions.demoParagraphCount, id: \.self) { _ in
                 Text(String(resource: R.string.localizable.sandboxDemoBody, locale: locale))
@@ -28,7 +26,7 @@ struct HeaderDemoContent: View {
             Text(String(resource: R.string.localizable.sandboxDemoEnd, locale: locale))
                 .accessibilityIdentifier(SandboxOptions.demoEndIdentifier)
         }
-        .font(Font(FontFace.openSansRegular.font(size: FigmaSize.typographySizeDisplaySmall14.scaledToArtwork)))
+        .designFont(.body)
         .foregroundColor(colors.colorsTextPrimaryDark)
         .fixedSize(horizontal: false, vertical: true)
     }

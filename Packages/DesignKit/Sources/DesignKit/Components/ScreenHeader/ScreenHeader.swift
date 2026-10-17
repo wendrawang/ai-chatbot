@@ -17,19 +17,19 @@ public struct ScreenHeader<Trailing: View>: View {
     private let title: String
     private let backLabel: String
     private let isScrolled: Bool
-    private let fontFace: FontFace
+    private let titleStyle: DesignTextStyle
     private let onBack: () -> Void
     private let trailing: Trailing
 
     public init(
         title: String, backLabel: String, isScrolled: Bool,
-        fontFace: FontFace = .firaSansSemiBold, onBack: @escaping () -> Void,
+        titleStyle: DesignTextStyle = .screenTitle, onBack: @escaping () -> Void,
         @ViewBuilder trailing: () -> Trailing
     ) {
         self.title = title
         self.backLabel = backLabel
         self.isScrolled = isScrolled
-        self.fontFace = fontFace
+        self.titleStyle = titleStyle
         self.onBack = onBack
         self.trailing = trailing()
     }
@@ -38,12 +38,12 @@ public struct ScreenHeader<Trailing: View>: View {
         HStack(spacing: FigmaSize.spacingMedium.scaledToArtwork) {
             backButton
             Text(title)
-                .font(Font(fontFace.font(size: FigmaSize.typographySizeDisplayNormal16.scaledToArtwork)))
+                .designFont(titleStyle)
                 .foregroundColor(colors.colorsTextPrimaryDark)
                 .lineLimit(CustomTextLines.headerTitle)
                 .frame(maxWidth: .infinity)
                 .accessibilityAddTraits(.isHeader)
-                .accessibilityIdentifier(ComponentIdentifier.headerTitle)
+                .accessibilityIdentifier(ComponentIdentifier.Header.title)
             Color.clear.frame(width: actionSize, height: actionSize).overlay(trailing)
         }
         .padding(.horizontal, FigmaSize.spacingLarge.scaledToArtwork)
@@ -55,7 +55,7 @@ public struct ScreenHeader<Trailing: View>: View {
             }
         }
         .accessibilityElement(children: .contain)
-        .accessibilityIdentifier(isScrolled ? ComponentIdentifier.scrolledHeader : ComponentIdentifier.header)
+        .accessibilityIdentifier(isScrolled ? ComponentIdentifier.Header.scrolled : ComponentIdentifier.Header.root)
     }
 
     private var backButton: some View {
@@ -70,7 +70,7 @@ public struct ScreenHeader<Trailing: View>: View {
         }
         .buttonStyle(.plain)
         .accessibilityLabel(backLabel)
-        .accessibilityIdentifier(ComponentIdentifier.back)
+        .accessibilityIdentifier(ComponentIdentifier.Header.back)
     }
 
     @ViewBuilder
@@ -92,11 +92,11 @@ private extension ScreenHeader {
 extension ScreenHeader where Trailing == EmptyView {
     public init(
         title: String, backLabel: String, isScrolled: Bool,
-        fontFace: FontFace = .firaSansSemiBold, onBack: @escaping () -> Void
+        titleStyle: DesignTextStyle = .screenTitle, onBack: @escaping () -> Void
     ) {
         self.init(
             title: title, backLabel: backLabel, isScrolled: isScrolled,
-            fontFace: fontFace, onBack: onBack, trailing: { EmptyView() }
+            titleStyle: titleStyle, onBack: onBack, trailing: { EmptyView() }
         )
     }
 }

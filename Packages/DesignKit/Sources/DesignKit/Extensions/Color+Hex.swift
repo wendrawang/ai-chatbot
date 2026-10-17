@@ -9,7 +9,7 @@ import SwiftUI
 
 public extension Color {
     /// Accepts RGB, RRGGBB or AARRGGBB. Invalid input uses an explicit, nonoptional fallback.
-    init(hex: String, fallback: Color = CustomColors.transparent) {
+    init(hex: String, fallback: Color = .clear) {
         let cleaned = hex.trimmingCharacters(in: .whitespacesAndNewlines)
         let digits = cleaned.hasPrefix("#") ? cleaned.dropFirst() : cleaned[...]
         let isValid = digits.utf8.allSatisfy { byte in

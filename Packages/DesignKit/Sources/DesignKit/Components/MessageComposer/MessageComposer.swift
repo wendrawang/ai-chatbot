@@ -14,23 +14,21 @@ public struct MessageComposer: View {
     private var colors
     @Binding
     private var text: String
-    // Figma typography follows artwork scaling only, independent of the user's text size setting.
-    private let fontSize = FigmaSize.typographySizeDisplaySmall14.scaledToArtwork
     private let placeholder: String
     private let sendLabel: String
     private let isEnabled: Bool
-    private let fontFace: FontFace
+    private let textStyle: DesignTextStyle
     private let onSend: () -> Void
 
     public init(
         text: Binding<String>, placeholder: String, sendLabel: String,
-        isEnabled: Bool = true, fontFace: FontFace = .openSansRegular, onSend: @escaping () -> Void
+        isEnabled: Bool = true, textStyle: DesignTextStyle = .body, onSend: @escaping () -> Void
     ) {
         self._text = text
         self.placeholder = placeholder
         self.sendLabel = sendLabel
         self.isEnabled = isEnabled
-        self.fontFace = fontFace
+        self.textStyle = textStyle
         self.onSend = onSend
     }
 
@@ -44,18 +42,18 @@ public struct MessageComposer: View {
         .padding(FigmaSize.spacingLarge.scaledToArtwork)
         .background(surface)
         .accessibilityElement(children: .contain)
-        .accessibilityIdentifier(ComponentIdentifier.composer)
+        .accessibilityIdentifier(ComponentIdentifier.Composer.root)
     }
 
     private var field: some View {
         ZStack(alignment: .leading) {
             GrowingTextInput(
                 text: $text, font: inputFont, textColor: UIColor(colors.colorsTextPrimaryDark),
-                lineSpacing: lineSpacing, accessibilityLabel: placeholder
+                lineSpacing: textStyle.lineSpacing, accessibilityLabel: placeholder
             )
             .fixedSize(horizontal: false, vertical: true)
             .frame(maxWidth: .infinity)
-            .accessibilityIdentifier(ComponentIdentifier.input)
+            .accessibilityIdentifier(ComponentIdentifier.Composer.input)
             if text.isEmpty {
                 Text(placeholder)
                     .font(Font(inputFont))
@@ -82,7 +80,7 @@ public struct MessageComposer: View {
         .buttonStyle(.plain)
         .disabled(!isSendEnabled)
         .accessibilityLabel(sendLabel)
-        .accessibilityIdentifier(ComponentIdentifier.send)
+        .accessibilityIdentifier(ComponentIdentifier.Composer.send)
     }
 
     private var surface: some View {
@@ -102,16 +100,12 @@ public struct MessageComposer: View {
 // MARK: - Helpers
 
 private extension MessageComposer {
-    var inputFont: UIFont { fontFace.font(size: fontSize) }
+    /// Editor UIKit dan placeholder memakai UIFont yang sama agar caret dan hint sejajar.
+    var inputFont: UIFont { textStyle.uiFont }
 
     /// Equal single-line rows center the field/button; a taller field keeps the button at its bottom.
     var singleLineRowHeight: CGFloat {
-        max(CustomSizes.Composer.sendButton.scaledToArtwork, ceil(inputFont.lineHeight + lineSpacing))
-    }
-
-    var lineSpacing: CGFloat {
-        let leading = FigmaSize.typographyLineHeightDisplaySmall14.scaledToArtwork
-        return max(.zero, leading - inputFont.lineHeight)
+        max(CustomSizes.Composer.sendButton.scaledToArtwork, ceil(inputFont.lineHeight + textStyle.lineSpacing))
     }
 
     var isSendEnabled: Bool {

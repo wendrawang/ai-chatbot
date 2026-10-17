@@ -48,7 +48,11 @@ private struct ComposerFixture: View {
 
     var body: some View {
         MessageComposer(
-            text: $text, placeholder: "Ask about your finances", sendLabel: "Send", fontFace: fontFace, onSend: {}
+            text: $text, placeholder: "Ask about your finances", sendLabel: "Send",
+            textStyle: DesignTextStyle(
+                face: fontFace, size: DesignTextStyle.body.size, lineHeight: DesignTextStyle.body.lineHeight
+            ),
+            onSend: {}
         )
     }
 }

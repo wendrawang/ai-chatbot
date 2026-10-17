@@ -32,7 +32,7 @@ public struct GrowingTextInput: UIViewRepresentable {
     public func makeUIView(context: Context) -> BoundedTextView {
         let editor = BoundedTextView()
         editor.delegate = context.coordinator
-        editor.backgroundColor = UIColor(CustomColors.transparent)
+        editor.backgroundColor = .clear
         editor.textContainerInset = .zero
         editor.textContainer.lineFragmentPadding = .zero
         editor.adjustsFontForContentSizeCategory = false

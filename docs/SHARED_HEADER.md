@@ -23,7 +23,8 @@ TanyaAISandboxApp/HeaderDemoContent.swift # fixture scroll, bukan UI produksi
 1. Tambahkan tinggi header ke `CustomSizes.Header` dan batas baris judul ke
    `CustomTextLines.headerTitle`. Tinggi awal 56 pada artwork
    375; ukuran final dapat disesuaikan setelah nilai Figma tersedia. Judul memakai
-   Fira Sans SemiBold, role `typographySizeDisplayNormal16`, hanya artwork scaling.
+   preset `DesignTextStyle.screenTitle` (Fira Sans SemiBold, Display Normal 16/24),
+   hanya artwork scaling.
    Spacing memakai `spacingMedium/Large`; generated token tetap sumber tunggal.
 2. Buat `ScreenHeader`: slot kiri/kanan sama besar supaya judul tetap di tengah,
    termasuk ketika trailing kosong. Ukuran back dan trailing mengikuti token icon

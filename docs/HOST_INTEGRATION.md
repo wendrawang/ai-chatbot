@@ -252,13 +252,17 @@ tanpa mengulang setup header; lihat [contoh pemakaian](SHARED_HEADER.md).
 UIKit pada bridge dipakai untuk present/dismiss fullscreen dan animasi samping;
 tidak ada navigation stack fitur tambahan.
 
-Folder `Host` berisi lima file:
+Folder `Host` (API untuk host):
 
 - `ChatHostAnchor.swift`: menghubungkan `.tanyaAIHost(host)` ke controller host yang terlihat.
 - `TanyaAIHost.swift`: membuat `ChatScreen` langsung dan menangani present/dismiss.
-- `TanyaAIPushTransition.swift`: mempertahankan animasi fullscreen dari samping.
-- `TanyaAIPushInteraction.swift`: swipe-back interaktif dari tepi layar.
 - `TanyaAIHostEnvironment.swift`: meneruskan `locale`/`colors` milik host ke feature yang terbuka.
+
+Folder `Transition` (gerak halaman, internal):
+
+- `TanyaAIPushTransition.swift`: transitioning delegate; memilih animator dan swipe interaktif.
+- `TanyaAIPushAnimator.swift`: animasi masuk/keluar dari samping dengan parallax.
+- `TanyaAIPushInteraction.swift`: swipe-back interaktif dari tepi layar.
 
 Bridge ini tetap diperlukan untuk pola presentasi existing. UI halaman dan
 header tetap SwiftUI; editor multiline terukur memakai bridge UITextView di DesignKit.

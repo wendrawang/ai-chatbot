@@ -5,7 +5,6 @@
 //  Created by Wendra on 15/10/26.
 //
 
-import DesignKit
 import SwiftUI
 import UIKit
 
@@ -20,7 +19,7 @@ struct ChatHostAnchor: UIViewControllerRepresentable {
     func makeUIViewController(context: Context) -> UIViewController {
         let controller = UIViewController()
         controller.view.isUserInteractionEnabled = false
-        controller.view.backgroundColor = UIColor(CustomColors.transparent)
+        controller.view.backgroundColor = .clear
         return controller
     }
 
