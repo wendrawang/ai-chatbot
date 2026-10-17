@@ -10,6 +10,8 @@ import SwiftUI
 /// Inner spacing and appearance belong here; the screen owns outer margins.
 @MainActor
 public struct MessageComposer: View {
+    @Environment(\.designColors)
+    private var colors
     @Binding
     private var text: String
     // Figma typography follows artwork scaling only, independent of the user's text size setting.
@@ -18,20 +20,17 @@ public struct MessageComposer: View {
     private let sendLabel: String
     private let isEnabled: Bool
     private let fontFace: FontFace
-    private let colors: any FigmaColorProtocol
     private let onSend: () -> Void
 
     public init(
         text: Binding<String>, placeholder: String, sendLabel: String,
-        isEnabled: Bool = true, fontFace: FontFace = .openSansRegular,
-        colors: any FigmaColorProtocol = DefaultColorConstants(), onSend: @escaping () -> Void
+        isEnabled: Bool = true, fontFace: FontFace = .openSansRegular, onSend: @escaping () -> Void
     ) {
         self._text = text
         self.placeholder = placeholder
         self.sendLabel = sendLabel
         self.isEnabled = isEnabled
         self.fontFace = fontFace
-        self.colors = colors
         self.onSend = onSend
     }
 
@@ -112,7 +111,7 @@ private extension MessageComposer {
 
     var lineSpacing: CGFloat {
         let leading = FigmaSize.typographyLineHeightDisplaySmall14.scaledToArtwork
-        return max(InitialValues.zeroCGFloat, leading - inputFont.lineHeight)
+        return max(.zero, leading - inputFont.lineHeight)
     }
 
     var isSendEnabled: Bool {

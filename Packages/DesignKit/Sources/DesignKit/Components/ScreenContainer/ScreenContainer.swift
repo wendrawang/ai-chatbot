@@ -12,6 +12,8 @@ import SwiftUI
 /// Navigation callbacks and the footer's padding belong to the caller.
 @MainActor
 public struct ScreenContainer<Content: View, Trailing: View, Footer: View>: View {
+    @Environment(\.designColors)
+    private var colors
     // Keep the coordinate-space ID stable when the parent view updates.
     @State
     private var scrollSpaceID = UUID()
@@ -19,20 +21,17 @@ public struct ScreenContainer<Content: View, Trailing: View, Footer: View>: View
     private var isScrolled = false
     private let title: String
     private let backLabel: String
-    private let colors: any FigmaColorProtocol
     private let onBack: () -> Void
     private let content: Content
     private let trailing: Trailing
     private let footer: Footer
 
     public init(
-        title: String, backLabel: String, colors: any FigmaColorProtocol = DefaultColorConstants(),
-        onBack: @escaping () -> Void, @ViewBuilder content: () -> Content,
-        @ViewBuilder trailing: () -> Trailing, @ViewBuilder footer: () -> Footer
+        title: String, backLabel: String, onBack: @escaping () -> Void,
+        @ViewBuilder content: () -> Content, @ViewBuilder trailing: () -> Trailing, @ViewBuilder footer: () -> Footer
     ) {
         self.title = title
         self.backLabel = backLabel
-        self.colors = colors
         self.onBack = onBack
         self.content = content()
         self.trailing = trailing()
@@ -40,7 +39,7 @@ public struct ScreenContainer<Content: View, Trailing: View, Footer: View>: View
     }
 
     public var body: some View {
-        VStack(spacing: InitialValues.zeroCGFloat) {
+        VStack(spacing: .zero) {
             surface
             footer
         }
@@ -50,7 +49,7 @@ public struct ScreenContainer<Content: View, Trailing: View, Footer: View>: View
     private var surface: some View {
         ZStack(alignment: .top) {
             ScrollView {
-                VStack(spacing: InitialValues.zeroCGFloat) { content }
+                VStack(spacing: .zero) { content }
                     .frame(maxWidth: .infinity, alignment: .leading)
                     .padding(.horizontal, FigmaSize.spacingLarge.scaledToArtwork)
                     .padding(.top, CustomSizes.Header.height.scaledToArtwork + FigmaSize.spacingLarge.scaledToArtwork)
@@ -60,7 +59,7 @@ public struct ScreenContainer<Content: View, Trailing: View, Footer: View>: View
             .coordinateSpace(name: scrollSpaceID)
             ScreenHeader(
                 title: title, backLabel: backLabel, isScrolled: isScrolled,
-                colors: colors, onBack: onBack, trailing: { trailing }
+                onBack: onBack, trailing: { trailing }
             )
         }
     }
@@ -68,11 +67,11 @@ public struct ScreenContainer<Content: View, Trailing: View, Footer: View>: View
 
 extension ScreenContainer where Trailing == EmptyView, Footer == EmptyView {
     public init(
-        title: String, backLabel: String, colors: any FigmaColorProtocol = DefaultColorConstants(),
-        onBack: @escaping () -> Void, @ViewBuilder content: () -> Content
+        title: String, backLabel: String, onBack: @escaping () -> Void,
+        @ViewBuilder content: () -> Content
     ) {
         self.init(
-            title: title, backLabel: backLabel, colors: colors, onBack: onBack,
+            title: title, backLabel: backLabel, onBack: onBack,
             content: content, trailing: { EmptyView() }, footer: { EmptyView() }
         )
     }

@@ -16,7 +16,10 @@ import UIKit
 /// built on `NavigationView` drops a push that starts while a pop is still
 /// running, and that failure is silent. This changes only how it moves, so the
 /// isolation survives and the motion still reads as a page.
+@MainActor
 final class TanyaAIPushTransition: NSObject, UIViewControllerTransitioningDelegate {
+    let interaction = TanyaAIPushInteraction()
+
     func animationController(
         forPresented presented: UIViewController,
         presenting: UIViewController,
@@ -29,6 +32,13 @@ final class TanyaAIPushTransition: NSObject, UIViewControllerTransitioningDelega
         forDismissed dismissed: UIViewController
     ) -> UIViewControllerAnimatedTransitioning? {
         TanyaAIPushAnimator(isPresenting: false)
+    }
+
+    /// Hanya swipe-back yang interaktif; tombol back dan dismiss host memakai animasi biasa.
+    func interactionControllerForDismissal(
+        using animator: UIViewControllerAnimatedTransitioning
+    ) -> UIViewControllerInteractiveTransitioning? {
+        interaction.isInteracting ? interaction : nil
     }
 }
 
@@ -52,7 +62,7 @@ final class TanyaAIPushAnimator: NSObject, UIViewControllerAnimatedTransitioning
     func transitionDuration(
         using transitionContext: UIViewControllerContextTransitioning?
     ) -> TimeInterval {
-        UIAccessibility.isReduceMotionEnabled ? TimeInterval(InitialValues.zeroInteger) : Self.duration
+        UIAccessibility.isReduceMotionEnabled ? TimeInterval.zero : Self.duration
     }
 
     func animateTransition(
@@ -65,7 +75,7 @@ final class TanyaAIPushAnimator: NSObject, UIViewControllerAnimatedTransitioning
             return
         }
         let container = context.containerView
-        let width = UIAccessibility.isReduceMotionEnabled ? InitialValues.zeroCGFloat : container.bounds.width
+        let width = UIAccessibility.isReduceMotionEnabled ? .zero : container.bounds.width
         // The page arrives from the side the language reads towards.
         let direction: CGFloat =
             container
@@ -97,19 +107,22 @@ final class TanyaAIPushAnimator: NSObject, UIViewControllerAnimatedTransitioning
     ) {
         let container = context.containerView
         arriving.view.frame = container.bounds
-        arriving.view.transform = CGAffineTransform(translationX: width, y: InitialValues.zeroCGFloat)
+        arriving.view.transform = CGAffineTransform(translationX: width, y: .zero)
         container.addSubview(arriving.view)
 
         animate {
             arriving.view.transform = .identity
             leaving.view.transform = CGAffineTransform(
                 translationX: -width * Self.parallax,
-                y: InitialValues.zeroCGFloat
+                y: .zero
             )
         } completion: {
             // The host reuses this view once the feature is over, so it
             // cannot be left displaced.
             leaving.view.transform = .identity
+            // Host tetap di window agar SwiftUI terus memproses perubahan root (mis. logout),
+            // tetapi disembunyikan: tidak di-render dan tidak terbaca VoiceOver di belakang fitur.
+            leaving.view.isHidden = context.view(forKey: .from) == nil
             context.completeTransition(
                 context.transitionWasCancelled == false
             )
@@ -126,18 +139,26 @@ final class TanyaAIPushAnimator: NSObject, UIViewControllerAnimatedTransitioning
         arriving.view.frame = container.bounds
         arriving.view.transform = CGAffineTransform(
             translationX: -width * Self.parallax,
-            y: InitialValues.zeroCGFloat
+            y: .zero
         )
-        container.insertSubview(arriving.view, belowSubview: leaving.view)
+        // overFullScreen membiarkan view host tetap di window; fullScreen menyerahkannya ke container.
+        let isHostInContainer = context.view(forKey: .to) != nil
+        if isHostInContainer { container.insertSubview(arriving.view, belowSubview: leaving.view) }
+        arriving.view.isHidden = false
 
         animate {
             arriving.view.transform = .identity
             leaving.view.transform = CGAffineTransform(
                 translationX: width,
-                y: InitialValues.zeroCGFloat
+                y: .zero
             )
         } completion: {
             leaving.view.transform = .identity
+            arriving.view.transform = .identity
+            // Swipe yang dibatalkan: halaman host kembali tersembunyi seperti sebelum dismiss dimulai.
+            if context.transitionWasCancelled {
+                if isHostInContainer { arriving.view.removeFromSuperview() } else { arriving.view.isHidden = true }
+            }
             context.completeTransition(
                 context.transitionWasCancelled == false
             )

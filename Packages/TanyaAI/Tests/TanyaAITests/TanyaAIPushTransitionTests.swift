@@ -77,6 +77,63 @@ final class TanyaAIPushTransitionTests: XCTestCase {
         XCTAssertEqual(leaving.view.transform, .identity)
         XCTAssertEqual(arriving.view.transform, .identity)
     }
+
+    func testCoveredHostIsHiddenAfterPresentationAndShownForDismissal() {
+        let host = UIViewController()
+        let feature = UIViewController()
+        let presenting = TanyaAITransitionContextSpy(
+            container: UIView(frame: CGRect(x: 0, y: 0, width: 390, height: 844)),
+            leaving: host, arriving: feature, hiddenHostKey: .from
+        )
+        run(TanyaAIPushAnimator(isPresenting: true), in: presenting)
+        XCTAssertTrue(host.view.isHidden)
+        let dismissing = TanyaAITransitionContextSpy(
+            container: UIView(frame: CGRect(x: 0, y: 0, width: 390, height: 844)),
+            leaving: feature, arriving: host, hiddenHostKey: .to
+        )
+        run(TanyaAIPushAnimator(isPresenting: false), in: dismissing)
+        XCTAssertFalse(host.view.isHidden)
+        XCTAssertNil(host.view.superview)
+    }
+
+    func testCancelledSwipeRestoresTheCoveredHost() {
+        let host = UIViewController()
+        let feature = UIViewController()
+        let container = UIView(frame: CGRect(x: 0, y: 0, width: 390, height: 844))
+        let fullScreen = TanyaAITransitionContextSpy(
+            container: container, leaving: feature, arriving: host, isCancelled: true
+        )
+        run(TanyaAIPushAnimator(isPresenting: false), in: fullScreen)
+        XCTAssertEqual(fullScreen.isCompleted, false)
+        XCTAssertNil(host.view.superview)
+        XCTAssertEqual(host.view.transform, .identity)
+        let overFullScreen = TanyaAITransitionContextSpy(
+            container: container, leaving: feature, arriving: host, isCancelled: true, hiddenHostKey: .to
+        )
+        run(TanyaAIPushAnimator(isPresenting: false), in: overFullScreen)
+        XCTAssertTrue(host.view.isHidden)
+        XCTAssertEqual(feature.view.transform, .identity)
+    }
+
+    func testSwipeBackIsInteractiveOnlyWhileTheFingerDrivesIt() {
+        let transition = TanyaAIPushTransition()
+        let animator = TanyaAIPushAnimator(isPresenting: false)
+        XCTAssertNil(transition.interactionControllerForDismissal(using: animator))
+        transition.interaction.isInteracting = true
+        XCTAssertTrue(transition.interactionControllerForDismissal(using: animator) === transition.interaction)
+        let view = UIView()
+        transition.interaction.attach(to: view) {}
+        let edges = view.gestureRecognizers?.compactMap { ($0 as? UIScreenEdgePanGestureRecognizer)?.edges }
+        XCTAssertEqual(edges, [.left])
+    }
+
+    private func run(_ animator: TanyaAIPushAnimator, in context: TanyaAITransitionContextSpy) {
+        animator.animateTransition(using: context)
+        let deadline = Date().addingTimeInterval(2)
+        while context.isCompleted == nil, Date() < deadline {
+            RunLoop.current.run(until: Date().addingTimeInterval(0.05))
+        }
+    }
 }
 
 /// Enough of `UIViewControllerContextTransitioning` for the animator to run.
@@ -87,15 +144,21 @@ private final class TanyaAITransitionContextSpy:
     private(set) var isCompleted: Bool?
     private let leaving: UIViewController
     private let arriving: UIViewController
+    private let hiddenHostKey: UITransitionContextViewKey?
 
+    /// `hiddenHostKey` meniru overFullScreen: UIKit tidak menyerahkan view host ke container.
     init(
         container: UIView,
         leaving: UIViewController,
-        arriving: UIViewController
+        arriving: UIViewController,
+        isCancelled: Bool = false,
+        hiddenHostKey: UITransitionContextViewKey? = nil
     ) {
         containerView = container
         self.leaving = leaving
         self.arriving = arriving
+        self.hiddenHostKey = hiddenHostKey
+        transitionWasCancelled = isCancelled
         super.init()
     }
 
@@ -113,12 +176,13 @@ private final class TanyaAITransitionContextSpy:
     let isInteractive = false
     // Required spelling from UIViewControllerContextTransitioning.
     // swiftlint:disable:next boolean_prefix
-    let transitionWasCancelled = false
+    let transitionWasCancelled: Bool
     let presentationStyle = UIModalPresentationStyle.fullScreen
     let targetTransform = CGAffineTransform.identity
 
     func view(forKey key: UITransitionContextViewKey) -> UIView? {
-        key == .from ? leaving.view : arriving.view
+        guard key != hiddenHostKey else { return nil }
+        return key == .from ? leaving.view : arriving.view
     }
 
     func initialFrame(for viewController: UIViewController) -> CGRect {

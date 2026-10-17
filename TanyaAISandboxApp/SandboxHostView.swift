@@ -19,7 +19,9 @@ struct SandboxHostView: View {
 
     init(options: SandboxOptions) {
         isHeaderDemo = options.isHeaderDemo
-        _host = StateObject(wrappedValue: TanyaAIHost { _ in !options.isRejectingSend })
+        _host = StateObject(
+            wrappedValue: TanyaAIHost(locale: options.locale ?? .current) { _ in !options.isRejectingSend }
+        )
     }
 
     var body: some View {

@@ -18,7 +18,7 @@ final class HostPresentationTests: XCTestCase {
         host.present()
         XCTAssertFalse(host.isPresenting)
         let anchor = UIViewController()
-        host.attach(anchor: anchor, locale: Locale(identifier: "id"))
+        host.attach(anchor: anchor)
         host.present()
         XCTAssertFalse(host.isPresenting)
         var completionCount = 0
@@ -26,7 +26,7 @@ final class HostPresentationTests: XCTestCase {
         XCTAssertEqual(completionCount, 1)
     }
 
-    func testPresentationIsFullScreenAndLeavesHostNavigationIntact() async throws {
+    func testPresentationCoversHostAndLeavesHostNavigationIntact() async throws {
         let host = TanyaAIHost { _ in true }
         let fixture = try HostWindowFixture(
             NavigationView { Text("Host") }.navigationViewStyle(.stack).tanyaAIHost(host)
@@ -38,7 +38,8 @@ final class HostPresentationTests: XCTestCase {
         await fixture.waitForPresentation()
         let presented = try XCTUnwrap(fixture.controller.presentedViewController)
         XCTAssertTrue(host.isPresenting)
-        XCTAssertEqual(presented.modalPresentationStyle, .fullScreen)
+        XCTAssertEqual(presented.modalPresentationStyle, .overFullScreen)
+        XCTAssertTrue(fixture.controller.view.isHidden)
         XCTAssertNotNil(presented.transitioningDelegate as? TanyaAIPushTransition)
         XCTAssertNil(fixture.navigationController(in: presented))
         host.present()
@@ -51,6 +52,7 @@ final class HostPresentationTests: XCTestCase {
         XCTAssertFalse(host.isPresenting)
         XCTAssertNil(fixture.controller.presentedViewController)
         XCTAssertEqual(navigation.viewControllers, stack)
+        XCTAssertFalse(fixture.controller.view.isHidden)
         host.present()
         await fixture.waitForPresentation()
         XCTAssertTrue(host.isPresenting)
@@ -118,6 +120,12 @@ final class HostWindowFixture {
         controller.presentedViewController?.dismiss(animated: false)
         window.isHidden = true
         window.rootViewController = nil
+        settle()
+    }
+
+    /// Meniru host UIKit yang mengganti root window, misalnya main ke prelogin.
+    func replaceRoot(with root: UIViewController) {
+        window.rootViewController = root
         settle()
     }
 

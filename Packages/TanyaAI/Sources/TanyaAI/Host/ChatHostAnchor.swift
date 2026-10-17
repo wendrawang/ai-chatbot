@@ -10,10 +10,9 @@ import SwiftUI
 import UIKit
 
 /// Connects to the visible host controller without looking up a global window or changing navigation.
+/// Removing the anchor (e.g. main replaced by prelogin) also closes the feature it owns.
 @MainActor
 struct ChatHostAnchor: UIViewControllerRepresentable {
-    @Environment(\.locale)
-    private var locale
     let host: TanyaAIHost
 
     func makeCoordinator() -> Coordinator { Coordinator() }
@@ -26,9 +25,12 @@ struct ChatHostAnchor: UIViewControllerRepresentable {
     }
 
     func updateUIViewController(_ controller: UIViewController, context: Context) {
-        context.coordinator.host?.detach(anchor: controller)
-        context.coordinator.host = host
-        host.attach(anchor: controller, locale: locale)
+        // Update biasa tidak boleh melepas anchor, karena melepas anchor menutup fitur.
+        if context.coordinator.host !== host {
+            context.coordinator.host?.detach(anchor: controller)
+            context.coordinator.host = host
+        }
+        host.attach(anchor: controller)
     }
 
     static func dismantleUIViewController(_ controller: UIViewController, coordinator: Coordinator) {
@@ -55,7 +57,7 @@ public extension View {
             Group {
                 if let host {
                     ChatHostAnchor(host: host)
-                        .frame(width: InitialValues.zeroCGFloat, height: InitialValues.zeroCGFloat)
+                        .frame(width: .zero, height: .zero)
                 }
             }
         )

@@ -72,7 +72,9 @@ protocol layout atau BaseViewModel. Content tidak membungkus ScrollView vertikal
 lagi. Lihat pemakaian lengkap pada `ChatScreen.swift` dan
 [shared header](SHARED_HEADER.md).
 
-Screen memiliki draft; `MessageComposer` menerima Binding dan callback. Presenter
+Draft dimiliki section kecil (`ComposerSection`) dengan `@State`; `MessageComposer`
+menerima Binding dan callback. Dengan begitu ketikan hanya me-render composer,
+bukan header/daftar pesan di screen yang sama. Presenter
 host tetap `.tanyaAIHost(host)` dengan satu `TanyaAIHost` milik `@StateObject` atau
 session owner. Host tidak dibuat ulang di `body`.
 
@@ -131,10 +133,39 @@ alasan perilaku khusus, bukan mengulang arti setiap baris.
 | `@ViewBuilder` | Menyusun slot content/trailing/footer tanpa AnyView. |
 | `@MainActor` | Menjaga pemilik UI dijalankan pada main actor. |
 | `@main` | Entry point sandbox app. |
+| `@discardableResult` | `present()` mengembalikan Bool tanpa memaksa caller memakainya. |
+| `@objc` | Target-action gesture swipe-back UIKit. |
 
 Tidak ada macro kustom, `@Observable`, `@Model`, `@Namespace`, atau `@ScaledMetric`
 pada starter. R.swift adalah plugin build yang menghasilkan source Swift biasa.
 Tidak perlu annotation baru untuk membuat komponen berikutnya.
+
+## Theme
+
+Palette generated (`DefaultColorConstants`, `PremierColorConstants`,
+`PrivateColorConstants`) dipilih lewat environment, bukan parameter per komponen:
+
+```swift
+// Komponen DesignKit / view fitur
+@Environment(\.designColors) private var colors
+// Di body: .foregroundColor(colors.colorsTextPrimaryDark)
+
+// Tanya AI: host mengisi palette pada TanyaAIHost (mis. setelah inquiry proposition)
+tanyaAI.colors = PremierColorConstants()
+
+// Layar SwiftUI lain yang memakai DesignKit: pasang di root layar tersebut
+SomeScreen()
+    .designColors(PremierColorConstants())
+
+// Area yang harus tetap default walaupun theme lain dipilih
+PromoBanner()
+    .defaultDesignColors()
+```
+
+Tanpa `.designColors`, nilainya `DefaultColorConstants`. `TanyaAIHost.colors` dan
+`TanyaAIHost.locale` dipasang ke seluruh screen fitur, termasuk perubahan saat fitur
+terbuka. Warna di luar palette
+generated tetap memakai `CustomColors` dan tidak ikut theme.
 
 ## Localization otomatis
 
@@ -173,6 +204,10 @@ copy internal tidak menjadi API publik. Ketiganya memakai versi R.swift yang sam
 Jangan membuat enum nama asset/localization key atau mengedit R.generated.swift.
 Source generated berada di build folder, bukan di repo.
 
+R.swift dipasang `from: "7.8.0"` (sampai sebelum 8.0.0), sehingga host yang memakai
+R.swift 7.x lain tetap bisa resolve satu versi bersama. R.swift dipilih agar asset
+dan locale tetap aman saat jumlahnya bertambah.
+
 R.swift 7.8.0 terkadang belum memperbarui accessor setelah perubahan resource
 secara incremental. Jika nama baru belum muncul, jalankan Clean Build Folder
 lalu build lagi. Saat Xcode meminta kepercayaan plugin untuk pertama kali,
@@ -184,12 +219,13 @@ file dan nama PostScript berbeda; ketujuh font existing tetap dipertahankan.
 
 ## Aturan nilai
 
-- `InitialValues`: hanya data kosong/default bersama (`emptyString`,
-  `zeroInteger`, `zeroCGFloat`). Boolean ditulis langsung `true`/`false`.
+- Nilai awal: nilai bawaan tipe, `.zero`, `String()`, `[]`. Boolean ditulis
+  langsung `true`/`false`. Tidak ada enum alias nilai kosong.
 - `FigmaSize`: spacing role `small/medium/large` dan typography generated.
 - `CustomSizes`: ukuran/batas yang belum mempunyai role token, misalnya empat
   baris editor dan ukuran visual tombol yang ditentukan UI/UX.
 - `CustomColors`: semantik warna tambahan; hex hanya di custom base palette.
+- Palette generated: dibaca dari `@Environment(\.designColors)`, lihat bagian Theme.
 - Konstanta algoritma yang bukan data awal/ukuran disimpan private dekat pemiliknya.
 
 Semua dimensi, termasuk frame tombol dan tebal stroke, memakai `.scaledToArtwork`

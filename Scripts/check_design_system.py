@@ -17,7 +17,8 @@ errors = []
 METADATA = {
     'Typography/FontFace.swift', 'Extensions/Color+Hex.swift',
     'Foundations/Accessibility/ComponentIdentifier.swift',
-    'Host/TanyaAIPushTransition.swift', 'Chat/ChatElementIdentifier.swift',
+    'Host/TanyaAIPushTransition.swift', 'Host/TanyaAIPushInteraction.swift',
+    'Chat/ChatElementIdentifier.swift',
     'TanyaAISandboxApp/SandboxOptions.swift'
 }
 paths = list((ROOT / 'Packages').glob('*/Sources/**/*.swift'))
@@ -43,13 +44,14 @@ for path in sorted(paths):
     if re.search(r'"(?:\\.|[^"\\])*"', text):
         report('Use generated R.swift for copy/assets; keep technical metadata with its owner.')
     if re.search(r'(?<![\w.$])\d+(?:\.\d+)?(?![\w.])', text):
-        report('Use FigmaSize, CustomSizes or InitialValues instead of numeric literals.')
+        report('Use FigmaSize, CustomSizes or the type value (.zero, String()) instead of numeric literals.')
     if re.search(r'\.(?:foregroundColor|background|fill|strokeBorder)\(\s*\.(?:red|white|black|gray|blue)', text):
         report('Use generated colors or CustomColors.')
+    if not relative.endswith('Extensions/View+DesignColors.swift') and re.search(r'\b\w+ColorConstants\(\)', text):
+        report('Read @Environment(\\.designColors); choose a palette with .designColors(_:) at the root.')
 
-initial_values = ROOT / 'Packages/DesignKit/Sources/DesignKit/Tokens/InitialValues.swift'
-if re.search(r'\b(?:true|false)\b|:\s*Bool\b', initial_values.read_text()):
-    errors.append('InitialValues must not contain Boolean aliases; use true/false at the call site.')
+if re.search(r'\bInitialValues\b', '\n'.join(path.read_text() for path in paths)):
+    errors.append('Use the type value (.zero, String()) instead of an InitialValues alias.')
 if re.search(r'@(?:Observable|Model|Namespace|ScaledMetric)\b|#(?:externalMacro|Observable|Model)\b',
              '\n'.join(path.read_text() for path in paths)):
     errors.append('Starter uses basic SwiftUI wrappers only; no macros, Namespace or ScaledMetric.')

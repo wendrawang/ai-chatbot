@@ -84,29 +84,53 @@ tanyaAI.dismiss {
 }
 ```
 
-Permintaan present berulang saat feature sudah terbuka/ditutup diabaikan. Present
-sebelum root terpasang, saat root tidak terlihat, atau ketika host mempunyai
-modal lain juga diabaikan; panggil dari entry point saat root sudah terlihat.
+Jika host memanggil `dismiss` lagi saat feature sedang menutup (misalnya user
+menekan back lalu deeplink masuk), completion itu menunggu dismissal yang sedang
+berjalan, tidak dibuang. Hal yang sama berlaku saat swipe-back dibatalkan: feature
+ditutup ulang lalu semua completion dijalankan berurutan.
+
+`present()` mengembalikan `true` bila feature dibuka. Hasilnya `false` saat feature
+sudah terbuka, root belum terpasang/tidak terlihat, atau host sedang menampilkan
+modal lain; panggil dari entry point saat root sudah terlihat. Hasil ini boleh
+diabaikan bila host tidak memerlukannya.
+
+## Root dengan prelogin dan main
+
+Pasang `.tanyaAIHost(host)` pada root **main**, bukan root aplikasi. Saat main
+diganti prelogin (logout, session timeout), anchor ikut hilang dan feature ditutup
+tanpa animasi, sehingga prelogin tidak tertutup Tanya AI:
+
+```swift
+struct AppRoot: View {
+    @ObservedObject var session: AppSession
+
+    var body: some View {
+        if session.isLoggedIn {
+            MainRoot()
+                .tanyaAIHost(session.tanyaAI)   // milik session main
+        } else {
+            PreloginRoot()
+        }
+    }
+}
+```
+
+Ini bekerja walaupun perubahan terjadi saat feature sedang terbuka: presentasi
+memakai `.overFullScreen`, view host tetap di window (disembunyikan, tidak
+di-render dan tidak terbaca VoiceOver), sehingga SwiftUI tetap memproses
+perubahan root. Host UIKit yang mengganti `window.rootViewController` juga
+otomatis melepas feature. Karena host tidak lagi menerima
+`viewWillDisappear`/`viewDidAppear` saat feature menutupinya, analytics layar host
+sebaiknya tidak bergantung pada callback tersebut.
 Menutup lalu membuka kembali membuat draft lokal baru. Starter belum mempunyai
 session/backend atau penyimpanan history; constructor SDK lama belum diperlukan.
 
 ## Bahasa dan appearance
 
-Locale dibaca oleh anchor dari environment root dan diteruskan saat membuka
-feature. Jika host memiliki pengaturan bahasa sendiri, pasang pada root yang
-membawa anchor:
-
-```swift
-NavigationView {
-    // Konten host existing.
-}
-.tanyaAIHost(tanyaAI)
-.environment(\.locale, selectedLocale)
-```
-
-`selectedLocale` bertipe `Locale` dari pengaturan host. Copy tersedia untuk `en`,
-`id`, dan `zh-Hans`, termasuk label kembali. Perubahan locale berlaku saat
-presentasi berikutnya. Daftarkan bahasa host pada konfigurasi localization target.
+Bahasa dan theme diisi host langsung pada `TanyaAIHost` (lihat bagian berikut).
+Copy tersedia untuk `en`, `id`, dan `zh-Hans`, termasuk label kembali. Perubahan
+langsung diterapkan, juga ketika feature sedang terbuka; draft di composer tidak
+hilang. Daftarkan bahasa host pada konfigurasi localization target.
 Jika host belum mendeklarasikan semua bahasa package,
 `CFBundleAllowMixedLocalizations = YES` memungkinkan resource dependency ikut
 dipilih ([dokumentasi Apple](https://developer.apple.com/documentation/bundleresources/information-property-list/cfbundleallowmixedlocalizations)).
@@ -115,8 +139,64 @@ Contoh konfigurasi ada pada [Info.plist](../TanyaAISandboxApp/Info.plist).
 Feature starter memakai light palette Figma dan menghormati safe area keyboard.
 Header SwiftUI memakai `ScreenHeader` dari DesignKit: judul di tengah, kembali,
 menu titik tiga, separator dan material saat scroll. Welcome mengikuti tahap
-terpisah. Motion tetap memakai
-animasi fullscreen lama, menghormati Reduce Motion dan arah layout.
+terpisah. Motion tetap memakai animasi fullscreen lama, menghormati Reduce Motion
+dan arah layout. Swipe dari tepi kiri (kanan untuk RTL) menutup feature secara
+interaktif dan bisa dibatalkan; dengan Reduce Motion, swipe langsung menutup tanpa
+animasi geser.
+
+## Bahasa dari Localize_Swift dan theme dari inquiry proposition
+
+Host mengisi dua property pada `TanyaAIHost` setiap kali nilainya berubah. Tidak
+perlu modifier environment atau parameter tambahan di setiap entry point; semua
+pemanggilan `present()` otomatis memakai nilai terbaru.
+
+```swift
+import DesignKit
+import Localize_Swift
+import TanyaAI
+
+@MainActor
+final class MainSession: ObservableObject {
+    let tanyaAI = TanyaAIHost(locale: Locale(identifier: Localize.currentLanguage())) { _ in true }
+    private var languageObserver: NSObjectProtocol?
+
+    init() {
+        // Localize.setCurrentLanguage(_:) mengirim notifikasi ini dari Setting > Language.
+        languageObserver = NotificationCenter.default.addObserver(
+            forName: NSNotification.Name(LCLLanguageChangeNotification), object: nil, queue: .main
+        ) { [weak self] _ in
+            Task { @MainActor in
+                self?.tanyaAI.locale = Locale(identifier: Localize.currentLanguage())
+            }
+        }
+    }
+
+    deinit {
+        languageObserver.map(NotificationCenter.default.removeObserver)
+    }
+
+    // Dipanggil saat inquiry proposition berhasil.
+    func didLoadProposition(_ proposition: CustomerProposition) {
+        switch proposition {
+        case .premier: tanyaAI.colors = PremierColorConstants()
+        case .privateBanking: tanyaAI.colors = PrivateColorConstants()
+        default: tanyaAI.colors = DefaultColorConstants()
+        }
+    }
+}
+```
+
+- Kode bahasa Localize_Swift (`"id"`, `"en"`, `"zh-Hans"`) langsung dipakai sebagai
+  `Locale`. Bahasa lain jatuh ke English.
+- `CustomerProposition` adalah tipe milik host; pemetaannya ke palette tetap di host
+  karena aturan bisnis tidak masuk DesignKit. Sebelum inquiry selesai, feature
+  memakai palette default.
+- Saat nilai berubah dan Tanya AI sedang terbuka, header, composer, dan konten
+  langsung mengikuti tanpa membuka ulang feature.
+- Observer dimiliki session main, jadi ikut dilepas saat logout. `Task { @MainActor }`
+  menjaga akses `TanyaAIHost` tetap di main actor walaupun closure notifikasi tidak terisolasi.
+- Area SwiftUI milik host yang ingin memakai theme yang sama dapat memasang
+  `.designColors(session.tanyaAI.colors)` sendiri; theme fitur tidak bergantung pada itu.
 
 ## Tahap header
 
@@ -135,11 +215,13 @@ tanpa mengulang setup header; lihat [contoh pemakaian](SHARED_HEADER.md).
 UIKit pada bridge dipakai untuk present/dismiss fullscreen dan animasi samping;
 tidak ada navigation stack fitur tambahan.
 
-Folder `Host` hanya memerlukan tiga file:
+Folder `Host` berisi lima file:
 
 - `ChatHostAnchor.swift`: menghubungkan `.tanyaAIHost(host)` ke controller host yang terlihat.
 - `TanyaAIHost.swift`: membuat `ChatScreen` langsung dan menangani present/dismiss.
 - `TanyaAIPushTransition.swift`: mempertahankan animasi fullscreen dari samping.
+- `TanyaAIPushInteraction.swift`: swipe-back interaktif dari tepi layar.
+- `TanyaAIHostEnvironment.swift`: meneruskan `locale`/`colors` milik host ke feature yang terbuka.
 
 Bridge ini tetap diperlukan untuk pola presentasi existing. UI halaman dan
 header tetap SwiftUI; editor multiline terukur memakai bridge UITextView di DesignKit.

@@ -19,7 +19,7 @@ public extension View {
             GeometryReader { geometry in
                 let isScrolled =
                     geometry.frame(in: .named(coordinateSpace)).minY
-                    < -max(InitialValues.zeroCGFloat, threshold)
+                    < -max(.zero, threshold)
                 Color.clear
                     .onAppear { perform(isScrolled) }
                     .onChange(of: isScrolled, perform: perform)

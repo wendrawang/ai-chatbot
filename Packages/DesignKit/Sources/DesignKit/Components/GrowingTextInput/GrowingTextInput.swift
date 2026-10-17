@@ -20,7 +20,7 @@ public struct GrowingTextInput: UIViewRepresentable {
 
     public init(
         text: Binding<String>, font: UIFont, textColor: UIColor,
-        lineSpacing: CGFloat = InitialValues.zeroCGFloat, accessibilityLabel: String
+        lineSpacing: CGFloat = .zero, accessibilityLabel: String
     ) {
         self._text = text
         self.font = font
@@ -34,7 +34,7 @@ public struct GrowingTextInput: UIViewRepresentable {
         editor.delegate = context.coordinator
         editor.backgroundColor = UIColor(CustomColors.transparent)
         editor.textContainerInset = .zero
-        editor.textContainer.lineFragmentPadding = InitialValues.zeroCGFloat
+        editor.textContainer.lineFragmentPadding = .zero
         editor.adjustsFontForContentSizeCategory = false
         editor.isScrollEnabled = false
         editor.text = text
@@ -54,7 +54,6 @@ public struct GrowingTextInput: UIViewRepresentable {
             editor.text = text
             applyStyle(to: editor)
         }
-        editor.setNeedsLayout()
     }
 
     public func makeCoordinator() -> Coordinator { Coordinator(parent: self) }
@@ -69,7 +68,7 @@ public struct GrowingTextInput: UIViewRepresentable {
 
         public func textViewDidChange(_ editor: UITextView) {
             parent.text = editor.text
-            editor.setNeedsLayout()
+            (editor as? BoundedTextView)?.remeasure()
         }
     }
 }
@@ -80,7 +79,7 @@ private extension GrowingTextInput {
     func applyStyle(to editor: BoundedTextView) {
         guard editor.markedTextRange == nil else { return }
         let paragraph = NSMutableParagraphStyle()
-        paragraph.lineSpacing = max(InitialValues.zeroCGFloat, lineSpacing)
+        paragraph.lineSpacing = max(.zero, lineSpacing)
         editor.lineSpacing = paragraph.lineSpacing
         let attributes: [NSAttributedString.Key: Any] = [
             .font: font, .foregroundColor: textColor, .paragraphStyle: paragraph
@@ -90,8 +89,9 @@ private extension GrowingTextInput {
         editor.typingAttributes = attributes
         let selection = editor.selectedRange
         editor.textStorage.addAttributes(
-            attributes, range: NSRange(location: InitialValues.zeroInteger, length: editor.textStorage.length)
+            attributes, range: NSRange(location: .zero, length: editor.textStorage.length)
         )
         editor.selectedRange = selection
+        editor.remeasure()
     }
 }
