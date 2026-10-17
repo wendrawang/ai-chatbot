@@ -20,7 +20,6 @@ public enum FontLoader {
     }
 
     /// Returns the actual PostScript names, which may differ from the file name.
-    @discardableResult
     public static func register(url: URL) throws -> [String] {
         lock.lock()
         defer { lock.unlock() }
@@ -50,7 +49,6 @@ public enum FontLoader {
         return names
     }
 
-    @discardableResult
     public static func register(
         fileNames: [String],
         bundle: Bundle,

@@ -19,16 +19,20 @@ Packages/
 │       │   └── CustomColors.swift        # warna tambahan + opacity
 │       ├── Extensions/
 │       │   ├── CGFloat+Artwork.swift
-│       │   └── Color+Hex.swift
+│       │   ├── Color+Hex.swift
+│       │   ├── String+Resource.swift      # locale host + R.swift
+│       │   └── View+ScrollBoundary.swift  # observer umum untuk tahap header
 │       ├── Typography/FontFace.swift + FontLoader.swift
-│       ├── Resources/Fonts/
-│       ├── Foundations/Assets + Accessibility/
+│       ├── Resources/Fonts/ + Assets.xcassets/
+│       ├── Foundations/Accessibility/
 │       └── Components/
 │           ├── GrowingTextInput/         # bridge + BoundedTextView
-│           └── MessageComposer/
+│           ├── MessageComposer/
+│           ├── ScreenHeader/             # komponen header
+│           └── ScreenContainer/          # header + scroll + footer otomatis
 └── TanyaAI/
     └── Sources/TanyaAI/
-        ├── Chat/ChatScreen.swift + ChatCopy.swift
+        ├── Chat/ChatScreen.swift + ChatElementIdentifier.swift
         ├── Host/                        # tanyaAIHost + fullscreen presentation
         └── Resources/en.lproj + id.lproj + zh-Hans.lproj/
 ```
@@ -36,8 +40,11 @@ Packages/
 ## Urutan implementasi
 
 1. Pasang package/resource dan pertahankan `Tokens/Generated` milik Anda.
+   R.swift 7.8.0 menghasilkan accessor localization/xcassets saat build; tidak
+   perlu menulis enum pemetaan. Ikuti [pola view dan resource](VIEW_TEMPLATE.md).
 2. Tulis `InitialValues`, `CustomSizes`, custom palette dan extension sizing/hex.
-   Padding mengambil `spacingSmall/Medium/Large` langsung. `Color(hex:)` menerima
+   `InitialValues` hanya data kosong/default: string kosong dan nol, tanpa alias
+   Boolean. Gunakan `true`/`false` langsung. Padding mengambil `spacingSmall/Medium/Large` langsung. `Color(hex:)` menerima
    RGB, RRGGBB atau AARRGGBB dan memakai fallback nonoptional untuk input invalid.
 3. Daftarkan font dengan `FontFace.registerFonts()` saat bootstrap. `FontFace`
    memisahkan nama file dan nama PostScript; `FontLoader` memproses Bundle.module.
@@ -62,14 +69,14 @@ Packages/
    Field dan tombol mempunyai minimum tinggi row yang sama, sehingga satu baris
    sejajar tengah. HStack tetap memakai `.bottom`: ketika field membesar, tombol
    bertahan di bawah dan field tumbuh ke atas. Minimum row mengikuti font,
-   leading, padding dan minimum tap target.
-   Padding visual memakai `spacingLarge`: lingkaran 24 berada di tengah tap target
-   44, sehingga inset tiap sisi `(44 - 24) / 2 = 10`. Padding di luar tap target
-   menjadi `16 - 10 = 6`, agar jarak lingkaran ke border tetap 16. Field tetap
-   berjarak 16 di kiri; inset vertikal field 10 ditambah padding luar 6 menjaga
-   jarak teks multiline 16 di atas/bawah. Satu baris mengikuti pusat visual tombol.
+   leading dan ukuran visual tombol.
+   Padding semua sisi dan jarak field/tombol memakai `spacingLarge` langsung.
+   Pada artwork 375, tombol visual 24 dan padding 16 mengikuti desain, tanpa
+   frame interaksi tambahan atau perhitungan kompensasi padding. Frame tombol
+   dan tebal stroke memakai `.scaledToArtwork`; tidak ada batas minimum dari SDK.
 6. Buat screen: draft `@State`, area kosong, composer di bawah, margin luar.
-   Baca locale host, resolve resource label dan kirimkan ke komponen.
+   Baca locale host, resolve `R.string.localizable` melalui `String(resource:locale:)`
+   dan kirimkan label ke komponen.
 7. Pasang bridge `.tanyaAIHost(host)` pada root existing. Satu `TanyaAIHost`
    dimiliki host/AppState atau `@StateObject`; panggil `host.present()` untuk
    menampilkan feature fullscreen dengan animasi samping. Button kembali milik
@@ -90,14 +97,15 @@ locale diteruskan dari root ber-modifier saat presentasi. `Bundle.module` milik 
 menyimpan copy, DesignKit tidak menyimpan copy fitur.
 
 UI starter mengikuti light palette Figma; penggunaan theme/adaptive appearance
-menjadi tahap terpisah. SF Symbol send adalah dummy dengan TODO penggantian asset.
+menjadi tahap terpisah. Tiga PDF vector di xcassets masih dummy dengan TODO
+penggantian export Figma. Gunakan accessor generated `R.image`, tanpa catalog manual.
 Skala mengikuti lebar layar utama, sehingga sheet/split view memerlukan kebijakan
 container sebelum diadopsi. Ukuran/shadow tetap dapat disesuaikan melalui token.
 
 ## Checkpoint
 
 - Input satu sampai empat baris lalu scroll, termasuk kata panjang dan Chinese.
-- Action tetap terlihat di atas keyboard, area tap minimal 44, visual 24.
+- Action tetap terlihat di atas keyboard, dengan ukuran mengikuti desain UI/UX.
 - Pada artwork 375, padding visual 16, termasuk tombol kanan/bawah dan teks kiri/atas multiline.
 - Draft hanya dibersihkan setelah host menerima callback.
 - Posisi caret sama sebelum mengetik, setelah huruf pertama dan setelah draft dihapus.
@@ -105,5 +113,7 @@ container sebelum diadopsi. Ukuran/shadow tetap dapat disesuaikan melalui token.
 - Composer tetap berukuran sama pada pengaturan teks normal maupun accessibility XXXL;
   placeholder memakai font editor. Artwork scaling tetap mengikuti lebar layar.
 
-Setelah tahap ini diterima, tambahkan header/welcome, lalu bubble dan data. Migrasi
-komponen existing ke `Legacy` bisa menjadi PR terpisah setelah fondasi stabil.
+Tahap setelah composer adalah [shared header dan scroll](SHARED_HEADER.md).
+Checkpoint berikutnya berjalan satu per satu: model intent/step, satu flow dummy,
+bridge host, kemudian history lokal setelah model stabil. Welcome/sesi bukan
+bagian tahap header. Migrasi komponen existing ke `Legacy` tetap terpisah.

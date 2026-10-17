@@ -1,7 +1,8 @@
 # Starting point — aturan implementasi
 
-Scope branch ini adalah migrasi bertahap: fondasi DesignKit, font package, dan
-screen kosong dengan composer. iOS 15. Gunakan SwiftUI; UIKit hanya untuk editor
+Scope branch ini adalah migrasi bertahap: fondasi DesignKit, font package,
+screen kosong dengan composer, dan shared header dengan boundary/blur scroll.
+Konten dummy untuk mengecek scroll hanya berada pada sandbox. iOS 15. Gunakan SwiftUI; UIKit hanya untuk editor
 multiline terukur dan bridge presentasi terisolasi. Flow chat lengkap tetap
 tersedia pada history/main.
 
@@ -25,10 +26,13 @@ tersedia pada history/main.
   `spacingExtraLarge`, atau `spacingDoubleExtraLarge`, sesuai peran. Jangan memakai
   `spacing4/8/16/...`. Typography memakai nama role, bukan token numerik polos.
 - `CustomSizes` hanya untuk ukuran yang belum mempunyai token dengan peran yang
-  sesuai: diameter tombol, minimum tap, radius, shadow, jumlah baris, toleransi.
+  sesuai: diameter tombol, radius, shadow, jumlah baris, toleransi.
   Jangan membuat alias spacing generated atau memakai spacing sebagai radius.
-- `InitialValues` menyimpan nilai awal bersama, seperti string kosong dan angka
-  nol. UI/source tidak menuliskan literal angka/string default secara tersebar.
+- `InitialValues` hanya menyimpan data kosong/default bersama, seperti string
+  kosong dan angka nol. Jangan membuat alias Boolean: gunakan `true`/`false`
+  langsung. Batas baris/ukuran masuk `CustomSizes`; konstanta algoritma yang bukan
+  ukuran tetap private pada pemiliknya. UI/source tidak menuliskan literal
+  angka/string default secara tersebar.
   `.zero`, `.infinity`, enum UIKit/SwiftUI dan Boolean control flow adalah nilai
   bernama/logika, bukan token desain baru. Bit mask/radix/ASCII di parser hex
   adalah algoritma format, bukan ukuran UI. Tests boleh memiliki fixture literal.
@@ -36,8 +40,11 @@ tersedia pada history/main.
   `CustomColors` mengatur penggunaan semantik/opacity. Warna yang sudah memiliki
   token Figma dipakai langsung; jangan disalin ulang sebagai custom color.
 - `.scaledToArtwork`: round(nilai / (375 / lebar UIScreen.main)), tanpa cap.
-  Reference height 812 hanya metadata. Stroke minimum satu pixel; tap minimum
-  44 point. Opacity dan jumlah baris tidak di-scale. Tidak ada `sizeInArtwork` alias.
+  Reference height 812 hanya metadata. Semua dimensi termasuk stroke dan area
+  tombol memakai `.scaledToArtwork` langsung dari nilai desain. Jangan menambahkan
+  batas minimum tap/stroke, hit frame tambahan, atau helper scaling terpisah.
+  Ukuran interaksi mengikuti keputusan UI/UX. Opacity dan jumlah baris tidak
+  di-scale. Tidak ada `sizeInArtwork` alias.
 
 ## Font, resource, copy
 
@@ -54,8 +61,14 @@ tersedia pada history/main.
   Glyph Chinese yang tidak ada di Open Sans menggunakan fallback native iOS.
 - Copy fitur berada di resource `en`, `id`, `zh-Hans`. Screen membaca locale dari
   environment dan menyuplai label ke DesignKit. Tidak ada copy bisnis di DesignKit.
-- Technical identifiers, SF Symbols, filename, resource key dan diagnostic prefix
-  disimpan dalam catalog metadata. Artwork sementara mempunyai TODO penggantian.
+- Localization dan xcassets diakses melalui R.swift generated saat build, bukan
+  enum pemetaan key/nama asset manual. DesignKit memakai plugin public resources;
+  fitur dan sandbox memakai internal resources. Gunakan `String(resource:locale:)`
+  untuk mengikuti environment locale, dan `Image(R.image.namaAsset)` untuk gambar.
+  Jangan mengedit/commit R.generated.swift. Setelah menambah resource, build ulang;
+  Clean Build Folder jika accessor belum diperbarui oleh plugin.
+- Technical identifiers, filename/PostScript font dan diagnostic prefix tetap
+  metadata eksplisit. Artwork sementara mempunyai TODO penggantian.
 - ThemeManager/CopyCatalog belum diperlukan pada tahap ini. Warna light Figma
   digunakan langsung. Tambahkan mekanisme baru saat ada kebutuhan tahap berikutnya.
 
@@ -63,21 +76,45 @@ tersedia pada history/main.
 
 - Struktur `Components/<NamaKomponen>`, `Extensions/<Type>+<Responsibility>.swift`.
   Nama DesignKit umum, tanpa prefix fitur. Jangan membuat ViewModel per komponen.
+- Screen standar memakai composition `ScreenContainer` dari DesignKit: header,
+  area scroll, trailing action dan footer. Container memiliki satu `isScrolled`
+  dan ID coordinate space lokal. Jangan membuat inheritance/BaseScreen protocol, ViewModel
+  layout atau navigation container tambahan. Content tidak menambahkan ScrollView
+  vertikal lagi. Footer memiliki margin sesuai komponen caller.
+- `ScreenHeader` tetap komponen standalone untuk layout dengan scroll owner lain
+  seperti List. Label/aksi back dan trailing berasal dari caller. Material hanya
+  saat scrolled, fallback opaque jika Reduce Transparency aktif. Status bar dan
+  safe area tetap milik sistem.
+- `.onScrollBoundaryChange(in:threshold:perform:)` reusable di DesignKit. Pasang
+  pada root konten scroll setelah padding; ID sama dengan ScrollView owner.
+  Callback memberi nilai awal lalu perubahan Boolean saja, tanpa state offset
+  setiap pixel, global PreferenceKey atau AnyView. Jaga isolasi nested scroll.
+- Utamakan API SwiftUI sederhana yang familiar bagi tim. Untuk identitas area
+  scroll, gunakan `@State private var scrollSpaceID = UUID()`, tanpa `@Namespace`.
+  State mempertahankan nilai ID selama view yang sama hidup. Jangan membuat ID
+  baru di body atau memakai satu ID global untuk beberapa area scroll. Tambahkan
+  konsep/property wrapper lain hanya ketika ada kebutuhan yang jelas.
+- Menu/sesi adalah tanggung jawab fitur/host. `onNewConversation` hanya callback;
+  tanpa handler, item menu disabled. Jangan menambah session, welcome, reset draft,
+  intent, bubble atau database pada tahap header.
 - `let` untuk input, `@Binding` untuk state caller, `@State` untuk draft lokal.
   Screen memiliki margin luar; komponen memiliki padding dalam/surface/shadow.
-- Tinggi editor satu sampai empat baris; teks berikutnya scroll. Button visual
-  24, tap minimal 44. Kata panjang dan keyboard tidak menggeser action keluar.
+- Callback sederhana ditulis langsung (`() -> Void`, `(String) -> Bool`) dengan
+  nama aksi dan kontrak hasil yang jelas. Typealias hanya untuk signature kompleks
+  atau kontrak domain bersama, diletakkan dekat pemiliknya, bukan catalog global.
+  Potongan yang baru mungkin reusable tetap private sampai tanggung jawab/caller
+  berikutnya jelas; ekstrak komponen umum yang memang diperlukan.
+- Tinggi editor satu sampai empat baris; teks berikutnya scroll. Ukuran tombol
+  mengikuti nilai desain, tanpa minimum tap tambahan. Kata panjang dan keyboard
+  tidak menggeser action keluar.
 - Composer memakai alignment bawah dengan minimum tinggi row yang sama pada
   field dan tombol: satu baris sejajar tengah, multiline mempertahankan tombol
-  di bawah. Minimum row mengikuti font/leading/padding dan minimum tap target;
+  di bawah. Tinggi row satu baris mengikuti font/leading dan ukuran visual tombol;
   jangan menambahkan state jumlah baris untuk mengubah alignment.
-- Padding visual composer memakai `spacingLarge` (16 pada artwork 375). Hitung
-  inset tiap sisi tap target dari `(tapSize - visualSize) / 2`, setelah scaling
-  dan minimum tap diterapkan. Kurangi inset ini dari padding luar tombol dan
-  jarak field/tombol; jangan menambahkannya lagi ke jarak visual. Pada 44/24,
-  inset 10 menyisakan padding 6. Field memakai inset vertikal tersebut agar teks
-  multiline tetap berjarak 16 dari border. Pengaturan ukuran teks pengguna tidak
-  mengubah tinggi row atau batas empat baris composer.
+- Padding composer di semua sisi dan jarak field/tombol memakai `spacingLarge`
+  (16 pada artwork 375), tanpa kompensasi area tap. Frame tombol mengikuti ukuran
+  visual desain. Pengaturan ukuran teks pengguna tidak mengubah tinggi row atau
+  batas empat baris composer.
 - Hint memakai font input yang sama dan alignment `.leading` pada ZStack agar
   berada di tengah field saat kosong. Pertahankan geometri caret native pada
   semua state: kosong, mengetik dan sesudah hapus. Jangan memusatkan caret kosong
@@ -85,14 +122,27 @@ tersedia pada history/main.
 - `ChatScreen(onSend:)` mengosongkan draft hanya jika callback host mengembalikan
   true. Starter tidak mengirim network, tidak menyimpan atau log isi pesan.
 - Integrasi host tetap `.tanyaAIHost(host)` + `host.present()`/`dismiss()`.
+  `TanyaAIHost` menampilkan `ChatScreen` langsung; jangan menambahkan wrapper
+  `HostedChatScreen`, NavigationView/NavigationStack atau toolbar native di SDK.
   Presentasi fullscreen dengan animasi samping, terpisah dari navigation stack
   host. Jangan menggantinya dengan NavigationLink atau push pada stack host.
   Host dimiliki AppState/session owner atau `@StateObject`, tidak dibuat di body.
 - UI owners `@MainActor`; putus delegate pada dismantle dan hindari retain cycle.
 - Private view sections berupa noun: `field`, `surface`, `actionButton`.
-  Urutan environment, binding/state, input, init, body, sections, helper.
+  Deklarasi utama berurutan environment, binding/state, input, init, body, sections.
+  Computed setup/perhitungan/validasi berada di `private extension` pada file yang
+  sama, dengan `// MARK: - Helpers`. Handler memakai `// MARK: - Actions` dan
+  private extension tersendiri bila ada. Stored properties/property wrapper tetap
+  pada deklarasi utama; jangan mengubahnya menjadi computed hanya agar pindah.
+  Lifecycle protocol/override UIKit tetap pada tipe pemilik. Jangan membuat
+  extension kosong atau memisahkan setiap helper menjadi extension sendiri.
+- Ikuti [template view](docs/VIEW_TEMPLATE.md). Property wrapper SwiftUI standar,
+  `@ViewBuilder`, `@MainActor`, dan `@main` pada app mempunyai peran jelas.
+  Jangan menambahkan macro kustom, `@Observable`/`@Model`, wrapper baru atau
+  inheritance hanya untuk menyeragamkan layout.
 - Maksimal 250 baris/file, 50 baris fisik/method, 120 karakter/baris; Bool berawalan
-  `is`. Jangan padatkan implementasi agar lolos batas.
+  `is`, kecuali nama wajib protocol seperti `PreferenceKey.defaultValue` dengan
+  pengecualian lint lokal beralasan. Jangan padatkan implementasi agar lolos batas.
 
 ## Validasi
 

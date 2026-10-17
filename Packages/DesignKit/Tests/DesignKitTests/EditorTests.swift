@@ -55,4 +55,31 @@ final class EditorTests: XCTestCase {
             }
         }
     }
+
+    func testLargePasteStaysBoundedAndReleasesEditor() async throws {
+        try FontFace.registerFonts()
+        weak var releasedEditor: BoundedTextView?
+        autoreleasepool {
+            let editor = BoundedTextView(frame: CGRect(x: 0, y: 0, width: 220, height: 300))
+            releasedEditor = editor
+            editor.font = FontFace.openSansRegular.font(size: 14)
+            editor.textContainerInset = .zero
+            editor.textContainer.lineFragmentPadding = 0
+            editor.isScrollEnabled = false
+            editor.text = String(repeating: "中文 English message ", count: 1_000)
+            editor.layoutSubviews()
+            let lineHeight = editor.font?.lineHeight ?? 0
+            XCTAssertEqual(editor.intrinsicContentSize.height, ceil(lineHeight * 4), accuracy: 1)
+            XCTAssertTrue(editor.isScrollEnabled)
+            editor.text = ""
+            editor.layoutSubviews()
+            XCTAssertLessThan(editor.intrinsicContentSize.height, ceil(lineHeight * 4))
+            XCTAssertFalse(editor.isScrollEnabled)
+        }
+        let released = XCTNSPredicateExpectation(
+            predicate: NSPredicate { _, _ in releasedEditor == nil }, object: nil
+        )
+        await fulfillment(of: [released], timeout: 2)
+        XCTAssertNil(releasedEditor)
+    }
 }

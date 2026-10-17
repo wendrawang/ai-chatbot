@@ -6,3 +6,6 @@
 //
 
 "sandbox.open" = "Open Tanya AI";
+"sandbox.demo.title" = "Example content";
+"sandbox.demo.body" = "Scroll this example to see the header boundary and background blur. The title and back button remain in place while the text moves behind them.";
+"sandbox.demo.end" = "End of example";

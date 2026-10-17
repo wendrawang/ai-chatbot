@@ -1,6 +1,8 @@
 .DS_Store
 .build/
 .swiftpm/
+# Package test resolution is local; the app workspace keeps its committed lock.
+Packages/*/Package.resolved
 DerivedData/
 xcuserdata/
 *.xcuserstate

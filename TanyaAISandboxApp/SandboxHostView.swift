@@ -5,6 +5,7 @@
 //  Created by Wendra on 15/10/26.
 //
 
+import DesignKit
 import SwiftUI
 import TanyaAI
 
@@ -14,19 +15,33 @@ struct SandboxHostView: View {
     private var locale
     @StateObject
     private var host: TanyaAIHost
+    private let isHeaderDemo: Bool
 
     init(options: SandboxOptions) {
+        isHeaderDemo = options.isHeaderDemo
         _host = StateObject(wrappedValue: TanyaAIHost { _ in !options.isRejectingSend })
     }
 
     var body: some View {
         NavigationView {
-            Button(action: host.present) {
-                Text(SandboxCopy.open.text(locale: locale))
+            Button(action: open) {
+                Text(String(resource: R.string.localizable.sandboxOpen, locale: locale))
             }
             .accessibilityIdentifier(SandboxOptions.openIdentifier)
         }
         .navigationViewStyle(.stack)
         .tanyaAIHost(host)
+    }
+}
+
+// MARK: - Actions
+
+private extension SandboxHostView {
+    func open() {
+        if isHeaderDemo {
+            host.present { HeaderDemoContent() }
+        } else {
+            host.present()
+        }
     }
 }

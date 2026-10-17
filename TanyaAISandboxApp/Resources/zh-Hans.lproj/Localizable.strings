@@ -6,3 +6,6 @@
 //
 
 "sandbox.open" = "打开 Tanya AI";
+"sandbox.demo.title" = "示例内容";
+"sandbox.demo.body" = "滚动此示例可查看标题栏的分隔线和背景模糊效果。文字在标题栏后方移动时，标题和返回按钮保持原位。";
+"sandbox.demo.end" = "示例结束";

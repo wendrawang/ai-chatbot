@@ -40,6 +40,7 @@ final class HostPresentationTests: XCTestCase {
         XCTAssertTrue(host.isPresenting)
         XCTAssertEqual(presented.modalPresentationStyle, .fullScreen)
         XCTAssertNotNil(presented.transitioningDelegate as? TanyaAIPushTransition)
+        XCTAssertNil(fixture.navigationController(in: presented))
         host.present()
         XCTAssertTrue(fixture.controller.presentedViewController === presented)
         XCTAssertEqual(navigation.viewControllers, stack)
@@ -130,8 +131,8 @@ final class HostWindowFixture {
         settle()
     }
 
-    func navigationController() -> UINavigationController? {
-        findNavigation(in: controller)
+    func navigationController(in controller: UIViewController? = nil) -> UINavigationController? {
+        findNavigation(in: controller ?? self.controller)
     }
 
     private func findNavigation(in controller: UIViewController) -> UINavigationController? {

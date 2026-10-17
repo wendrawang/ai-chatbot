@@ -20,15 +20,14 @@ public enum CustomSizes {
         public static let maximumLines = 4
     }
 
+    public enum Header {
+        public static let height: CGFloat = 56
+        public static let titleLines = 1
+    }
+
     public enum ActionButton {
         public static let visualSize: CGFloat = 24
         public static let iconInset: CGFloat = 6
-        public static let minimumTapSize: CGFloat = 44
-
-        /// Already scaled: the invisible inset on each side of the centered visual.
-        public static var tapAreaInset: CGFloat {
-            (minimumTapSize.tapTargetInArtwork - visualSize.scaledToArtwork) / 2
-        }
     }
 
     public enum Radius {

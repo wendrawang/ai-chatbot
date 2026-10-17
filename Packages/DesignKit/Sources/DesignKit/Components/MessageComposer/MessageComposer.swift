@@ -23,7 +23,7 @@ public struct MessageComposer: View {
 
     public init(
         text: Binding<String>, placeholder: String, sendLabel: String,
-        isEnabled: Bool = InitialValues.isEnabled, fontFace: FontFace = .openSansRegular,
+        isEnabled: Bool = true, fontFace: FontFace = .openSansRegular,
         colors: any FigmaColorProtocol = DefaultColorConstants(), onSend: @escaping () -> Void
     ) {
         self._text = text
@@ -36,18 +36,16 @@ public struct MessageComposer: View {
     }
 
     public var body: some View {
-        HStack(alignment: .bottom, spacing: actionPadding) {
+        HStack(alignment: .bottom, spacing: FigmaSize.spacingLarge.scaledToArtwork) {
             field
-                .frame(minHeight: minimumRowHeight)
+                .frame(minHeight: singleLineRowHeight)
             actionButton
-                .frame(minHeight: minimumRowHeight)
+                .frame(minHeight: singleLineRowHeight)
         }
-        .padding(.leading, FigmaSize.spacingLarge.scaledToArtwork)
-        .padding(.trailing, actionPadding)
-        .padding(.vertical, actionPadding)
+        .padding(FigmaSize.spacingLarge.scaledToArtwork)
         .background(surface)
         .accessibilityElement(children: .contain)
-        .accessibilityIdentifier(ComponentID.composer)
+        .accessibilityIdentifier(ComponentIdentifier.composer)
     }
 
     private var field: some View {
@@ -58,7 +56,7 @@ public struct MessageComposer: View {
             )
             .fixedSize(horizontal: false, vertical: true)
             .frame(maxWidth: .infinity)
-            .accessibilityIdentifier(ComponentID.input)
+            .accessibilityIdentifier(ComponentIdentifier.input)
             if text.isEmpty {
                 Text(placeholder)
                     .font(Font(inputFont))
@@ -68,12 +66,11 @@ public struct MessageComposer: View {
                     .allowsHitTesting(false)
             }
         }
-        .padding(.vertical, CustomSizes.ActionButton.tapAreaInset)
     }
 
     private var actionButton: some View {
         Button(action: onSend) {
-            SystemSymbol.send.image.resizable().scaledToFit()
+            Image(R.image.sendArrow).resizable().scaledToFit()
                 .padding(CustomSizes.ActionButton.iconInset.scaledToArtwork)
                 .foregroundColor(colors.colorsIconLight)
                 .frame(
@@ -81,16 +78,12 @@ public struct MessageComposer: View {
                     height: CustomSizes.ActionButton.visualSize.scaledToArtwork
                 )
                 .background(Circle().fill(isSendEnabled ? colors.colorsButtonActive : colors.colorsIconDisabled))
-                .frame(
-                    width: CustomSizes.ActionButton.minimumTapSize.tapTargetInArtwork,
-                    height: CustomSizes.ActionButton.minimumTapSize.tapTargetInArtwork
-                )
                 .contentShape(Rectangle())
         }
         .buttonStyle(.plain)
         .disabled(!isSendEnabled)
         .accessibilityLabel(sendLabel)
-        .accessibilityIdentifier(ComponentID.send)
+        .accessibilityIdentifier(ComponentIdentifier.send)
     }
 
     private var surface: some View {
@@ -102,30 +95,27 @@ public struct MessageComposer: View {
             )
             .overlay(
                 RoundedRectangle(cornerRadius: CustomSizes.Radius.composer.scaledToArtwork)
-                    .strokeBorder(CustomColors.Stroke.color, lineWidth: FigmaSize.weightOutline.strokeInArtwork)
+                    .strokeBorder(CustomColors.Stroke.color, lineWidth: FigmaSize.weightOutline.scaledToArtwork)
             )
     }
+}
 
-    private var inputFont: UIFont { fontFace.font(size: fontSize) }
+// MARK: - Helpers
 
-    /// Measure spacing from the visible circle, allowing its larger tap target into the padding.
-    private var actionPadding: CGFloat {
-        max(InitialValues.zeroCGFloat, FigmaSize.spacingLarge.scaledToArtwork - CustomSizes.ActionButton.tapAreaInset)
-    }
+private extension MessageComposer {
+    var inputFont: UIFont { fontFace.font(size: fontSize) }
 
     /// Equal single-line rows center the field/button; a taller field keeps the button at its bottom.
-    private var minimumRowHeight: CGFloat {
-        let padding = CustomSizes.ActionButton.tapAreaInset
-        let singleLineHeight = ceil(inputFont.lineHeight + lineSpacing) + padding + padding
-        return max(CustomSizes.ActionButton.minimumTapSize.tapTargetInArtwork, singleLineHeight)
+    var singleLineRowHeight: CGFloat {
+        max(CustomSizes.ActionButton.visualSize.scaledToArtwork, ceil(inputFont.lineHeight + lineSpacing))
     }
 
-    private var lineSpacing: CGFloat {
+    var lineSpacing: CGFloat {
         let leading = FigmaSize.typographyLineHeightDisplaySmall14.scaledToArtwork
         return max(InitialValues.zeroCGFloat, leading - inputFont.lineHeight)
     }
 
-    private var isSendEnabled: Bool {
+    var isSendEnabled: Bool {
         isEnabled && !text.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
     }
 }
