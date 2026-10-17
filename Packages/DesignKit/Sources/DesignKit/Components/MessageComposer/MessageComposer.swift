@@ -45,7 +45,7 @@ public struct MessageComposer: View {
         .padding(FigmaSize.spacingLarge.scaledToArtwork)
         .background(surface)
         .accessibilityElement(children: .contain)
-        .accessibilityIdentifier(ComponentID.composer)
+        .accessibilityIdentifier(ComponentIdentifier.composer)
     }
 
     private var field: some View {
@@ -56,7 +56,7 @@ public struct MessageComposer: View {
             )
             .fixedSize(horizontal: false, vertical: true)
             .frame(maxWidth: .infinity)
-            .accessibilityIdentifier(ComponentID.input)
+            .accessibilityIdentifier(ComponentIdentifier.input)
             if text.isEmpty {
                 Text(placeholder)
                     .font(Font(inputFont))
@@ -83,7 +83,7 @@ public struct MessageComposer: View {
         .buttonStyle(.plain)
         .disabled(!isSendEnabled)
         .accessibilityLabel(sendLabel)
-        .accessibilityIdentifier(ComponentID.send)
+        .accessibilityIdentifier(ComponentIdentifier.send)
     }
 
     private var surface: some View {

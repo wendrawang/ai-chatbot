@@ -13,7 +13,7 @@ DesignKit/Sources/DesignKit/
 
 TanyaAI/Sources/TanyaAI/
 ├── Chat/ChatScreen.swift                 # content/menu/composer; layout dari container
-├── Chat/ChatElementID.swift              # technical identifier, bukan pemetaan copy
+├── Chat/ChatElementIdentifier.swift      # technical identifier, bukan pemetaan copy
 ├── Resources/{en,id,zh-Hans}.lproj/
 └── Host/                                # present/dismiss existing
 

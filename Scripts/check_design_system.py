@@ -16,8 +16,8 @@ errors = []
 # These files own technical metadata or format/transform arithmetic, not user-facing copy.
 METADATA = {
     'Typography/FontFace.swift', 'Extensions/Color+Hex.swift',
-    'Foundations/Accessibility/ComponentID.swift',
-    'Host/TanyaAIPushTransition.swift', 'Chat/ChatElementID.swift',
+    'Foundations/Accessibility/ComponentIdentifier.swift',
+    'Host/TanyaAIPushTransition.swift', 'Chat/ChatElementIdentifier.swift',
     'TanyaAISandboxApp/SandboxOptions.swift'
 }
 paths = list((ROOT / 'Packages').glob('*/Sources/**/*.swift'))

@@ -57,7 +57,7 @@ public struct ChatScreen<Content: View>: View {
                 .contentShape(Rectangle())
         }
         .accessibilityLabel(String(resource: R.string.localizable.chatMore, locale: locale))
-        .accessibilityIdentifier(ChatElementID.more)
+        .accessibilityIdentifier(ChatElementIdentifier.more)
     }
 
     private var composer: some View {

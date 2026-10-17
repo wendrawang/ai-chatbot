@@ -32,7 +32,7 @@ Packages/
 │           └── ScreenContainer/          # header + scroll + footer otomatis
 └── TanyaAI/
     └── Sources/TanyaAI/
-        ├── Chat/ChatScreen.swift + ChatElementID.swift
+        ├── Chat/ChatScreen.swift + ChatElementIdentifier.swift
         ├── Host/                        # tanyaAIHost + fullscreen presentation
         └── Resources/en.lproj + id.lproj + zh-Hans.lproj/
 ```

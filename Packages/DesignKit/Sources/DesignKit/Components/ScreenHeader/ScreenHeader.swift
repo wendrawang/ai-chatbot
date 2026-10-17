@@ -43,7 +43,7 @@ public struct ScreenHeader<Trailing: View>: View {
                 .lineLimit(CustomSizes.Header.titleLines)
                 .frame(maxWidth: .infinity)
                 .accessibilityAddTraits(.isHeader)
-                .accessibilityIdentifier(ComponentID.headerTitle)
+                .accessibilityIdentifier(ComponentIdentifier.headerTitle)
             Color.clear.frame(width: actionSize, height: actionSize).overlay(trailing)
         }
         .padding(.horizontal, FigmaSize.spacingLarge.scaledToArtwork)
@@ -55,7 +55,7 @@ public struct ScreenHeader<Trailing: View>: View {
             }
         }
         .accessibilityElement(children: .contain)
-        .accessibilityIdentifier(isScrolled ? ComponentID.scrolledHeader : ComponentID.header)
+        .accessibilityIdentifier(isScrolled ? ComponentIdentifier.scrolledHeader : ComponentIdentifier.header)
     }
 
     private var backButton: some View {
@@ -70,7 +70,7 @@ public struct ScreenHeader<Trailing: View>: View {
         }
         .buttonStyle(.plain)
         .accessibilityLabel(backLabel)
-        .accessibilityIdentifier(ComponentID.back)
+        .accessibilityIdentifier(ComponentIdentifier.back)
     }
 
     @ViewBuilder

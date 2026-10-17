@@ -1,11 +1,11 @@
 //
-//  ComponentID.swift
+//  ComponentIdentifier.swift
 //  DesignKit
 //
 //  Created by Wendra on 15/10/26.
 //
 
-enum ComponentID {
+enum ComponentIdentifier {
     static let header = "header"
     static let scrolledHeader = "header.scrolled"
     static let headerTitle = "header.title"
