@@ -12,24 +12,24 @@ import SwiftUI
 public struct ScreenHeader<Trailing: View>: View {
     @Environment(\.accessibilityReduceTransparency)
     private var isTransparencyReduced
+    @Environment(\.designColors)
+    private var colors
     private let title: String
     private let backLabel: String
     private let isScrolled: Bool
     private let fontFace: FontFace
-    private let colors: any FigmaColorProtocol
     private let onBack: () -> Void
     private let trailing: Trailing
 
     public init(
         title: String, backLabel: String, isScrolled: Bool,
-        fontFace: FontFace = .firaSansSemiBold, colors: any FigmaColorProtocol = DefaultColorConstants(),
-        onBack: @escaping () -> Void, @ViewBuilder trailing: () -> Trailing
+        fontFace: FontFace = .firaSansSemiBold, onBack: @escaping () -> Void,
+        @ViewBuilder trailing: () -> Trailing
     ) {
         self.title = title
         self.backLabel = backLabel
         self.isScrolled = isScrolled
         self.fontFace = fontFace
-        self.colors = colors
         self.onBack = onBack
         self.trailing = trailing()
     }
@@ -92,12 +92,11 @@ private extension ScreenHeader {
 extension ScreenHeader where Trailing == EmptyView {
     public init(
         title: String, backLabel: String, isScrolled: Bool,
-        fontFace: FontFace = .firaSansSemiBold, colors: any FigmaColorProtocol = DefaultColorConstants(),
-        onBack: @escaping () -> Void
+        fontFace: FontFace = .firaSansSemiBold, onBack: @escaping () -> Void
     ) {
         self.init(
             title: title, backLabel: backLabel, isScrolled: isScrolled,
-            fontFace: fontFace, colors: colors, onBack: onBack, trailing: { EmptyView() }
+            fontFace: fontFace, onBack: onBack, trailing: { EmptyView() }
         )
     }
 }

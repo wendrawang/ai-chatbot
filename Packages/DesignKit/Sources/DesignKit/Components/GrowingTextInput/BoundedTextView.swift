@@ -10,22 +10,30 @@ import UIKit
 /// A one-to-four-line editor; additional content scrolls inside the field.
 @MainActor
 public final class BoundedTextView: UITextView {
-    var lineSpacing = InitialValues.zeroCGFloat
-    private var measuredHeight = InitialValues.zeroCGFloat
-    private var isMeasuring = false
+    var lineSpacing: CGFloat = .zero
+    private var measuredHeight: CGFloat = .zero
+    private var measuredWidth: CGFloat = .zero
+
+    public override var text: String! {
+        didSet { remeasure() }
+    }
 
     public override var intrinsicContentSize: CGSize {
-        let lineHeight = font?.lineHeight ?? UIFont.preferredFont(forTextStyle: .body).lineHeight
-        return CGSize(width: UIView.noIntrinsicMetric, height: max(measuredHeight, lineHeight))
+        CGSize(width: UIView.noIntrinsicMetric, height: max(measuredHeight, lineHeight))
     }
 
     public override func layoutSubviews() {
         super.layoutSubviews()
-        guard bounds.width > InitialValues.zeroCGFloat, !isMeasuring else { return }
-        isMeasuring = true
+        // Scroll internal juga memicu layoutSubviews; ukur ulang hanya ketika lebar berubah.
+        guard bounds.width != measuredWidth else { return }
+        measuredWidth = bounds.width
+        remeasure()
+    }
+
+    /// Ukur seluruh teks sekali per perubahan teks, style atau lebar, bukan per frame scroll.
+    func remeasure() {
+        guard bounds.width > .zero else { return }
         let fitted = sizeThatFits(CGSize(width: bounds.width, height: .greatestFiniteMagnitude)).height
-        isMeasuring = false
-        let lineHeight = font?.lineHeight ?? UIFont.preferredFont(forTextStyle: .body).lineHeight
         let lines = CGFloat(CustomSizes.InputText.maximumLines)
         let gaps = lines - CGFloat(CustomSizes.InputText.minimumLines)
         let maximumHeight = ceil(lineHeight * lines + lineSpacing * gaps)
@@ -36,5 +44,13 @@ public final class BoundedTextView: UITextView {
             measuredHeight = nextHeight
             invalidateIntrinsicContentSize()
         }
+    }
+}
+
+// MARK: - Helpers
+
+private extension BoundedTextView {
+    var lineHeight: CGFloat {
+        font?.lineHeight ?? UIFont.preferredFont(forTextStyle: .body).lineHeight
     }
 }

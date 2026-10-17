@@ -46,5 +46,8 @@ public enum CustomSizes {
     public enum Motion {
         public static let navigationParallax: CGFloat = 0.3
         public static let navigationDuration: TimeInterval = 0.35
+        /// Swipe-back selesai jika melewati setengah lebar, atau dilempar lebih cepat dari 300 pt/detik.
+        public static let swipeBackProgress: CGFloat = 0.5
+        public static let swipeBackVelocity: CGFloat = 300
     }
 }
