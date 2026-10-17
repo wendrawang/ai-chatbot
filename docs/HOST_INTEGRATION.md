@@ -151,31 +151,28 @@ perlu modifier environment atau parameter tambahan di setiap entry point; semua
 pemanggilan `present()` otomatis memakai nilai terbaru.
 
 ```swift
+import Combine
 import DesignKit
 import Localize_Swift
 import TanyaAI
 
+/// Hidup selama user berada di main; dibuat saat login, dilepas saat kembali ke prelogin.
 @MainActor
 final class MainSession: ObservableObject {
-    let tanyaAI = TanyaAIHost(locale: Locale(identifier: Localize.currentLanguage())) { _ in true }
-    private var languageObserver: NSObjectProtocol?
+    let tanyaAI: TanyaAIHost
+    private var cancellables = Set<AnyCancellable>()
 
     init() {
-        // Localize.setCurrentLanguage(_:) mengirim notifikasi ini dari Setting > Language.
-        languageObserver = NotificationCenter.default.addObserver(
-            forName: NSNotification.Name(LCLLanguageChangeNotification), object: nil, queue: .main
-        ) { [weak self] _ in
-            Task { @MainActor in
-                self?.tanyaAI.locale = Locale(identifier: Localize.currentLanguage())
-            }
-        }
+        tanyaAI = TanyaAIHost(locale: Locale(identifier: Localize.currentLanguage())) { _ in true }
+        // Localize.setCurrentLanguage(_:) dari Setting > Language mengirim notifikasi ini.
+        NotificationCenter.default
+            .publisher(for: Notification.Name(LCLLanguageChangeNotification))
+            .receive(on: DispatchQueue.main)
+            .sink { [weak self] _ in self?.applyCurrentLanguage() }
+            .store(in: &cancellables)
     }
 
-    deinit {
-        languageObserver.map(NotificationCenter.default.removeObserver)
-    }
-
-    // Dipanggil saat inquiry proposition berhasil.
+    /// Panggil dari tempat inquiry proposition berhasil.
     func didLoadProposition(_ proposition: CustomerProposition) {
         switch proposition {
         case .premier: tanyaAI.colors = PremierColorConstants()
@@ -183,9 +180,51 @@ final class MainSession: ObservableObject {
         default: tanyaAI.colors = DefaultColorConstants()
         }
     }
+
+    private func applyCurrentLanguage() {
+        tanyaAI.locale = Locale(identifier: Localize.currentLanguage())
+    }
 }
 ```
 
+Pemakaian pada root host:
+
+```swift
+struct AppRoot: View {
+    @ObservedObject var appState: AppState
+
+    var body: some View {
+        if appState.isLoggedIn {
+            MainRoot()
+        } else {
+            PreloginRoot()
+        }
+    }
+}
+
+struct MainRoot: View {
+    @StateObject private var session = MainSession()
+
+    var body: some View {
+        MainTabView()                      // konten main existing
+            .tanyaAIHost(session.tanyaAI)
+            .environmentObject(session)
+    }
+}
+
+// Entry point mana pun di dalam main
+struct HomeView: View {
+    @EnvironmentObject private var session: MainSession
+
+    var body: some View {
+        Button(openTitle) { session.tanyaAI.present() }
+    }
+}
+```
+
+- `MainSession` dibuat oleh `@StateObject` di `MainRoot`, jadi satu instance per sesi main.
+  Saat logout, `MainRoot` hilang: Tanya AI tertutup, lalu session dan subscription
+  bahasa ikut dilepas tanpa `deinit` manual.
 - Kode bahasa Localize_Swift (`"id"`, `"en"`, `"zh-Hans"`) langsung dipakai sebagai
   `Locale`. Bahasa lain jatuh ke English.
 - `CustomerProposition` adalah tipe milik host; pemetaannya ke palette tetap di host
@@ -193,10 +232,8 @@ final class MainSession: ObservableObject {
   memakai palette default.
 - Saat nilai berubah dan Tanya AI sedang terbuka, header, composer, dan konten
   langsung mengikuti tanpa membuka ulang feature.
-- Observer dimiliki session main, jadi ikut dilepas saat logout. `Task { @MainActor }`
-  menjaga akses `TanyaAIHost` tetap di main actor walaupun closure notifikasi tidak terisolasi.
-- Area SwiftUI milik host yang ingin memakai theme yang sama dapat memasang
-  `.designColors(session.tanyaAI.colors)` sendiri; theme fitur tidak bergantung pada itu.
+- Contoh ini lulus compile untuk iOS 15, termasuk dengan `SWIFT_STRICT_CONCURRENCY=complete`
+  (stub `Localize` menggantikan library aslinya).
 
 ## Tahap header
 
