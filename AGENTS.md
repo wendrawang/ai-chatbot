@@ -28,11 +28,12 @@ tersedia pada history/main.
 - `CustomSizes` hanya untuk ukuran yang belum mempunyai token dengan peran yang
   sesuai: diameter tombol, radius, shadow, jumlah baris, toleransi.
   Jangan membuat alias spacing generated atau memakai spacing sebagai radius.
-- `InitialValues` hanya menyimpan data kosong/default bersama, seperti string
-  kosong dan angka nol. Jangan membuat alias Boolean: gunakan `true`/`false`
-  langsung. Batas baris/ukuran masuk `CustomSizes`; konstanta algoritma yang bukan
-  ukuran tetap private pada pemiliknya. UI/source tidak menuliskan literal
-  angka/string default secara tersebar.
+- Nilai awal memakai nilai bawaan tipe: `.zero` untuk CGFloat/Int/TimeInterval,
+  `String()` untuk string kosong, `[]` untuk koleksi. Tidak ada enum alias seperti
+  `InitialValues`. Tulis tipe bila perlu: `var measuredHeight: CGFloat = .zero`.
+  Boolean ditulis langsung `true`/`false`. Batas baris/ukuran masuk `CustomSizes`;
+  konstanta algoritma yang bukan ukuran tetap private pada pemiliknya. UI/source
+  tidak menuliskan literal angka/string default secara tersebar.
   `.zero`, `.infinity`, enum UIKit/SwiftUI dan Boolean control flow adalah nilai
   bernama/logika, bukan token desain baru. Bit mask/radix/ASCII di parser hex
   adalah algoritma format, bukan ukuran UI. Tests boleh memiliki fixture literal.
@@ -69,8 +70,12 @@ tersedia pada history/main.
   Clean Build Folder jika accessor belum diperbarui oleh plugin.
 - Technical identifiers, filename/PostScript font dan diagnostic prefix tetap
   metadata eksplisit. Artwork sementara mempunyai TODO penggantian.
-- ThemeManager/CopyCatalog belum diperlukan pada tahap ini. Warna light Figma
-  digunakan langsung. Tambahkan mekanisme baru saat ada kebutuhan tahap berikutnya.
+- Theme memakai environment SwiftUI standar, tanpa ThemeManager/singleton.
+  Komponen membaca `@Environment(\.designColors) private var colors`; jangan
+  menerima parameter `colors:` atau membuat `DefaultColorConstants()` sendiri.
+  Host memilih palette sekali di root dengan `.designColors(PremierColorConstants())`.
+  Area yang harus bebas theme memakai `.defaultDesignColors()` pada subtree itu.
+  CopyCatalog belum diperlukan.
 
 ## Komponen dan ownership
 
@@ -120,13 +125,20 @@ tersedia pada history/main.
   semua state: kosong, mengetik dan sesudah hapus. Jangan memusatkan caret kosong
   secara terpisah ke bounds, karena referensinya berbeda dari baseline saat mengetik.
 - `ChatScreen(onSend:)` mengosongkan draft hanya jika callback host mengembalikan
-  true. Starter tidak mengirim network, tidak menyimpan atau log isi pesan.
+  true. Draft dimiliki `ComposerSection` (`@State`), bukan `ChatScreen`, agar setiap
+  ketikan tidak me-render ulang header dan daftar pesan. Starter tidak mengirim
+  network, tidak menyimpan atau log isi pesan.
 - Integrasi host tetap `.tanyaAIHost(host)` + `host.present()`/`dismiss()`.
   `TanyaAIHost` menampilkan `ChatScreen` langsung; jangan menambahkan wrapper
   `HostedChatScreen`, NavigationView/NavigationStack atau toolbar native di SDK.
-  Presentasi fullscreen dengan animasi samping, terpisah dari navigation stack
-  host. Jangan menggantinya dengan NavigationLink atau push pada stack host.
-  Host dimiliki AppState/session owner atau `@StateObject`, tidak dibuat di body.
+  Presentasi `.overFullScreen` dengan animasi samping dan swipe-back interaktif,
+  terpisah dari navigation stack host. View host tetap di window tetapi disembunyikan
+  selama tertutup, sehingga SwiftUI tetap memproses perubahan root (main → prelogin)
+  dan anchor yang hilang menutup fitur. Jangan menggantinya dengan NavigationLink
+  atau push pada stack host. `present()` mengembalikan Bool; setiap completion
+  `dismiss` dijalankan setelah fitur benar-benar tertutup, termasuk yang datang
+  saat dismiss sedang berjalan. Host dimiliki AppState/session owner atau
+  `@StateObject`, tidak dibuat di body.
 - UI owners `@MainActor`; putus delegate pada dismantle dan hindari retain cycle.
 - Private view sections berupa noun: `field`, `surface`, `actionButton`.
   Deklarasi utama berurutan environment, binding/state, input, init, body, sections.

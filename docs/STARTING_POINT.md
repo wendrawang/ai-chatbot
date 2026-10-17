@@ -14,13 +14,13 @@ Packages/
 │       ├── Tokens/
 │       │   ├── Generated/                # export engine existing
 │       │   ├── CustomSizes.swift         # ukuran tambahan
-│       │   ├── InitialValues.swift       # nilai awal bersama
 │       │   ├── CustomBasePaletteColor.swift
 │       │   └── CustomColors.swift        # warna tambahan + opacity
 │       ├── Extensions/
 │       │   ├── CGFloat+Artwork.swift
 │       │   ├── Color+Hex.swift
 │       │   ├── String+Resource.swift      # locale host + R.swift
+│       │   ├── View+DesignColors.swift    # theme environment + area default
 │       │   └── View+ScrollBoundary.swift  # observer umum untuk tahap header
 │       ├── Typography/FontFace.swift + FontLoader.swift
 │       ├── Resources/Fonts/ + Assets.xcassets/
@@ -42,9 +42,8 @@ Packages/
 1. Pasang package/resource dan pertahankan `Tokens/Generated` milik Anda.
    R.swift 7.8.0 menghasilkan accessor localization/xcassets saat build; tidak
    perlu menulis enum pemetaan. Ikuti [pola view dan resource](VIEW_TEMPLATE.md).
-2. Tulis `InitialValues`, `CustomSizes`, custom palette dan extension sizing/hex.
-   `InitialValues` hanya data kosong/default: string kosong dan nol, tanpa alias
-   Boolean. Gunakan `true`/`false` langsung. Padding mengambil `spacingSmall/Medium/Large` langsung. `Color(hex:)` menerima
+2. Tulis `CustomSizes`, custom palette dan extension sizing/hex. Nilai awal memakai
+   nilai bawaan tipe (`.zero`, `String()`), tanpa enum alias. Gunakan `true`/`false` langsung. Padding mengambil `spacingSmall/Medium/Large` langsung. `Color(hex:)` menerima
    RGB, RRGGBB atau AARRGGBB dan memakai fallback nonoptional untuk input invalid.
 3. Daftarkan font dengan `FontFace.registerFonts()` saat bootstrap. `FontFace`
    memisahkan nama file dan nama PostScript; `FontLoader` memproses Bundle.module.
@@ -74,13 +73,13 @@ Packages/
    Pada artwork 375, tombol visual 24 dan padding 16 mengikuti desain, tanpa
    frame interaksi tambahan atau perhitungan kompensasi padding. Frame tombol
    dan tebal stroke memakai `.scaledToArtwork`; tidak ada batas minimum dari SDK.
-6. Buat screen: draft `@State`, area kosong, composer di bawah, margin luar.
+6. Buat screen: area kosong, `ComposerSection` (draft `@State`) di bawah, margin luar.
    Baca locale host, resolve `R.string.localizable` melalui `String(resource:locale:)`
    dan kirimkan label ke komponen.
 7. Pasang bridge `.tanyaAIHost(host)` pada root existing. Satu `TanyaAIHost`
    dimiliki host/AppState atau `@StateObject`; panggil `host.present()` untuk
-   menampilkan feature fullscreen dengan animasi samping. Button kembali milik
-   feature melakukan dismiss; navigation stack host tetap terpisah.
+   menampilkan feature fullscreen dengan animasi samping. Button kembali atau
+   swipe dari tepi kiri melakukan dismiss; navigation stack host tetap terpisah.
 
 Screen menggunakan `ChatScreen(onSend:)`. Callback mendapat draft dan mengembalikan
 Bool: true membersihkan draft, false mempertahankan teks/seleksi. Draft whitespace
@@ -96,8 +95,8 @@ locale mengikuti app. Host bisa menerapkan `.environment(\.locale, Locale(...))`
 locale diteruskan dari root ber-modifier saat presentasi. `Bundle.module` milik TanyaAI
 menyimpan copy, DesignKit tidak menyimpan copy fitur.
 
-UI starter mengikuti light palette Figma; penggunaan theme/adaptive appearance
-menjadi tahap terpisah. Tiga PDF vector di xcassets masih dummy dengan TODO
+UI starter mengikuti light palette Figma. Theme palette tersedia lewat
+`.designColors(_:)`; adaptive dark appearance menjadi tahap terpisah. Tiga PDF vector di xcassets masih dummy dengan TODO
 penggantian export Figma. Gunakan accessor generated `R.image`, tanpa catalog manual.
 Skala mengikuti lebar layar utama, sehingga sheet/split view memerlukan kebijakan
 container sebelum diadopsi. Ukuran/shadow tetap dapat disesuaikan melalui token.

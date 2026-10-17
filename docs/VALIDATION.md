@@ -1,5 +1,27 @@
 # Validasi starter
 
+## Kesiapan revamp — 17 Oktober 2026
+
+Perubahan: host lifecycle (completion dismiss tidak hilang, `present()` → Bool,
+fitur tertutup saat main diganti prelogin), swipe-back interaktif, theme lewat
+environment, draft di `ComposerSection`, measurement editor hanya saat teks/lebar
+berubah, nilai awal bawaan tipe, R.swift `from: "7.8.0"`.
+
+`Scripts/verify.sh` lulus pada iPhone 17 Pro Simulator (Xcode 26), minimum iOS 15.
+Saat dijalankan tanpa trust plugin R.swift, `xcodebuild` memerlukan
+`-skipPackagePluginValidation`; script repo tidak diubah.
+
+| Suite | Hasil |
+| --- | --- |
+| DesignKit: + theme environment (3), editor remeasure saat lebar berubah (1) | 15 lulus |
+| TanyaAI: + animator saat host tertutup/swipe batal, interaksi swipe (3) | 10 lulus |
+| Hosted: + present Bool, completion ganda, swipe batal + deeplink, main→prelogin, root UIKit diganti, theme/locale | 14 lulus |
+| UI: tiga bahasa, padding desain, keyboard, empat baris, header/menu | 11 lulus |
+
+Total **50 tes lulus**. Belum ada pengukuran Instruments/FPS; swipe-back diuji
+secara programatik melalui `UIPercentDrivenInteractiveTransition`, belum dengan
+gesture jari pada device.
+
 ## Pembagian view dan ukuran desain — 17 Oktober 2026
 
 Deklarasi view utama menyimpan input/state, initializer, `body`, dan bagian visual.

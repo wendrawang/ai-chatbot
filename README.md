@@ -17,7 +17,8 @@ harus dipertahankan saat host menolak submission.
 
 Pada sandbox, tekan “Buka Tanya AI” untuk membuka feature fullscreen melalui
 `.tanyaAIHost(host)` + `host.present()`, dengan animasi dari samping seperti flow
-sebelumnya. Tombol kembali menutup feature dan mengembalikan layar host.
+sebelumnya. Tombol kembali atau swipe dari tepi kiri menutup feature dan
+mengembalikan layar host.
 Mode `--header-demo` menyisipkan teks dummy untuk mengecek separator dan blur
 saat scroll. Integrasi biasa tetap membuka area percakapan kosong.
 
@@ -27,6 +28,7 @@ saat scroll. Integrasi biasa tetap membuka area percakapan kosong.
 - [Pola view dan resource R.swift](docs/VIEW_TEMPLATE.md)
 - [Aturan implementasi](AGENTS.md)
 - [Hasil validasi](docs/VALIDATION.md)
+- [Keputusan revamp dan tahap berikutnya](docs/REVAMP_NOTES.md)
 
 PR starter ditujukan ke branch `startingpoint`; flow lengkap sebelumnya tetap
 tersedia di `main`/history. Jalankan `Scripts/verify.sh` sebelum review.
