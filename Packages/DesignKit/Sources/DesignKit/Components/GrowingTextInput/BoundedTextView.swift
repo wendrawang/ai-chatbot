@@ -34,13 +34,13 @@ public final class BoundedTextView: UITextView {
     func remeasure() {
         guard bounds.width > .zero else { return }
         let fitted = sizeThatFits(CGSize(width: bounds.width, height: .greatestFiniteMagnitude)).height
-        let lines = CGFloat(CustomSizes.InputText.maximumLines)
-        let gaps = lines - CGFloat(CustomSizes.InputText.minimumLines)
+        let lines = CGFloat(CustomTextLines.composerInput.upperBound)
+        let gaps = lines - CGFloat(CustomTextLines.composerInput.lowerBound)
         let maximumHeight = ceil(lineHeight * lines + lineSpacing * gaps)
         let nextHeight = min(max(ceil(fitted), ceil(lineHeight)), maximumHeight)
-        let isScrolling = fitted > maximumHeight + CustomSizes.Layout.measurementTolerance
+        let isScrolling = fitted > maximumHeight + LayoutTolerance.measurement
         if isScrollEnabled != isScrolling { isScrollEnabled = isScrolling }
-        if abs(nextHeight - measuredHeight) > CustomSizes.Layout.measurementTolerance {
+        if abs(nextHeight - measuredHeight) > LayoutTolerance.measurement {
             measuredHeight = nextHeight
             invalidateIntrinsicContentSize()
         }

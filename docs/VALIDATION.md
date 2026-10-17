@@ -1,5 +1,14 @@
 # Validasi starter
 
+## Pemisahan token custom — 18 Oktober 2026
+
+`CustomSizes` dipecah menjadi `CustomSizes` (dimensi, selalu di-scale),
+`CustomTextLines`, `CustomMotion`, `ArtworkScale`, dan `LayoutTolerance`. Perubahan
+murni penggantian nama; nilai tidak berubah. `check_design_system.py` sekarang
+menolak `CustomSizes` tanpa `.scaledToArtwork` serta baris/motion/toleransi yang
+di-scale; kedua aturan dibuktikan dengan pelanggaran sengaja. `Scripts/verify.sh`
+lulus: lint 0 pelanggaran, seluruh test package, hosted dan UI lulus.
+
 ## Kesiapan revamp — 17 Oktober 2026
 
 Perubahan: host lifecycle (completion dismiss tidak hilang, `present()` → Bool,

@@ -10,7 +10,7 @@ import UIKit
 public extension CGFloat {
     /// Uses the host's uncapped formula: round(value / (referenceWidth / screenWidth)).
     var scaledToArtwork: CGFloat {
-        scaledToArtwork(ratio: CustomSizes.Artwork.currentRatio)
+        scaledToArtwork(ratio: ArtworkScale.currentRatio)
     }
 }
 

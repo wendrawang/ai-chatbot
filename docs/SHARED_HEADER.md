@@ -20,7 +20,8 @@ TanyaAI/Sources/TanyaAI/
 TanyaAISandboxApp/HeaderDemoContent.swift # fixture scroll, bukan UI produksi
 ```
 
-1. Tambahkan ukuran header ke `CustomSizes.Header`. Tinggi awal 56 pada artwork
+1. Tambahkan tinggi header ke `CustomSizes.Header` dan batas baris judul ke
+   `CustomTextLines.headerTitle`. Tinggi awal 56 pada artwork
    375; ukuran final dapat disesuaikan setelah nilai Figma tersedia. Judul memakai
    Fira Sans SemiBold, role `typographySizeDisplayNormal16`, hanya artwork scaling.
    Spacing memakai `spacingMedium/Large`; generated token tetap sumber tunggal.
@@ -98,7 +99,7 @@ Setiap ScrollView memakai ID lokal masing-masing. ID hanya menjadi nama area
 untuk mengukur posisi konten relatif ke ScrollView yang tepat. Simpan UUID pada
 `@State`; jangan membuat `UUID()` baru pada body. Tidak diperlukan `@Namespace`
 untuk kebutuhan ini. Threshold default adalah
-toleransi layout pada `CustomSizes`; parameter threshold opsional memakai point
+`LayoutTolerance.measurement`; parameter threshold opsional memakai point
 aktual. Observer tidak menambah ukuran atau menangkap sentuhan.
 
 Reusability ini mengikuti [composition SwiftUI](https://developer.apple.com/videos/play/meet-with-apple/269/).

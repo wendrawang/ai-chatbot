@@ -13,7 +13,11 @@ Packages/
 │   └── Sources/DesignKit/
 │       ├── Tokens/
 │       │   ├── Generated/                # export engine existing
-│       │   ├── CustomSizes.swift         # ukuran tambahan
+│       │   ├── CustomSizes.swift         # dimensi point, selalu .scaledToArtwork
+│       │   ├── CustomTextLines.swift     # batas baris per peran
+│       │   ├── CustomMotion.swift        # durasi + ambang gesture
+│       │   ├── ArtworkScale.swift        # referensi 375 dan rasio layar
+│       │   ├── LayoutTolerance.swift     # toleransi pembulatan layout
 │       │   ├── CustomBasePaletteColor.swift
 │       │   └── CustomColors.swift        # warna tambahan + opacity
 │       ├── Extensions/
@@ -42,7 +46,7 @@ Packages/
 1. Pasang package/resource dan pertahankan `Tokens/Generated` milik Anda.
    R.swift 7.8.0 menghasilkan accessor localization/xcassets saat build; tidak
    perlu menulis enum pemetaan. Ikuti [pola view dan resource](VIEW_TEMPLATE.md).
-2. Tulis `CustomSizes`, custom palette dan extension sizing/hex. Nilai awal memakai
+2. Tulis token custom per jenis (`CustomSizes`, `CustomTextLines`, `CustomMotion`), custom palette dan extension sizing/hex. Nilai awal memakai
    nilai bawaan tipe (`.zero`, `String()`), tanpa enum alias. Gunakan `true`/`false` langsung. Padding mengambil `spacingSmall/Medium/Large` langsung. `Color(hex:)` menerima
    RGB, RRGGBB atau AARRGGBB dan memakai fallback nonoptional untuk input invalid.
 3. Daftarkan font dengan `FontFace.registerFonts()` saat bootstrap. `FontFace`

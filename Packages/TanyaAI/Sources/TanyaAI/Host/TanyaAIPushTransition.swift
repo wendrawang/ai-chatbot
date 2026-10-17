@@ -49,8 +49,8 @@ final class TanyaAIPushAnimator: NSObject, UIViewControllerAnimatedTransitioning
     private static let forwardDirection: CGFloat = 1
     /// How far the outgoing page travels, as a fraction of the incoming one.
     /// `UINavigationController` uses roughly a third.
-    private static let parallax: CGFloat = CustomSizes.Motion.navigationParallax
-    private static let duration: TimeInterval = CustomSizes.Motion.navigationDuration
+    private static let parallax: CGFloat = CustomMotion.Navigation.parallax
+    private static let duration: TimeInterval = CustomMotion.Navigation.duration
 
     let isPresenting: Bool
 

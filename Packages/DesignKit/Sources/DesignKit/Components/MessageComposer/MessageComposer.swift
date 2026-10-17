@@ -59,7 +59,7 @@ public struct MessageComposer: View {
             if text.isEmpty {
                 Text(placeholder)
                     .font(Font(inputFont))
-                    .lineLimit(CustomSizes.InputText.minimumLines)
+                    .lineLimit(CustomTextLines.composerInput.lowerBound)
                     .foregroundColor(colors.colorsTextSecondary)
                     .accessibilityHidden(true)
                     .allowsHitTesting(false)
@@ -70,11 +70,11 @@ public struct MessageComposer: View {
     private var actionButton: some View {
         Button(action: onSend) {
             Image(R.image.sendArrow).resizable().scaledToFit()
-                .padding(CustomSizes.ActionButton.iconInset.scaledToArtwork)
+                .padding(CustomSizes.Composer.sendIconInset.scaledToArtwork)
                 .foregroundColor(colors.colorsIconLight)
                 .frame(
-                    width: CustomSizes.ActionButton.visualSize.scaledToArtwork,
-                    height: CustomSizes.ActionButton.visualSize.scaledToArtwork
+                    width: CustomSizes.Composer.sendButton.scaledToArtwork,
+                    height: CustomSizes.Composer.sendButton.scaledToArtwork
                 )
                 .background(Circle().fill(isSendEnabled ? colors.colorsButtonActive : colors.colorsIconDisabled))
                 .contentShape(Rectangle())
@@ -86,14 +86,14 @@ public struct MessageComposer: View {
     }
 
     private var surface: some View {
-        RoundedRectangle(cornerRadius: CustomSizes.Radius.composer.scaledToArtwork)
+        RoundedRectangle(cornerRadius: CustomSizes.Composer.cornerRadius.scaledToArtwork)
             .fill(colors.colorsSurfacePrimary)
             .shadow(
                 color: CustomColors.Shadow.color, radius: CustomSizes.Shadow.radius.scaledToArtwork,
                 y: CustomSizes.Shadow.offsetY.scaledToArtwork
             )
             .overlay(
-                RoundedRectangle(cornerRadius: CustomSizes.Radius.composer.scaledToArtwork)
+                RoundedRectangle(cornerRadius: CustomSizes.Composer.cornerRadius.scaledToArtwork)
                     .strokeBorder(CustomColors.Stroke.color, lineWidth: FigmaSize.weightOutline.scaledToArtwork)
             )
     }
@@ -106,7 +106,7 @@ private extension MessageComposer {
 
     /// Equal single-line rows center the field/button; a taller field keeps the button at its bottom.
     var singleLineRowHeight: CGFloat {
-        max(CustomSizes.ActionButton.visualSize.scaledToArtwork, ceil(inputFont.lineHeight + lineSpacing))
+        max(CustomSizes.Composer.sendButton.scaledToArtwork, ceil(inputFont.lineHeight + lineSpacing))
     }
 
     var lineSpacing: CGFloat {

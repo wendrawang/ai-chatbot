@@ -64,8 +64,8 @@ private extension TanyaAIPushInteraction {
 
     func shouldFinish(_ gesture: UIScreenEdgePanGestureRecognizer, in view: UIView) -> Bool {
         let velocity = forward(gesture.velocity(in: view).x, in: view)
-        return progress(of: gesture, in: view) > CustomSizes.Motion.swipeBackProgress
-            || velocity > CustomSizes.Motion.swipeBackVelocity
+        return progress(of: gesture, in: view) > CustomMotion.SwipeBack.progress
+            || velocity > CustomMotion.SwipeBack.velocity
     }
 
     func forward(_ value: CGFloat, in view: UIView) -> CGFloat {

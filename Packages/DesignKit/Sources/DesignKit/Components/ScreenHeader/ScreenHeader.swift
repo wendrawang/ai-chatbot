@@ -40,7 +40,7 @@ public struct ScreenHeader<Trailing: View>: View {
             Text(title)
                 .font(Font(fontFace.font(size: FigmaSize.typographySizeDisplayNormal16.scaledToArtwork)))
                 .foregroundColor(colors.colorsTextPrimaryDark)
-                .lineLimit(CustomSizes.Header.titleLines)
+                .lineLimit(CustomTextLines.headerTitle)
                 .frame(maxWidth: .infinity)
                 .accessibilityAddTraits(.isHeader)
                 .accessibilityIdentifier(ComponentIdentifier.headerTitle)

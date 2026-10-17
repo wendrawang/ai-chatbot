@@ -25,14 +25,29 @@ tersedia pada history/main.
 - Padding/spacing memakai `FigmaSize.spacingSmall`, `spacingMedium`, `spacingLarge`,
   `spacingExtraLarge`, atau `spacingDoubleExtraLarge`, sesuai peran. Jangan memakai
   `spacing4/8/16/...`. Typography memakai nama role, bukan token numerik polos.
-- `CustomSizes` hanya untuk ukuran yang belum mempunyai token dengan peran yang
-  sesuai: diameter tombol, radius, shadow, jumlah baris, toleransi.
+- Nilai desain di luar Figma dipisah per jenis, bukan dikumpulkan di satu file:
+
+  | File | Isi | `.scaledToArtwork` |
+  | --- | --- | --- |
+  | `Generated/FigmaSize` | Spacing, ukuran icon, tipografi dari Figma. **Cek di sini dulu.** | Ya |
+  | `CustomSizes` | Dimensi point yang belum ada di Figma: `Header.height`, `Shadow`, `Composer.sendButton` | **Selalu** |
+  | `CustomTextLines` | Batas baris per peran: `composerInput = 1...4`, `headerTitle` | Tidak pernah |
+  | `CustomMotion` | Durasi dan ambang gesture: `Navigation.duration`, `SwipeBack.velocity` | Tidak pernah |
+  | `CustomColors` / `CustomBasePaletteColor` | Warna semantik tambahan / hex dasarnya | — |
+  | `ArtworkScale` | Referensi 375×812 dan rasio layar untuk `.scaledToArtwork` | Tidak pernah |
+  | `LayoutTolerance` | Toleransi pembulatan layout (bukan token desain) | Tidak pernah |
+
+  Kelompok bersama dinamai per peran (`Header`, `Shadow`, `CustomTextLines.address`
+  bila nanti dibutuhkan). Nilai yang hanya dipakai satu komponen memakai namespace
+  nama komponen (`CustomSizes.Composer`) agar terhapus bersama komponennya. Tambah
+  nilai baru hanya ketika ada pemakainya. `check_design_system.py` menolak
+  `CustomSizes` tanpa `.scaledToArtwork` dan baris/motion/toleransi yang di-scale.
   Jangan membuat alias spacing generated atau memakai spacing sebagai radius.
 - Nilai awal memakai nilai bawaan tipe: `.zero` untuk CGFloat/Int/TimeInterval,
   `String()` untuk string kosong, `[]` untuk koleksi. Tidak ada enum alias seperti
   `InitialValues`. Tulis tipe bila perlu: `var measuredHeight: CGFloat = .zero`.
-  Boolean ditulis langsung `true`/`false`. Batas baris/ukuran masuk `CustomSizes`;
-  konstanta algoritma yang bukan ukuran tetap private pada pemiliknya. UI/source
+  Boolean ditulis langsung `true`/`false`. Batas baris masuk `CustomTextLines`, dimensi
+  masuk `CustomSizes`; konstanta algoritma yang bukan ukuran tetap private pada pemiliknya. UI/source
   tidak menuliskan literal angka/string default secara tersebar.
   `.zero`, `.infinity`, enum UIKit/SwiftUI dan Boolean control flow adalah nilai
   bernama/logika, bukan token desain baru. Bit mask/radix/ASCII di parser hex
@@ -40,7 +55,8 @@ tersedia pada history/main.
 - `CustomBasePaletteColor` memiliki hex tambahan di luar palette generated.
   `CustomColors` mengatur penggunaan semantik/opacity. Warna yang sudah memiliki
   token Figma dipakai langsung; jangan disalin ulang sebagai custom color.
-- `.scaledToArtwork`: round(nilai / (375 / lebar UIScreen.main)), tanpa cap.
+- `.scaledToArtwork`: round(nilai / `ArtworkScale.currentRatio`), rasio = 375 / lebar
+  UIScreen.main, tanpa cap.
   Reference height 812 hanya metadata. Semua dimensi termasuk stroke dan area
   tombol memakai `.scaledToArtwork` langsung dari nilai desain. Jangan menambahkan
   batas minimum tap/stroke, hit frame tambahan, atau helper scaling terpisah.

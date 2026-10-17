@@ -221,10 +221,21 @@ file dan nama PostScript berbeda; ketujuh font existing tetap dipertahankan.
 
 - Nilai awal: nilai bawaan tipe, `.zero`, `String()`, `[]`. Boolean ditulis
   langsung `true`/`false`. Tidak ada enum alias nilai kosong.
-- `FigmaSize`: spacing role `small/medium/large` dan typography generated.
-- `CustomSizes`: ukuran/batas yang belum mempunyai role token, misalnya empat
-  baris editor dan ukuran visual tombol yang ditentukan UI/UX.
-- `CustomColors`: semantik warna tambahan; hex hanya di custom base palette.
+- Pilih file token berdasarkan jenis nilainya:
+
+| File | Isi | `.scaledToArtwork` |
+| --- | --- | --- |
+| `Generated/FigmaSize` | Spacing, ukuran icon, tipografi dari Figma. **Cek di sini dulu.** | Ya |
+| `CustomSizes` | Dimensi point yang belum ada di Figma: `Header.height`, `Shadow`, `Composer.sendButton` | **Selalu** |
+| `CustomTextLines` | Batas baris per peran: `composerInput = 1...4`, `headerTitle` | Tidak pernah |
+| `CustomMotion` | Durasi dan ambang gesture: `Navigation.duration`, `SwipeBack.velocity` | Tidak pernah |
+| `CustomColors` / `CustomBasePaletteColor` | Warna semantik tambahan / hex dasarnya | — |
+| `ArtworkScale` | Referensi 375×812 dan rasio layar untuk `.scaledToArtwork` | Tidak pernah |
+| `LayoutTolerance` | Toleransi pembulatan layout (bukan token desain) | Tidak pernah |
+
+- Contoh: alamat maksimal 5 baris menjadi `CustomTextLines.address = 5`, lalu
+  dibungkus komponen peran seperti `AddressText` supaya layar lain tidak menulis
+  `.lineLimit` sendiri. Saat batasnya menjadi 7, cukup ubah satu baris.
 - Palette generated: dibaca dari `@Environment(\.designColors)`, lihat bagian Theme.
 - Konstanta algoritma yang bukan data awal/ukuran disimpan private dekat pemiliknya.
 
