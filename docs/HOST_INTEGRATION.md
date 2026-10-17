@@ -108,7 +108,6 @@ struct AppRoot: View {
         if session.isLoggedIn {
             MainRoot()
                 .tanyaAIHost(session.tanyaAI)   // milik session main
-                .designColors(session.palette)  // theme segmen nasabah
         } else {
             PreloginRoot()
         }
@@ -128,22 +127,10 @@ session/backend atau penyimpanan history; constructor SDK lama belum diperlukan.
 
 ## Bahasa dan appearance
 
-Locale dan theme dibaca oleh anchor dari environment root dan diteruskan saat
-membuka feature. Pasang modifier tersebut **setelah** `.tanyaAIHost` agar anchor
-ikut membacanya:
-
-```swift
-NavigationView {
-    // Konten host existing.
-}
-.tanyaAIHost(tanyaAI)
-.environment(\.locale, selectedLocale)
-.designColors(PremierColorConstants())
-```
-
-`selectedLocale` bertipe `Locale` dari pengaturan host. Copy tersedia untuk `en`,
-`id`, dan `zh-Hans`, termasuk label kembali. Perubahan locale/theme langsung
-diterapkan, juga ketika feature sedang terbuka; draft di composer tidak hilang. Daftarkan bahasa host pada konfigurasi localization target.
+Bahasa dan theme diisi host langsung pada `TanyaAIHost` (lihat bagian berikut).
+Copy tersedia untuk `en`, `id`, dan `zh-Hans`, termasuk label kembali. Perubahan
+langsung diterapkan, juga ketika feature sedang terbuka; draft di composer tidak
+hilang. Daftarkan bahasa host pada konfigurasi localization target.
 Jika host belum mendeklarasikan semua bahasa package,
 `CFBundleAllowMixedLocalizations = YES` memungkinkan resource dependency ikut
 dipilih ([dokumentasi Apple](https://developer.apple.com/documentation/bundleresources/information-property-list/cfbundleallowmixedlocalizations)).
@@ -157,50 +144,59 @@ dan arah layout. Swipe dari tepi kiri (kanan untuk RTL) menutup feature secara
 interaktif dan bisa dibatalkan; dengan Reduce Motion, swipe langsung menutup tanpa
 animasi geser.
 
-## Theme dari inquiry proposition dan bahasa dari setting
+## Bahasa dari Localize_Swift dan theme dari inquiry proposition
 
-Host cukup menyimpan dua nilai di state yang sudah ada, lalu memasangnya sebagai
-environment pada root main. Tidak ada API tambahan di `TanyaAIHost`.
+Host mengisi dua property pada `TanyaAIHost` setiap kali nilainya berubah. Tidak
+perlu modifier environment atau parameter tambahan di setiap entry point; semua
+pemanggilan `present()` otomatis memakai nilai terbaru.
 
 ```swift
 import DesignKit
+import Localize_Swift
+import TanyaAI
 
 @MainActor
-final class AppSession: ObservableObject {
-    let tanyaAI = TanyaAIHost { _ in true }
-    @Published var palette: any FigmaColorProtocol = DefaultColorConstants()
-    @Published var language = Locale(identifier: "id")
+final class MainSession: ObservableObject {
+    let tanyaAI = TanyaAIHost(locale: Locale(identifier: Localize.currentLanguage())) { _ in true }
+    private var languageObserver: NSObjectProtocol?
+
+    init() {
+        // Localize.setCurrentLanguage(_:) mengirim notifikasi ini dari Setting > Language.
+        languageObserver = NotificationCenter.default.addObserver(
+            forName: NSNotification.Name(LCLLanguageChangeNotification), object: nil, queue: .main
+        ) { [weak self] _ in
+            Task { @MainActor in
+                self?.tanyaAI.locale = Locale(identifier: Localize.currentLanguage())
+            }
+        }
+    }
+
+    deinit {
+        languageObserver.map(NotificationCenter.default.removeObserver)
+    }
 
     // Dipanggil saat inquiry proposition berhasil.
     func didLoadProposition(_ proposition: CustomerProposition) {
         switch proposition {
-        case .premier: palette = PremierColorConstants()
-        case .privateBanking: palette = PrivateColorConstants()
-        default: palette = DefaultColorConstants()
+        case .premier: tanyaAI.colors = PremierColorConstants()
+        case .privateBanking: tanyaAI.colors = PrivateColorConstants()
+        default: tanyaAI.colors = DefaultColorConstants()
         }
     }
-
-    // Dipanggil dari halaman Setting > Language milik host.
-    func didChangeLanguage(code: String) {
-        language = Locale(identifier: code)   // "id", "en", "zh-Hans"
-    }
 }
-
-MainRoot()
-    .tanyaAIHost(session.tanyaAI)
-    .environment(\.locale, session.language)
-    .designColors(session.palette)
 ```
 
-`CustomerProposition` adalah tipe milik host; pemetaannya ke palette tetap di host
-karena aturan bisnis tidak masuk DesignKit. Sebelum inquiry selesai, feature
-memakai palette default. Begitu nilai berubah, header, composer, dan konten
-mengikuti tanpa membuka ulang feature.
-
-Bahasa otomatis **hanya jika** pilihan host diteruskan sebagai `\.locale`. Jika
-host memakai language manager sendiri (bundle kustom atau `AppleLanguages` +
-restart), package tidak bisa membacanya; pasang satu baris `.environment(\.locale, ...)`
-dari nilai setting tersebut. Tanpa itu, Tanya AI mengikuti bahasa perangkat.
+- Kode bahasa Localize_Swift (`"id"`, `"en"`, `"zh-Hans"`) langsung dipakai sebagai
+  `Locale`. Bahasa lain jatuh ke English.
+- `CustomerProposition` adalah tipe milik host; pemetaannya ke palette tetap di host
+  karena aturan bisnis tidak masuk DesignKit. Sebelum inquiry selesai, feature
+  memakai palette default.
+- Saat nilai berubah dan Tanya AI sedang terbuka, header, composer, dan konten
+  langsung mengikuti tanpa membuka ulang feature.
+- Observer dimiliki session main, jadi ikut dilepas saat logout. `Task { @MainActor }`
+  menjaga akses `TanyaAIHost` tetap di main actor walaupun closure notifikasi tidak terisolasi.
+- Area SwiftUI milik host yang ingin memakai theme yang sama dapat memasang
+  `.designColors(session.tanyaAI.colors)` sendiri; theme fitur tidak bergantung pada itu.
 
 ## Tahap header
 
@@ -225,7 +221,7 @@ Folder `Host` berisi lima file:
 - `TanyaAIHost.swift`: membuat `ChatScreen` langsung dan menangani present/dismiss.
 - `TanyaAIPushTransition.swift`: mempertahankan animasi fullscreen dari samping.
 - `TanyaAIPushInteraction.swift`: swipe-back interaktif dari tepi layar.
-- `TanyaAIHostEnvironment.swift`: meneruskan locale/theme host ke feature yang terbuka.
+- `TanyaAIHostEnvironment.swift`: meneruskan `locale`/`colors` milik host ke feature yang terbuka.
 
 Bridge ini tetap diperlukan untuk pola presentasi existing. UI halaman dan
 header tetap SwiftUI; editor multiline terukur memakai bridge UITextView di DesignKit.

@@ -73,7 +73,9 @@ tersedia pada history/main.
 - Theme memakai environment SwiftUI standar, tanpa ThemeManager/singleton.
   Komponen membaca `@Environment(\.designColors) private var colors`; jangan
   menerima parameter `colors:` atau membuat `DefaultColorConstants()` sendiri.
-  Host memilih palette sekali di root dengan `.designColors(PremierColorConstants())`.
+  Untuk Tanya AI, host mengisi `tanyaAI.colors` dan `tanyaAI.locale` saat nilainya
+  berubah (inquiry proposition, Localize_Swift); fitur yang terbuka langsung ikut.
+  Screen DesignKit lain memasang `.designColors(_:)` di root-nya.
   Area yang harus bebas theme memakai `.defaultDesignColors()` pada subtree itu.
   CopyCatalog belum diperlukan.
 

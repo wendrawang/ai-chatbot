@@ -11,7 +11,8 @@ ini menjelaskan alasannya.
 | Minimum OS | iOS 15 untuk package, sandbox dan host | Host ikut naik ke iOS 15 pada journey revamp. |
 | R.swift | `from: "7.8.0"` | Asset/locale akan bertambah; versi longgar mencegah konflik bila host juga memakai R.swift 7.x. |
 | Ukuran | 1:1 Figma lewat `.scaledToArtwork` | Termasuk area tap 24pt; tidak ada minimum 44. Keputusan UI/UX. |
-| Theme | `@Environment(\.designColors)` + `.designColors(_:)` | Satu pilihan di root, tanpa singleton; `.defaultDesignColors()` untuk area bebas theme. |
+| Theme | `@Environment(\.designColors)`; host mengisi `tanyaAI.colors` | Tanpa singleton; `.defaultDesignColors()` untuk area bebas theme. |
+| Bahasa | Host mengisi `tanyaAI.locale` dari Localize_Swift | Host tidak memakai SwiftUI locale; satu property, berlaku juga saat fitur terbuka. |
 | Nilai awal | `.zero`, `String()`, `[]` | Tidak ada literal tersebar dan tidak ada enum alias. |
 | Draft | `ComposerSection` memiliki `@State` | Ketikan tidak me-render ulang header/daftar pesan. |
 | Presentasi | `.overFullScreen`, host disembunyikan | Feature terisolasi dari navigation/rendering host, tetapi tetap ikut hilang saat main diganti prelogin. |

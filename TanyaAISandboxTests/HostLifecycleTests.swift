@@ -89,12 +89,9 @@ final class HostLifecycleTests: XCTestCase {
         XCTAssertFalse(host.present())
     }
 
-    func testThemeAndLocaleFromTheRootReachTheFeature() async throws {
-        let host = TanyaAIHost { _ in true }
-        let fixture = try HostWindowFixture(
-            Text("Host").tanyaAIHost(host).designColors(PremierColorConstants())
-                .environment(\.locale, Locale(identifier: "id"))
-        )
+    func testLocaleAndPaletteSetOnTheHostReachTheFeature() async throws {
+        let host = TanyaAIHost(locale: Locale(identifier: "id"), colors: PremierColorConstants()) { _ in true }
+        let fixture = try HostWindowFixture(Text("Host").tanyaAIHost(host))
         defer { fixture.close() }
         let probe = EnvironmentProbe()
         host.present { EnvironmentReader(probe: probe) }
@@ -103,20 +100,21 @@ final class HostLifecycleTests: XCTestCase {
         XCTAssertEqual(probe.locale?.identifier, "id")
     }
 
+    /// Meniru notifikasi Localize_Swift dan callback inquiry proposition saat fitur terbuka.
     func testLanguageAndThemeChangesReachAnOpenFeature() async throws {
-        let host = TanyaAIHost { _ in true }
-        let settings = HostSettingsState()
-        let fixture = try HostWindowFixture(HostSettingsFixture(settings: settings, host: host))
+        let host = TanyaAIHost(locale: Locale(identifier: "en")) { _ in true }
+        let fixture = try HostWindowFixture(Text("Main").tanyaAIHost(host))
         defer { fixture.close() }
         let probe = EnvironmentProbe()
         host.present { EnvironmentReader(probe: probe) }
         await fixture.waitForPresentation()
         XCTAssertTrue(probe.colors is DefaultColorConstants)
         XCTAssertEqual(probe.locale?.identifier, "en")
-        settings.language = "id"
-        settings.isPremier = true
+        host.locale = Locale(identifier: "zh-Hans")
+        host.colors = PrivateColorConstants()
         let updated = XCTNSPredicateExpectation(
-            predicate: NSPredicate { _, _ in probe.colors is PremierColorConstants && probe.locale?.identifier == "id"
+            predicate: NSPredicate { _, _ in
+                probe.colors is PrivateColorConstants && probe.locale?.identifier == "zh-Hans"
             },
             object: nil
         )
@@ -157,27 +155,6 @@ private struct RootSessionFixture: View {
         } else {
             Text("Prelogin")
         }
-    }
-}
-
-private final class HostSettingsState: ObservableObject {
-    @Published
-    var language = "en"
-    @Published
-    var isPremier = false
-}
-
-/// Host meniru setting bahasa dan hasil inquiry proposition yang berubah saat fitur terbuka.
-private struct HostSettingsFixture: View {
-    @ObservedObject
-    var settings: HostSettingsState
-    let host: TanyaAIHost
-
-    var body: some View {
-        Text("Main")
-            .tanyaAIHost(host)
-            .environment(\.locale, Locale(identifier: settings.language))
-            .designColors(settings.isPremier ? PremierColorConstants() : DefaultColorConstants())
     }
 }
 

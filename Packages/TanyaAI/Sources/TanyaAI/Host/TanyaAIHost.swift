@@ -16,18 +16,33 @@ public final class TanyaAIHost: ObservableObject {
     private let onNewConversation: (() -> Void)?
     private let onSend: (String) -> Bool
     private let pushTransition = TanyaAIPushTransition()
-    private let hostEnvironment = TanyaAIHostEnvironment()
+    private let hostEnvironment: TanyaAIHostEnvironment
     private var dismissCompletions: [() -> Void] = []
     private weak var anchor: UIViewController?
     private weak var presented: UIViewController?
 
     public var isPresenting: Bool { presented != nil }
 
+    /// Bahasa fitur. Isi dari setting bahasa host (mis. Localize_Swift) setiap kali berubah;
+    /// fitur yang sedang terbuka langsung mengikuti tanpa kehilangan draft.
+    public var locale: Locale {
+        get { hostEnvironment.locale }
+        set { hostEnvironment.locale = newValue }
+    }
+
+    /// Palette fitur. Isi dari hasil inquiry proposition; sebelum itu memakai palette default.
+    public var colors: any FigmaColorProtocol {
+        get { hostEnvironment.colors }
+        set { hostEnvironment.colors = newValue }
+    }
+
     /// Return true when the host accepts the draft; false keeps it in the composer.
     public init(
+        locale: Locale = .current, colors: any FigmaColorProtocol = EnvironmentValues().designColors,
         isEnabled: Bool = true, onNewConversation: (() -> Void)? = nil,
         onSend: @escaping (String) -> Bool
     ) {
+        hostEnvironment = TanyaAIHostEnvironment(locale: locale, colors: colors)
         self.isEnabled = isEnabled
         self.onNewConversation = onNewConversation
         self.onSend = onSend
@@ -44,7 +59,6 @@ public final class TanyaAIHost: ObservableObject {
     @discardableResult
     public func present<Content: View>(@ViewBuilder content: () -> Content) -> Bool {
         guard presented == nil, let presenter = availablePresenter() else { return false }
-        hostEnvironment.apply()
         let screen = HostEnvironmentReader(
             environment: hostEnvironment,
             content: ChatScreen(
@@ -69,10 +83,8 @@ public final class TanyaAIHost: ObservableObject {
         dismiss(isAnimated: true, completion: completion)
     }
 
-    /// Dipanggil setiap root host berubah, termasuk saat fitur terbuka; locale/theme baru langsung diteruskan.
-    func attach(anchor: UIViewController, locale: Locale, colors: any FigmaColorProtocol) {
+    func attach(anchor: UIViewController) {
         self.anchor = anchor
-        hostEnvironment.receive(locale: locale, colors: colors)
     }
 
     /// Anchor hilang berarti root pemilik fitur (mis. main) sudah diganti; fitur ikut ditutup.

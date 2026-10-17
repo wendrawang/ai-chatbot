@@ -13,10 +13,6 @@ import UIKit
 /// Removing the anchor (e.g. main replaced by prelogin) also closes the feature it owns.
 @MainActor
 struct ChatHostAnchor: UIViewControllerRepresentable {
-    @Environment(\.locale)
-    private var locale
-    @Environment(\.designColors)
-    private var colors
     let host: TanyaAIHost
 
     func makeCoordinator() -> Coordinator { Coordinator() }
@@ -34,7 +30,7 @@ struct ChatHostAnchor: UIViewControllerRepresentable {
             context.coordinator.host?.detach(anchor: controller)
             context.coordinator.host = host
         }
-        host.attach(anchor: controller, locale: locale, colors: colors)
+        host.attach(anchor: controller)
     }
 
     static func dismantleUIViewController(_ controller: UIViewController, coordinator: Coordinator) {
@@ -49,7 +45,6 @@ struct ChatHostAnchor: UIViewControllerRepresentable {
 
 public extension View {
     /// Attach once to the visible root owning this host; call `host.present()` from any entry point.
-    /// Apply host locale/theme modifiers after this one so the anchor can read them.
     @MainActor
     func tanyaAIHost(_ host: TanyaAIHost) -> some View {
         tanyaAIHost(Optional(host))

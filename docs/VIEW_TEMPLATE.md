@@ -150,9 +150,11 @@ Palette generated (`DefaultColorConstants`, `PremierColorConstants`,
 @Environment(\.designColors) private var colors
 // Di body: .foregroundColor(colors.colorsTextPrimaryDark)
 
-// Host: sekali di root, setelah .tanyaAIHost agar anchor ikut membaca
-MainRoot()
-    .tanyaAIHost(tanyaAI)
+// Tanya AI: host mengisi palette pada TanyaAIHost (mis. setelah inquiry proposition)
+tanyaAI.colors = PremierColorConstants()
+
+// Layar SwiftUI lain yang memakai DesignKit: pasang di root layar tersebut
+SomeScreen()
     .designColors(PremierColorConstants())
 
 // Area yang harus tetap default walaupun theme lain dipilih
@@ -160,8 +162,9 @@ PromoBanner()
     .defaultDesignColors()
 ```
 
-Tanpa `.designColors`, nilainya `DefaultColorConstants`. `TanyaAIHost` meneruskan
-palette dan locale dari root host ke fitur, termasuk perubahan saat fitur terbuka. Warna di luar palette
+Tanpa `.designColors`, nilainya `DefaultColorConstants`. `TanyaAIHost.colors` dan
+`TanyaAIHost.locale` dipasang ke seluruh screen fitur, termasuk perubahan saat fitur
+terbuka. Warna di luar palette
 generated tetap memakai `CustomColors` dan tidak ikut theme.
 
 ## Localization otomatis

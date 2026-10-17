@@ -5,7 +5,6 @@
 //  Created by Wendra on 15/10/26.
 //
 
-import DesignKit
 import SwiftUI
 import UIKit
 import XCTest
@@ -19,7 +18,7 @@ final class HostPresentationTests: XCTestCase {
         host.present()
         XCTAssertFalse(host.isPresenting)
         let anchor = UIViewController()
-        host.attach(anchor: anchor, locale: Locale(identifier: "id"), colors: DefaultColorConstants())
+        host.attach(anchor: anchor)
         host.present()
         XCTAssertFalse(host.isPresenting)
         var completionCount = 0
