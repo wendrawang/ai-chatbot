@@ -20,7 +20,7 @@ final class HeaderContentTests: XCTestCase {
         do {
             let owner = NSObject()
             releasedOwner = owner
-            host.present { HeaderTestContent(owner: owner) }
+            host.present(languageCode: "zh-Hans") { HeaderTestContent(owner: owner) }
             await fixture.waitForPresentation()
             XCTAssertTrue(host.isPresenting)
             XCTAssertNotNil(releasedOwner)

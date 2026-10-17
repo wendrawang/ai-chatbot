@@ -39,9 +39,9 @@ struct SandboxHostView: View {
 private extension SandboxHostView {
     func open() {
         if isHeaderDemo {
-            host.present { HeaderDemoContent() }
+            host.present(languageCode: locale.identifier) { HeaderDemoContent() }
         } else {
-            host.present()
+            host.present(languageCode: locale.identifier)
         }
     }
 }

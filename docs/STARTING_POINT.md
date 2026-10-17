@@ -92,9 +92,11 @@ Untuk membuka feature di atas `NavigationView` host existing, lihat
 ## Menjalankan dan bahasa
 
 `Scripts/run_sandbox.sh --language id`, `en`, atau `zh-Hans`. Tanpa override,
-locale mengikuti app. Host bisa menerapkan `.environment(\.locale, Locale(...))`;
-locale diteruskan dari root ber-modifier saat presentasi. `Bundle.module` milik TanyaAI
-menyimpan copy, DesignKit tidak menyimpan copy fitur.
+locale mengikuti app. Untuk bahasa pilihan host, panggil
+`host.present(languageCode: Localize.currentLanguage())` di action membuka screen.
+Package tidak memerlukan dependency Localize_Swift atau observer perubahan bahasa.
+Jika parameter tidak dikirim, locale tetap diteruskan dari environment root saat
+presentasi. `Bundle.module` milik TanyaAI menyimpan copy, DesignKit tidak menyimpan copy fitur.
 
 UI starter mengikuti light palette Figma; penggunaan theme/adaptive appearance
 menjadi tahap terpisah. Tiga PDF vector di xcassets masih dummy dengan TODO

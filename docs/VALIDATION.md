@@ -1,5 +1,20 @@
 # Validasi starter
 
+## Bahasa saat membuka screen — 17 Oktober 2026
+
+`host.present(languageCode:)` menerima bahasa aktif dari host untuk satu
+presentasi. Bahasa eksplisit mempunyai prioritas atas environment anchor;
+`present()` tanpa parameter tetap memakai environment. Package tidak menambah
+observer bahasa atau dependency Localize_Swift.
+
+Build, lint, serta **10 tes terpilih lulus** pada iPhone SE iOS 26.5: sembilan
+hosted test dan satu UI test yang membuka composer dalam tiga bahasa. Tes baru
+memeriksa pergantian bahasa pada instance host yang sama, override terhadap
+environment Indonesia, Chinese `zh-Hans`/`zh_CN`, fallback English untuk `fr_FR`,
+dan kembali ke environment setelah override tidak dikirim. Presentasi fullscreen,
+lifecycle, caret dan scroll boundary juga tetap lulus. Suite package dan tes UI
+lainnya tidak diulang untuk perubahan API ini; baseline sebelumnya tercatat di bawah.
+
 ## Pembagian view dan ukuran desain — 17 Oktober 2026
 
 Deklarasi view utama menyimpan input/state, initializer, `body`, dan bagian visual.

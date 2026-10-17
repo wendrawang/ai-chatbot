@@ -69,6 +69,34 @@ final class HostPresentationTests: XCTestCase {
         XCTAssertTrue(fixture.controller.presentedViewController === other)
     }
 
+    func testLanguageOverrideIsResolvedForEachPresentation() async throws {
+        let host = TanyaAIHost { _ in true }
+        let fixture = try HostWindowFixture(
+            Text("Host").tanyaAIHost(host).environment(\.locale, Locale(identifier: "id"))
+        )
+        defer { fixture.close() }
+        let cases: [(String?, String)] = [
+            ("en", "Ask about your finances and OCBC services..."),
+            ("id", "Tanya seputar keuangan & layanan OCBC..."),
+            ("zh-Hans", "咨询财务及 OCBC 服务…"),
+            ("zh_CN", "咨询财务及 OCBC 服务…"),
+            ("fr_FR", "Ask about your finances and OCBC services..."),
+            (nil, "Tanya seputar keuangan & layanan OCBC...")
+        ]
+        for (languageCode, expected) in cases {
+            if let languageCode { host.present(languageCode: languageCode) } else { host.present() }
+            await fixture.waitForPresentation()
+            let presented = try XCTUnwrap(fixture.controller.presentedViewController)
+            let editor = try XCTUnwrap(findEditor(in: presented.view))
+            XCTAssertEqual(editor.accessibilityLabel, expected)
+            let dismissed = expectation(description: "Dismiss before presenting another language")
+            host.dismiss { dismissed.fulfill() }
+            await fulfillment(of: [dismissed], timeout: 2)
+            fixture.settle()
+            XCTAssertFalse(host.isPresenting)
+        }
+    }
+
     func testHostAndFeatureReleaseAfterDismissAndTeardown() async throws {
         weak var releasedHost: TanyaAIHost?
         weak var releasedFeature: UIViewController?
@@ -91,6 +119,11 @@ final class HostPresentationTests: XCTestCase {
         await fulfillment(of: [released], timeout: 2)
         XCTAssertNil(releasedHost)
         XCTAssertNil(releasedFeature)
+    }
+
+    private func findEditor(in view: UIView) -> UITextView? {
+        if let editor = view as? UITextView { return editor }
+        return view.subviews.lazy.compactMap { self.findEditor(in: $0) }.first
     }
 }
 

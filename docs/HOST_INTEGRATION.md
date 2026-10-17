@@ -92,9 +92,36 @@ session/backend atau penyimpanan history; constructor SDK lama belum diperlukan.
 
 ## Bahasa dan appearance
 
-Locale dibaca oleh anchor dari environment root dan diteruskan saat membuka
-feature. Jika host memiliki pengaturan bahasa sendiri, pasang pada root yang
-membawa anchor:
+Host bisa langsung mengirim kode bahasa saat membuka feature:
+
+```swift
+tanyaAI.present(languageCode: Localize.currentLanguage())
+```
+
+Contoh tersebut memakai `Localize_Swift` milik host. Import library tetap di host;
+package TanyaAI dan DesignKit tidak memerlukan dependency tersebut. Baca bahasa
+aktif di dalam action membuka screen, agar setiap presentasi mengikuti pilihan
+terbaru. Tidak perlu state bahasa tambahan atau observer perubahan bahasa.
+
+Parameter menerima `en`, `id`, atau `zh-Hans`; kode regional seperti `zh_CN` juga
+dipilihkan resource yang sesuai. Bahasa yang tidak didukung memakai fallback
+English. Nilai hanya berlaku untuk presentasi tersebut dan tidak mengubah bahasa
+host. Screen yang sudah terbuka tetap memakai bahasa saat dibuka.
+
+Overload dengan konten juga menerima kode bahasa:
+
+```swift
+tanyaAI.present(languageCode: Localize.currentLanguage()) {
+    ExistingContentView()
+}
+```
+
+`ExistingContentView` adalah konten fitur milik caller, tanpa ScrollView vertikal
+tambahan. Parameter bahasa juga diteruskan ke konten tersebut melalui environment.
+
+Pemanggilan lama `tanyaAI.present()` tetap berlaku. Jika parameter bahasa tidak
+dikirim, anchor memakai locale dari environment root. Host yang sudah mempunyai
+environment locale bisa mempertahankan setup berikut:
 
 ```swift
 NavigationView {
@@ -104,9 +131,10 @@ NavigationView {
 .environment(\.locale, selectedLocale)
 ```
 
-`selectedLocale` bertipe `Locale` dari pengaturan host. Copy tersedia untuk `en`,
-`id`, dan `zh-Hans`, termasuk label kembali. Perubahan locale berlaku saat
-presentasi berikutnya. Daftarkan bahasa host pada konfigurasi localization target.
+`selectedLocale` bertipe `Locale` dari pengaturan host. Parameter `languageCode`
+yang dikirim saat presentasi mempunyai prioritas atas locale tersebut. Copy
+tersedia untuk ketiga bahasa, termasuk label kembali. Daftarkan bahasa host pada
+konfigurasi localization target.
 Jika host belum mendeklarasikan semua bahasa package,
 `CFBundleAllowMixedLocalizations = YES` memungkinkan resource dependency ikut
 dipilih ([dokumentasi Apple](https://developer.apple.com/documentation/bundleresources/information-property-list/cfbundleallowmixedlocalizations)).

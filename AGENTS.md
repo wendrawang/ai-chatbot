@@ -61,6 +61,10 @@ tersedia pada history/main.
   Glyph Chinese yang tidak ada di Open Sans menggunakan fallback native iOS.
 - Copy fitur berada di resource `en`, `id`, `zh-Hans`. Screen membaca locale dari
   environment dan menyuplai label ke DesignKit. Tidak ada copy bisnis di DesignKit.
+  Host bisa mengirim `present(languageCode:)` saat membuka screen; bahasa eksplisit
+  berlaku untuk satu presentasi dan mempunyai prioritas atas locale anchor.
+  Tanpa parameter, pertahankan fallback locale environment. Jangan menambah
+  dependency Localize_Swift atau observer bahasa pada package.
 - Localization dan xcassets diakses melalui R.swift generated saat build, bukan
   enum pemetaan key/nama asset manual. DesignKit memakai plugin public resources;
   fitur dan sandbox memakai internal resources. Gunakan `String(resource:locale:)`

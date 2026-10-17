@@ -37,17 +37,24 @@ public final class TanyaAIHost: ObservableObject {
         present { EmptyView() }
     }
 
+    /// Uses the host's current language for this presentation, without observing language changes.
+    public func present(languageCode: String) {
+        present(languageCode: languageCode) { EmptyView() }
+    }
+
     /// Supplies a scrollable UI fixture or feature content, without changing host navigation.
-    public func present<Content: View>(@ViewBuilder content: () -> Content) {
+    /// An explicit language takes precedence over the anchor's environment locale for this presentation only.
+    public func present<Content: View>(languageCode: String? = nil, @ViewBuilder content: () -> Content) {
         guard presented == nil, let anchor, anchor.viewIfLoaded?.window != nil else { return }
         var presenter = anchor
         while let parent = presenter.parent { presenter = parent }
         guard presenter.presentedViewController == nil, !presenter.isBeingDismissed else { return }
+        let presentationLocale = languageCode.map { Locale(identifier: $0) } ?? locale
         let screen = ChatScreen(
             isEnabled: isEnabled, onBack: { [weak self] in self?.dismiss() },
             onNewConversation: onNewConversation, onSend: onSend, content: content
         )
-        .environment(\.locale, locale)
+        .environment(\.locale, presentationLocale)
         .preferredColorScheme(.light)
         let controller = UIHostingController(rootView: screen)
         controller.modalPresentationStyle = .fullScreen
