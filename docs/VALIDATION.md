@@ -2,11 +2,10 @@
 
 ## Struktur untuk skala — 18 Oktober 2026
 
-Tipografi memakai preset peran `DesignTextStyle` + `.designFont(_:)`; identifier UI
-test dikelompokkan per komponen; transisi dipindah ke `TanyaAI/Transition` dengan
+Identifier UI test dikelompokkan per komponen; transisi dipindah ke `TanyaAI/Transition` dengan
 animator di file sendiri; fixture window test Sandbox di file sendiri; alias
-`CustomColors.transparent` dihapus. Script menolak `FontFace.font(size:)` di luar
-`Typography` (dibuktikan dengan pelanggaran sengaja). Test baru: tipografi (2).
+`CustomColors.transparent` dihapus. Tipografi tetap memakai token `FigmaSize`
+per role secara langsung.
 
 ## Pemisahan token custom — 18 Oktober 2026
 

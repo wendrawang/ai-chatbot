@@ -25,12 +25,8 @@ Packages/
 │       │   ├── Color+Hex.swift
 │       │   ├── String+Resource.swift      # locale host + R.swift
 │       │   ├── View+DesignColors.swift    # theme environment + area default
-│       │   ├── View+DesignFont.swift      # .designFont(role)
 │       │   └── View+ScrollBoundary.swift  # observer umum untuk tahap header
-│       ├── Typography/
-│       │   ├── FontFace.swift + FontLoader.swift      # file font + registrasi
-│       │   ├── DesignTextStyle.swift                  # face + size + line height
-│       │   └── DesignTextStyle+Roles.swift            # preset peran: body, screenTitle
+│       ├── Typography/FontFace.swift + FontLoader.swift
 │       ├── Resources/Fonts/ + Assets.xcassets/
 │       ├── Foundations/Accessibility/
 │       └── Components/
@@ -59,8 +55,7 @@ Packages/
    Package berisi Fira Sans Regular/Medium/SemiBold/Bold dan Open Sans
    Regular/Medium/Bold beserta lisensinya. Gunakan nama eksplisit seperti
    `.openSansRegular` atau `.firaSansMedium`; `.regular/.medium` lama diganti.
-   Teks memakai preset peran `DesignTextStyle` (`.body`, `.screenTitle`) lewat
-   `.designFont(_:)`; composer default memakai `.body`. Chinese menggunakan fallback
+   Composer default memakai `.openSansRegular`. Chinese menggunakan fallback
    glyph iOS; font Chinese brand final masih dapat diganti kemudian. Pemetaan
    file/PostScript dan sumbernya ada pada [katalog font](../Packages/DesignKit/Sources/DesignKit/Resources/Fonts/SOURCES.md).
 4. Buat `BoundedTextView`, lalu bridge `GrowingTextInput`. Intrinsic width tidak

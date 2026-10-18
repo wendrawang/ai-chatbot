@@ -14,21 +14,23 @@ public struct MessageComposer: View {
     private var colors
     @Binding
     private var text: String
+    // Figma typography follows artwork scaling only, independent of the user's text size setting.
+    private let fontSize = FigmaSize.typographySizeDisplaySmall14.scaledToArtwork
     private let placeholder: String
     private let sendLabel: String
     private let isEnabled: Bool
-    private let textStyle: DesignTextStyle
+    private let fontFace: FontFace
     private let onSend: () -> Void
 
     public init(
         text: Binding<String>, placeholder: String, sendLabel: String,
-        isEnabled: Bool = true, textStyle: DesignTextStyle = .body, onSend: @escaping () -> Void
+        isEnabled: Bool = true, fontFace: FontFace = .openSansRegular, onSend: @escaping () -> Void
     ) {
         self._text = text
         self.placeholder = placeholder
         self.sendLabel = sendLabel
         self.isEnabled = isEnabled
-        self.textStyle = textStyle
+        self.fontFace = fontFace
         self.onSend = onSend
     }
 
@@ -49,7 +51,7 @@ public struct MessageComposer: View {
         ZStack(alignment: .leading) {
             GrowingTextInput(
                 text: $text, font: inputFont, textColor: UIColor(colors.colorsTextPrimaryDark),
-                lineSpacing: textStyle.lineSpacing, accessibilityLabel: placeholder
+                lineSpacing: lineSpacing, accessibilityLabel: placeholder
             )
             .fixedSize(horizontal: false, vertical: true)
             .frame(maxWidth: .infinity)
@@ -100,12 +102,16 @@ public struct MessageComposer: View {
 // MARK: - Helpers
 
 private extension MessageComposer {
-    /// Editor UIKit dan placeholder memakai UIFont yang sama agar caret dan hint sejajar.
-    var inputFont: UIFont { textStyle.uiFont }
+    var inputFont: UIFont { fontFace.font(size: fontSize) }
 
     /// Equal single-line rows center the field/button; a taller field keeps the button at its bottom.
     var singleLineRowHeight: CGFloat {
-        max(CustomSizes.Composer.sendButton.scaledToArtwork, ceil(inputFont.lineHeight + textStyle.lineSpacing))
+        max(CustomSizes.Composer.sendButton.scaledToArtwork, ceil(inputFont.lineHeight + lineSpacing))
+    }
+
+    var lineSpacing: CGFloat {
+        let leading = FigmaSize.typographyLineHeightDisplaySmall14.scaledToArtwork
+        return max(.zero, leading - inputFont.lineHeight)
     }
 
     var isSendEnabled: Bool {

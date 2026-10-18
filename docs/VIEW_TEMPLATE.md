@@ -106,9 +106,9 @@ Tidak perlu menambahkan weak capture pada setiap closure SwiftUI secara otomatis
 | Tanggung jawab | Tempat |
 | --- | --- |
 | Header, container, composer, editor umum | `DesignKit/Components` |
-| Scroll boundary, sizing, locale resource, `.designFont` | `DesignKit/Extensions` |
+| Scroll boundary, sizing, locale resource | `DesignKit/Extensions` |
 | Token custom per jenis | `DesignKit/Tokens` |
-| Font file, gaya teks dan preset peran | `DesignKit/Typography` |
+| Font file dan registrasi | `DesignKit/Typography` |
 | Identifier UI test komponen | `DesignKit/Foundations/Accessibility` |
 | Draft, menu sesi, aturan menerima submission | Screen/fitur pemilik (`TanyaAI/Chat`) |
 | API host: present/dismiss, locale/theme | `TanyaAI/Host` |
@@ -142,19 +142,6 @@ alasan perilaku khusus, bukan mengulang arti setiap baris.
 Tidak ada macro kustom, `@Observable`, `@Model`, `@Namespace`, atau `@ScaledMetric`
 pada starter. R.swift adalah plugin build yang menghasilkan source Swift biasa.
 Tidak perlu annotation baru untuk membuat komponen berikutnya.
-
-## Tipografi
-
-Setiap teks memakai preset peran, bukan merakit font sendiri:
-
-```swift
-Text(title).designFont(.screenTitle)     // SwiftUI: font + line height Figma
-editor.font = DesignTextStyle.body.uiFont // UIKit: UIFont yang sama
-```
-
-`DesignTextStyle` menyimpan face, ukuran dan line height dalam point artwork; preset
-ada di `DesignTextStyle+Roles.swift`. Saat Figma mengubah gaya `body`, cukup ubah satu
-preset dan semua teks dengan peran itu ikut berubah.
 
 ## Theme
 

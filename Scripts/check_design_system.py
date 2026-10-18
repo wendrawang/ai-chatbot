@@ -39,8 +39,6 @@ for path in sorted(paths):
         report('Use scaledToArtwork directly; tap/stroke sizes follow the design values.')
     if 'DesignKit' in path.parts and re.search(r'\bTanya\w*|\bimport\s+Tanya', source):
         report('DesignKit must remain feature-independent.')
-    if 'Typography' not in path.parts and re.search(r'\.font\(size:', text):
-        report('Use a DesignTextStyle role (.designFont(.body), style.uiFont) instead of FontFace.font(size:).')
     if 'Tokens' not in path.parts:
         # CustomSizes berisi dimensi point; selalu di-scale. Baris, waktu dan toleransi tidak pernah.
         if re.search(r'\bCustomSizes\.\w+\.\w+\b(?!\s*\.scaledToArtwork)', text):
