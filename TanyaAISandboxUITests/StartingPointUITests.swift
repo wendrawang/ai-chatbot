@@ -8,12 +8,11 @@
 import XCTest
 
 final class StartingPointUITests: XCTestCase {
-    private var application: XCUIApplication!
+    private let application = XCUIApplication()
 
     override func setUp() {
         super.setUp()
         continueAfterFailure = false
-        application = XCUIApplication()
     }
 
     func testThreeLanguagesShowLocalizedEmptyComposer() {

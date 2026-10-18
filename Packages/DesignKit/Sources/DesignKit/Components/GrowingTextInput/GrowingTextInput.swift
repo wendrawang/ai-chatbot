@@ -47,13 +47,12 @@ public struct GrowingTextInput: UIViewRepresentable {
     public func updateUIView(_ editor: BoundedTextView, context: Context) {
         context.coordinator.parent = self
         editor.accessibilityLabel = accessibilityLabel
-        if editor.font != font || editor.textColor != textColor || editor.lineSpacing != lineSpacing {
-            applyStyle(to: editor)
-        }
-        if editor.text != text {
-            editor.text = text
-            applyStyle(to: editor)
-        }
+        let isStyleChanged = editor.font != font || editor.textColor != textColor || editor.lineSpacing != lineSpacing
+        let isTextChanged = editor.text != text
+        if isTextChanged { editor.text = text }
+        guard isStyleChanged || isTextChanged else { return }
+        applyStyle(to: editor)
+        editor.remeasure()
     }
 
     public func makeCoordinator() -> Coordinator { Coordinator(parent: self) }
@@ -67,7 +66,8 @@ public struct GrowingTextInput: UIViewRepresentable {
         init(parent: GrowingTextInput) { self.parent = parent }
 
         public func textViewDidChange(_ editor: UITextView) {
-            parent.text = editor.text
+            // UITextView.text bertipe String!; baca sebagai optional agar tidak ada unwrap paksa.
+            parent.text = editor.text ?? String()
             (editor as? BoundedTextView)?.remeasure()
         }
     }
@@ -92,6 +92,5 @@ private extension GrowingTextInput {
             attributes, range: NSRange(location: .zero, length: editor.textStorage.length)
         )
         editor.selectedRange = selection
-        editor.remeasure()
     }
 }

@@ -8,15 +8,13 @@
 import UIKit
 
 /// A one-to-four-line editor; additional content scrolls inside the field.
+/// Perubahan lebar diukur otomatis. Pemilik memanggil `remeasure()` setelah mengubah
+/// teks atau style (`GrowingTextInput` sudah melakukannya), tanpa override `text: String!`.
 @MainActor
 public final class BoundedTextView: UITextView {
     var lineSpacing: CGFloat = .zero
     private var measuredHeight: CGFloat = .zero
     private var measuredWidth: CGFloat = .zero
-
-    public override var text: String! {
-        didSet { remeasure() }
-    }
 
     public override var intrinsicContentSize: CGSize {
         CGSize(width: UIView.noIntrinsicMetric, height: max(measuredHeight, lineHeight))

@@ -8,12 +8,11 @@
 import XCTest
 
 final class HeaderUITests: XCTestCase {
-    private var application: XCUIApplication!
+    private let application = XCUIApplication()
 
     override func setUp() {
         super.setUp()
         continueAfterFailure = false
-        application = XCUIApplication()
     }
 
     func testHeaderBoundaryTracksScrollWithoutMovingHeaderOrComposer() {

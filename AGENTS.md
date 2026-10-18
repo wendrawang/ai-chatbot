@@ -165,6 +165,12 @@ tersedia pada history/main.
   saat dismiss sedang berjalan. Host dimiliki AppState/session owner atau
   `@StateObject`, tidak dibuat di body.
 - UI owners `@MainActor`; putus delegate pada dismantle dan hindari retain cycle.
+- Tanpa forcing di source maupun test: tidak ada `!` unwrap, `as!`, `try!`, atau
+  tipe `Type!`. SwiftLint (`force_unwrapping`, `implicitly_unwrapped_optional`,
+  `force_cast`, `force_try`) menolaknya. Property UIKit bertipe IUO seperti
+  `UITextView.text` dibaca sebagai optional (`editor.text ?? String()`), jangan
+  di-override atau dipakai langsung sebagai non-optional. Test memakai
+  `let application = XCUIApplication()` dan `XCTUnwrap`, bukan IUO di `setUp`.
 - Private view sections berupa noun: `field`, `surface`, `actionButton`.
   Deklarasi utama berurutan environment, binding/state, input, init, body, sections.
   Computed setup/perhitungan/validasi berada di `private extension` pada file yang

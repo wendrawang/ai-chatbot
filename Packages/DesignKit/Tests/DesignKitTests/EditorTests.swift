@@ -23,16 +23,16 @@ final class EditorTests: XCTestCase {
         editor.layoutSubviews()
         let firstHeight = editor.intrinsicContentSize.height
         editor.text = "One\nTwo\nThree\nFour"
-        editor.layoutSubviews()
+        editor.remeasure()
         let fourthHeight = editor.intrinsicContentSize.height
         XCTAssertGreaterThan(fourthHeight, firstHeight)
-        editor.text += "\nFive\n" + String(repeating: "m", count: 128)
-        editor.layoutSubviews()
+        editor.text = (editor.text ?? "") + "\nFive\n" + String(repeating: "m", count: 128)
+        editor.remeasure()
         XCTAssertEqual(editor.intrinsicContentSize.height, fourthHeight, accuracy: 1)
         XCTAssertTrue(editor.isScrollEnabled)
         XCTAssertEqual(editor.intrinsicContentSize.width, UIView.noIntrinsicMetric)
         editor.text = ""
-        editor.layoutSubviews()
+        editor.remeasure()
         XCTAssertLessThan(editor.intrinsicContentSize.height, fourthHeight)
         XCTAssertFalse(editor.isScrollEnabled)
     }
@@ -90,7 +90,7 @@ final class EditorTests: XCTestCase {
             XCTAssertEqual(editor.intrinsicContentSize.height, ceil(lineHeight * 4), accuracy: 1)
             XCTAssertTrue(editor.isScrollEnabled)
             editor.text = ""
-            editor.layoutSubviews()
+            editor.remeasure()
             XCTAssertLessThan(editor.intrinsicContentSize.height, ceil(lineHeight * 4))
             XCTAssertFalse(editor.isScrollEnabled)
         }

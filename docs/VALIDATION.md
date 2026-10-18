@@ -1,5 +1,13 @@
 # Validasi starter
 
+## Tanpa forcing — 18 Oktober 2026
+
+`BoundedTextView` tidak lagi meng-override `text: String!`; `GrowingTextInput`
+memanggil `remeasure()` setelah teks/style berubah. Bacaan `UITextView.text` memakai
+`?? String()`. UI test memakai `let application = XCUIApplication()`. SwiftLint
+mengaktifkan `force_unwrapping` dan `implicitly_unwrapped_optional` (ditambah
+`force_cast`/`force_try` bawaan); keempatnya dibuktikan menolak pelanggaran sengaja.
+
 ## Struktur untuk skala — 18 Oktober 2026
 
 Identifier UI test dikelompokkan per komponen; transisi dipindah ke `TanyaAI/Transition` dengan

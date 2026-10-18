@@ -7,6 +7,11 @@ included:
   - Packages
   - Scripts
 
+# Tidak ada unwrap paksa: force_cast dan force_try sudah aktif secara default.
+opt_in_rules:
+  - force_unwrapping
+  - implicitly_unwrapped_optional
+
 # Approved Figma placeholder assets deliberately retain replacement TODOs.
 disabled_rules:
   - todo
