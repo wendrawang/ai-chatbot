@@ -7,43 +7,25 @@
 
 import DesignKit
 import SwiftUI
-import TanyaAI
 
+/// Main legacy host: NavigationView lamanya tetap di sini; Tanya AI dibuka lewat router host.
 @MainActor
 struct SandboxHostView: View {
     @Environment(\.locale)
     private var locale
-    @StateObject
-    private var host: TanyaAIHost
-    private let isHeaderDemo: Bool
+    private let onOpen: () -> Void
 
-    init(options: SandboxOptions) {
-        isHeaderDemo = options.isHeaderDemo
-        _host = StateObject(
-            wrappedValue: TanyaAIHost(locale: options.locale ?? .current) { _ in !options.isRejectingSend }
-        )
+    init(onOpen: @escaping () -> Void) {
+        self.onOpen = onOpen
     }
 
     var body: some View {
         NavigationView {
-            Button(action: open) {
+            Button(action: onOpen) {
                 Text(String(resource: R.string.localizable.sandboxOpen, locale: locale))
             }
             .accessibilityIdentifier(SandboxOptions.openIdentifier)
         }
         .navigationViewStyle(.stack)
-        .tanyaAIHost(host)
-    }
-}
-
-// MARK: - Actions
-
-private extension SandboxHostView {
-    func open() {
-        if isHeaderDemo {
-            host.present { HeaderDemoContent() }
-        } else {
-            host.present()
-        }
     }
 }

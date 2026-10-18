@@ -14,9 +14,9 @@ ini menjelaskan alasannya.
 | Theme | `@Environment(\.designColors)`; host mengisi `tanyaAI.colors` | Tanpa singleton; `.defaultDesignColors()` untuk area bebas theme. |
 | Bahasa | Host mengisi `tanyaAI.locale` dari Localize_Swift | Host tidak memakai SwiftUI locale; satu property, berlaku juga saat fitur terbuka. |
 | Nilai awal | `.zero`, `String()`, `[]` | Tidak ada literal tersebar dan tidak ada enum alias. |
-| Token custom | Dipisah per jenis: `CustomSizes`, `CustomTextLines`, `CustomMotion` | Aturan scaling jelas per file dan dijaga script; satu tempat untuk mengubah nilai per peran. |
+| Token custom | Dipisah per jenis: `CustomSizes`, `CustomTextLines` (`CustomMotion` saat ada animasi) | Aturan scaling jelas per file dan dijaga script; satu tempat untuk mengubah nilai per peran. |
 | Draft | `ComposerSection` memiliki `@State` | Ketikan tidak me-render ulang header/daftar pesan. |
-| Presentasi | `.overFullScreen`, host disembunyikan | Feature terisolasi dari navigation/rendering host, tetapi tetap ikut hilang saat main diganti prelogin. |
+| Navigasi | Push ke `RevampNavigationController` milik host | Semua animasi dan swipe-back bawaan UIKit; jalur bersih terpisah dari navigasi legacy; blocker host tetap tampil di atasnya; logout melepas jalur. |
 
 ## Daftar pesan untuk ratusan chat
 

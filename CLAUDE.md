@@ -1,7 +1,7 @@
 # Minimal starting point
 
 Ikuti [AGENTS.md](AGENTS.md) untuk aturan token (CustomSizes, CustomTextLines,
-CustomMotion, CustomColors), nilai awal, theme environment, fonts, localization dan style. Scope aktif:
+CustomColors), nilai awal, theme environment, fonts, localization dan style. Scope aktif:
 screen kosong, shared header, composer maksimal empat baris, dan bridge host;
 tanpa session/backend. Minimum iOS 15 (host ikut naik ke iOS 15 untuk revamp).
 

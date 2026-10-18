@@ -9,22 +9,18 @@ import DesignKit
 import SwiftUI
 import UIKit
 
-/// Own once in the host's app/session state. Attach with `.tanyaAIHost(host)` and call `present()`.
+/// Konfigurasi dan pembuat halaman Tanya AI. Simpan satu instance di session main host,
+/// lalu push `makeViewController()` ke navigation controller milik host.
+/// Navigasi, animasi dan swipe-back sepenuhnya bawaan UIKit milik host.
 @MainActor
-public final class TanyaAIHost: ObservableObject {
+public final class TanyaAIHost {
     private let isEnabled: Bool
     private let onNewConversation: (() -> Void)?
     private let onSend: (String) -> Bool
-    private let pushTransition = TanyaAIPushTransition()
     private let hostEnvironment: TanyaAIHostEnvironment
-    private var dismissCompletions: [() -> Void] = []
-    private weak var anchor: UIViewController?
-    private weak var presented: UIViewController?
-
-    public var isPresenting: Bool { presented != nil }
 
     /// Bahasa fitur. Isi dari setting bahasa host (mis. Localize_Swift) setiap kali berubah;
-    /// fitur yang sedang terbuka langsung mengikuti tanpa kehilangan draft.
+    /// halaman yang sedang tampil langsung mengikuti tanpa kehilangan draft.
     public var locale: Locale {
         get { hostEnvironment.locale }
         set { hostEnvironment.locale = newValue }
@@ -36,7 +32,7 @@ public final class TanyaAIHost: ObservableObject {
         set { hostEnvironment.colors = newValue }
     }
 
-    /// Return true when the host accepts the draft; false keeps it in the composer.
+    /// `onSend` mengembalikan true bila host menerima draft; false mempertahankannya di composer.
     public init(
         locale: Locale = .current, colors: any FigmaColorProtocol = EnvironmentValues().designColors,
         isEnabled: Bool = true, onNewConversation: (() -> Void)? = nil,
@@ -48,94 +44,30 @@ public final class TanyaAIHost: ObservableObject {
         self.onSend = onSend
     }
 
-    /// Presents independently of the host navigation stack.
-    /// Returns false when already open, offscreen, or another host modal is showing.
-    @discardableResult
-    public func present() -> Bool {
-        present { EmptyView() }
+    /// Halaman siap di-push. Tanpa `onBack`, tombol kembali melakukan pop pada navigation controller host.
+    public func makeViewController(onBack: (() -> Void)? = nil) -> UIViewController {
+        makeViewController(onBack: onBack) { EmptyView() }
     }
 
-    /// Supplies a scrollable UI fixture or feature content, without changing host navigation.
-    @discardableResult
-    public func present<Content: View>(@ViewBuilder content: () -> Content) -> Bool {
-        guard presented == nil, let presenter = availablePresenter() else { return false }
+    /// Sama seperti di atas, dengan konten SwiftUI untuk area scroll (fixture UI atau konten fitur).
+    public func makeViewController<Content: View>(
+        onBack: (() -> Void)? = nil, @ViewBuilder content: () -> Content
+    ) -> UIViewController {
+        weak var page: UIViewController?
         let screen = HostEnvironmentReader(
             environment: hostEnvironment,
             content: ChatScreen(
-                isEnabled: isEnabled, onBack: { [weak self] in self?.dismiss() },
+                isEnabled: isEnabled,
+                onBack: {
+                    if let onBack { onBack() } else { page?.navigationController?.popViewController(animated: true) }
+                },
                 onNewConversation: onNewConversation, onSend: onSend, content: content
             )
         )
-        .preferredColorScheme(.light)
         let controller = UIHostingController(rootView: screen)
-        controller.modalPresentationStyle = .overFullScreen
-        controller.modalPresentationCapturesStatusBarAppearance = true
-        controller.transitioningDelegate = pushTransition
-        pushTransition.interaction.attach(to: controller.view) { [weak self] in self?.dismiss() }
-        presented = controller
-        presenter.present(controller, animated: true)
-        return true
-    }
-
-    /// Completion runs after the feature is gone, so the host can safely continue its own routing.
-    /// Requests made while a dismissal is running wait for that dismissal instead of being dropped.
-    public func dismiss(completion: (() -> Void)? = nil) {
-        dismiss(isAnimated: true, completion: completion)
-    }
-
-    func attach(anchor: UIViewController) {
-        self.anchor = anchor
-    }
-
-    /// Anchor hilang berarti root pemilik fitur (mis. main) sudah diganti; fitur ikut ditutup.
-    func detach(anchor: UIViewController) {
-        guard self.anchor === anchor else { return }
-        self.anchor = nil
-        dismiss(isAnimated: false, completion: nil)
-    }
-}
-
-// MARK: - Helpers
-
-private extension TanyaAIHost {
-    func availablePresenter() -> UIViewController? {
-        guard let anchor, anchor.viewIfLoaded?.window != nil else { return nil }
-        var presenter = anchor
-        while let parent = presenter.parent { presenter = parent }
-        guard presenter.presentedViewController == nil, !presenter.isBeingDismissed else { return nil }
-        return presenter
-    }
-
-    func dismiss(isAnimated: Bool, completion: (() -> Void)?) {
-        guard let controller = presented else {
-            completion?()
-            return
-        }
-        if let completion { dismissCompletions.append(completion) }
-        guard !controller.isBeingDismissed else { return }
-        // Dismiss tanpa animasi tidak melewati animator; tampilkan kembali host di sini.
-        controller.presentingViewController?.view.isHidden = false
-        controller.dismiss(animated: isAnimated) { [weak self, weak controller] in
-            self?.finishDismissal(of: controller)
-        }
-        // Swipe-back yang dibatalkan tidak menjalankan completion dismiss; lanjutkan permintaan yang tertunda.
-        controller.transitionCoordinator?.animate(alongsideTransition: nil) { [weak self] context in
-            guard context.isCancelled else { return }
-            DispatchQueue.main.async { self?.resumePendingDismissal() }
-        }
-    }
-
-    func finishDismissal(of controller: UIViewController?) {
-        // Completion routing hanya berjalan setelah fitur benar-benar lepas dari presenter.
-        guard controller?.presentingViewController == nil else { return }
-        if presented === controller { presented = nil }
-        let completions = dismissCompletions
-        dismissCompletions.removeAll()
-        completions.forEach { $0() }
-    }
-
-    func resumePendingDismissal() {
-        guard !dismissCompletions.isEmpty else { return }
-        dismiss(isAnimated: true, completion: nil)
+        // Starter mengikuti light palette Figma; dibatasi ke halaman ini, tidak mengubah host.
+        controller.overrideUserInterfaceStyle = .light
+        page = controller
+        return controller
     }
 }

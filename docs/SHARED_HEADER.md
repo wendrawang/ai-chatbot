@@ -15,7 +15,7 @@ TanyaAI/Sources/TanyaAI/
 ├── Chat/ChatScreen.swift                 # content/menu/composer; layout dari container
 ├── Chat/ChatElementIdentifier.swift      # technical identifier, bukan pemetaan copy
 ├── Resources/{en,id,zh-Hans}.lproj/
-└── Host/                                # present/dismiss existing
+└── Host/                                # konfigurasi + pembuat halaman untuk host
 
 TanyaAISandboxApp/HeaderDemoContent.swift # fixture scroll, bukan UI produksi
 ```

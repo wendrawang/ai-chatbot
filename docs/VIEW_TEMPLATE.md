@@ -75,8 +75,8 @@ lagi. Lihat pemakaian lengkap pada `ChatScreen.swift` dan
 Draft dimiliki section kecil (`ComposerSection`) dengan `@State`; `MessageComposer`
 menerima Binding dan callback. Dengan begitu ketikan hanya me-render composer,
 bukan header/daftar pesan di screen yang sama. Presenter
-host tetap `.tanyaAIHost(host)` dengan satu `TanyaAIHost` milik `@StateObject` atau
-session owner. Host tidak dibuat ulang di `body`.
+host memakai satu `TanyaAIHost` milik session main dan mem-push
+`makeViewController()` ke jalur navigasinya. Host tidak dibuat ulang di `body`.
 
 ## Callback dan typealias
 
@@ -111,8 +111,8 @@ Tidak perlu menambahkan weak capture pada setiap closure SwiftUI secara otomatis
 | Font file dan registrasi | `DesignKit/Typography` |
 | Identifier UI test komponen | `DesignKit/Foundations/Accessibility` |
 | Draft, menu sesi, aturan menerima submission | Screen/fitur pemilik (`TanyaAI/Chat`) |
-| API host: present/dismiss, locale/theme | `TanyaAI/Host` |
-| Animasi dan swipe-back halaman | `TanyaAI/Host/TanyaAIPushTransition.swift` |
+| API host: konfigurasi, locale/theme, pembuat halaman | `TanyaAI/Host` |
+| Navigasi, animasi push, swipe-back | Host (`RevampNavigationController`), bawaan UIKit |
 
 Komponen umum yang sudah dibutuhkan beberapa caller dibuat reusable. Potongan
 yang baru *mungkin* dipakai ulang boleh tetap private sampai tanggung jawabnya
@@ -120,8 +120,8 @@ jelas atau ada caller berikutnya. Saat memisahkan, kirim data dan callback dari
 caller; jangan memasukkan nama screen, routing fitur atau state bisnis ke DesignKit.
 
 Bagian rumit saat ini terisolasi: `GrowingTextInput`/`BoundedTextView` mengatur
-measurement, seleksi dan delegate editor; `TanyaAIPushTransition` mengatur transisi
-UIKit. Screen baru cukup memakai API publiknya. Lifecycle bridge mengikuti urutan
+measurement, seleksi dan delegate editor. Navigasi dan animasi halaman memakai
+bawaan UIKit milik host. Screen baru cukup memakai API publiknya. Lifecycle bridge mengikuti urutan
 make/update/dismantle, dan delegate diputus saat dismantle. Komentar menjelaskan
 alasan perilaku khusus, bukan mengulang arti setiap baris.
 
@@ -136,8 +136,6 @@ alasan perilaku khusus, bukan mengulang arti setiap baris.
 | `@ViewBuilder` | Menyusun slot content/trailing/footer tanpa AnyView. |
 | `@MainActor` | Menjaga pemilik UI dijalankan pada main actor. |
 | `@main` | Entry point sandbox app. |
-| `@discardableResult` | `present()` mengembalikan Bool tanpa memaksa caller memakainya. |
-| `@objc` | Target-action gesture swipe-back UIKit. |
 
 Tidak ada macro kustom, `@Observable`, `@Model`, `@Namespace`, atau `@ScaledMetric`
 pada starter. R.swift adalah plugin build yang menghasilkan source Swift biasa.
@@ -231,7 +229,6 @@ file dan nama PostScript berbeda; ketujuh font existing tetap dipertahankan.
 | `Generated/FigmaSize` | Spacing, ukuran icon, tipografi dari Figma. **Cek di sini dulu.** | Ya |
 | `CustomSizes` | Dimensi point yang belum ada di Figma: `Header.height`, `Shadow`, `Composer.sendButton` | **Selalu** |
 | `CustomTextLines` | Batas baris per peran: `composerInput = 1...4`, `headerTitle` | Tidak pernah |
-| `CustomMotion` | Durasi dan ambang gesture: `Navigation.duration`, `SwipeBack.velocity` | Tidak pernah |
 | `CustomColors` / `CustomBasePaletteColor` | Warna semantik tambahan / hex dasarnya | — |
 | `ArtworkScale` | Referensi 375×812 dan rasio layar untuk `.scaledToArtwork` | Tidak pernah |
 | `LayoutTolerance` | Toleransi pembulatan layout (bukan token desain) | Tidak pernah |

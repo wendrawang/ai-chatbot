@@ -1,5 +1,24 @@
 # Validasi starter
 
+## Jalur navigasi host — 18 Oktober 2026
+
+Tanya AI tidak lagi dipresentasikan sebagai modal dengan transisi custom. Host
+mem-push `tanyaAI.makeViewController()` ke `RevampNavigationController` (contoh di
+sandbox, yang kini memakai AppDelegate + SceneDelegate seperti host). Dihapus dari
+package: anchor `.tanyaAIHost`, present/dismiss, transisi dan swipe custom, logika
+menyembunyikan host, serta `CustomMotion` yang tidak lagi dipakai.
+
+Dibuktikan oleh test:
+- swipe-back native hanya aktif saat ada halaman untuk kembali; UI test dengan gesture
+  jari: geser pendek batal, geser panjang kembali ke host;
+- blocker UIKit (no internet) dan sheet SwiftUI dari main (session expired) tampil di
+  atas Tanya AI;
+- mengganti root window ke prelogin melepas Tanya AI; router tidak mem-push dua kali;
+- halaman dan konten dilepas setelah pop; `locale`/`colors` diterapkan dan live.
+
+UI test header kini menyasar scroll view konten secara eksplisit, karena
+`scrollViews.firstMatch` bisa menunjuk bar saran keyboard.
+
 ## Tanpa literal di kode package — 18 Oktober 2026
 
 `forwardDirection = 1` dan batas `1` pada swipe-back dihapus; arah dihitung dari lebar

@@ -26,7 +26,7 @@ final class HeaderUITests: XCTestCase {
         XCTAssertGreaterThanOrEqual(first.frame.minY - header.frame.maxY, 15)
         assertActionsAndTitle()
         capture("header-demo-top")
-        let scroll = application.scrollViews.firstMatch
+        let scroll = contentScroll
         scroll.swipeUp()
         XCTAssertTrue(application.otherElements["header.scrolled"].waitForExistence(timeout: 5))
         XCTAssertEqual(title.frame, titleFrame)
@@ -76,7 +76,7 @@ final class HeaderUITests: XCTestCase {
         XCTAssertTrue(send.isHittable)
         XCTAssertLessThanOrEqual(send.frame.maxY, application.keyboards.firstMatch.frame.minY + 1)
         assertActionsAndTitle()
-        application.scrollViews.firstMatch.swipeUp()
+        contentScroll.swipeUp()
         XCTAssertTrue(application.otherElements["header.scrolled"].waitForExistence(timeout: 5))
         XCTAssertEqual(application.staticTexts["header.title"].frame, titleFrame)
         application.buttons["header.back"].tap()
@@ -95,6 +95,11 @@ final class HeaderUITests: XCTestCase {
         XCTAssertEqual(title.midX, application.frame.midX, accuracy: 1)
         XCTAssertGreaterThanOrEqual(title.minX, back.maxX)
         XCTAssertLessThanOrEqual(title.maxX, more.minX)
+    }
+
+    /// Scroll konten demo. `scrollViews.firstMatch` bisa menunjuk bar saran keyboard.
+    private var contentScroll: XCUIElement {
+        application.scrollViews.containing(.staticText, identifier: "sandbox.demo.start").firstMatch
     }
 
     private func launch(locale: String, extra: [String] = []) {

@@ -15,7 +15,6 @@ Packages/
 │       │   ├── Generated/                # export engine existing
 │       │   ├── CustomSizes.swift         # dimensi point, selalu .scaledToArtwork
 │       │   ├── CustomTextLines.swift     # batas baris per peran
-│       │   ├── CustomMotion.swift        # durasi + ambang gesture
 │       │   ├── ArtworkScale.swift        # referensi 375 dan rasio layar
 │       │   ├── LayoutTolerance.swift     # toleransi pembulatan layout
 │       │   ├── CustomBasePaletteColor.swift
@@ -37,7 +36,7 @@ Packages/
 └── TanyaAI/
     └── Sources/TanyaAI/
         ├── Chat/ChatScreen.swift + ChatElementIdentifier.swift
-        ├── Host/                        # API host, present/dismiss, locale/theme, transisi
+        ├── Host/                        # konfigurasi host + makeViewController()
         └── Resources/en.lproj + id.lproj + zh-Hans.lproj/
 ```
 
@@ -46,7 +45,7 @@ Packages/
 1. Pasang package/resource dan pertahankan `Tokens/Generated` milik Anda.
    R.swift 7.8.0 menghasilkan accessor localization/xcassets saat build; tidak
    perlu menulis enum pemetaan. Ikuti [pola view dan resource](VIEW_TEMPLATE.md).
-2. Tulis token custom per jenis (`CustomSizes`, `CustomTextLines`, `CustomMotion`), custom palette dan extension sizing/hex. Nilai awal memakai
+2. Tulis token custom per jenis (`CustomSizes`, `CustomTextLines`), custom palette dan extension sizing/hex. Nilai awal memakai
    nilai bawaan tipe (`.zero`, `String()`), tanpa enum alias. Gunakan `true`/`false` langsung. Padding mengambil `spacingSmall/Medium/Large` langsung. `Color(hex:)` menerima
    RGB, RRGGBB atau AARRGGBB dan memakai fallback nonoptional untuk input invalid.
 3. Daftarkan font dengan `FontFace.registerFonts()` saat bootstrap. `FontFace`
@@ -80,10 +79,10 @@ Packages/
 6. Buat screen: area kosong, `ComposerSection` (draft `@State`) di bawah, margin luar.
    Baca locale host, resolve `R.string.localizable` melalui `String(resource:locale:)`
    dan kirimkan label ke komponen.
-7. Pasang bridge `.tanyaAIHost(host)` pada root existing. Satu `TanyaAIHost`
-   dimiliki host/AppState atau `@StateObject`; panggil `host.present()` untuk
-   menampilkan feature fullscreen dengan animasi samping. Button kembali atau
-   swipe dari tepi kiri melakukan dismiss; navigation stack host tetap terpisah.
+7. Host mem-push `tanyaAI.makeViewController()` ke jalur navigasi bersihnya
+   (`RevampNavigationController`). Satu `TanyaAIHost` dimiliki session main host.
+   Tombol back atau swipe dari tepi kiri melakukan pop bawaan UIKit; navigasi legacy
+   host tidak disentuh. Lihat [integrasi host](HOST_INTEGRATION.md).
 
 Screen menggunakan `ChatScreen(onSend:)`. Callback mendapat draft dan mengembalikan
 Bool: true membersihkan draft, false mempertahankan teks/seleksi. Draft whitespace

@@ -49,7 +49,7 @@ for path in sorted(paths):
     if re.search(r'"(?:\\.|[^"\\])*"', text):
         report('Use generated R.swift for copy/assets; keep technical metadata with its owner.')
     if re.search(r'(?<![\w.$])\d+(?:\.\d+)?(?![\w.])', text):
-        report('Use FigmaSize, CustomSizes, CustomTextLines, CustomMotion or the type value (.zero) instead of literals.')
+        report('Use FigmaSize, CustomSizes, CustomTextLines or the type value (.zero) instead of literals.')
     if re.search(r'\.(?:foregroundColor|background|fill|strokeBorder)\(\s*\.(?:red|white|black|gray|blue)', text):
         report('Use generated colors or CustomColors.')
     if not relative.endswith('Extensions/View+DesignColors.swift') and re.search(r'\b\w+ColorConstants\(\)', text):

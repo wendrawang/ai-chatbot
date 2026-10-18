@@ -15,9 +15,9 @@ Tombol kirim memanggil callback host. Sandbox menerima draft dan membersihkannya
 belum ada network atau bubble pesan. `--reject-send` mendemonstrasikan draft yang
 harus dipertahankan saat host menolak submission.
 
-Pada sandbox, tekan “Buka Tanya AI” untuk membuka feature fullscreen melalui
-`.tanyaAIHost(host)` + `host.present()`, dengan animasi dari samping seperti flow
-sebelumnya. Tombol kembali atau swipe dari tepi kiri menutup feature dan
+Sandbox meniru host: `AppDelegate` + `SceneDelegate` dengan `RevampNavigationController`
+sebagai root. Tekan “Buka Tanya AI” untuk mem-push `tanyaAI.makeViewController()`
+dengan push bawaan UIKit. Tombol kembali atau swipe dari tepi kiri menutup feature dan
 mengembalikan layar host.
 Mode `--header-demo` menyisipkan teks dummy untuk mengecek separator dan blur
 saat scroll. Integrasi biasa tetap membuka area percakapan kosong.

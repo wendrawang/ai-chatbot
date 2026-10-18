@@ -32,11 +32,12 @@ tersedia pada history/main.
   | `Generated/FigmaSize` | Spacing, ukuran icon, tipografi dari Figma. **Cek di sini dulu.** | Ya |
   | `CustomSizes` | Dimensi point yang belum ada di Figma: `Header.height`, `Shadow`, `Composer.sendButton` | **Selalu** |
   | `CustomTextLines` | Batas baris per peran: `composerInput = 1...4`, `headerTitle` | Tidak pernah |
-  | `CustomMotion` | Durasi dan ambang gesture: `Navigation.duration`, `SwipeBack.velocity` | Tidak pernah |
   | `CustomColors` / `CustomBasePaletteColor` | Warna semantik tambahan / hex dasarnya | — |
   | `ArtworkScale` | Referensi 375×812 dan rasio layar untuk `.scaledToArtwork` | Tidak pernah |
   | `LayoutTolerance` | Toleransi pembulatan layout (bukan token desain) | Tidak pernah |
 
+  Nilai waktu/animasi custom nanti masuk `CustomMotion` (tidak di-scale), dibuat saat
+  ada animasi pertama yang memakainya.
   Kelompok bersama dinamai per peran (`Header`, `Shadow`, `CustomTextLines.address`
   bila nanti dibutuhkan). Nilai yang hanya dipakai satu komponen memakai namespace
   nama komponen (`CustomSizes.Composer`) agar terhapus bersama komponennya. Tambah
@@ -104,7 +105,7 @@ tersedia pada history/main.
   `ComponentIdentifier.Composer.send`). String identifier adalah kontrak UI test.
 - Tidak ada alias untuk nilai sistem: `.clear`, bukan `CustomColors.transparent`.
 - TanyaAI dipisah per tanggung jawab: `Chat/` (screen dan section), `Host/` (API
-  untuk host dan presentasinya, termasuk satu file transisi). Folder baru seperti `Messages/` atau
+  untuk host: konfigurasi dan pembuat halaman). Folder baru seperti `Messages/` atau
   `Service/` dibuat saat file pertamanya ada, bukan lebih awal.
 - Screen standar memakai composition `ScreenContainer` dari DesignKit: header,
   area scroll, trailing action dan footer. Container memiliki satu `isScrolled`
@@ -153,17 +154,13 @@ tersedia pada history/main.
   true. Draft dimiliki `ComposerSection` (`@State`), bukan `ChatScreen`, agar setiap
   ketikan tidak me-render ulang header dan daftar pesan. Starter tidak mengirim
   network, tidak menyimpan atau log isi pesan.
-- Integrasi host tetap `.tanyaAIHost(host)` + `host.present()`/`dismiss()`.
-  `TanyaAIHost` menampilkan `ChatScreen` langsung; jangan menambahkan wrapper
-  `HostedChatScreen`, NavigationView/NavigationStack atau toolbar native di SDK.
-  Presentasi `.overFullScreen` dengan animasi samping dan swipe-back interaktif,
-  terpisah dari navigation stack host. View host tetap di window tetapi disembunyikan
-  selama tertutup, sehingga SwiftUI tetap memproses perubahan root (main → prelogin)
-  dan anchor yang hilang menutup fitur. Jangan menggantinya dengan NavigationLink
-  atau push pada stack host. `present()` mengembalikan Bool; setiap completion
-  `dismiss` dijalankan setelah fitur benar-benar tertutup, termasuk yang datang
-  saat dismiss sedang berjalan. Host dimiliki AppState/session owner atau
-  `@StateObject`, tidak dibuat di body.
+- Integrasi host: `TanyaAIHost` hanya konfigurasi (`locale`, `colors`, `onSend`) dan
+  `makeViewController()`. Host mem-push halaman itu ke jalur navigasi bersih miliknya
+  (`RevampNavigationController`, nav bar disembunyikan, swipe-back bawaan). Package
+  tidak membuat modal, transisi custom, NavigationView/NavigationStack, atau toolbar
+  native. Tombol back memanggil `onBack` atau pop pada navigation controller host.
+  Blocker host (no internet, session expired) tampil di atas halaman ini tanpa kode
+  di package. `TanyaAIHost` dimiliki session main host, tidak dibuat di body.
 - UI owners `@MainActor`; putus delegate pada dismantle dan hindari retain cycle.
 - Tidak ada angka/string literal di kode package selain file definisi: token
   (`Tokens/`), metadata font (`FontFace`), identifier UI test, dan spesifikasi format

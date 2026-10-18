@@ -1,165 +1,85 @@
 # Membuka Tanya AI dari host app
 
-Integrasi tetap mengikuti pola sebelumnya: pasang `.tanyaAIHost(host)` pada root
-host yang sudah terlihat, lalu panggil `host.present()` dari tombol, coordinator,
-atau entry point existing. Feature tampil fullscreen dengan animasi dari samping;
-navigation stack host tetap dimiliki host.
+Tanya AI adalah halaman biasa yang di-push ke **jalur navigasi bersih milik host**
+(`RevampNavigationController`). Package tidak membuat modal, animasi, atau navigation
+stack sendiri: push, pop, animasi dan swipe-back semuanya bawaan UIKit.
+
+```
+Window (SceneDelegate)
+└── RevampNavigationController      ← jalur bersih milik host, nav bar disembunyikan
+    ├── Main legacy                 ← NavigationView/tab lama tetap di dalam sini
+    ├── Tanya AI                    ← tanyaAI.makeViewController()
+    └── halaman revamp berikutnya   ← (nanti) halaman lanjutan Tanya AI, dsb.
+```
 
 ## Package dan font
 
-Tambahkan product `TanyaAI` ke target host. Jika host memanggil API font secara
-langsung, tambahkan juga product `DesignKit` dari package DesignKit yang sama
-dengan dependency TanyaAI, agar tidak mempunyai dua salinan package/token/font.
+Tambahkan product `TanyaAI` ke target host. Jika host memanggil API font atau token
+secara langsung, tambahkan juga product `DesignKit` dari package yang sama dengan
+dependency TanyaAI, agar tidak ada dua salinan package/token/font.
 
-Daftarkan font sekali pada bootstrap host, sebelum menampilkan screen:
+Daftarkan font sekali di `application(_:didFinishLaunchingWithOptions:)`:
 
 ```swift
 import DesignKit
 
-try FontFace.registerFonts()
+do { try FontFace.registerFonts() } catch { /* log milik host */ }
 ```
 
-Panggil dari konteks bootstrap yang menangani `throws` atau `do/catch` milik host.
-Contoh lengkap ada pada [StartingPointApp.swift](../TanyaAISandboxApp/StartingPointApp.swift).
-Font dibaca dari `Bundle.module` DesignKit; host tidak perlu menyalin file font
-atau menambahkan font package ke `UIAppFonts`.
-
-Registrasi ini memuat tujuh face Fira Sans/Open Sans. Untuk memilih font pada
-komponen, gunakan nama family/weight seperti `.firaSansRegular`,
-`.firaSansSemiBold`, atau `.openSansMedium`; lihat
+Font dibaca dari `Bundle.module` DesignKit; host tidak perlu menyalin file font atau
+menambahkannya ke `UIAppFonts`. Daftar face ada di
 [katalog font](../Packages/DesignKit/Sources/DesignKit/Resources/Fonts/SOURCES.md).
 
-## Root SwiftUI dengan NavigationView existing
+## 1. Jalur navigasi revamp di host
+
+Satu class kecil di host. Nav bar disembunyikan karena setiap halaman revamp
+menggambar header 1:1 Figma sendiri; delegate gesture mengaktifkan lagi swipe-back
+bawaan yang ikut mati saat nav bar disembunyikan.
 
 ```swift
-import SwiftUI
-import TanyaAI
+import UIKit
 
-@MainActor
-struct HostRootView: View {
-    @StateObject private var tanyaAI = TanyaAIHost { _ in true }
-    let openTitle: String
+final class RevampNavigationController: UINavigationController, UIGestureRecognizerDelegate {
+    override func viewDidLoad() {
+        super.viewDidLoad()
+        setNavigationBarHidden(true, animated: false)
+        interactivePopGestureRecognizer?.delegate = self
+    }
 
-    var body: some View {
-        NavigationView {
-            Button(action: tanyaAI.present) {
-                Text(openTitle)
-            }
-        }
-        .navigationViewStyle(.stack)
-        .tanyaAIHost(tanyaAI)
+    /// Swipe-back hanya saat ada halaman untuk kembali dan tidak sedang transisi.
+    func gestureRecognizerShouldBegin(_ gestureRecognizer: UIGestureRecognizer) -> Bool {
+        topViewController !== viewControllers.first && transitionCoordinator == nil
     }
 }
 ```
 
-`openTitle` berasal dari localization host. Di aplikasi Anda, pertahankan isi
-`NavigationView` existing, pasang modifier sekali pada root tersebut, dan panggil
-`present()` dari action existing. Tidak perlu memasang NavigationLink, binding
-sheet, atau destination ke stack host.
-
-`@StateObject` menjaga instance host tetap sama saat SwiftUI merender ulang.
-Jika AppState/session owner sudah memiliki `TanyaAIHost`, gunakan instance itu;
-jangan membuat instance baru di `body`. Modifier juga menerima `TanyaAIHost?`
-untuk host yang baru tersedia setelah login. Mengganti nil/host tidak mengganti
-identity konten utama.
-
-Sandbox mendemonstrasikan pola yang sama pada
-[SandboxHostView.swift](../TanyaAISandboxApp/SandboxHostView.swift). Jalankan
-`Scripts/run_sandbox.sh --language id` lalu tekan “Buka Tanya AI”. Tombol kembali
-milik feature menutup presentasinya sendiri.
-
-## Callback kirim dan penutupan
-
-`TanyaAIHost(isEnabled:onNewConversation:onSend:)` menerima closure `(String) -> Bool` pada main
-actor. Contoh `{ _ in true }` hanya menerima draft dan membersihkan input untuk
-mencoba UI. `false` mempertahankan draft. Ganti closure dengan handler host saat
-migrasi pengiriman dimulai; host boleh menerima draft ke antrean untuk proses
-async. Nilai true bukan konfirmasi request network berhasil.
-
-Host dapat menutup feature dan melanjutkan routing setelah animasinya selesai:
+Pasang sebagai root window saat masuk main (setelah login):
 
 ```swift
-tanyaAI.dismiss {
-    // Lanjutkan routing host dari sini setelah feature tertutup.
-}
+// SceneDelegate / router login milik host
+let main = MainTabBarController()                     // main legacy, tidak diubah
+let revampNavigation = RevampNavigationController(rootViewController: main)
+window.rootViewController = revampNavigation
 ```
 
-Jika host memanggil `dismiss` lagi saat feature sedang menutup (misalnya user
-menekan back lalu deeplink masuk), completion itu menunggu dismissal yang sedang
-berjalan, tidak dibuang. Hal yang sama berlaku saat swipe-back dibatalkan: feature
-ditutup ulang lalu semua completion dijalankan berurutan.
+Saat logout atau session timeout, host mengganti root window ke prelogin seperti
+biasa. Seluruh jalur, termasuk Tanya AI yang sedang terbuka, ikut dilepas.
 
-`present()` mengembalikan `true` bila feature dibuka. Hasilnya `false` saat feature
-sudah terbuka, root belum terpasang/tidak terlihat, atau host sedang menampilkan
-modal lain; panggil dari entry point saat root sudah terlihat. Hasil ini boleh
-diabaikan bila host tidak memerlukannya.
-
-## Root dengan prelogin dan main
-
-Pasang `.tanyaAIHost(host)` pada root **main**, bukan root aplikasi. Saat main
-diganti prelogin (logout, session timeout), anchor ikut hilang dan feature ditutup
-tanpa animasi, sehingga prelogin tidak tertutup Tanya AI:
-
-```swift
-struct AppRoot: View {
-    @ObservedObject var session: AppSession
-
-    var body: some View {
-        if session.isLoggedIn {
-            MainRoot()
-                .tanyaAIHost(session.tanyaAI)   // milik session main
-        } else {
-            PreloginRoot()
-        }
-    }
-}
-```
-
-Ini bekerja walaupun perubahan terjadi saat feature sedang terbuka: presentasi
-memakai `.overFullScreen`, view host tetap di window (disembunyikan, tidak
-di-render dan tidak terbaca VoiceOver), sehingga SwiftUI tetap memproses
-perubahan root. Host UIKit yang mengganti `window.rootViewController` juga
-otomatis melepas feature. Karena host tidak lagi menerima
-`viewWillDisappear`/`viewDidAppear` saat feature menutupinya, analytics layar host
-sebaiknya tidak bergantung pada callback tersebut.
-Menutup lalu membuka kembali membuat draft lokal baru. Starter belum mempunyai
-session/backend atau penyimpanan history; constructor SDK lama belum diperlukan.
-
-## Bahasa dan appearance
-
-Bahasa dan theme diisi host langsung pada `TanyaAIHost` (lihat bagian berikut).
-Copy tersedia untuk `en`, `id`, dan `zh-Hans`, termasuk label kembali. Perubahan
-langsung diterapkan, juga ketika feature sedang terbuka; draft di composer tidak
-hilang. Daftarkan bahasa host pada konfigurasi localization target.
-Jika host belum mendeklarasikan semua bahasa package,
-`CFBundleAllowMixedLocalizations = YES` memungkinkan resource dependency ikut
-dipilih ([dokumentasi Apple](https://developer.apple.com/documentation/bundleresources/information-property-list/cfbundleallowmixedlocalizations)).
-Contoh konfigurasi ada pada [Info.plist](../TanyaAISandboxApp/Info.plist).
-
-Feature starter memakai light palette Figma dan menghormati safe area keyboard.
-Header SwiftUI memakai `ScreenHeader` dari DesignKit: judul di tengah, kembali,
-menu titik tiga, separator dan material saat scroll. Welcome mengikuti tahap
-terpisah. Motion tetap memakai animasi fullscreen lama, menghormati Reduce Motion
-dan arah layout. Swipe dari tepi kiri (kanan untuk RTL) menutup feature secara
-interaktif dan bisa dibatalkan; dengan Reduce Motion, swipe langsung menutup tanpa
-animasi geser.
-
-## Bahasa dari Localize_Swift dan theme dari inquiry proposition
-
-Host mengisi dua property pada `TanyaAIHost` setiap kali nilainya berubah. Tidak
-perlu modifier environment atau parameter tambahan di setiap entry point; semua
-pemanggilan `present()` otomatis memakai nilai terbaru.
+## 2. Session main dan cara membuka
 
 ```swift
 import Combine
 import DesignKit
 import Localize_Swift
 import TanyaAI
+import UIKit
 
 /// Hidup selama user berada di main; dibuat saat login, dilepas saat kembali ke prelogin.
 @MainActor
-final class MainSession: ObservableObject {
+final class MainSession {
     let tanyaAI: TanyaAIHost
+    weak var revampNavigation: UINavigationController?
+    private weak var tanyaAIPage: UIViewController?
     private var cancellables = Set<AnyCancellable>()
 
     init() {
@@ -170,6 +90,14 @@ final class MainSession: ObservableObject {
             .receive(on: DispatchQueue.main)
             .sink { [weak self] _ in self?.applyCurrentLanguage() }
             .store(in: &cancellables)
+    }
+
+    /// Entry point mana pun di main: tombol, tab, notifikasi, deeplink.
+    func openTanyaAI() {
+        guard tanyaAIPage == nil, let revampNavigation else { return }
+        let page = tanyaAI.makeViewController()
+        tanyaAIPage = page
+        revampNavigation.pushViewController(page, animated: true)
     }
 
     /// Panggil dari tempat inquiry proposition berhasil.
@@ -187,92 +115,60 @@ final class MainSession: ObservableObject {
 }
 ```
 
-Pemakaian pada root host:
+| Kebutuhan | Kode |
+| --- | --- |
+| Buka Tanya AI | `session.openTanyaAI()`; pengecekan `tanyaAIPage` mencegah push ganda |
+| Kembali | Tombol back header melakukan pop; swipe dari tepi kiri juga pop (bawaan UIKit) |
+| Back dengan aturan host | `tanyaAI.makeViewController(onBack: { ... })`; tanpa `onBack`, halaman pop sendiri |
+| Deeplink dari dalam Tanya AI | `revampNavigation.popViewController(animated:)` lalu push/route tujuan, atau langsung `setViewControllers` |
+| Ganti bahasa | Otomatis lewat notifikasi Localize_Swift; halaman yang terbuka langsung ikut |
+| Inquiry proposition selesai | `session.didLoadProposition(result)`; halaman yang terbuka langsung ikut |
+| Logout / session timeout | Ganti root window ke prelogin; Tanya AI ikut dilepas |
 
-```swift
-struct AppRoot: View {
-    @ObservedObject var appState: AppState
+`onSend` mengembalikan `true` bila host menerima draft (composer dikosongkan) dan
+`false` untuk mempertahankannya. Nilai ini bukan konfirmasi request network berhasil.
+`onNewConversation` opsional; tanpa handler, item menu "Percakapan baru" disabled.
 
-    var body: some View {
-        if appState.isLoggedIn {
-            MainRoot()
-        } else {
-            PreloginRoot()
-        }
-    }
-}
+## Blocker host: no internet, session expired, dan sejenisnya
 
-struct MainRoot: View {
-    @StateObject private var session = MainSession()
+Karena Tanya AI hanya halaman di stack, blocker host tetap muncul di atasnya tanpa
+perubahan apa pun di Tanya AI:
 
-    var body: some View {
-        MainTabView()                      // konten main existing
-            .tanyaAIHost(session.tanyaAI)
-            .environmentObject(session)
-    }
-}
+- **UIKit** (`present` dari `revampNavigation`, dari top view controller, atau window
+  overlay): tampil di atas Tanya AI.
+- **Sheet SwiftUI yang ditempel pada view main** (mis. bottom sheet session expired):
+  tetap tampil walaupun main sedang tertutup Tanya AI.
 
-// Entry point mana pun di dalam main
-struct HomeView: View {
-    @EnvironmentObject private var session: MainSession
+Keduanya dibuktikan di `RevampNavigationTests`. Setelah session expired, host
+melanjutkan alurnya (mis. ganti root ke prelogin) seperti biasa.
 
-    var body: some View {
-        Button(openTitle) { session.tanyaAI.present() }
-    }
-}
-```
+## Bahasa dan appearance
 
-- `MainSession` dibuat oleh `@StateObject` di `MainRoot`, jadi satu instance per sesi main.
-  Saat logout, `MainRoot` hilang: Tanya AI tertutup, lalu session dan subscription
-  bahasa ikut dilepas tanpa `deinit` manual.
-- Kode bahasa Localize_Swift (`"id"`, `"en"`, `"zh-Hans"`) langsung dipakai sebagai
-  `Locale`. Bahasa lain jatuh ke English.
-- `CustomerProposition` adalah tipe milik host; pemetaannya ke palette tetap di host
-  karena aturan bisnis tidak masuk DesignKit. Sebelum inquiry selesai, feature
-  memakai palette default.
-- Saat nilai berubah dan Tanya AI sedang terbuka, header, composer, dan konten
-  langsung mengikuti tanpa membuka ulang feature.
-- Contoh ini lulus compile untuk iOS 15, termasuk dengan `SWIFT_STRICT_CONCURRENCY=complete`
-  (stub `Localize` menggantikan library aslinya).
+Copy tersedia untuk `en`, `id`, dan `zh-Hans`, termasuk label kembali. Kode bahasa
+Localize_Swift dipakai langsung sebagai `Locale`; bahasa lain jatuh ke English.
+Daftarkan bahasa host pada konfigurasi localization target. Jika host belum
+mendeklarasikan semua bahasa package, `CFBundleAllowMixedLocalizations = YES`
+memungkinkan resource dependency ikut dipilih
+([dokumentasi Apple](https://developer.apple.com/documentation/bundleresources/information-property-list/cfbundleallowmixedlocalizations)).
 
-## Tahap header
+Palette mengikuti `tanyaAI.colors`; sebelum inquiry selesai memakai palette default.
+Halaman Tanya AI memakai light appearance Figma (`overrideUserInterfaceStyle` hanya
+pada halaman itu, tidak mengubah host). Pemetaan proposition ke palette tetap di host
+karena aturan bisnis tidak masuk DesignKit.
 
-Pemanggilan existing `TanyaAIHost { _ in true }`, `.tanyaAIHost(host)`, dan
-`host.present()` tetap berlaku. Feature sekarang memakai header SwiftUI sendiri;
-tidak perlu mengatur global `UINavigationBar.appearance()` pada host.
+## Isi folder `Host`
 
-`HostedChatScreen` lama sudah dihapus. Alur presentasi sekarang langsung:
-`.tanyaAIHost(host)` → `TanyaAIHost.present()` → `UIHostingController(ChatScreen)`.
-Package tidak membuat `NavigationView`, `NavigationStack`, navigation title atau
-toolbar native sendiri. `NavigationView` pada contoh di atas hanya milik host
-existing. Header fitur adalah `ScreenHeader` SwiftUI di dalam `ChatScreen`.
-`ChatScreen` memakai `ScreenContainer` DesignKit untuk memasang header, scroll,
-inset dan footer secara konsisten. Halaman lain bisa memakai container yang sama
-tanpa mengulang setup header; lihat [contoh pemakaian](SHARED_HEADER.md).
-UIKit pada bridge dipakai untuk present/dismiss fullscreen dan animasi samping;
-tidak ada navigation stack fitur tambahan.
+- `TanyaAIHost.swift`: konfigurasi (`locale`, `colors`, `onSend`) dan
+  `makeViewController()` untuk di-push host.
+- `TanyaAIHostEnvironment.swift`: meneruskan `locale`/`colors` ke halaman yang terbuka.
 
-Folder `Host` berisi empat file:
+Overload `makeViewController { ContentView() }` menerima konten SwiftUI untuk area
+scroll; sandbox memakainya pada mode `--header-demo`. Konten tidak perlu mempunyai
+ScrollView, header, atau composer sendiri, dan dilepas setelah halaman di-pop.
 
-- `ChatHostAnchor.swift`: menghubungkan `.tanyaAIHost(host)` ke controller host yang terlihat.
-- `TanyaAIHost.swift`: membuat `ChatScreen` langsung dan menangani present/dismiss.
-- `TanyaAIHostEnvironment.swift`: meneruskan `locale`/`colors` milik host ke feature yang terbuka.
-- `TanyaAIPushTransition.swift`: animasi geser dari samping dan swipe-back. Diperlukan
-  karena feature dipresentasikan (terpisah dari navigation stack host), sedangkan modal
-  bawaan UIKit hanya bisa naik dari bawah.
-
-Bridge ini tetap diperlukan untuk pola presentasi existing. UI halaman dan
-header tetap SwiftUI; editor multiline terukur memakai bridge UITextView di DesignKit.
-
-Jika host sudah memiliki handler sesi baru, berikan `onNewConversation` saat
-membuat `TanyaAIHost`. Item “Percakapan baru” memanggil handler itu saja; package
-belum membuat sesi, membersihkan draft, atau menampilkan welcome. Closure ini
-dimiliki host selama host hidup; gunakan capture lemah untuk owner/coordinator
-yang juga memiliki host. Tanpa handler, item menu disabled.
-
-Overload `host.present { ContentView() }` menerima konten SwiftUI untuk area
-scroll. Konten tidak perlu mempunyai ScrollView, header, atau composer sendiri.
-Closure builder dievaluasi saat presentasi dan tidak disimpan oleh host; konten
-dilepas setelah dismiss. Untuk migrasi UI sekarang, sandbox memakai overload ini
-hanya pada mode `--header-demo`. Mode default tetap kosong. Lihat
-[panduan header](SHARED_HEADER.md).
+Contoh lengkap host ada di sandbox: [AppDelegate](../TanyaAISandboxApp/AppDelegate.swift),
+[SceneDelegate](../TanyaAISandboxApp/SceneDelegate.swift),
+[RevampNavigationController](../TanyaAISandboxApp/RevampNavigationController.swift), dan
+[SandboxRouter](../TanyaAISandboxApp/SandboxRouter.swift). Jalankan
+`Scripts/run_sandbox.sh --language id`, tekan "Buka Tanya AI", lalu kembali dengan
+tombol back atau swipe dari tepi kiri.
