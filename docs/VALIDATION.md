@@ -1,5 +1,12 @@
 # Validasi starter
 
+## Tanpa literal di kode package — 18 Oktober 2026
+
+`forwardDirection = 1` dan batas `1` pada swipe-back dihapus; arah dihitung dari lebar
+layar dan arah layout. Transisi menjadi satu file tanpa pengecualian script, jadi
+literal baru di sana akan ditolak. Parser hex memakai `HexFormat` dengan konstanta
+format bernama dan urutan kanal `Channel`, tanpa mask/shift manual.
+
 ## Tanpa forcing — 18 Oktober 2026
 
 `BoundedTextView` tidak lagi meng-override `text: String!`; `GrowingTextInput`
@@ -10,8 +17,8 @@ mengaktifkan `force_unwrapping` dan `implicitly_unwrapped_optional` (ditambah
 
 ## Struktur untuk skala — 18 Oktober 2026
 
-Identifier UI test dikelompokkan per komponen; transisi dipindah ke `TanyaAI/Transition` dengan
-animator di file sendiri; fixture window test Sandbox di file sendiri; alias
+Identifier UI test dikelompokkan per komponen; transisi akhirnya disatukan dalam satu file
+`Host/TanyaAIPushTransition.swift` (164 baris, sebelumnya 271 baris di 3 file); fixture window test Sandbox di file sendiri; alias
 `CustomColors.transparent` dihapus. Tipografi tetap memakai token `FigmaSize`
 per role secara langsung.
 

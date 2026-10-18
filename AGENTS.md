@@ -104,7 +104,7 @@ tersedia pada history/main.
   `ComponentIdentifier.Composer.send`). String identifier adalah kontrak UI test.
 - Tidak ada alias untuk nilai sistem: `.clear`, bukan `CustomColors.transparent`.
 - TanyaAI dipisah per tanggung jawab: `Chat/` (screen dan section), `Host/` (API
-  untuk host), `Transition/` (gerak halaman). Folder baru seperti `Messages/` atau
+  untuk host dan presentasinya, termasuk satu file transisi). Folder baru seperti `Messages/` atau
   `Service/` dibuat saat file pertamanya ada, bukan lebih awal.
 - Screen standar memakai composition `ScreenContainer` dari DesignKit: header,
   area scroll, trailing action dan footer. Container memiliki satu `isScrolled`
@@ -165,6 +165,10 @@ tersedia pada history/main.
   saat dismiss sedang berjalan. Host dimiliki AppState/session owner atau
   `@StateObject`, tidak dibuat di body.
 - UI owners `@MainActor`; putus delegate pada dismantle dan hindari retain cycle.
+- Tidak ada angka/string literal di kode package selain file definisi: token
+  (`Tokens/`), metadata font (`FontFace`), identifier UI test, dan spesifikasi format
+  hex (`HexFormat` private di `Color+Hex`). Arah dan rentang dihitung dari nilai yang
+  ada (lebar layar, arah layout, `.zero`), bukan konstanta `1`/`-1`.
 - Tanpa forcing di source maupun test: tidak ada `!` unwrap, `as!`, `try!`, atau
   tipe `Type!`. SwiftLint (`force_unwrapping`, `implicitly_unwrapped_optional`,
   `force_cast`, `force_try`) menolaknya. Property UIKit bertipe IUO seperti

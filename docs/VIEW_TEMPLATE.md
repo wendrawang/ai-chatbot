@@ -112,7 +112,7 @@ Tidak perlu menambahkan weak capture pada setiap closure SwiftUI secara otomatis
 | Identifier UI test komponen | `DesignKit/Foundations/Accessibility` |
 | Draft, menu sesi, aturan menerima submission | Screen/fitur pemilik (`TanyaAI/Chat`) |
 | API host: present/dismiss, locale/theme | `TanyaAI/Host` |
-| Animasi dan swipe-back halaman | `TanyaAI/Transition` |
+| Animasi dan swipe-back halaman | `TanyaAI/Host/TanyaAIPushTransition.swift` |
 
 Komponen umum yang sudah dibutuhkan beberapa caller dibuat reusable. Potongan
 yang baru *mungkin* dipakai ulang boleh tetap private sampai tanggung jawabnya

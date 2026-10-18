@@ -37,8 +37,7 @@ Packages/
 └── TanyaAI/
     └── Sources/TanyaAI/
         ├── Chat/ChatScreen.swift + ChatElementIdentifier.swift
-        ├── Host/                        # API host: tanyaAIHost, present/dismiss, locale/theme
-        ├── Transition/                  # push animator + swipe-back (internal)
+        ├── Host/                        # API host, present/dismiss, locale/theme, transisi
         └── Resources/en.lproj + id.lproj + zh-Hans.lproj/
 ```
 

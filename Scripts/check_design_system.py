@@ -17,7 +17,6 @@ errors = []
 METADATA = {
     'Typography/FontFace.swift', 'Extensions/Color+Hex.swift',
     'Foundations/Accessibility/ComponentIdentifier.swift',
-    'Transition/TanyaAIPushAnimator.swift', 'Transition/TanyaAIPushInteraction.swift',
     'Chat/ChatElementIdentifier.swift',
     'TanyaAISandboxApp/SandboxOptions.swift'
 }
