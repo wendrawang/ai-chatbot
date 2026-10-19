@@ -5,6 +5,7 @@
 //  Created by Wendra on 15/10/26.
 //
 
+import SwiftUI
 import UIKit
 
 /// Resource filenames and PostScript names are separate font metadata.
@@ -33,6 +34,11 @@ public enum FontFace: String, CaseIterable {
 
     public func font(size: CGFloat) -> UIFont {
         UIFont(name: postScriptName, size: size) ?? UIFont.systemFont(ofSize: size)
+    }
+
+    /// Font SwiftUI dari ukuran artwork (token `FigmaSize`), sudah di-scale.
+    public func scaledFont(size: CGFloat) -> Font {
+        Font(font(size: size.scaledToArtwork))
     }
 
     /// Call during bootstrap before presenting components; registration is process-scoped and idempotent.

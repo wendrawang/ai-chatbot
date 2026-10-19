@@ -19,5 +19,37 @@ enum ComponentIdentifier {
         static let root = "composer"
         static let input = "composer.input"
         static let send = "composer.send"
+        static let stop = "composer.stop"
+    }
+
+    enum Bubble {
+        static let user = "bubble.user"
+    }
+
+    enum QuickAction {
+        static let row = "quickAction.row"
+    }
+
+    enum Table {
+        static let root = "table"
+    }
+
+    enum Option {
+        static let list = "option.list"
+    }
+
+    enum Media {
+        static let card = "media.card"
+    }
+
+    enum Action {
+        static let button = "action.button"
+        static let suggestions = "action.suggestions"
+    }
+
+    enum Status {
+        static let indicator = "status.indicator"
+        static let date = "status.date"
+        static let scrollToLatest = "status.scrollToLatest"
     }
 }

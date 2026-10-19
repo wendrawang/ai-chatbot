@@ -75,10 +75,11 @@ public struct ScreenHeader<Trailing: View>: View {
 
     @ViewBuilder
     private var surface: some View {
-        if isScrolled && !isTransparencyReduced {
-            Rectangle().fill(.ultraThinMaterial)
+        if isScrolled {
+            if isTransparencyReduced { colors.colorsSurfacePrimary } else { Rectangle().fill(.ultraThinMaterial) }
         } else {
-            colors.colorsSurfacePrimary
+            // Di posisi atas header transparan agar latar halaman (mis. gelombang Figma) terlihat.
+            Color.clear
         }
     }
 }

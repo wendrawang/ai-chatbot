@@ -11,4 +11,6 @@ public enum CustomTextLines {
     /// Editor composer tumbuh dari satu sampai empat baris, lalu scroll di dalam field.
     public static let composerInput = 1...4
     public static let headerTitle = 1
+    /// Label tombol action dan suggestion tidak membungkus.
+    public static let actionTitle = 1
 }

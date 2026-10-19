@@ -8,6 +8,7 @@
 import SwiftUI
 
 /// Inner spacing and appearance belong here; the screen owns outer margins.
+/// Saat jawaban sedang mengalir (`isResponding`), tombol kirim berganti menjadi stop.
 @MainActor
 public struct MessageComposer: View {
     @Environment(\.designColors)
@@ -18,20 +19,25 @@ public struct MessageComposer: View {
     private let fontSize = FigmaSize.typographySizeDisplaySmall14.scaledToArtwork
     private let placeholder: String
     private let sendLabel: String
-    private let isEnabled: Bool
+    private let stopLabel: String
+    private let isResponding: Bool
     private let fontFace: FontFace
     private let onSend: () -> Void
+    private let onStop: () -> Void
 
     public init(
-        text: Binding<String>, placeholder: String, sendLabel: String,
-        isEnabled: Bool = true, fontFace: FontFace = .openSansRegular, onSend: @escaping () -> Void
+        text: Binding<String>, placeholder: String, sendLabel: String, stopLabel: String,
+        isResponding: Bool = false, fontFace: FontFace = .firaSansRegular,
+        onSend: @escaping () -> Void, onStop: @escaping () -> Void = {}
     ) {
         self._text = text
         self.placeholder = placeholder
         self.sendLabel = sendLabel
-        self.isEnabled = isEnabled
+        self.stopLabel = stopLabel
+        self.isResponding = isResponding
         self.fontFace = fontFace
         self.onSend = onSend
+        self.onStop = onStop
     }
 
     public var body: some View {
@@ -67,7 +73,12 @@ public struct MessageComposer: View {
         }
     }
 
+    @ViewBuilder
     private var actionButton: some View {
+        if isResponding { stopButton } else { sendButton }
+    }
+
+    private var sendButton: some View {
         Button(action: onSend) {
             Image(R.image.sendArrow).resizable().scaledToFit()
                 .padding(CustomSizes.Composer.sendIconInset.scaledToArtwork)
@@ -83,6 +94,26 @@ public struct MessageComposer: View {
         .disabled(!isSendEnabled)
         .accessibilityLabel(sendLabel)
         .accessibilityIdentifier(ComponentIdentifier.Composer.send)
+    }
+
+    private var stopButton: some View {
+        Button(action: onStop) {
+            RoundedRectangle(cornerRadius: CustomSizes.Composer.stopMarkRadius.scaledToArtwork)
+                .fill(colors.colorsIconLight)
+                .frame(
+                    width: CustomSizes.Composer.stopMark.scaledToArtwork,
+                    height: CustomSizes.Composer.stopMark.scaledToArtwork
+                )
+                .frame(
+                    width: CustomSizes.Composer.sendButton.scaledToArtwork,
+                    height: CustomSizes.Composer.sendButton.scaledToArtwork
+                )
+                .background(Circle().fill(colors.colorsButtonActive))
+                .contentShape(Rectangle())
+        }
+        .buttonStyle(.plain)
+        .accessibilityLabel(stopLabel)
+        .accessibilityIdentifier(ComponentIdentifier.Composer.stop)
     }
 
     private var surface: some View {
@@ -115,6 +146,6 @@ private extension MessageComposer {
     }
 
     var isSendEnabled: Bool {
-        isEnabled && !text.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
+        !text.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
     }
 }
