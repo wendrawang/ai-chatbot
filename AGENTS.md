@@ -1,10 +1,10 @@
-# Starting point — aturan implementasi
+# Tanya AI — aturan implementasi
 
-Scope branch ini adalah migrasi bertahap: fondasi DesignKit, font package,
-screen kosong dengan composer, dan shared header dengan boundary/blur scroll.
-Konten dummy untuk mengecek scroll hanya berada pada sandbox. iOS 15. Gunakan SwiftUI; UIKit hanya untuk editor
-multiline terukur dan bridge presentasi terisolasi. Flow chat lengkap tetap
-tersedia pada history/main.
+Chat lengkap dibangun ulang dari alur `main` dengan aturan migrasi ini: welcome,
+daftar pesan, jawaban berblok, markup, dan alur SSE + inquiry per intent. iOS 15.
+SwiftUI untuk layout; UIKit hanya untuk editor multiline terukur dan daftar pesan
+(`UITableView`, ratusan pesan). Data dummy hanya di Sandbox (fixture JSON).
+Kontrak: [docs/CHAT_CONTRACT.md](docs/CHAT_CONTRACT.md); ukuran: [docs/FIGMA_SIZES.md](docs/FIGMA_SIZES.md).
 
 ## Header file
 
@@ -31,13 +31,12 @@ tersedia pada history/main.
   | --- | --- | --- |
   | `Generated/FigmaSize` | Spacing, ukuran icon, tipografi dari Figma. **Cek di sini dulu.** | Ya |
   | `CustomSizes` | Dimensi point yang belum ada di Figma: `Header.height`, `Shadow`, `Composer.sendButton` | **Selalu** |
-  | `CustomTextLines` | Batas baris per peran: `composerInput = 1...4`, `headerTitle` | Tidak pernah |
+  | `CustomTextLines` | Batas baris per peran: `composerInput = 1...4`, `headerTitle`, `actionTitle` | Tidak pernah |
+  | `CustomMotion` | Durasi dan nilai animasi: `StatusPulse.duration`, `StatusPulse.dimmedOpacity` | Tidak pernah |
   | `CustomColors` / `CustomBasePaletteColor` | Warna semantik tambahan / hex dasarnya | — |
   | `ArtworkScale` | Referensi 375×812 dan rasio layar untuk `.scaledToArtwork` | Tidak pernah |
   | `LayoutTolerance` | Toleransi pembulatan layout (bukan token desain) | Tidak pernah |
 
-  Nilai waktu/animasi custom nanti masuk `CustomMotion` (tidak di-scale), dibuat saat
-  ada animasi pertama yang memakainya.
   Kelompok bersama dinamai per peran (`Header`, `Shadow`, `CustomTextLines.address`
   bila nanti dibutuhkan). Nilai yang hanya dipakai satu komponen memakai namespace
   nama komponen (`CustomSizes.Composer`) agar terhapus bersama komponennya. Tambah
@@ -125,9 +124,8 @@ tersedia pada history/main.
   State mempertahankan nilai ID selama view yang sama hidup. Jangan membuat ID
   baru di body atau memakai satu ID global untuk beberapa area scroll. Tambahkan
   konsep/property wrapper lain hanya ketika ada kebutuhan yang jelas.
-- Menu/sesi adalah tanggung jawab fitur/host. `onNewConversation` hanya callback;
-  tanpa handler, item menu disabled. Jangan menambah session, welcome, reset draft,
-  intent, bubble atau database pada tahap header.
+- "Percakapan baru" ditangani `ChatViewModel`: stream dihentikan, kembali ke welcome,
+  `conversationId` baru. Belum ada penyimpanan history; tambahkan saat kontraknya ada.
 - `let` untuk input, `@Binding` untuk state caller, `@State` untuk draft lokal.
   Screen memiliki margin luar; komponen memiliki padding dalam/surface/shadow.
 - Callback sederhana ditulis langsung (`() -> Void`, `(String) -> Bool`) dengan
@@ -150,12 +148,21 @@ tersedia pada history/main.
   berada di tengah field saat kosong. Pertahankan geometri caret native pada
   semua state: kosong, mengetik dan sesudah hapus. Jangan memusatkan caret kosong
   secara terpisah ke bounds, karena referensinya berbeda dari baseline saat mengetik.
-- `ChatScreen(onSend:)` mengosongkan draft hanya jika callback host mengembalikan
-  true. Draft dimiliki `ComposerSection` (`@State`), bukan `ChatScreen`, agar setiap
-  ketikan tidak me-render ulang header dan daftar pesan. Starter tidak mengirim
-  network, tidak menyimpan atau log isi pesan.
-- Integrasi host: `TanyaAIHost` hanya konfigurasi (`locale`, `colors`, `onSend`) dan
-  `makeViewController()`. Host mem-push halaman itu ke jalur navigasi bersih miliknya
+- Draft dimiliki `ComposerSection` (`@State`), bukan `ChatScreen`, agar setiap ketikan
+  tidak me-render ulang header dan daftar pesan. Draft dikosongkan bila pertanyaan
+  diterima (tidak kosong dan tidak sedang menjawab). Jangan log isi pesan.
+- Jaringan milik host lewat `TanyaAIService` (SSE + inquiry). TanyaAI hanya men-decode
+  event (`Service/ChatEvent`), memetakan hasil BE per intent (`Service/<Intent>Mapping`),
+  dan merender blok. Intent baru = satu file mapping + nama di `IntentName`.
+- `ChatViewModel` memiliki percakapan; pesan berupa value type (`ChatMessage`) agar daftar
+  hanya me-render ulang baris yang berubah (diffable + `reconfigureItems`). Hanya jawaban
+  terakhir yang action/opsinya aktif; link tetap aktif. Pertanyaan baru ditahan dekat
+  atas dengan preview 48 jawaban sebelumnya; panah kembali ke pesan terbaru.
+- Markup jawaban: `[bold]`, `[strike]`, `[color]teks|HEX[/color]`, `[link]label|target[/link]`
+  dirender `RichText` (native, tanpa HTML). Link diteruskan ke host sebagai web/deeplink/
+  telepon; target berbahaya tidak bisa diketuk.
+- Integrasi host: `TanyaAIHost` hanya konfigurasi (`customerName`, `service`, `locale`,
+  `colors`, `onOpenLink`) dan `makeViewController()`. Host mem-push halaman itu ke jalur navigasi bersih miliknya
   (`RevampNavigationController`, nav bar disembunyikan, swipe-back bawaan). Package
   tidak membuat modal, transisi custom, NavigationView/NavigationStack, atau toolbar
   native. Tombol back memanggil `onBack` atau pop pada navigation controller host.
@@ -193,5 +200,7 @@ tersedia pada history/main.
 - Format: `python3 Scripts/format_changed.py --base startingpoint`.
 - Style: `Scripts/check_style.sh`; semua checks: `Scripts/verify.sh`.
 - Regenerate project lewat `ruby Scripts/generate_project.rb`; jangan edit pbxproj.
-- PR untuk tahap ini menuju `startingpoint`, bukan `main`. Jangan memasukkan
-  session SDK, bubble, PreviewBook atau transaksi ke starter sebelum diminta.
+- PR menuju branch migrasi (bukan `main`). Jangan memasukkan session SDK vendor,
+  PreviewBook, transaksi/PIN, atau komponen tanpa pemakai (mis. CTA gradient) sebelum diminta.
+- Setelah aset R.swift baru ditambahkan, build bersih (Clean Build Folder / DerivedData
+  baru) bila accessor belum muncul.

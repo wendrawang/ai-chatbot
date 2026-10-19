@@ -1,4 +1,25 @@
-# Validasi starter
+# Validasi
+
+## Chat lengkap — 19 Oktober 2026
+
+Welcome, daftar pesan `UITableView`, jawaban berblok, markup, dan alur SSE + inquiry
+per intent (`review-porto`) dengan service dummy dari fixture JSON.
+`Scripts/verify.sh` (DerivedData bersih) lulus, lint 0 pelanggaran:
+
+| Suite | Isi | Hasil |
+| --- | --- | --- |
+| DesignKit | parser markup (contoh pengguna, streaming, link aman/berbahaya, tag tak dikenal, bersarang), komponen lama | 20 lulus |
+| TanyaAI | decode event dan blok, mapping `review-porto` + format angka per bahasa, view model (teks bebas, intent + `inquiryId`/parameter, stop lalu kirim lagi, error + coba lagi, opsi read-only, percakapan baru, klasifikasi link), host | 15 lulus |
+| Sandbox | navigasi revamp, blocker, logout, caret, container, scroll boundary | 8 lulus |
+| UI | composer, header + blur saat daftar digulir, welcome → intent → tabel, markup + link webview + opsi read-only, stop, percakapan baru, swipe-back | 14 lulus |
+
+Screenshot UI test diperiksa: welcome (header transparan di atas latar), tabel
+portofolio dengan footer total, dan jawaban bebas dengan bold/coret/warna/link merah
+bergaris bawah. Contoh kode di HOST_INTEGRATION ter-compile dengan
+`SWIFT_STRICT_CONCURRENCY=complete`. Belum ada pengukuran Instruments di device.
+
+R.swift: setelah aset baru, build incremental pada DerivedData lama bisa gagal
+menemukan accessor (`R.image.checkmark`); build bersih menyelesaikannya.
 
 ## Jalur navigasi host — 18 Oktober 2026
 

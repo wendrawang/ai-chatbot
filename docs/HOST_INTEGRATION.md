@@ -78,12 +78,21 @@ import UIKit
 @MainActor
 final class MainSession {
     let tanyaAI: TanyaAIHost
-    weak var revampNavigation: UINavigationController?
+    let links: HostLinkRouter
+    weak var revampNavigation: UINavigationController? {
+        didSet { links.navigation = revampNavigation }
+    }
     private weak var tanyaAIPage: UIViewController?
     private var cancellables = Set<AnyCancellable>()
 
-    init() {
-        tanyaAI = TanyaAIHost(locale: Locale(identifier: Localize.currentLanguage())) { _ in true }
+    init(customerName: String, service: TanyaAIService) {
+        let links = HostLinkRouter()
+        self.links = links
+        tanyaAI = TanyaAIHost(
+            customerName: customerName, service: service,
+            locale: Locale(identifier: Localize.currentLanguage()),
+            onOpenLink: { [weak links] link in links?.open(link) }
+        )
         // Localize.setCurrentLanguage(_:) dari Setting > Language mengirim notifikasi ini.
         NotificationCenter.default
             .publisher(for: Notification.Name(LCLLanguageChangeNotification))
@@ -113,6 +122,20 @@ final class MainSession {
         tanyaAI.locale = Locale(identifier: Localize.currentLanguage())
     }
 }
+
+/// Link dari jawaban: webview host, handler deeplink host, atau telepon. Tanpa Safari.
+@MainActor
+final class HostLinkRouter {
+    weak var navigation: UINavigationController?
+
+    func open(_ link: TanyaAILink) {
+        switch link {
+        case .web(let url): navigation?.pushViewController(HostWebViewController(url: url), animated: true)
+        case .deeplink(let url): HostDeeplinkHandler.handle(url)
+        case .phone(let url): UIApplication.shared.open(url)
+        }
+    }
+}
 ```
 
 | Kebutuhan | Kode |
@@ -125,9 +148,77 @@ final class MainSession {
 | Inquiry proposition selesai | `session.didLoadProposition(result)`; halaman yang terbuka langsung ikut |
 | Logout / session timeout | Ganti root window ke prelogin; Tanya AI ikut dilepas |
 
-`onSend` mengembalikan `true` bila host menerima draft (composer dikosongkan) dan
-`false` untuk mempertahankannya. Nilai ini bukan konfirmasi request network berhasil.
-`onNewConversation` opsional; tanpa handler, item menu "Percakapan baru" disabled.
+Menu titik tiga "Percakapan baru" ditangani Tanya AI sendiri: stream berjalan dihentikan,
+layar kembali ke welcome, dan `conversationId` baru dipakai untuk pertanyaan berikutnya.
+
+## 3. Service: SSE chat dan inquiry BE
+
+Host mengimplementasikan `TanyaAIService`; TanyaAI tidak membuka jaringan sendiri.
+Kontrak event, blok, markup dan link ada di [CHAT_CONTRACT.md](CHAT_CONTRACT.md).
+Contoh dengan `URLSession.bytes` bawaan iOS 15 (token/header mengikuti standar host):
+
+```swift
+import Foundation
+import TanyaAI
+
+final class HostChatService: TanyaAIService {
+    private let session = URLSession.shared
+    private let chatURL: URL
+    private let inquiryURL: URL
+
+    init(chatURL: URL, inquiryURL: URL) {
+        self.chatURL = chatURL
+        self.inquiryURL = inquiryURL
+    }
+
+    func streamChat(_ request: TanyaAIChatRequest) -> AsyncThrowingStream<TanyaAIServerEvent, Error> {
+        // Tangkap nilai, bukan self, agar Task aman untuk strict concurrency/Swift 6.
+        let session = session
+        let chatURL = chatURL
+        return AsyncThrowingStream { continuation in
+            let task = Task {
+                do {
+                    var urlRequest = URLRequest(url: chatURL)
+                    urlRequest.httpMethod = "POST"
+                    urlRequest.setValue("text/event-stream", forHTTPHeaderField: "Accept")
+                    urlRequest.httpBody = try JSONEncoder().encode(
+                        ["conversationId": request.conversationId, "text": request.text]
+                    )
+                    let (bytes, _) = try await session.bytes(for: urlRequest)
+                    var name = "message"
+                    // Kontrak: satu baris `data:` per event, didahului `event:`.
+                    for try await line in bytes.lines {
+                        if line.hasPrefix("event:") {
+                            name = line.dropFirst("event:".count).trimmingCharacters(in: .whitespaces)
+                        } else if line.hasPrefix("data:") {
+                            let data = line.dropFirst("data:".count).trimmingCharacters(in: .whitespaces)
+                            continuation.yield(TanyaAIServerEvent(name: name, data: Data(data.utf8)))
+                        }
+                    }
+                    continuation.finish()
+                } catch {
+                    continuation.finish(throwing: error)
+                }
+            }
+            // Stop atau tutup halaman: koneksi SSE ditutup.
+            continuation.onTermination = { _ in task.cancel() }
+        }
+    }
+
+    func inquire(_ intent: TanyaAIIntent) async throws -> Data {
+        var urlRequest = URLRequest(url: inquiryURL.appendingPathComponent(intent.name))
+        urlRequest.httpMethod = "POST"
+        urlRequest.setValue(intent.inquiryId, forHTTPHeaderField: "X-Inquiry-Id")
+        urlRequest.httpBody = try JSONEncoder().encode(intent.parameters)
+        let (data, _) = try await session.data(for: urlRequest)
+        return data
+    }
+}
+```
+
+Error jaringan dari stream menampilkan pesan gagal dengan chip "Coba lagi"; error
+inquiry menampilkan pesan gagal tanpa retry. Event `error` dari chat service memakai
+`isRetryable` untuk menentukan chip tersebut.
 
 ## Blocker host: no internet, session expired, dan sejenisnya
 
@@ -158,17 +249,18 @@ karena aturan bisnis tidak masuk DesignKit.
 
 ## Isi folder `Host`
 
-- `TanyaAIHost.swift`: konfigurasi (`locale`, `colors`, `onSend`) dan
-  `makeViewController()` untuk di-push host.
+- `TanyaAIHost.swift`: konfigurasi (`customerName`, `service`, `locale`, `colors`,
+  `onOpenLink`) dan `makeViewController()` untuk di-push host.
+- `TanyaAIService.swift`: protocol SSE + inquiry beserta model request, event, intent.
+- `TanyaAILink.swift`: link jawaban yang sudah dikelompokkan (web, deeplink, telepon).
 - `TanyaAIHostEnvironment.swift`: meneruskan `locale`/`colors` ke halaman yang terbuka.
-
-Overload `makeViewController { ContentView() }` menerima konten SwiftUI untuk area
-scroll; sandbox memakainya pada mode `--header-demo`. Konten tidak perlu mempunyai
-ScrollView, header, atau composer sendiri, dan dilepas setelah halaman di-pop.
 
 Contoh lengkap host ada di sandbox: [AppDelegate](../TanyaAISandboxApp/AppDelegate.swift),
 [SceneDelegate](../TanyaAISandboxApp/SceneDelegate.swift),
 [RevampNavigationController](../TanyaAISandboxApp/RevampNavigationController.swift), dan
-[SandboxRouter](../TanyaAISandboxApp/SandboxRouter.swift). Jalankan
-`Scripts/run_sandbox.sh --language id`, tekan "Buka Tanya AI", lalu kembali dengan
-tombol back atau swipe dari tepi kiri.
+[SandboxRouter](../TanyaAISandboxApp/SandboxRouter.swift), dengan service dummy
+[SandboxChatService](../TanyaAISandboxApp/SandboxChatService.swift) yang memutar fixture
+`Resources/Fixtures/ChatScripts.json` (SSE) dan `ReviewPortfolio.json` (inquiry BE).
+Jalankan `Scripts/run_sandbox.sh --language id`, tekan "Buka Tanya AI", lalu coba
+shortcut Cek Portofolio (intent → tabel) atau tulis pertanyaan bebas (markup, pilihan,
+media, action, suggestion).
