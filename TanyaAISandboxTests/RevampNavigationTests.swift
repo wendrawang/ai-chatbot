@@ -22,7 +22,9 @@ final class RevampNavigationTests: XCTestCase {
         XCTAssertTrue(navigation.isNavigationBarHidden)
         XCTAssertTrue(swipe.isEnabled)
         XCTAssertFalse(navigation.gestureRecognizerShouldBegin(swipe))
-        navigation.pushViewController(TanyaAIHost { _ in true }.makeViewController(), animated: false)
+        navigation.pushViewController(
+            TanyaAIHost(customerName: "Lara Croft", service: SandboxChatService()) { _ in }.makeViewController(),
+            animated: false)
         fixture.settle()
         XCTAssertTrue(navigation.gestureRecognizerShouldBegin(swipe))
     }
@@ -49,7 +51,9 @@ final class RevampNavigationTests: XCTestCase {
         let navigation = RevampNavigationController(rootViewController: UIHostingController(rootView: Text("Main")))
         let fixture = try HostWindowFixture(root: navigation)
         defer { fixture.close() }
-        navigation.pushViewController(TanyaAIHost { _ in true }.makeViewController(), animated: false)
+        navigation.pushViewController(
+            TanyaAIHost(customerName: "Lara Croft", service: SandboxChatService()) { _ in }.makeViewController(),
+            animated: false)
         fixture.settle()
         let blocker = UIViewController()
         blocker.modalPresentationStyle = .overFullScreen
@@ -65,7 +69,9 @@ final class RevampNavigationTests: XCTestCase {
         let navigation = RevampNavigationController(rootViewController: main)
         let fixture = try HostWindowFixture(root: navigation)
         defer { fixture.close() }
-        navigation.pushViewController(TanyaAIHost { _ in true }.makeViewController(), animated: false)
+        navigation.pushViewController(
+            TanyaAIHost(customerName: "Lara Croft", service: SandboxChatService()) { _ in }.makeViewController(),
+            animated: false)
         fixture.settle()
         session.isExpired = true
         let shown = XCTNSPredicateExpectation(
@@ -80,7 +86,8 @@ final class RevampNavigationTests: XCTestCase {
         defer { fixture.close() }
         weak var page: UIViewController?
         do {
-            let pushed = TanyaAIHost { _ in true }.makeViewController()
+            let pushed = TanyaAIHost(customerName: "Lara Croft", service: SandboxChatService()) { _ in }
+                .makeViewController()
             page = pushed
             navigation.pushViewController(pushed, animated: false)
             fixture.settle()

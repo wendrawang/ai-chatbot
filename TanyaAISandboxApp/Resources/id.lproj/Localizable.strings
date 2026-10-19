@@ -6,6 +6,4 @@
 //
 
 "sandbox.open" = "Buka Tanya AI";
-"sandbox.demo.title" = "Konten contoh";
-"sandbox.demo.body" = "Gulir contoh ini untuk melihat batas header dan blur latar. Judul dan tombol kembali tetap di tempat saat teks bergerak di belakangnya.";
-"sandbox.demo.end" = "Akhir contoh";
+"sandbox.customerName" = "Lara Croft";

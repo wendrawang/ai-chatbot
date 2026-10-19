@@ -1,0 +1,200 @@
+{
+  "routes": [
+    {
+      "keywords": [
+        "porto",
+        "portfolio",
+        "投资组合"
+      ],
+      "script": "portfolio"
+    }
+  ],
+  "fallback": "freeText",
+  "inquiryDelay": 0.6,
+  "scripts": {
+    "freeText": [
+      {
+        "delay": 0.2,
+        "event": "start",
+        "data": {
+          "messageId": "m-free"
+        }
+      },
+      {
+        "delay": 0.4,
+        "event": "status",
+        "data": {
+          "text": "Processing the best answer for you..."
+        }
+      },
+      {
+        "delay": 0.25,
+        "event": "delta",
+        "data": {
+          "delta": "Saya [bold]wen"
+        }
+      },
+      {
+        "delay": 0.25,
+        "event": "delta",
+        "data": {
+          "delta": "dra[/bold], memiliki [strike]uang[/strike] maap maksud saya "
+        }
+      },
+      {
+        "delay": 0.25,
+        "event": "delta",
+        "data": {
+          "delta": "[link]BISA DIKLIK|https://google.com[/link] dengan warna [color]hijau|25C36B[/color]. "
+        }
+      },
+      {
+        "delay": 0.25,
+        "event": "delta",
+        "data": {
+          "delta": "Butuh bantuan? Hubungi [link]1500999|tel:1500999[/link] atau buka [link]menu investasi|ocbcid://investment[/link]."
+        }
+      },
+      {
+        "delay": 0.3,
+        "event": "blocks",
+        "data": {
+          "blocks": [
+            {
+              "type": "options",
+              "id": "product",
+              "items": [
+                {
+                  "id": "p1",
+                  "label": "#1 lorem ipsum options - here"
+                },
+                {
+                  "id": "p2",
+                  "label": "#2 lorem ipsum options - here"
+                },
+                {
+                  "id": "p3",
+                  "label": "#3 lorem ipsum options - here"
+                },
+                {
+                  "id": "p4",
+                  "label": "#4 lorem ipsum options - here"
+                }
+              ]
+            },
+            {
+              "type": "media",
+              "imageUrl": null,
+              "caption": "Jalani misinya, dapatkan Bonus Bunga Tabungan hingga 5,25% p.a.",
+              "action": {
+                "type": "link",
+                "value": "https://www.ocbc.id"
+              }
+            },
+            {
+              "type": "actions",
+              "items": [
+                {
+                  "label": "chips-actions-here",
+                  "style": "chip",
+                  "action": {
+                    "type": "prompt",
+                    "value": "Tolong cek portofolio saya"
+                  }
+                },
+                {
+                  "label": "action-here",
+                  "style": "link",
+                  "action": {
+                    "type": "link",
+                    "value": "https://www.ocbc.id"
+                  }
+                },
+                {
+                  "label": "action-here",
+                  "style": "filled",
+                  "action": {
+                    "type": "intent",
+                    "value": "review-porto",
+                    "parameters": {
+                      "productType": "investment"
+                    }
+                  }
+                }
+              ]
+            },
+            {
+              "type": "suggestions",
+              "items": [
+                {
+                  "label": "#1 suggested prompt",
+                  "action": {
+                    "type": "prompt",
+                    "value": "#1 suggested prompt"
+                  }
+                },
+                {
+                  "label": "#2 suggested prompt",
+                  "action": {
+                    "type": "prompt",
+                    "value": "#2 suggested prompt"
+                  }
+                },
+                {
+                  "label": "#3 suggested prompt",
+                  "action": {
+                    "type": "prompt",
+                    "value": "#3 suggested prompt"
+                  }
+                }
+              ]
+            }
+          ]
+        }
+      },
+      {
+        "delay": 0.1,
+        "event": "end",
+        "data": {
+          "messageId": "m-free"
+        }
+      }
+    ],
+    "portfolio": [
+      {
+        "delay": 0.2,
+        "event": "start",
+        "data": {
+          "messageId": "m-portfolio"
+        }
+      },
+      {
+        "delay": 0.5,
+        "event": "status",
+        "data": {
+          "text": "Checking your investment..."
+        }
+      },
+      {
+        "delay": 0.5,
+        "event": "intent",
+        "data": {
+          "intent": {
+            "name": "review-porto",
+            "inquiryId": "inq-portfolio-1",
+            "parameters": {
+              "productType": "investment"
+            }
+          }
+        }
+      },
+      {
+        "delay": 0.1,
+        "event": "end",
+        "data": {
+          "messageId": "m-portfolio"
+        }
+      }
+    ]
+  }
+}
