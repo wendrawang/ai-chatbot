@@ -15,19 +15,22 @@ struct ComposerSection: View {
     private var locale
     @State
     private var draft = String()
-    private let isEnabled: Bool
+    private let isResponding: Bool
     private let onSend: (String) -> Bool
+    private let onStop: () -> Void
 
-    init(isEnabled: Bool, onSend: @escaping (String) -> Bool) {
-        self.isEnabled = isEnabled
+    init(isResponding: Bool, onSend: @escaping (String) -> Bool, onStop: @escaping () -> Void) {
+        self.isResponding = isResponding
         self.onSend = onSend
+        self.onStop = onStop
     }
 
     var body: some View {
         MessageComposer(
             text: $draft, placeholder: String(resource: R.string.localizable.chatPlaceholder, locale: locale),
-            sendLabel: String(resource: R.string.localizable.chatSend, locale: locale), isEnabled: isEnabled,
-            onSend: submit
+            sendLabel: String(resource: R.string.localizable.chatSend, locale: locale),
+            stopLabel: String(resource: R.string.localizable.chatStop, locale: locale),
+            isResponding: isResponding, onSend: submit, onStop: onStop
         )
         .padding(.horizontal, FigmaSize.spacingLarge.scaledToArtwork)
         .padding(.vertical, FigmaSize.spacingMedium.scaledToArtwork)

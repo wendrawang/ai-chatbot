@@ -11,3 +11,27 @@
 "chat.newConversation" = "新对话";
 "chat.title" = "Tanya AI";
 "chat.back" = "返回";
+
+"chat.stop" = "停止回答";
+"chat.scrollToLatest" = "前往最新消息";
+"chat.thinking" = "正在为您准备最佳答案...";
+"chat.stopped" = "回答已停止。";
+"chat.error" = "抱歉，出现问题，请重试。";
+"chat.retry" = "重试";
+"chat.unsupported" = "抱歉，暂不支持此请求。";
+"welcome.greeting" = "你好，%@！";
+"welcome.description" = "发现财务洞察，帮助您今天迈出更明智的一步";
+"welcome.start" = "从这里开始：";
+"quick.portfolio.title" = "查看投资组合";
+"quick.portfolio.subtitle" = "跟踪您的资产和投资表现";
+"quick.portfolio.prompt" = "请帮我查看投资组合";
+"quick.currency.title" = "购买外币";
+"quick.currency.subtitle" = "查看汇率并购买外币";
+"quick.currency.prompt" = "我想购买外币";
+"quick.reference.title" = "申请银行证明信";
+"quick.reference.subtitle" = "准备签证所需的证明信";
+"quick.reference.prompt" = "我想申请银行证明信";
+"portfolio.product" = "产品";
+"portfolio.currentValue" = "当前价值 (IDR)";
+"portfolio.profit" = "收益 (IDR)";
+"portfolio.totalProfit" = "总收益 (IDR)";

@@ -14,9 +14,9 @@ import UIKit
 /// Navigasi, animasi dan swipe-back sepenuhnya bawaan UIKit milik host.
 @MainActor
 public final class TanyaAIHost {
-    private let isEnabled: Bool
-    private let onNewConversation: (() -> Void)?
-    private let onSend: (String) -> Bool
+    private let customerName: String
+    private let service: TanyaAIService
+    private let onOpenLink: (TanyaAILink) -> Void
     private let hostEnvironment: TanyaAIHostEnvironment
 
     /// Bahasa fitur. Isi dari setting bahasa host (mis. Localize_Swift) setiap kali berubah;
@@ -32,37 +32,34 @@ public final class TanyaAIHost {
         set { hostEnvironment.colors = newValue }
     }
 
-    /// `onSend` mengembalikan true bila host menerima draft; false mempertahankannya di composer.
+    /// - Parameters:
+    ///   - customerName: nama pada sapaan welcome ("Hi, Lara Croft!").
+    ///   - service: SSE chat dan inquiry BE milik host.
+    ///   - onOpenLink: link dari jawaban; host membuka webview, deeplink, atau telepon.
     public init(
-        locale: Locale = .current, colors: any FigmaColorProtocol = EnvironmentValues().designColors,
-        isEnabled: Bool = true, onNewConversation: (() -> Void)? = nil,
-        onSend: @escaping (String) -> Bool
+        customerName: String, service: TanyaAIService, locale: Locale = .current,
+        colors: any FigmaColorProtocol = EnvironmentValues().designColors,
+        onOpenLink: @escaping (TanyaAILink) -> Void
     ) {
+        self.customerName = customerName
+        self.service = service
+        self.onOpenLink = onOpenLink
         hostEnvironment = TanyaAIHostEnvironment(locale: locale, colors: colors)
-        self.isEnabled = isEnabled
-        self.onNewConversation = onNewConversation
-        self.onSend = onSend
     }
 
-    /// Halaman siap di-push. Tanpa `onBack`, tombol kembali melakukan pop pada navigation controller host.
+    /// Halaman baru dengan percakapan baru. Tanpa `onBack`, tombol kembali melakukan pop
+    /// pada navigation controller host.
     public func makeViewController(onBack: (() -> Void)? = nil) -> UIViewController {
-        makeViewController(onBack: onBack) { EmptyView() }
-    }
-
-    /// Sama seperti di atas, dengan konten SwiftUI untuk area scroll (fixture UI atau konten fitur).
-    public func makeViewController<Content: View>(
-        onBack: (() -> Void)? = nil, @ViewBuilder content: () -> Content
-    ) -> UIViewController {
         weak var page: UIViewController?
+        let environment = hostEnvironment
+        let viewModel = ChatViewModel(
+            service: service, locale: { [weak environment] in environment?.locale ?? .current }, onOpenLink: onOpenLink
+        )
         let screen = HostEnvironmentReader(
             environment: hostEnvironment,
-            content: ChatScreen(
-                isEnabled: isEnabled,
-                onBack: {
-                    if let onBack { onBack() } else { page?.navigationController?.popViewController(animated: true) }
-                },
-                onNewConversation: onNewConversation, onSend: onSend, content: content
-            )
+            content: ChatScreen(viewModel: viewModel, customerName: customerName) {
+                if let onBack { onBack() } else { page?.navigationController?.popViewController(animated: true) }
+            }
         )
         let controller = UIHostingController(rootView: screen)
         // Starter mengikuti light palette Figma; dibatasi ke halaman ini, tidak mengubah host.

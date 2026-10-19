@@ -8,4 +8,5 @@
 /// Technical identifiers are separate from localized user-facing strings.
 enum ChatElementIdentifier {
     static let more = "chat.more"
+    static let welcome = "chat.welcome"
 }
