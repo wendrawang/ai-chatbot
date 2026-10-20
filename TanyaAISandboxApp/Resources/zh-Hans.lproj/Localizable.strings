@@ -9,3 +9,13 @@
 "sandbox.demo.title" = "示例内容";
 "sandbox.demo.body" = "滚动此示例可查看标题栏的分隔线和背景模糊效果。文字在标题栏后方移动时，标题和返回按钮保持原位。";
 "sandbox.demo.end" = "示例结束";
+"sandbox.main.title" = "首页";
+"sandbox.detail.open" = "打开详情页";
+"sandbox.detail.title" = "详情页";
+"sandbox.back" = "返回";
+"sandbox.offline.simulate" = "模拟无网络";
+"sandbox.offline.title" = "无网络连接";
+"sandbox.offline.retry" = "重试";
+"sandbox.logout" = "退出登录";
+"sandbox.login" = "登录";
+"sandbox.prelogin.title" = "未登录";

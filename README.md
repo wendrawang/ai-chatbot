@@ -9,16 +9,17 @@ copy tersedia dalam English, Bahasa Indonesia, dan 简体中文.
 ./Scripts/run_sandbox.sh --language en
 ./Scripts/run_sandbox.sh --language zh-Hans
 ./Scripts/run_sandbox.sh --language id --header-demo
+./Scripts/run_sandbox.sh --language id --offline
 ```
 
 Tombol kirim memanggil callback host. Sandbox menerima draft dan membersihkannya;
 belum ada network atau bubble pesan. `--reject-send` mendemonstrasikan draft yang
 harus dipertahankan saat host menolak submission.
 
-Sandbox meniru host: `AppDelegate` + `SceneDelegate` dengan `RevampNavigationController`
-sebagai root. Tekan “Buka Tanya AI” untuk mem-push `tanyaAI.makeViewController()`
-dengan push bawaan UIKit. Tombol kembali atau swipe dari tepi kiri menutup feature dan
-mengembalikan layar host.
+Sandbox meniru host SwiftUI: `RootScreen` dengan prelogin dan main coordinator, base
+`Screen` per halaman, dan `TanyaAIRouter` untuk membuka Tanya AI dari halaman mana pun.
+Tombol kembali atau swipe dari tepi kiri menutup feature dan mengembalikan layar host.
+`--offline` menampilkan blocker host di atas Tanya AI saat mengirim.
 Mode `--header-demo` menyisipkan teks dummy untuk mengecek separator dan blur
 saat scroll. Integrasi biasa tetap membuka area percakapan kosong.
 

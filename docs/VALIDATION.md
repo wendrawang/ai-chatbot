@@ -1,5 +1,23 @@
 # Validasi starter
 
+## Host tiruan SwiftUI — 20 Oktober 2026
+
+Sandbox kini meniru host: `RootScreen` (prelogin + main tetap hidup), base `Screen`,
+`ScreenContentViewModel`, coordinator dengan tag, extension pop-gesture global, dan
+`TanyaAIRouter` + satu link di base `Screen`. `RevampNavigationController`,
+`SandboxRouter`, `SandboxHostView` dan `RevampNavigationTests` dihapus.
+
+Dibuktikan oleh test:
+- Tanya AI terbuka full screen dari beranda dan dari halaman detail tanpa didaftarkan
+  per coordinator; ketukan ganda diabaikan; back kembali ke halaman asal;
+- SwiftUI mem-pop beberapa halaman sekaligus saat Tanya AI terbuka: router ikut
+  bersih dan Tanya AI bisa dibuka lagi;
+- logout menutup Tanya AI; swipe-back hanya aktif bila ada halaman untuk kembali;
+- UI test: `--offline` memunculkan blocker host di atas Tanya AI dan draft tetap ada
+  setelah "Coba lagi"; logout lalu login kembali ke main.
+
+Belum diuji pada perangkat iOS 15–17; simulator yang tersedia iOS 26.5.
+
 ## Host lebih sederhana — 20 Oktober 2026
 
 `TanyaAIHostEnvironment` dan `HostEnvironmentReader` dihapus. `TanyaAIHost` menjadi

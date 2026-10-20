@@ -79,10 +79,10 @@ Packages/
 6. Buat screen: area kosong, `ComposerSection` (draft `@State`) di bawah, margin luar.
    Baca locale host, resolve `R.string.localizable` melalui `String(resource:locale:)`
    dan kirimkan label ke komponen.
-7. Host mem-push `tanyaAI.makeViewController()` ke jalur navigasi bersihnya
-   (`RevampNavigationController`). Satu `TanyaAIHost` dimiliki session main host.
-   Tombol back atau swipe dari tepi kiri melakukan pop bawaan UIKit; navigasi legacy
-   host tidak disentuh. Lihat [integrasi host](HOST_INTEGRATION.md).
+7. Host mem-push `TanyaAIHost.makeViewController()` lewat navigasinya sendiri. Di host
+   SwiftUI, `TanyaAIRouter.instance.open()` dari halaman mana pun; base `Screen` yang
+   melakukan push. Tombol back atau swipe dari tepi kiri kembali ke halaman asal.
+   Lihat [integrasi host](HOST_INTEGRATION.md).
 
 Screen menggunakan `ChatScreen(onSend:)`. Callback mendapat draft dan mengembalikan
 Bool: true membersihkan draft, false mempertahankan teks/seleksi. Draft whitespace

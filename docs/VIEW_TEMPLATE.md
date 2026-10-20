@@ -112,7 +112,7 @@ Tidak perlu menambahkan weak capture pada setiap closure SwiftUI secara otomatis
 | Identifier UI test komponen | `DesignKit/Foundations/Accessibility` |
 | Draft, menu sesi, aturan menerima submission | Screen/fitur pemilik (`TanyaAI/Chat`) |
 | API host: konfigurasi, locale/theme, pembuat halaman | `TanyaAI/Host` |
-| Navigasi, animasi push, swipe-back | Host (`RevampNavigationController`), bawaan UIKit |
+| Navigasi, animasi push, swipe-back | Host (router + base `Screen`, atau navigation milik aplikasi revamp) |
 
 Komponen umum yang sudah dibutuhkan beberapa caller dibuat reusable. Potongan
 yang baru *mungkin* dipakai ulang boleh tetap private sampai tanggung jawabnya
