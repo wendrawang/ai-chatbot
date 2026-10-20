@@ -69,16 +69,3 @@ private extension ChatScreen {
         if let onBack { onBack() } else { dismiss() }
     }
 }
-
-extension ChatScreen where Content == EmptyView {
-    /// Return true when the host accepts the submission; false preserves the draft.
-    public init(
-        isEnabled: Bool = true, onBack: (() -> Void)? = nil,
-        onNewConversation: (() -> Void)? = nil, onSend: @escaping (String) -> Bool
-    ) {
-        self.init(
-            isEnabled: isEnabled, onBack: onBack, onNewConversation: onNewConversation,
-            onSend: onSend, content: { EmptyView() }
-        )
-    }
-}

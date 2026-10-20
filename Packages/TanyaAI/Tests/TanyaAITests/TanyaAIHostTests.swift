@@ -36,23 +36,23 @@ final class TanyaAIHostTests: XCTestCase {
         await fulfillment(of: [released], timeout: 3)
     }
 
-    func testLocaleAndPaletteReachThePageAndFollowLaterChanges() async {
-        let host = TanyaAIHost(locale: Locale(identifier: "id"), colors: PremierColorConstants()) { _ in true }
-        let probe = EnvironmentProbe()
-        let window = makeWindow(root: host.makeViewController { EnvironmentReader(probe: probe) })
-        defer { window.isHidden = true }
-        XCTAssertTrue(probe.colors is PremierColorConstants)
-        XCTAssertEqual(probe.locale?.identifier, "id")
+    func testLocaleAndPaletteApplyWhenPageIsCreatedAndChangesWaitForNextPage() {
+        var host = TanyaAIHost(locale: Locale(identifier: "id"), colors: PremierColorConstants()) { _ in true }
+        let openedProbe = EnvironmentProbe()
+        let openedWindow = makeWindow(root: host.makeViewController { EnvironmentReader(probe: openedProbe) })
+        defer { openedWindow.isHidden = true }
+        XCTAssertTrue(openedProbe.colors is PremierColorConstants)
+        XCTAssertEqual(openedProbe.locale?.identifier, "id")
         host.locale = Locale(identifier: "zh-Hans")
         host.colors = PrivateColorConstants()
-        let updated = XCTNSPredicateExpectation(
-            predicate: NSPredicate { _, _ in
-                window.rootViewController?.view.layoutIfNeeded()
-                return probe.colors is PrivateColorConstants && probe.locale?.identifier == "zh-Hans"
-            },
-            object: nil
-        )
-        await fulfillment(of: [updated], timeout: 3)
+        let nextProbe = EnvironmentProbe()
+        let nextWindow = makeWindow(root: host.makeViewController { EnvironmentReader(probe: nextProbe) })
+        defer { nextWindow.isHidden = true }
+        XCTAssertTrue(nextProbe.colors is PrivateColorConstants)
+        XCTAssertEqual(nextProbe.locale?.identifier, "zh-Hans")
+        openedWindow.rootViewController?.view.layoutIfNeeded()
+        XCTAssertTrue(openedProbe.colors is PremierColorConstants)
+        XCTAssertEqual(openedProbe.locale?.identifier, "id")
     }
 
     private func makeWindow(root: UIViewController) -> UIWindow {

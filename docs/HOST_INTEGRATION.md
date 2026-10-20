@@ -67,8 +67,12 @@ biasa. Seluruh jalur, termasuk Tanya AI yang sedang terbuka, ikut dilepas.
 
 ## 2. Session main dan cara membuka
 
+`TanyaAIHost` adalah struct konfigurasi. `locale` dan `colors` dibaca saat
+`makeViewController()` dipanggil, jadi isi keduanya sebelum push. Perubahan bahasa
+atau theme berlaku saat Tanya AI dibuka berikutnya; halaman yang sedang terbuka
+tidak berubah di tengah jalan.
+
 ```swift
-import Combine
 import DesignKit
 import Localize_Swift
 import TanyaAI
@@ -77,25 +81,15 @@ import UIKit
 /// Hidup selama user berada di main; dibuat saat login, dilepas saat kembali ke prelogin.
 @MainActor
 final class MainSession {
-    let tanyaAI: TanyaAIHost
     weak var revampNavigation: UINavigationController?
+    private var colors: any FigmaColorProtocol = DefaultColorConstants()
     private weak var tanyaAIPage: UIViewController?
-    private var cancellables = Set<AnyCancellable>()
-
-    init() {
-        tanyaAI = TanyaAIHost(locale: Locale(identifier: Localize.currentLanguage())) { _ in true }
-        // Localize.setCurrentLanguage(_:) dari Setting > Language mengirim notifikasi ini.
-        NotificationCenter.default
-            .publisher(for: Notification.Name(LCLLanguageChangeNotification))
-            .receive(on: DispatchQueue.main)
-            .sink { [weak self] _ in self?.applyCurrentLanguage() }
-            .store(in: &cancellables)
-    }
 
     /// Entry point mana pun di main: tombol, tab, notifikasi, deeplink.
     func openTanyaAI() {
         guard tanyaAIPage == nil, let revampNavigation else { return }
-        let page = tanyaAI.makeViewController()
+        let host = TanyaAIHost(locale: Locale(identifier: Localize.currentLanguage()), colors: colors) { _ in true }
+        let page = host.makeViewController()
         tanyaAIPage = page
         revampNavigation.pushViewController(page, animated: true)
     }
@@ -103,14 +97,10 @@ final class MainSession {
     /// Panggil dari tempat inquiry proposition berhasil.
     func didLoadProposition(_ proposition: CustomerProposition) {
         switch proposition {
-        case .premier: tanyaAI.colors = PremierColorConstants()
-        case .privateBanking: tanyaAI.colors = PrivateColorConstants()
-        default: tanyaAI.colors = DefaultColorConstants()
+        case .premier: colors = PremierColorConstants()
+        case .privateBanking: colors = PrivateColorConstants()
+        default: colors = DefaultColorConstants()
         }
-    }
-
-    private func applyCurrentLanguage() {
-        tanyaAI.locale = Locale(identifier: Localize.currentLanguage())
     }
 }
 ```
@@ -119,15 +109,105 @@ final class MainSession {
 | --- | --- |
 | Buka Tanya AI | `session.openTanyaAI()`; pengecekan `tanyaAIPage` mencegah push ganda |
 | Kembali | Tombol back header melakukan pop; swipe dari tepi kiri juga pop (bawaan UIKit) |
-| Back dengan aturan host | `tanyaAI.makeViewController(onBack: { ... })`; tanpa `onBack`, halaman pop sendiri |
+| Back dengan aturan host | `host.makeViewController(onBack: { ... })`; tanpa `onBack`, halaman pop sendiri |
 | Deeplink dari dalam Tanya AI | `revampNavigation.popViewController(animated:)` lalu push/route tujuan, atau langsung `setViewControllers` |
-| Ganti bahasa | Otomatis lewat notifikasi Localize_Swift; halaman yang terbuka langsung ikut |
-| Inquiry proposition selesai | `session.didLoadProposition(result)`; halaman yang terbuka langsung ikut |
+| Ganti bahasa / inquiry proposition selesai | Dibaca saat Tanya AI dibuka berikutnya |
 | Logout / session timeout | Ganti root window ke prelogin; Tanya AI ikut dilepas |
 
 `onSend` mengembalikan `true` bila host menerima draft (composer dikosongkan) dan
 `false` untuk mempertahankannya. Nilai ini bukan konfirmasi request network berhasil.
 `onNewConversation` opsional; tanpa handler, item menu "Percakapan baru" disabled.
+
+## Host SwiftUI dengan coordinator
+
+Host yang memakai `NavigationView` dengan pola coordinator → screen → view model →
+use case tidak perlu jalur navigasi baru. Tanya AI didaftarkan sebagai coordinator
+biasa dan dibungkus base screen host, sehingga blocker per halaman (no internet,
+session expired, loading, snackbar) ikut berlaku. Nama `Screen`, `ScreenContent`,
+`ScreenContentViewModel`, `UseCase` dan `AppState` adalah milik host.
+
+```swift
+// TanyaAIPage.swift — membungkus halaman package untuk SwiftUI.
+struct TanyaAIPage: UIViewControllerRepresentable {
+    let host: TanyaAIHost
+    let onBack: () -> Void
+
+    func makeUIViewController(context: Context) -> UIViewController {
+        host.makeViewController(onBack: onBack)
+    }
+
+    func updateUIViewController(_ controller: UIViewController, context: Context) {}
+}
+
+// TanyaAIScreen.swift
+struct TanyaAIScreen: ScreenContent {
+    @ObservedObject var viewModel: TanyaAIScreenViewModel
+    let onBack: () -> Void
+
+    var body: some View {
+        TanyaAIPage(host: viewModel.makeHost(), onBack: onBack)
+            .ignoresSafeArea()
+    }
+}
+
+// TanyaAIScreenViewModel.swift
+final class TanyaAIScreenViewModel: ScreenContentViewModel {
+    private(set) var useCase = TanyaAIUseCase()
+
+    /// Konfigurasi sekali saat coordinator membuat StateObject.
+    static func make() -> TanyaAIScreenViewModel {
+        let viewModel = TanyaAIScreenViewModel()
+        // Header milik Tanya AI; sembunyikan nav bar host agar tidak dobel.
+        viewModel.navigationBarViewModel.isHidden = true
+        viewModel.setUseCase(TanyaAIUseCase())
+        return viewModel
+    }
+
+    func setUseCase(_ useCase: TanyaAIUseCase) {
+        useCase.callback.onSubmissionFailed = { [weak self] error in self?.didReceiveError(error) }
+        self.useCase = useCase
+    }
+
+    /// Bahasa dan theme yang aktif saat halaman dibuat.
+    @MainActor
+    func makeHost() -> TanyaAIHost {
+        TanyaAIHost(locale: Locale(identifier: Localize.currentLanguage())) { [weak self] text in
+            self?.useCase.send(text) ?? false
+        }
+    }
+}
+
+// TanyaAICoordinator.swift
+struct TanyaAICoordinator: View {
+    static let named = "TanyaAICoordinator"
+    @EnvironmentObject var appState: AppState
+    @Binding var selectionCoordinatorName: String?
+    // StateObject: view model tetap sama walau parent render ulang.
+    @StateObject private var viewModel = TanyaAIScreenViewModel.make()
+
+    var body: some View {
+        NavigationLink(
+            destination: Screen { TanyaAIScreen(viewModel: viewModel, onBack: close) },
+            tag: Self.named,
+            selection: $selectionCoordinatorName
+        ) { EmptyView() }.invisible()
+            .onChange(of: appState.state) { state in
+                if state != .loggedIn { close() }
+            }
+    }
+
+    private func close() {
+        guard selectionCoordinatorName == Self.named else { return }
+        selectionCoordinatorName = nil
+    }
+}
+```
+
+Daftarkan `TanyaAICoordinator(selectionCoordinatorName: $destinationCoordinatorName)`
+di `createNavigationLinks()` main, lalu buka dengan
+`destinationCoordinatorName = TanyaAICoordinator.named`. Jangan membungkus
+`NavigationView` main dengan `UINavigationController` representable: safe area dan
+layout main menjadi rusak.
 
 ## Blocker host: no internet, session expired, dan sejenisnya
 
@@ -151,7 +231,7 @@ mendeklarasikan semua bahasa package, `CFBundleAllowMixedLocalizations = YES`
 memungkinkan resource dependency ikut dipilih
 ([dokumentasi Apple](https://developer.apple.com/documentation/bundleresources/information-property-list/cfbundleallowmixedlocalizations)).
 
-Palette mengikuti `tanyaAI.colors`; sebelum inquiry selesai memakai palette default.
+Palette mengikuti `colors` pada `TanyaAIHost`; sebelum inquiry selesai memakai palette default.
 Halaman Tanya AI memakai light appearance Figma (`overrideUserInterfaceStyle` hanya
 pada halaman itu, tidak mengubah host). Pemetaan proposition ke palette tetap di host
 karena aturan bisnis tidak masuk DesignKit.
@@ -159,8 +239,7 @@ karena aturan bisnis tidak masuk DesignKit.
 ## Isi folder `Host`
 
 - `TanyaAIHost.swift`: konfigurasi (`locale`, `colors`, `onSend`) dan
-  `makeViewController()` untuk di-push host.
-- `TanyaAIHostEnvironment.swift`: meneruskan `locale`/`colors` ke halaman yang terbuka.
+  `makeViewController()` yang memasang bahasa dan palette ke halaman baru.
 
 Overload `makeViewController { ContentView() }` menerima konten SwiftUI untuk area
 scroll; sandbox memakainya pada mode `--header-demo`. Konten tidak perlu mempunyai

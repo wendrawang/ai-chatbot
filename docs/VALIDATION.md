@@ -1,5 +1,19 @@
 # Validasi starter
 
+## Host lebih sederhana — 20 Oktober 2026
+
+`TanyaAIHostEnvironment` dan `HostEnvironmentReader` dihapus. `TanyaAIHost` menjadi
+struct konfigurasi; `locale` dan `colors` dipasang ke environment saat halaman dibuat.
+Live update dihapus karena bahasa diganti dari Settings dan theme dipilih saat inquiry
+proposition, keduanya sebelum Tanya AI dibuka. Init `ChatScreen` tanpa konten yang
+tidak dipakai juga dihapus.
+
+Dibuktikan oleh test: `locale`/`colors` diterapkan pada halaman baru, perubahan
+berlaku pada halaman berikutnya, dan halaman yang sudah terbuka tidak berubah.
+Integrasi host SwiftUI (coordinator + base screen) diuji pada replika: halaman full
+screen, blocker base screen tampil di atasnya, view model stabil saat parent render
+ulang, dan logout menutup Tanya AI.
+
 ## Jalur navigasi host — 18 Oktober 2026
 
 Tanya AI tidak lagi dipresentasikan sebagai modal dengan transisi custom. Host

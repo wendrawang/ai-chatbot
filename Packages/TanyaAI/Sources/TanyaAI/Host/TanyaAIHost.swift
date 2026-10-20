@@ -9,28 +9,18 @@ import DesignKit
 import SwiftUI
 import UIKit
 
-/// Konfigurasi dan pembuat halaman Tanya AI. Simpan satu instance di session main host,
-/// lalu push `makeViewController()` ke navigation controller milik host.
-/// Navigasi, animasi dan swipe-back sepenuhnya bawaan UIKit milik host.
+/// Konfigurasi dan pembuat halaman Tanya AI. Host mem-push `makeViewController()` ke
+/// navigation controller miliknya; navigasi, animasi dan swipe-back sepenuhnya bawaan UIKit.
+/// `locale` dan `colors` dibaca saat halaman dibuat, jadi perubahan berlaku saat dibuka berikutnya.
 @MainActor
-public final class TanyaAIHost {
+public struct TanyaAIHost {
+    /// Bahasa fitur, misalnya dari Localize_Swift milik host.
+    public var locale: Locale
+    /// Palette fitur dari hasil inquiry proposition; sebelum itu memakai palette default.
+    public var colors: any FigmaColorProtocol
     private let isEnabled: Bool
     private let onNewConversation: (() -> Void)?
     private let onSend: (String) -> Bool
-    private let hostEnvironment: TanyaAIHostEnvironment
-
-    /// Bahasa fitur. Isi dari setting bahasa host (mis. Localize_Swift) setiap kali berubah;
-    /// halaman yang sedang tampil langsung mengikuti tanpa kehilangan draft.
-    public var locale: Locale {
-        get { hostEnvironment.locale }
-        set { hostEnvironment.locale = newValue }
-    }
-
-    /// Palette fitur. Isi dari hasil inquiry proposition; sebelum itu memakai palette default.
-    public var colors: any FigmaColorProtocol {
-        get { hostEnvironment.colors }
-        set { hostEnvironment.colors = newValue }
-    }
 
     /// `onSend` mengembalikan true bila host menerima draft; false mempertahankannya di composer.
     public init(
@@ -38,7 +28,8 @@ public final class TanyaAIHost {
         isEnabled: Bool = true, onNewConversation: (() -> Void)? = nil,
         onSend: @escaping (String) -> Bool
     ) {
-        hostEnvironment = TanyaAIHostEnvironment(locale: locale, colors: colors)
+        self.locale = locale
+        self.colors = colors
         self.isEnabled = isEnabled
         self.onNewConversation = onNewConversation
         self.onSend = onSend
@@ -54,16 +45,15 @@ public final class TanyaAIHost {
         onBack: (() -> Void)? = nil, @ViewBuilder content: () -> Content
     ) -> UIViewController {
         weak var page: UIViewController?
-        let screen = HostEnvironmentReader(
-            environment: hostEnvironment,
-            content: ChatScreen(
-                isEnabled: isEnabled,
-                onBack: {
-                    if let onBack { onBack() } else { page?.navigationController?.popViewController(animated: true) }
-                },
-                onNewConversation: onNewConversation, onSend: onSend, content: content
-            )
+        let screen = ChatScreen(
+            isEnabled: isEnabled,
+            onBack: {
+                if let onBack { onBack() } else { page?.navigationController?.popViewController(animated: true) }
+            },
+            onNewConversation: onNewConversation, onSend: onSend, content: content
         )
+        .environment(\.locale, locale)
+        .designColors(colors)
         let controller = UIHostingController(rootView: screen)
         // Starter mengikuti light palette Figma; dibatasi ke halaman ini, tidak mengubah host.
         controller.overrideUserInterfaceStyle = .light
