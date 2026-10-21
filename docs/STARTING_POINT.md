@@ -37,7 +37,7 @@ Packages/
 └── TanyaAI/
     └── Sources/TanyaAI/
         ├── Chat/ChatScreen.swift + ChatElementIdentifier.swift
-        ├── Host/                        # konfigurasi host + makeViewController()
+        ├── Host/                        # konfigurasi host + makeView()
         └── Resources/en.lproj + id.lproj + zh-Hans.lproj/
 ```
 
@@ -80,9 +80,9 @@ Packages/
 6. Buat screen: area kosong, `ComposerSection` (draft `@State`) di bawah, margin luar.
    Baca locale host, resolve `R.string.localizable` melalui `String(resource:locale:)`
    dan kirimkan label ke komponen.
-7. Host mem-push `TanyaAIHost.makeViewController()` lewat navigasinya sendiri. Di host
-   SwiftUI, `TanyaAIRouter.instance.open()` dari halaman mana pun; base `Screen` yang
-   melakukan push. Tombol back atau swipe dari tepi kiri kembali ke halaman asal.
+7. Host menampilkan `TanyaAIHost.makeView()` lewat navigasinya sendiri, di host SwiftUI
+   sebagai tujuan `NavigationLink` pada coordinator yang punya pintu masuk Tanya AI.
+   Tombol back atau swipe dari tepi kiri kembali ke halaman asal.
    Lihat [integrasi host](HOST_INTEGRATION.md).
 
 Composer mengirim draft ke `ChatViewModel.send`: diterima bila tidak kosong dan tidak

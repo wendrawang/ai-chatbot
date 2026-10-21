@@ -7,7 +7,7 @@
 
 import SwiftUI
 
-/// Konten halaman Tanya AI di host.
+/// Konten halaman Tanya AI di host: view SwiftUI dari package, tanpa pembungkus UIKit.
 @MainActor
 struct TanyaAIScreen: ScreenContent {
     @ObservedObject
@@ -15,8 +15,7 @@ struct TanyaAIScreen: ScreenContent {
     let onBack: () -> Void
 
     var body: some View {
-        TanyaAIPage(host: viewModel.makeHost(), onBack: onBack)
-            .ignoresSafeArea()
+        viewModel.makeHost().makeView(onBack: onBack)
             .sheet(isPresented: isShowingWeb) {
                 viewModel.webLink.map(WebPage.init)
             }

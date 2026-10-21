@@ -7,11 +7,9 @@
 
 import SwiftUI
 
-/// Tiruan main coordinator host. Tidak ada pendaftaran Tanya AI di sini; cukup penutupan saat logout.
+/// Tiruan main coordinator host. Link tujuan dibuat lazy: hanya tujuan yang sedang aktif yang dirender.
 @MainActor
 struct MainCoordinator: View {
-    @EnvironmentObject
-    private var appState: AppState
     @State
     private var destinationCoordinatorName: String?
     @StateObject
@@ -20,21 +18,28 @@ struct MainCoordinator: View {
     var body: some View {
         NavigationView {
             ZStack {
-                DetailCoordinator(selectionCoordinatorName: $destinationCoordinatorName)
-                Screen { MainScreen(viewModel: viewModel, onOpenDetail: openDetail) }
+                navigationLink
+                Screen {
+                    MainScreen(
+                        viewModel: viewModel,
+                        onOpenDetail: { destinationCoordinatorName = DetailCoordinator.named },
+                        onOpenTanyaAI: { destinationCoordinatorName = TanyaAICoordinator.named }
+                    )
+                }
             }
         }
         .navigationViewStyle(.stack)
-        .onChange(of: appState.state) { state in
-            if state != .loggedIn { TanyaAIRouter.instance.close() }
-        }
     }
-}
 
-// MARK: - Actions
-
-private extension MainCoordinator {
-    func openDetail() {
-        destinationCoordinatorName = DetailCoordinator.named
+    @ViewBuilder
+    private var navigationLink: some View {
+        switch destinationCoordinatorName {
+        case DetailCoordinator.named?:
+            DetailCoordinator(selectionCoordinatorName: $destinationCoordinatorName)
+        case TanyaAICoordinator.named?:
+            TanyaAICoordinator(selectionCoordinatorName: $destinationCoordinatorName)
+        default:
+            EmptyView()
+        }
     }
 }

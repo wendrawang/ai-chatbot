@@ -162,10 +162,11 @@ Kontrak: [docs/CHAT_CONTRACT.md](docs/CHAT_CONTRACT.md); ukuran: [docs/FIGMA_SIZ
   dirender `RichText` (native, tanpa HTML). Link diteruskan ke host sebagai web/deeplink/
   telepon; target berbahaya tidak bisa diketuk.
 - Integrasi host: `TanyaAIHost` hanya konfigurasi (`customerName`, `service`, `locale`,
-  `colors`, `onOpenLink`) dan `makeViewController()`. Host mem-push halaman itu lewat navigasinya sendiri
-  (host SwiftUI: `TanyaAIRouter` + satu link di base `Screen`, swipe-back bawaan). Package
-  tidak membuat modal, transisi custom, NavigationView/NavigationStack, atau toolbar
-  native. Tombol back memanggil `onBack` atau pop pada navigation controller host.
+  `colors`, `onOpenLink`) dan `makeView()` berupa view SwiftUI. Host menampilkannya lewat
+  navigasinya sendiri (host SwiftUI: coordinator + destination dengan `@StateObject`,
+  swipe-back bawaan). Package tidak membuat modal, transisi custom,
+  NavigationView/NavigationStack, atau toolbar native. Tombol back memanggil `onBack`,
+  atau `dismiss` SwiftUI bila tidak diisi.
   Blocker host (no internet, session expired) tampil di atas halaman ini tanpa kode
   di package. `TanyaAIHost` adalah struct konfigurasi yang dibuat saat halaman dibuka.
 - UI owners `@MainActor`; putus delegate pada dismantle dan hindari retain cycle.

@@ -15,6 +15,8 @@ struct ChatScreen: View {
     private var locale
     @Environment(\.designColors)
     private var colors
+    @Environment(\.dismiss)
+    private var dismiss
     @StateObject
     private var viewModel: ChatViewModel
     @State
@@ -24,9 +26,9 @@ struct ChatScreen: View {
     @State
     private var scrollRequest = UUID()
     private let customerName: String
-    private let onBack: () -> Void
+    private let onBack: (() -> Void)?
 
-    init(viewModel: @autoclosure @escaping () -> ChatViewModel, customerName: String, onBack: @escaping () -> Void) {
+    init(viewModel: @autoclosure @escaping () -> ChatViewModel, customerName: String, onBack: (() -> Void)?) {
         _viewModel = StateObject(wrappedValue: viewModel())
         self.customerName = customerName
         self.onBack = onBack
@@ -39,7 +41,7 @@ struct ChatScreen: View {
                 ScreenHeader(
                     title: String(resource: R.string.localizable.chatTitle, locale: locale),
                     backLabel: String(resource: R.string.localizable.chatBack, locale: locale),
-                    isScrolled: isScrolled && !viewModel.messages.isEmpty, onBack: onBack, trailing: { moreMenu }
+                    isScrolled: isScrolled && !viewModel.messages.isEmpty, onBack: close, trailing: { moreMenu }
                 )
             }
             .overlay(alignment: .bottom) { scrollToLatest }
@@ -95,6 +97,15 @@ struct ChatScreen: View {
         colors.colorsSurfacePrimary
             .overlay(alignment: .top) { Image(R.image.chatBackground).resizable().scaledToFit() }
             .ignoresSafeArea()
+    }
+}
+
+// MARK: - Actions
+
+private extension ChatScreen {
+    /// Tanpa `onBack` dari host, kembali memakai `dismiss` SwiftUI (pop pada navigasi host).
+    func close() {
+        if let onBack { onBack() } else { dismiss() }
     }
 }
 

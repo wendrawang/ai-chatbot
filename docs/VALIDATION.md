@@ -1,5 +1,14 @@
 # Validasi
 
+## Tanya AI sebagai view SwiftUI — 22 Oktober 2026
+
+Mengikuti PR #24: `makeViewController()` diganti `makeView()`, `ChatScreen` memakai
+`dismiss` SwiftUI bila host tidak memberi `onBack`, dan tampilan terang dibatasi lewat
+`.environment(\.colorScheme, .light)`. `ChatViewModel` tetap `@StateObject` di
+`ChatScreen`, jadi tidak dibuat ulang saat host render ulang. Sandbox memakai pola
+coordinator + destination; link web tetap dibuka di webview host (sheet) dan
+`TanyaAIPage` dihapus.
+
 
 ## Aturan PR #24 pada chat lengkap — 21 Oktober 2026
 
@@ -32,6 +41,20 @@ bergaris bawah. Contoh kode di HOST_INTEGRATION ter-compile dengan
 
 R.swift: setelah aset baru, build incremental pada DerivedData lama bisa gagal
 menemukan accessor (`R.image.checkmark`); build bersih menyelesaikannya.
+
+## Tanya AI sebagai view SwiftUI — 22 Oktober 2026
+
+`TanyaAIHost.makeViewController()` diganti `makeView()`: host SwiftUI tidak lagi
+membungkus halaman ke `UIHostingController` lalu ke representable. Tampilan terang
+dibatasi lewat `.environment(\.colorScheme, .light)`; tanpa `onBack`, tombol kembali
+memakai `dismiss` SwiftUI. Sandbox mengikuti pola host: coordinator hanya berisi
+`NavigationLink`, view model dipegang `@StateObject` di view tujuan
+(`TanyaAIDestination`, `DetailDestination`), dan main dibuang saat logout.
+`TanyaAIRouter` dan `TanyaAIPage` dihapus.
+
+Dibuktikan oleh test: halaman full screen dan composer ada di halaman yang di-push;
+render ulang halaman induk tidak mengganti halaman yang terbuka; UI test keyboard,
+inset visual, swipe-back, buka dari detail, blocker offline, dan logout/login lulus.
 
 ## Host tiruan SwiftUI — 20 Oktober 2026
 

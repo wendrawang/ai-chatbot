@@ -13,8 +13,8 @@ English, Bahasa Indonesia, dan 简体中文.
 ```
 
 Sandbox meniru host SwiftUI: `RootScreen` dengan prelogin dan main coordinator, base
-`Screen` per halaman, dan `TanyaAIRouter` untuk membuka Tanya AI dari halaman mana pun,
-dengan service dummy dari fixture JSON (tanpa network). Tekan “Buka Tanya AI” di beranda
+`Screen` per halaman, dan coordinator + destination untuk membuka Tanya AI dari beranda
+atau halaman detail, dengan service dummy dari fixture JSON (tanpa network). Tekan “Buka Tanya AI” di beranda
 atau di halaman detail, lalu:
 
 - ketuk **Cek Portofolio** → status loading → intent `review-porto` → inquiry dummy → tabel;

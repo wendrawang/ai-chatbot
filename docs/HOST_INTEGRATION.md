@@ -1,7 +1,7 @@
 # Membuka Tanya AI dari host app
 
-Tanya AI adalah halaman biasa: `TanyaAIHost.makeViewController()` mengembalikan
-`UIViewController` yang di-push oleh navigasi milik host. Package tidak membuat
+Tanya AI adalah halaman SwiftUI biasa: `TanyaAIHost.makeView()` ditampilkan oleh
+navigasi milik host, dan halaman berikutnya juga milik host. Package tidak membuat
 modal, animasi, navigation stack, service, atau aturan bisnis sendiri, sehingga
 API yang sama dipakai oleh host SwiftUI saat ini maupun aplikasi revamp nanti.
 
@@ -23,73 +23,107 @@ Font dibaca dari `Bundle.module` DesignKit; host tidak perlu menyalin file font 
 menambahkannya ke `UIAppFonts`. Daftar face ada di
 [katalog font](../Packages/DesignKit/Sources/DesignKit/Resources/Fonts/SOURCES.md).
 
-## 1. Host SwiftUI saat ini: router + base `Screen`
+## 1. Host SwiftUI saat ini: coordinator + destination
 
-Host memakai `NavigationView` dengan pola coordinator → screen → view model → use
-case, dan setiap halaman dibungkus base `Screen` (blocker no internet, session
-expired, loading dan snackbar dimiliki tiap halaman). Tanya AI tidak didaftarkan
-sebagai destinasi per coordinator. Base `Screen` memasang satu `NavigationLink`
-Tanya AI; `TanyaAIRouter` memilih `Screen` yang sedang tampil, lalu link milik
-halaman itu yang melakukan push.
+Tanya AI didaftarkan seperti fitur lain: `NavigationLink(tag:selection:)` di coordinator
+yang punya pintu masuk Tanya AI. View model halaman dipegang `@StateObject` di view
+tujuan (`TanyaAIDestination`), sehingga dibuat sekali saat halaman di-push, dilepas saat
+di-pop, dan tidak ikut dibuat ulang ketika halaman induk render ulang. Halaman dibungkus
+base `Screen` host, jadi blocker per halaman dan blocker root tetap tampil di atasnya.
 
 ```
-Screen (setiap halaman host)
-├── NavigationLink Tanya AI      ← aktif hanya pada Screen yang dipilih router
-├── konten halaman
-└── blocker host                 ← juga menutup Tanya AI, karena Tanya AI dibungkus Screen
-
-TanyaAIRouter.instance.open()    ← dari view, coordinator, atau callback mana pun
+Coordinator induk (createNavigationLinks / switch rute)
+└── TanyaAICoordinator          ← hanya NavigationLink, tidak membuat view model
+    └── TanyaAIDestination      ← @StateObject TanyaAIScreenViewModel
+        └── Screen { TanyaAIScreen }   ← host.makeView(onBack:)
 ```
 
-Contoh lengkap ada di sandbox, satu tipe per file, dengan nama yang sama seperti host:
+```swift
+// TanyaAICoordinator.swift
+struct TanyaAICoordinator: View {
+    static let named = String(describing: TanyaAICoordinator.self)
+    @Binding var selectionCoordinatorName: String?
 
-| File | Peran |
-| --- | --- |
-| [Screen](../TanyaAISandboxApp/Host/Screen.swift) | Base screen host + link Tanya AI (`isTanyaAIAvailable`) |
-| [TanyaAIRouter](../TanyaAISandboxApp/TanyaAI/TanyaAIRouter.swift) | `open()`/`close()`, halaman yang tampil, sinkron saat SwiftUI pop |
-| [TanyaAIDestination](../TanyaAISandboxApp/TanyaAI/TanyaAIDestination.swift) | Tujuan link; `@StateObject` view model, `Screen(isTanyaAIAvailable: false)` |
-| [TanyaAIScreen](../TanyaAISandboxApp/TanyaAI/TanyaAIScreen.swift) | `ScreenContent` yang menampilkan halaman package |
-| [TanyaAIScreenViewModel](../TanyaAISandboxApp/TanyaAI/TanyaAIScreenViewModel.swift) | `makeHost()` dengan nama nasabah, service, bahasa/theme aktif; link web ke webview host; error ke blocker |
-| [TanyaAIUseCase](../TanyaAISandboxApp/TanyaAI/TanyaAIUseCase.swift) | Memiliki `TanyaAIService` host (sandbox: fixture `SandboxChatService`) |
-| [WebPage](../TanyaAISandboxApp/Host/WebPage.swift) | Webview host untuk link web jawaban (bukan Safari) |
-| [TanyaAIPage](../TanyaAISandboxApp/TanyaAI/TanyaAIPage.swift) | `UIViewControllerRepresentable` untuk `makeViewController()` |
-| [MainCoordinator](../TanyaAISandboxApp/Main/MainCoordinator.swift) | Hanya menutup Tanya AI saat logout |
-| [UINavigationController+PopGesture](../TanyaAISandboxApp/Host/UINavigationController+PopGesture.swift) | Salinan extension host untuk swipe-back dengan nav bar tersembunyi |
+    var body: some View {
+        NavigationLink(tag: Self.named, selection: $selectionCoordinatorName) {
+            TanyaAIDestination(onBack: close)
+        } label: { EmptyView() }
+        .hidden()
+    }
 
-Perubahan pada base `Screen` host hanya tiga hal: property router dan `screenID`,
-link yang dibungkus `if isTanyaAIAvailable`, serta `onAppear`/`onDisappear` yang
-memberi tahu router. Pemanggil `Screen { ... }` yang sudah ada tidak berubah.
+    private func close() {
+        guard selectionCoordinatorName == Self.named else { return }
+        selectionCoordinatorName = nil
+    }
+}
 
-| Kebutuhan | Kode |
-| --- | --- |
-| Buka Tanya AI | `TanyaAIRouter.instance.open()`; diabaikan bila sudah terbuka |
-| Kembali | Tombol back header (`close()`) atau swipe dari tepi kiri |
-| Halaman yang tidak boleh membuka Tanya AI | `Screen(isTanyaAIAvailable: false) { ... }` |
-| Deeplink dari dalam Tanya AI | `close()` dulu, lalu routing host seperti biasa |
-| Ganti bahasa / inquiry proposition selesai | Dibaca `makeHost()` saat Tanya AI dibuka berikutnya |
-| Logout | `MainCoordinator` memanggil `TanyaAIRouter.instance.close()` |
+// TanyaAIDestination.swift
+struct TanyaAIDestination: View {
+    @StateObject private var viewModel = TanyaAIScreenViewModel()
+    let onBack: () -> Void
 
-Yang sengaja dihindari, dan alasannya (dibuktikan di replika):
+    var body: some View {
+        Screen { TanyaAIScreen(viewModel: viewModel, onBack: onBack) }
+    }
+}
 
-- **Push UIKit langsung ke navigation controller milik `NavigationView`.** Bila state
-  SwiftUI berubah saat Tanya AI terbuka (session expired, deeplink), stack UIKit dan
-  state SwiftUI tidak lagi sinkron.
-- **Membungkus `NavigationView` main dengan `UINavigationController` representable.**
-  Safe area dan layout main menjadi rusak.
+// TanyaAIScreen.swift
+struct TanyaAIScreen: ScreenContent {
+    @ObservedObject var viewModel: TanyaAIScreenViewModel
+    let onBack: () -> Void
 
-Batasan: link hanya ada pada halaman yang dibungkus `Screen`. Bila `open()` dipanggil
-dari sheet, tutup sheet lebih dulu.
+    var body: some View {
+        viewModel.makeHost().makeView(onBack: onBack)
+    }
+}
+
+// TanyaAIScreenViewModel.swift — konfigurasi lewat init, bukan di body coordinator.
+final class TanyaAIScreenViewModel: ScreenContentViewModel {
+    @Published var webLink: URL?
+    let useCase: TanyaAIUseCase          // memiliki TanyaAIService host (SSE + inquiry)
+    private let customerName: String
+
+    init(useCase: TanyaAIUseCase = TanyaAIUseCase(), customerName: String) {
+        self.useCase = useCase
+        self.customerName = customerName
+        super.init()
+    }
+
+    @MainActor
+    func makeHost() -> TanyaAIHost {
+        TanyaAIHost(
+            customerName: customerName, service: useCase.service,
+            locale: Locale(identifier: Localize.currentLanguage())
+        ) { [weak self] link in self?.open(link) }
+    }
+
+    /// `.web` ke webview host (sheet), `.deeplink` ke handler host, `.phone` ke sistem.
+    @MainActor
+    func open(_ link: TanyaAILink) { /* lihat sandbox */ }
+}
+```
+
+Di coordinator induk, daftarkan `TanyaAICoordinator(selectionCoordinatorName: $destinationCoordinatorName)`
+bersama link lain (pada host dengan registry lazy, tambahkan entri di dictionary link),
+lalu buka dengan `destinationCoordinatorName = TanyaAICoordinator.named`. Contoh lengkap:
+[MainCoordinator](../TanyaAISandboxApp/Main/MainCoordinator.swift),
+[DetailDestination](../TanyaAISandboxApp/Detail/DetailDestination.swift), dan folder
+[TanyaAI sandbox](../TanyaAISandboxApp/TanyaAI).
+
+Yang sengaja tidak dipakai: membungkus `NavigationView` main dengan `UINavigationController`
+representable (safe area dan layout main rusak), serta router global yang memilih
+halaman aktif (halaman di belakang yang dibangun ulang ikut melapor tampil sehingga
+link salah halaman aktif). Akses "dari mana saja" sebaiknya menunggu navigasi revamp.
 
 ## 2. Aplikasi revamp dengan navigasi bersih
 
-Package tidak bergantung pada pola di atas. Router dan base `Screen` milik host; untuk
-navigasi lain cukup ganti pemanggilnya:
+Package tidak bergantung pada pola di atas; coordinator dan base `Screen` milik host.
+Untuk navigasi lain cukup ganti pemanggilnya:
 
-- **UIKit coordinator / `UINavigationController`:**
-  `navigation.pushViewController(host.makeViewController(), animated: true)`. Tanpa
-  `onBack`, tombol back halaman melakukan pop sendiri.
 - **SwiftUI `NavigationStack` (iOS 16+):** tambahkan route Tanya AI pada path, lalu
-  `navigationDestination` menampilkan `TanyaAIPage` seperti di atas.
+  `navigationDestination` menampilkan `host.makeView()`.
+- **UIKit coordinator / `UINavigationController`:**
+  `navigation.pushViewController(UIHostingController(rootView: host.makeView(onBack: pop)), animated: true)`.
 
 `TanyaAIHost(customerName:service:locale:colors:onOpenLink:)`:
 
@@ -183,14 +217,14 @@ memungkinkan resource dependency ikut dipilih
 ([dokumentasi Apple](https://developer.apple.com/documentation/bundleresources/information-property-list/cfbundleallowmixedlocalizations)).
 
 Palette mengikuti `colors` pada `TanyaAIHost`; sebelum inquiry selesai memakai palette default.
-Halaman Tanya AI memakai light appearance Figma (`overrideUserInterfaceStyle` hanya
-pada halaman itu, tidak mengubah host). Pemetaan proposition ke palette tetap di host
+Halaman Tanya AI memakai light appearance Figma (`.environment(\\.colorScheme, .light)`
+hanya pada subtree itu, tidak mengubah host). Pemetaan proposition ke palette tetap di host
 karena aturan bisnis tidak masuk DesignKit.
 
 ## Isi folder `Host`
 
 - `TanyaAIHost.swift`: konfigurasi (`customerName`, `service`, `locale`, `colors`,
-  `onOpenLink`) dan `makeViewController()` yang memasang bahasa dan palette ke halaman baru.
+  `onOpenLink`) dan `makeView()` yang memasang bahasa dan palette ke halaman baru.
 - `TanyaAIService.swift`: protocol SSE + inquiry beserta model request, event, intent.
 - `TanyaAILink.swift`: link jawaban yang sudah dikelompokkan (web, deeplink, telepon).
 

@@ -7,11 +7,10 @@
 
 import DesignKit
 import SwiftUI
-import UIKit
 
-/// Konfigurasi dan pembuat halaman Tanya AI. Host mem-push `makeViewController()` ke
-/// navigation controller miliknya; navigasi, animasi dan swipe-back sepenuhnya bawaan UIKit.
-/// `locale` dan `colors` dibaca saat halaman dibuat, jadi perubahan berlaku saat dibuka berikutnya.
+/// Konfigurasi dan pembuat halaman Tanya AI dalam SwiftUI. Host menampilkan `makeView()` lewat
+/// navigasinya sendiri, misalnya sebagai tujuan `NavigationLink`; halaman berikutnya milik host.
+/// `locale` dan `colors` dibaca saat view dibuat, jadi perubahan berlaku saat dibuka berikutnya.
 @MainActor
 public struct TanyaAIHost {
     /// Bahasa fitur, misalnya dari Localize_Swift milik host.
@@ -38,19 +37,16 @@ public struct TanyaAIHost {
         self.onOpenLink = onOpenLink
     }
 
-    /// Halaman baru dengan percakapan baru. Tanpa `onBack`, tombol kembali melakukan pop
-    /// pada navigation controller host.
-    public func makeViewController(onBack: (() -> Void)? = nil) -> UIViewController {
-        weak var page: UIViewController?
-        let viewModel = ChatViewModel(service: service, locale: locale, onOpenLink: onOpenLink)
-        let screen = ChatScreen(viewModel: viewModel, customerName: customerName) {
-            if let onBack { onBack() } else { page?.navigationController?.popViewController(animated: true) }
-        }
-        let controller = UIHostingController(rootView: applyingSettings(to: screen))
-        // Starter mengikuti light palette Figma; dibatasi ke halaman ini, tidak mengubah host.
-        controller.overrideUserInterfaceStyle = .light
-        page = controller
-        return controller
+    /// Halaman dengan percakapan baru. Tanpa `onBack`, tombol kembali memakai `dismiss` SwiftUI.
+    /// `ChatViewModel` dibuat sekali per halaman (`@StateObject` di `ChatScreen`), walau view ini
+    /// dievaluasi ulang setiap host render.
+    public func makeView(onBack: (() -> Void)? = nil) -> some View {
+        applyingSettings(
+            to: ChatScreen(
+                viewModel: ChatViewModel(service: service, locale: locale, onOpenLink: onOpenLink),
+                customerName: customerName, onBack: onBack
+            )
+        )
     }
 
     /// Bahasa dan palette host untuk seluruh isi halaman baru.
@@ -58,5 +54,7 @@ public struct TanyaAIHost {
         content
             .environment(\.locale, locale)
             .designColors(colors)
+            // Starter mengikuti light palette Figma; dibatasi ke halaman ini, tidak mengubah host.
+            .environment(\.colorScheme, .light)
     }
 }

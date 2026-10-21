@@ -24,7 +24,7 @@ final class TanyaAIHostTests: XCTestCase {
         defer { window.isHidden = true }
         weak var releasedPage: UIViewController?
         do {
-            let page = host.makeViewController()
+            let page = UIHostingController(rootView: host.makeView())
             releasedPage = page
             navigation.pushViewController(page, animated: false)
             page.view.layoutIfNeeded()
