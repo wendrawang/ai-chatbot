@@ -7,21 +7,17 @@
 
 import SwiftUI
 
-/// Tiruan coordinator halaman lain, memakai pola NavigationLink + tag milik host.
+/// Rute halaman detail dengan pola NavigationLink + tag milik host; tidak membuat view model.
 @MainActor
 struct DetailCoordinator: View {
     static let named = String(describing: DetailCoordinator.self)
     @Binding
     var selectionCoordinatorName: String?
-    @StateObject
-    private var viewModel = DetailScreenViewModel()
 
     var body: some View {
-        NavigationLink(
-            destination: Screen { DetailScreen(viewModel: viewModel) },
-            tag: Self.named,
-            selection: $selectionCoordinatorName
-        ) {
+        NavigationLink(tag: Self.named, selection: $selectionCoordinatorName) {
+            DetailDestination()
+        } label: {
             EmptyView()
         }
         .hidden()

@@ -11,55 +11,33 @@ import XCTest
 
 @testable import Tanya_AI_Sandbox
 
-/// Host tiruan: Tanya AI dibuka dari mana saja lewat `TanyaAIRouter`, stack tetap milik SwiftUI.
+/// Host tiruan: Tanya AI dibuka lewat coordinator host dan tampil sebagai view SwiftUI biasa.
 @MainActor
 final class SandboxHostTests: XCTestCase {
-    func testOpensFromAnyScreenFullScreenWithoutRegisteringADestination() async throws {
+    func testTanyaAIOpensFullScreenAndClosesBackToMain() async throws {
         let host = try HostHarness()
         defer { host.close() }
-        TanyaAIRouter.instance.open()
-        await waitUntil { host.page != nil }
-        let page = try XCTUnwrap(host.page)
+        host.probe.destination = TanyaAICoordinator.named
+        await waitUntil { host.navigation?.viewControllers.count == 2 }
+        host.settle()
+        let page = try XCTUnwrap(host.navigation?.topViewController)
         XCTAssertEqual(page.view.convert(page.view.bounds, to: nil), host.windowBounds)
-        TanyaAIRouter.instance.open()
-        host.settle()
-        XCTAssertEqual(host.navigation?.viewControllers.count, 2)
-        TanyaAIRouter.instance.close()
-        await waitUntil { host.page == nil && host.navigation?.viewControllers.count == 1 }
-        host.probe.destination = DetailCoordinator.named
-        await waitUntil { host.navigation?.viewControllers.count == 2 }
-        host.settle()
-        TanyaAIRouter.instance.open()
-        await waitUntil { host.page != nil && host.navigation?.viewControllers.count == 3 }
-        TanyaAIRouter.instance.close()
-        await waitUntil { host.page == nil }
-        XCTAssertEqual(host.probe.destination, DetailCoordinator.named)
-        XCTAssertEqual(host.navigation?.viewControllers.count, 2)
-    }
-
-    func testSwiftUIPopWhileOpenKeepsTheRouterInSync() async throws {
-        let host = try HostHarness()
-        defer { host.close() }
-        host.probe.destination = DetailCoordinator.named
-        await waitUntil { host.navigation?.viewControllers.count == 2 }
-        host.settle()
-        TanyaAIRouter.instance.open()
-        await waitUntil { host.navigation?.viewControllers.count == 3 }
+        XCTAssertNotNil(Self.textView(in: page.view), "composer Tanya AI harus ada di halaman yang di-push")
         host.probe.destination = nil
-        await waitUntil { host.navigation?.viewControllers.count == 1 && host.page == nil }
-        await waitUntil { TanyaAIRouter.instance.presenterID == nil }
-        host.settle()
-        TanyaAIRouter.instance.open()
-        await waitUntil { host.page != nil }
+        await waitUntil { host.navigation?.viewControllers.count == 1 }
     }
 
-    func testLogoutClosesTanyaAI() async throws {
+    func testParentRerenderKeepsTheOpenPage() async throws {
         let host = try HostHarness()
         defer { host.close() }
-        TanyaAIRouter.instance.open()
-        await waitUntil { host.page != nil }
-        host.appState.state = .prelogin
-        await waitUntil { host.page == nil && TanyaAIRouter.instance.presenterID == nil }
+        host.probe.destination = TanyaAICoordinator.named
+        await waitUntil { host.navigation?.viewControllers.count == 2 }
+        host.settle()
+        let page = try XCTUnwrap(host.navigation?.topViewController)
+        host.probe.tick += 1
+        host.settle()
+        XCTAssertTrue(host.navigation?.topViewController === page)
+        XCTAssertEqual(host.navigation?.viewControllers.count, 2)
     }
 
     func testRejectedOrOfflineSendKeepsDraftAndOfflineShowsTheHostBlocker() {
@@ -85,6 +63,12 @@ final class SandboxHostTests: XCTestCase {
 }
 
 private extension SandboxHostTests {
+    /// Editor composer Tanya AI berupa UITextView, jadi bisa dicari langsung di hierarki halaman.
+    static func textView(in root: UIView) -> UITextView? {
+        if let textView = root as? UITextView { return textView }
+        return root.subviews.lazy.compactMap { textView(in: $0) }.first
+    }
+
     func waitUntil(_ condition: @escaping () -> Bool) async {
         let met = XCTNSPredicateExpectation(predicate: NSPredicate { _, _ in condition() }, object: nil)
         await fulfillment(of: [met], timeout: 3)
@@ -105,7 +89,6 @@ private final class HostHarness {
 
     var windowBounds: CGRect { fixture.controller.view.window?.bounds ?? .zero }
     var navigation: UINavigationController? { Self.find(UINavigationController.self, in: fixture.controller) }
-    var page: UIViewController? { Self.chatPage(in: fixture.controller) }
 
     func settle() {
         fixture.settle()
@@ -113,7 +96,6 @@ private final class HostHarness {
     }
 
     func close() {
-        TanyaAIRouter.instance.close()
         fixture.close()
     }
 
@@ -123,21 +105,17 @@ private final class HostHarness {
         if let match = controller as? Controller { return match }
         return controller.children.lazy.compactMap { find(type, in: $0) }.first
     }
-
-    private static func chatPage(in controller: UIViewController) -> UIViewController? {
-        if String(describing: Swift.type(of: controller)).contains("ChatScreen") { return controller }
-        return controller.children.lazy.compactMap { chatPage(in: $0) }.first
-    }
 }
 
 private final class DestinationProbe: ObservableObject {
     @Published
     var destination: String?
+    @Published
+    var tick = 0
 }
 
+/// Sama dengan `MainCoordinator`, tetapi tujuan dikendalikan test.
 private struct HarnessMain: View {
-    @EnvironmentObject
-    var appState: AppState
     @ObservedObject
     var probe: DestinationProbe
     @StateObject
@@ -146,13 +124,13 @@ private struct HarnessMain: View {
     var body: some View {
         NavigationView {
             ZStack {
-                DetailCoordinator(selectionCoordinatorName: $probe.destination)
-                Screen { MainScreen(viewModel: viewModel) { probe.destination = DetailCoordinator.named } }
+                if probe.destination == TanyaAICoordinator.named {
+                    TanyaAICoordinator(selectionCoordinatorName: $probe.destination)
+                }
+                Screen { MainScreen(viewModel: viewModel, onOpenDetail: {}, onOpenTanyaAI: {}) }
+                Text(String(probe.tick))
             }
         }
         .navigationViewStyle(.stack)
-        .onChange(of: appState.state) { _, state in
-            if state != .loggedIn { TanyaAIRouter.instance.close() }
-        }
     }
 }

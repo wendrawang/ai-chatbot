@@ -75,8 +75,8 @@ lagi. Lihat pemakaian lengkap pada `ChatScreen.swift` dan
 Draft dimiliki section kecil (`ComposerSection`) dengan `@State`; `MessageComposer`
 menerima Binding dan callback. Dengan begitu ketikan hanya me-render composer,
 bukan header/daftar pesan di screen yang sama. Presenter
-host memakai satu `TanyaAIHost` milik session main dan mem-push
-`makeViewController()` ke jalur navigasinya. Host tidak dibuat ulang di `body`.
+host menampilkan `TanyaAIHost.makeView()` sebagai tujuan `NavigationLink` miliknya;
+view model halaman dipegang `@StateObject` di view tujuan, bukan dibuat di `body`.
 
 ## Callback dan typealias
 
@@ -112,7 +112,7 @@ Tidak perlu menambahkan weak capture pada setiap closure SwiftUI secara otomatis
 | Identifier UI test komponen | `DesignKit/Foundations/Accessibility` |
 | Draft, menu sesi, aturan menerima submission | Screen/fitur pemilik (`TanyaAI/Chat`) |
 | API host: konfigurasi, locale/theme, pembuat halaman | `TanyaAI/Host` |
-| Navigasi, animasi push, swipe-back | Host (router + base `Screen`, atau navigation milik aplikasi revamp) |
+| Navigasi, animasi push, swipe-back | Host (coordinator + destination, atau navigasi aplikasi revamp) |
 
 Komponen umum yang sudah dibutuhkan beberapa caller dibuat reusable. Potongan
 yang baru *mungkin* dipakai ulang boleh tetap private sampai tanggung jawabnya
@@ -121,7 +121,7 @@ caller; jangan memasukkan nama screen, routing fitur atau state bisnis ke Design
 
 Bagian rumit saat ini terisolasi: `GrowingTextInput`/`BoundedTextView` mengatur
 measurement, seleksi dan delegate editor. Navigasi dan animasi halaman memakai
-bawaan UIKit milik host. Screen baru cukup memakai API publiknya. Lifecycle bridge mengikuti urutan
+navigasi bawaan milik host. Screen baru cukup memakai API publiknya. Lifecycle bridge mengikuti urutan
 make/update/dismantle, dan delegate diputus saat dismantle. Komentar menjelaskan
 alasan perilaku khusus, bukan mengulang arti setiap baris.
 

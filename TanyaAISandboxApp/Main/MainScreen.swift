@@ -8,7 +8,7 @@
 import DesignKit
 import SwiftUI
 
-/// Tiruan main host: Tanya AI dibuka dari mana saja lewat `TanyaAIRouter`.
+/// Tiruan main host. Aksi navigasi diteruskan ke coordinator lewat callback.
 @MainActor
 struct MainScreen: ScreenContent {
     @Environment(\.locale)
@@ -20,6 +20,7 @@ struct MainScreen: ScreenContent {
     @ObservedObject
     var viewModel: MainScreenViewModel
     let onOpenDetail: () -> Void
+    let onOpenTanyaAI: () -> Void
 
     var body: some View {
         VStack(spacing: FigmaSize.spacingLarge.scaledToArtwork) {
@@ -37,7 +38,7 @@ struct MainScreen: ScreenContent {
     private var actions: some View {
         HostButton(
             title: String(resource: R.string.localizable.sandboxOpen, locale: locale),
-            identifier: SandboxOptions.openIdentifier, action: TanyaAIRouter.instance.open
+            identifier: SandboxOptions.openIdentifier, action: onOpenTanyaAI
         )
         HostButton(
             title: String(resource: R.string.localizable.sandboxDetailOpen, locale: locale),

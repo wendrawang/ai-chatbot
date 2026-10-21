@@ -24,7 +24,7 @@ final class TanyaAIHostTests: XCTestCase {
         do {
             let owner = NSObject()
             releasedOwner = owner
-            let page = host.makeViewController { Text(owner.description) }
+            let page = UIHostingController(rootView: host.makeView { Text(owner.description) })
             releasedPage = page
             navigation.pushViewController(page, animated: false)
             page.view.layoutIfNeeded()
@@ -39,14 +39,16 @@ final class TanyaAIHostTests: XCTestCase {
     func testLocaleAndPaletteApplyWhenPageIsCreatedAndChangesWaitForNextPage() {
         var host = TanyaAIHost(locale: Locale(identifier: "id"), colors: PremierColorConstants()) { _ in true }
         let openedProbe = EnvironmentProbe()
-        let openedWindow = makeWindow(root: host.makeViewController { EnvironmentReader(probe: openedProbe) })
+        let openedWindow = makeWindow(
+            root: UIHostingController(rootView: host.makeView { EnvironmentReader(probe: openedProbe) }))
         defer { openedWindow.isHidden = true }
         XCTAssertTrue(openedProbe.colors is PremierColorConstants)
         XCTAssertEqual(openedProbe.locale?.identifier, "id")
         host.locale = Locale(identifier: "zh-Hans")
         host.colors = PrivateColorConstants()
         let nextProbe = EnvironmentProbe()
-        let nextWindow = makeWindow(root: host.makeViewController { EnvironmentReader(probe: nextProbe) })
+        let nextWindow = makeWindow(
+            root: UIHostingController(rootView: host.makeView { EnvironmentReader(probe: nextProbe) }))
         defer { nextWindow.isHidden = true }
         XCTAssertTrue(nextProbe.colors is PrivateColorConstants)
         XCTAssertEqual(nextProbe.locale?.identifier, "zh-Hans")

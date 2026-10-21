@@ -17,7 +17,8 @@ belum ada network atau bubble pesan. `--reject-send` mendemonstrasikan draft yan
 harus dipertahankan saat host menolak submission.
 
 Sandbox meniru host SwiftUI: `RootScreen` dengan prelogin dan main coordinator, base
-`Screen` per halaman, dan `TanyaAIRouter` untuk membuka Tanya AI dari halaman mana pun.
+`Screen` per halaman, dan coordinator + destination untuk membuka Tanya AI dari beranda
+atau halaman detail.
 Tombol kembali atau swipe dari tepi kiri menutup feature dan mengembalikan layar host.
 `--offline` menampilkan blocker host di atas Tanya AI saat mengirim.
 Mode `--header-demo` menyisipkan teks dummy untuk mengecek separator dan blur

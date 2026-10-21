@@ -16,7 +16,7 @@ ini menjelaskan alasannya.
 | Nilai awal | `.zero`, `String()`, `[]` | Tidak ada literal tersebar dan tidak ada enum alias. |
 | Token custom | Dipisah per jenis: `CustomSizes`, `CustomTextLines` (`CustomMotion` saat ada animasi) | Aturan scaling jelas per file dan dijaga script; satu tempat untuk mengubah nilai per peran. |
 | Draft | `ComposerSection` memiliki `@State` | Ketikan tidak me-render ulang header/daftar pesan. |
-| Navigasi | Package hanya memberi `makeViewController()`. Host SwiftUI: `TanyaAIRouter` + satu link di base `Screen` | Dibuka dari halaman mana pun tanpa daftar destinasi; stack tetap milik SwiftUI; blocker host tetap berlaku; aplikasi revamp cukup mengganti pemanggilnya. |
+| Navigasi | Package memberi view SwiftUI `makeView()`. Host SwiftUI: coordinator + destination (`@StateObject`), didaftarkan di coordinator yang punya pintu masuk | Memakai rute yang sudah ada, tanpa UIKit ganda; view model hidup selama halaman tampil; blocker host tetap berlaku. Akses "dari mana saja" menunggu navigasi revamp (mis. `NavigationStack` dengan path). |
 
 ## Daftar pesan untuk ratusan chat
 

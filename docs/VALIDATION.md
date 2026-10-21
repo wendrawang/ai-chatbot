@@ -1,5 +1,19 @@
 # Validasi starter
 
+## Tanya AI sebagai view SwiftUI — 22 Oktober 2026
+
+`TanyaAIHost.makeViewController()` diganti `makeView()`: host SwiftUI tidak lagi
+membungkus halaman ke `UIHostingController` lalu ke representable. Tampilan terang
+dibatasi lewat `.environment(\.colorScheme, .light)`; tanpa `onBack`, tombol kembali
+memakai `dismiss` SwiftUI. Sandbox mengikuti pola host: coordinator hanya berisi
+`NavigationLink`, view model dipegang `@StateObject` di view tujuan
+(`TanyaAIDestination`, `DetailDestination`), dan main dibuang saat logout.
+`TanyaAIRouter` dan `TanyaAIPage` dihapus.
+
+Dibuktikan oleh test: halaman full screen dan composer ada di halaman yang di-push;
+render ulang halaman induk tidak mengganti halaman yang terbuka; UI test keyboard,
+inset visual, swipe-back, buka dari detail, blocker offline, dan logout/login lulus.
+
 ## Host tiruan SwiftUI — 20 Oktober 2026
 
 Sandbox kini meniru host: `RootScreen` (prelogin + main tetap hidup), base `Screen`,

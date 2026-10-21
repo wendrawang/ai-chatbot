@@ -7,18 +7,17 @@
 
 import SwiftUI
 
-/// Tujuan link Tanya AI di base `Screen`. Dibungkus `Screen` agar blocker host ikut berlaku.
+/// Pemilik view model halaman Tanya AI. `@StateObject` dibuat sekali saat halaman di-push dan
+/// dilepas saat di-pop; render ulang halaman induk tidak membuatnya ulang.
 @MainActor
 struct TanyaAIDestination: View {
-    // StateObject: view model tetap sama walau halaman pemanggil render ulang.
     @StateObject
     private var viewModel = TanyaAIScreenViewModel()
-    let presenterID: UUID
+    let onBack: () -> Void
 
     var body: some View {
-        Screen(isTanyaAIAvailable: false) {
-            TanyaAIScreen(viewModel: viewModel, onBack: TanyaAIRouter.instance.close)
+        Screen {
+            TanyaAIScreen(viewModel: viewModel, onBack: onBack)
         }
-        .onDisappear { TanyaAIRouter.instance.didDisappear(from: presenterID) }
     }
 }

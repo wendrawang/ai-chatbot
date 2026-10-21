@@ -8,7 +8,7 @@
 import DesignKit
 import SwiftUI
 
-/// Halaman host level kedua; membuktikan Tanya AI terbuka dari mana saja tanpa didaftarkan.
+/// Halaman host level kedua; membuka Tanya AI lewat coordinator miliknya sendiri.
 @MainActor
 struct DetailScreen: ScreenContent {
     @Environment(\.locale)
@@ -19,6 +19,7 @@ struct DetailScreen: ScreenContent {
     private var colors
     @ObservedObject
     var viewModel: DetailScreenViewModel
+    let onOpenTanyaAI: () -> Void
 
     var body: some View {
         VStack(spacing: FigmaSize.spacingLarge.scaledToArtwork) {
@@ -29,7 +30,7 @@ struct DetailScreen: ScreenContent {
             )
             HostButton(
                 title: String(resource: R.string.localizable.sandboxOpen, locale: locale),
-                identifier: SandboxOptions.detailTanyaAIIdentifier, action: TanyaAIRouter.instance.open
+                identifier: SandboxOptions.detailTanyaAIIdentifier, action: onOpenTanyaAI
             )
             Spacer()
         }

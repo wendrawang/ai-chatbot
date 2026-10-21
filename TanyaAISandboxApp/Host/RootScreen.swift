@@ -7,7 +7,7 @@
 
 import SwiftUI
 
-/// Tiruan root host: main tetap hidup selama prelogin tampil di atasnya, seperti host asli.
+/// Tiruan root host: prelogin tetap hidup, main dibuang saat logout (seperti `setHidden` dengan `isRemove`).
 @MainActor
 struct RootScreen: View {
     @ObservedObject
@@ -15,9 +15,9 @@ struct RootScreen: View {
 
     var body: some View {
         ZStack {
-            MainCoordinator()
-            if appState.state != .loggedIn {
-                PreloginScreen()
+            PreloginScreen()
+            if appState.state == .loggedIn {
+                MainCoordinator()
             }
         }
         .environmentObject(appState)
