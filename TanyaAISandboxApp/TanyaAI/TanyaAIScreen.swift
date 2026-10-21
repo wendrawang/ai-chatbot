@@ -15,12 +15,18 @@ struct TanyaAIScreen: ScreenContent {
     let onBack: () -> Void
 
     var body: some View {
-        let host = viewModel.makeHost()
-        // Sandbox: mode --header-demo mengisi area scroll dengan konten contoh.
-        if SandboxOptions.current.isHeaderDemo {
-            host.makeView(onBack: onBack) { HeaderDemoContent() }
-        } else {
-            host.makeView(onBack: onBack)
-        }
+        viewModel.makeHost().makeView(onBack: onBack)
+            .sheet(isPresented: isShowingWeb) {
+                viewModel.webLink.map(WebPage.init)
+            }
+    }
+
+    private var isShowingWeb: Binding<Bool> {
+        Binding(
+            get: { viewModel.webLink != nil },
+            set: { isShowing in
+                if !isShowing { viewModel.webLink = nil }
+            }
+        )
     }
 }

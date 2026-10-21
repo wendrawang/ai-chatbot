@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import TanyaAI
 import UIKit
 import XCTest
 
@@ -40,14 +41,25 @@ final class SandboxHostTests: XCTestCase {
         XCTAssertEqual(host.navigation?.viewControllers.count, 2)
     }
 
-    func testRejectedOrOfflineSendKeepsDraftAndOfflineShowsTheHostBlocker() {
-        XCTAssertTrue(TanyaAIUseCase(options: SandboxOptions(arguments: [])).send("Halo"))
-        XCTAssertFalse(TanyaAIUseCase(options: SandboxOptions(arguments: ["--reject-send"])).send("Halo"))
+    func testOfflineServiceShowsTheHostBlockerAndChatStillGetsTheError() async throws {
         let offline = TanyaAIScreenViewModel(useCase: TanyaAIUseCase(options: SandboxOptions(arguments: ["--offline"])))
-        XCTAssertFalse(offline.useCase.send("Halo"))
-        XCTAssertTrue(offline.isNetworkUnavailable)
+        let request = TanyaAIChatRequest(conversationId: "conversation", text: "Halo")
+        do {
+            for try await _ in offline.useCase.service.streamChat(request) {}
+            XCTFail("Service offline harus gagal")
+        } catch {
+            XCTAssertEqual((error as? URLError)?.code, .notConnectedToInternet)
+        }
+        await waitUntil { offline.isNetworkUnavailable }
         offline.retry()
         XCTAssertFalse(offline.isNetworkUnavailable)
+    }
+
+    func testWebLinkOpensTheHostWebviewInsteadOfSafari() throws {
+        let viewModel = TanyaAIScreenViewModel()
+        let url = try XCTUnwrap(URL(string: "https://google.com"))
+        viewModel.open(.web(url))
+        XCTAssertEqual(viewModel.webLink, url)
     }
 
     func testPopGestureNeedsAPageToReturnTo() throws {

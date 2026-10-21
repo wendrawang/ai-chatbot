@@ -87,9 +87,9 @@ private let onBack: () -> Void
 private let onSend: (String) -> Bool
 ```
 
-Nama menyatakan aksi. Kontrak hasil wajib jelas: pada starter, `onSend` mengembalikan
-`true` ketika host menerima submission sehingga draft boleh dibersihkan; `false`
-mempertahankan draft. Ini bukan status sukses pengiriman ke backend.
+Nama menyatakan aksi. Kontrak hasil wajib jelas: `ComposerSection.onSend` mengembalikan
+`true` ketika pertanyaan diterima sehingga draft boleh dibersihkan; `false`
+mempertahankan draft (mis. kosong atau jawaban sebelumnya masih mengalir).
 
 Tidak perlu satu file `TypeAliases.swift` untuk `Action`, `VoidCallback`, dan
 alias callback lain yang sudah mudah dibaca. Gunakan typealias ketika signature
@@ -229,7 +229,8 @@ file dan nama PostScript berbeda; ketujuh font existing tetap dipertahankan.
 | --- | --- | --- |
 | `Generated/FigmaSize` | Spacing, ukuran icon, tipografi dari Figma. **Cek di sini dulu.** | Ya |
 | `CustomSizes` | Dimensi point yang belum ada di Figma: `Header.height`, `Shadow`, `Composer.sendButton` | **Selalu** |
-| `CustomTextLines` | Batas baris per peran: `composerInput = 1...4`, `headerTitle` | Tidak pernah |
+| `CustomTextLines` | Batas baris per peran: `composerInput = 1...4`, `headerTitle`, `actionTitle` | Tidak pernah |
+| `CustomMotion` | Durasi dan nilai animasi: `StatusPulse.duration`, `StatusPulse.dimmedOpacity` | Tidak pernah |
 | `CustomColors` / `CustomBasePaletteColor` | Warna semantik tambahan / hex dasarnya | — |
 | `ArtworkScale` | Referensi 375×812 dan rasio layar untuk `.scaledToArtwork` | Tidak pernah |
 | `LayoutTolerance` | Toleransi pembulatan layout (bukan token desain) | Tidak pernah |

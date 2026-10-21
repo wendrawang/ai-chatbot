@@ -1,0 +1,39 @@
+{
+  "summary": "[bold]Evaluasi:[/bold] portofoliomu cenderung [color]defensif|25C36B[/color] dengan keuntungan stabil.",
+  "holdings": [
+    {
+      "product": "Reksa Dana",
+      "currentValue": 35000000,
+      "profit": 1200000
+    },
+    {
+      "product": "Reksa Dana",
+      "currentValue": 30000000,
+      "profit": 900000
+    },
+    {
+      "product": "Reksa Dana",
+      "currentValue": 15000000,
+      "profit": 1500000
+    }
+  ],
+  "totalProfit": 3600000,
+  "actions": [
+    {
+      "label": "Optimalkan portofolio",
+      "style": "chip",
+      "action": {
+        "type": "prompt",
+        "value": "Bagaimana cara mengoptimalkan portofolio saya?"
+      }
+    },
+    {
+      "label": "Lihat detail portofolio",
+      "style": "link",
+      "action": {
+        "type": "link",
+        "value": "ocbcid://portfolio"
+      }
+    }
+  ]
+}

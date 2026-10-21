@@ -9,7 +9,8 @@ import SwiftUI
 
 /// Satu sumber palette untuk seluruh subtree; komponen membaca nilai ini dari environment.
 private struct DesignColorsKey: EnvironmentKey {
-    static let defaultValue: any FigmaColorProtocol = DefaultColorConstants()
+    // Computed agar tidak menjadi state global (aman untuk Swift 6).
+    static var defaultValue: any FigmaColorProtocol { DefaultColorConstants() }
 }
 
 public extension EnvironmentValues {

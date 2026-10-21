@@ -1,8 +1,9 @@
-# Tahap 1 — halaman kosong dan composer
+# Tahap 1 — fondasi: halaman, header dan composer
 
-Tuliskan implementasi per bagian, lalu jalankan checkpoint sebelum lanjut.
-Target ini sengaja tidak mempunyai session SDK, ViewModel, backend, bubble,
-welcome, rich text, table, transaction, ThemeManager, atau CopyCatalog.
+Dokumen ini mencatat urutan fondasi yang dibangun lebih dulu. Chat lengkap di atas
+fondasi ini (welcome, daftar pesan, jawaban berblok, SSE + intent) dijelaskan di
+[CHAT_CONTRACT.md](CHAT_CONTRACT.md) dan [integrasi host](HOST_INTEGRATION.md).
+Transaksi, ThemeManager, dan CopyCatalog sengaja belum ada.
 
 ## Tree
 
@@ -84,9 +85,8 @@ Packages/
    Tombol back atau swipe dari tepi kiri kembali ke halaman asal.
    Lihat [integrasi host](HOST_INTEGRATION.md).
 
-Screen menggunakan `ChatScreen(onSend:)`. Callback mendapat draft dan mengembalikan
-Bool: true membersihkan draft, false mempertahankan teks/seleksi. Draft whitespace
-menonaktifkan action. Callback belum mengimplikasikan pesan terkirim ke backend.
+Composer mengirim draft ke `ChatViewModel.send`: diterima bila tidak kosong dan tidak
+ada jawaban yang sedang mengalir; selama mengalir tombol kirim berganti stop.
 
 Untuk membuka feature di atas `NavigationView` host existing, lihat
 [contoh integrasi host](HOST_INTEGRATION.md), termasuk bootstrap font dan bahasa.

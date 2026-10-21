@@ -16,33 +16,30 @@ final class HeaderUITests: XCTestCase {
     }
 
     func testHeaderBoundaryTracksScrollWithoutMovingHeaderOrComposer() {
-        launch(locale: "id", extra: ["--header-demo"])
+        launch(locale: "id")
         let header = application.otherElements["header"]
         XCTAssertTrue(header.waitForExistence(timeout: 10))
-        let title = application.staticTexts["header.title"]
-        let titleFrame = title.frame
-        let composerFrame = application.otherElements["composer"].frame
-        let first = application.staticTexts["sandbox.demo.start"]
-        XCTAssertGreaterThanOrEqual(first.frame.minY - header.frame.maxY, 15)
+        let titleFrame = application.staticTexts["header.title"].frame
         assertActionsAndTitle()
-        capture("header-demo-top")
-        let scroll = contentScroll
-        scroll.swipeUp()
-        XCTAssertTrue(application.otherElements["header.scrolled"].waitForExistence(timeout: 5))
-        XCTAssertEqual(title.frame, titleFrame)
-        XCTAssertEqual(application.otherElements["composer"].frame, composerFrame)
-        capture("header-demo-scrolled")
-        for _ in 0..<12 where !application.staticTexts["sandbox.demo.end"].isHittable { scroll.swipeUp() }
-        XCTAssertTrue(application.staticTexts["sandbox.demo.end"].isHittable)
-        for _ in 0..<12 where !application.otherElements["header"].exists { scroll.swipeDown() }
+        let input = application.textViews["composer.input"]
+        input.tap()
+        input.typeText("halo")
+        application.buttons["composer.send"].tap()
+        waitForAnswer(in: application)
+        let messages = application.tables.firstMatch
+        for _ in 0..<8 where !application.otherElements["header"].exists { messages.swipeDown() }
         XCTAssertTrue(application.otherElements["header"].waitForExistence(timeout: 5))
-        XCTAssertEqual(title.frame, titleFrame)
-        capture("header-demo-returned")
+        let composerFrame = application.otherElements["composer"].frame
+        messages.swipeUp()
+        XCTAssertTrue(application.otherElements["header.scrolled"].waitForExistence(timeout: 5))
+        XCTAssertEqual(application.staticTexts["header.title"].frame, titleFrame)
+        XCTAssertEqual(application.otherElements["composer"].frame, composerFrame)
+        capture("chat-header-scrolled")
         application.buttons["header.back"].tap()
         XCTAssertTrue(application.buttons["sandbox.open"].waitForExistence(timeout: 5))
     }
 
-    func testOptionsAreLocalizedAndSessionActionWaitsForHostHandler() {
+    func testOptionsAreLocalizedAndNewConversationNeedsMessages() {
         for (locale, label, item) in [
             ("en", "Conversation options", "New conversation"),
             ("id", "Opsi percakapan", "Percakapan baru"),
@@ -58,14 +55,23 @@ final class HeaderUITests: XCTestCase {
             XCTAssertFalse(action.isEnabled)
             application.terminate()
         }
+        launch(locale: "id")
+        let input = application.textViews["composer.input"]
+        XCTAssertTrue(input.waitForExistence(timeout: 10))
+        input.tap()
+        input.typeText("halo")
+        application.buttons["composer.send"].tap()
+        waitForAnswer(in: application)
+        application.buttons["chat.more"].tap()
+        application.buttons["Percakapan baru"].tap()
+        XCTAssertTrue(application.descendants(matching: .any)["chat.welcome"].waitForExistence(timeout: 5))
     }
 
     func testHeaderStaysFixedWithKeyboardAndLargeSystemText() {
         launch(
             locale: "zh-Hans",
-            extra: [
-                "--header-demo", "-UIPreferredContentSizeCategoryName", "UICTContentSizeCategoryAccessibilityXXXL"
-            ])
+            extra: ["-UIPreferredContentSizeCategoryName", "UICTContentSizeCategoryAccessibilityXXXL"]
+        )
         let input = application.textViews["composer.input"]
         XCTAssertTrue(input.waitForExistence(timeout: 10))
         let titleFrame = application.staticTexts["header.title"].frame
@@ -76,9 +82,6 @@ final class HeaderUITests: XCTestCase {
         XCTAssertTrue(send.isHittable)
         XCTAssertLessThanOrEqual(send.frame.maxY, application.keyboards.firstMatch.frame.minY + 1)
         assertActionsAndTitle()
-        contentScroll.swipeUp()
-        XCTAssertTrue(application.otherElements["header.scrolled"].waitForExistence(timeout: 5))
-        XCTAssertEqual(application.staticTexts["header.title"].frame, titleFrame)
         application.buttons["header.back"].tap()
         XCTAssertTrue(application.buttons["sandbox.open"].waitForExistence(timeout: 5))
     }
@@ -95,11 +98,6 @@ final class HeaderUITests: XCTestCase {
         XCTAssertEqual(title.midX, application.frame.midX, accuracy: 1)
         XCTAssertGreaterThanOrEqual(title.minX, back.maxX)
         XCTAssertLessThanOrEqual(title.maxX, more.minX)
-    }
-
-    /// Scroll konten demo. `scrollViews.firstMatch` bisa menunjuk bar saran keyboard.
-    private var contentScroll: XCUIElement {
-        application.scrollViews.containing(.staticText, identifier: "sandbox.demo.start").firstMatch
     }
 
     private func launch(locale: String, extra: [String] = []) {

@@ -18,34 +18,23 @@ ini menjelaskan alasannya.
 | Draft | `ComposerSection` memiliki `@State` | Ketikan tidak me-render ulang header/daftar pesan. |
 | Navigasi | Package memberi view SwiftUI `makeView()`. Host SwiftUI: coordinator + destination (`@StateObject`), didaftarkan di coordinator yang punya pintu masuk | Memakai rute yang sudah ada, tanpa UIKit ganda; view model hidup selama halaman tampil; blocker host tetap berlaku. Akses "dari mana saja" menunggu navigasi revamp (mis. `NavigationStack` dengan path). |
 
-## Daftar pesan untuk ratusan chat
+## Daftar pesan untuk ratusan chat (sudah diterapkan)
 
-`ScreenContainer` cocok untuk halaman form/konten biasa. Untuk chat dengan ratusan
-pesan, gunakan `ScreenHeader` mandiri ditambah list yang memiliki scroll sendiri.
-Pada iOS 15:
+Chat memakai `ScreenHeader` mandiri dan `MessageListController` (`UITableView`):
 
-- `ScrollView` + `LazyVStack` membuat row secara lazy tetapi tidak me-recycle,
-  sehingga memori bertambah selama scroll. Row dengan tinggi bervariasi bisa
-  meloncat saat scroll ke atas, dan API anchor bawah seperti
-  `defaultScrollAnchor`/`scrollPosition` baru ada di iOS 17.
-- `List` me-recycle row, tetapi background dan inset sulit dikendalikan di iOS 15
-  (`scrollContentBackground` baru iOS 16).
-- **Rekomendasi:** `UITableView` atau `UICollectionView` di dalam
-  `UIViewControllerRepresentable`, dengan row SwiftUI. Pakai `UIHostingConfiguration`
-  di iOS 16+ dan hosting controller per cell sebagai fallback iOS 15. Branch `main`
-  sudah membuktikan pola ini; bawa idenya saja, tanpa lapisan tambahan.
+- Cell di-recycle; isi cell `UIHostingConfiguration` (iOS 16+) atau hosting controller
+  (iOS 15). `LazyVStack` tidak me-recycle dan anchor bawahnya baru ada di iOS 17.
+- Pesan value type (`ChatMessage`) dengan ID stabil; snapshot diffable hanya
+  `reconfigureItems` untuk baris yang berubah, jadi streaming hanya me-render baris
+  jawaban terakhir.
+- Pertanyaan baru ditahan dekat atas dengan preview 48 jawaban sebelumnya; ruang kosong
+  sementara di bawah mengecil saat jawaban memanjang; panah kembali ke pesan terbaru.
 
-Aturan supaya tetap ringan:
-
-1. Pesan berupa value type dengan ID stabil. ViewModel memegang array; list
-   menerapkan `UITableViewDiffableDataSource` snapshot, bukan `reloadData`.
-2. Update satu pesan (misalnya jawaban yang sedang streaming) memakai
-   `reconfigureItems` (iOS 15), bukan publish ulang seluruh array per token.
-3. Rich text/tabel diproses sekali di mapper menjadi model siap tampil; `body` row
-   tidak mem-parse atau memformat.
-4. History dimuat per halaman (mis. 30–50 pesan) saat mendekati atas.
-5. Ukur dengan Instruments di device nyata memakai fixture 500 pesan sebelum
-   menyimpulkan performa. Hasil simulator bukan FPS produksi.
+Tahap berikutnya:
+1. History dimuat per halaman (mis. 30–50 pesan) saat mendekati atas, setelah kontrak
+   history ada.
+2. Ukur dengan Instruments di device nyata memakai fixture 500 pesan. Hasil simulator
+   bukan FPS produksi.
 
 ## Skala artwork, `UIScreen.main`, dan iPhone lipat
 
@@ -70,30 +59,21 @@ Saran bertahap:
    Ini mengubah aturan "tanpa artwork environment" yang berlaku sekarang, jadi
    putuskan bersama tim ketika target perangkat lipat sudah pasti.
 
-## Seam backend (contract belum ada)
+## Seam backend (sudah diterapkan)
 
-Endgame: host yang memanggil service, TanyaAI menerima payload dan menerjemahkannya
-ke UI. Buat seam paling tipis saat migrasi pengiriman dimulai:
+Host mengimplementasikan `TanyaAIService` (SSE chat + inquiry BE per intent); TanyaAI
+men-decode event dan memetakan hasil BE per intent. Kontrak lengkap:
+[CHAT_CONTRACT.md](CHAT_CONTRACT.md).
 
-```swift
-// Host yang melakukan network; TanyaAI hanya decode + map ke model UI.
-public protocol TanyaAIChatService {
-    func send(_ text: String) async throws -> Data
-}
-```
-
-- `TanyaAIHost(service:)` menggantikan `onSend: (String) -> Bool`. Ini perubahan
-  API, jadi lakukan sekali saat contract pertama tersedia.
-- `ResponseDTO` dan mapper bersifat internal di TanyaAI. Saat contract berubah,
-  hanya dua file ini yang ikut berubah.
-- Implementasi dummy ada di Sandbox, bukan di package produksi.
-- Mulai dari request/response biasa. Ganti ke `AsyncThrowingStream` hanya jika
-  backend memang streaming.
+- Kontrak BE berubah → ubah `Service/<Intent>Mapping.swift` saja.
+- Intent baru → satu file mapping, nama di `IntentName`, daftar di `IntentMappings`.
+- Implementasi dummy ada di Sandbox (fixture JSON), bukan di package produksi.
 - Jangan memindahkan DependencyContainer, Coordinator, atau file alias dari `main`
   sebelum ada kebutuhan nyata.
 
 ## Persiapan Swift 6
 
-Package masih memakai `swift-tools-version: 5.7`. Sebelum revamp, naikkan tools
-version dan aktifkan strict concurrency secara bertahap. Contoh yang akan muncul:
-`FontLoader.registered` berupa `static var` mutable yang dijaga `NSLock`.
+Package masih memakai `swift-tools-version: 5.7`. Build dengan
+`SWIFT_STRICT_CONCURRENCY=complete` saat ini hanya menyisakan warning pada kode lama:
+`FontLoader.registered` (`static var` mutable yang dijaga `NSLock`) dan
+`ArtworkScale.currentRatio` (membaca `UIScreen.main`). `TanyaAIService` sudah `Sendable`.

@@ -17,7 +17,6 @@ TanyaAI/Sources/TanyaAI/
 ├── Resources/{en,id,zh-Hans}.lproj/
 └── Host/                                # konfigurasi + pembuat halaman untuk host
 
-TanyaAISandboxApp/HeaderDemoContent.swift # fixture scroll, bukan UI produksi
 ```
 
 1. Tambahkan tinggi header ke `CustomSizes.Header` dan batas baris judul ke
@@ -30,7 +29,7 @@ TanyaAISandboxApp/HeaderDemoContent.swift # fixture scroll, bukan UI produksi
    dengan `.scaledToArtwork`, tanpa batas minimum SDK. Label dan action datang
    dari caller; tidak ada copy TanyaAI di sini.
    Trailing slot untuk satu action; caller memberi label/tap target yang sesuai.
-3. Surface biasa opaque. Saat `isScrolled`, gunakan `.ultraThinMaterial` dan
+3. Surface transparan di posisi atas agar latar halaman terlihat. Saat `isScrolled`, gunakan `.ultraThinMaterial` dan
    separator token outline di bawah. Jika Reduce Transparency aktif, pertahankan
    separator dengan surface opaque. Tidak ada blur pada teks/judul/icon sendiri.
 4. Buat `ScreenContainer` untuk menyusun header sebagai overlay di atas ScrollView. Padding
@@ -109,18 +108,14 @@ saat scroll; yang dibatasi adalah callback dan state update, bukan klaim bahwa
 semua layout/renderer berhenti bekerja. Tes menghitung transisi callback dan
 isolasi nested scroll; pengukuran FPS/Instruments terpisah.
 
-## Menu dan demo
+## Menu dan konten
 
-Titik tiga membuka menu “Percakapan baru” dalam English/Indonesia/简体中文.
-`onNewConversation` hanya mengirim aksi ke host. Tanpa handler, item disabled;
-belum ada reset draft atau flow sesi/welcome pada tahap ini.
-
-Jalankan `Scripts/run_sandbox.sh --language id --header-demo`, lalu buka feature.
-Mode ini memberi paragraf dummy yang cukup panjang untuk mencapai akhir, kembali
-ke atas, dan melihat teks di belakang header. Tanpa flag, area chat tetap kosong.
-Asset back/more/send masih PDF vector sementara, dengan TODO di xcassets.
-Localization dan nama asset dibaca melalui R.swift generated; lihat
-[pola view dan resource](VIEW_TEMPLATE.md).
+Titik tiga membuka menu “Percakapan baru” dalam English/Indonesia/简体中文; aktif
+setelah ada pesan dan mengembalikan layar ke welcome. Chat memakai `ScreenHeader`
+mandiri di atas daftar pesan `UITableView`; header transparan di posisi atas dan blur
++ separator saat daftar digulir. `ScreenContainer` tetap untuk halaman form/konten
+biasa. Asset masih PDF vector sementara, dengan TODO di xcassets. Localization dan
+nama asset dibaca melalui R.swift generated; lihat [pola view dan resource](VIEW_TEMPLATE.md).
 
 ## Checkpoint sebelum lanjut
 

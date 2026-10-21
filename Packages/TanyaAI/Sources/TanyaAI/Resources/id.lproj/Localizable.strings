@@ -11,3 +11,27 @@
 "chat.newConversation" = "Percakapan baru";
 "chat.title" = "Tanya AI";
 "chat.back" = "Kembali";
+
+"chat.stop" = "Hentikan jawaban";
+"chat.scrollToLatest" = "Ke pesan terbaru";
+"chat.thinking" = "Sedang menyiapkan jawaban terbaik untukmu...";
+"chat.stopped" = "Jawaban dihentikan.";
+"chat.error" = "Maaf, terjadi kendala. Silakan coba lagi.";
+"chat.retry" = "Coba lagi";
+"chat.unsupported" = "Maaf, permintaan ini belum didukung.";
+"welcome.greeting" = "Hi, %@!";
+"welcome.description" = "Temukan insight finansial untuk bantu ambil langkah lebih cerdas hari ini";
+"welcome.start" = "Mulai dari sini:";
+"quick.portfolio.title" = "Cek Portofolio";
+"quick.portfolio.subtitle" = "Pantau aset & performa investasimu";
+"quick.portfolio.prompt" = "Tolong cek portofolio saya";
+"quick.currency.title" = "Beli Valas";
+"quick.currency.subtitle" = "Cek kurs dan beli mata uang asing";
+"quick.currency.prompt" = "Saya mau beli valas";
+"quick.reference.title" = "Ajukan Surat Referensi";
+"quick.reference.subtitle" = "Siapkan surat untuk kebutuhan visa";
+"quick.reference.prompt" = "Saya mau mengajukan surat referensi bank";
+"portfolio.product" = "Produk";
+"portfolio.currentValue" = "Nilai Saat ini (IDR)";
+"portfolio.profit" = "Keuntungan (IDR)";
+"portfolio.totalProfit" = "Total Keuntungan (IDR)";

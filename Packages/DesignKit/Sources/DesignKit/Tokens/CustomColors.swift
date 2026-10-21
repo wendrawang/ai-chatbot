@@ -13,6 +13,11 @@ public enum CustomColors {
         public static let color = CustomBasePaletteColor.royalPastelBlue
     }
 
+    /// Tombol penuh gelap "action-here" (C2, menunggu konfirmasi warna Figma).
+    public enum FilledAction {
+        public static let background = CustomBasePaletteColor.slateGray
+    }
+
     public enum Shadow {
         public static let opacity: Double = 0.4
         public static let color = CustomBasePaletteColor.glossySilver.opacity(opacity)

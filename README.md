@@ -1,36 +1,35 @@
-# Tanya AI — starting point
+# Tanya AI
 
-Baseline minimal untuk belajar dan migrasi bertahap, iOS 15. Menampilkan halaman
-kosong, shared header, dan composer yang tumbuh sampai empat baris. Tujuh font Fira Sans/Open Sans dari package;
-copy tersedia dalam English, Bahasa Indonesia, dan 简体中文.
+Chat Tanya AI untuk di-embed di host app, iOS 15: welcome dengan shortcut, daftar
+pesan untuk ratusan chat, jawaban berblok (teks bermarkup, tabel, pilihan, media,
+action, suggestion), dan alur SSE + inquiry BE per intent. Copy tersedia dalam
+English, Bahasa Indonesia, dan 简体中文.
 
 ```sh
 ./Scripts/run_sandbox.sh --language id
 ./Scripts/run_sandbox.sh --language en
 ./Scripts/run_sandbox.sh --language zh-Hans
-./Scripts/run_sandbox.sh --language id --header-demo
 ./Scripts/run_sandbox.sh --language id --offline
 ```
 
-Tombol kirim memanggil callback host. Sandbox menerima draft dan membersihkannya;
-belum ada network atau bubble pesan. `--reject-send` mendemonstrasikan draft yang
-harus dipertahankan saat host menolak submission.
-
 Sandbox meniru host SwiftUI: `RootScreen` dengan prelogin dan main coordinator, base
 `Screen` per halaman, dan coordinator + destination untuk membuka Tanya AI dari beranda
-atau halaman detail.
-Tombol kembali atau swipe dari tepi kiri menutup feature dan mengembalikan layar host.
-`--offline` menampilkan blocker host di atas Tanya AI saat mengirim.
-Mode `--header-demo` menyisipkan teks dummy untuk mengecek separator dan blur
-saat scroll. Integrasi biasa tetap membuka area percakapan kosong.
+atau halaman detail, dengan service dummy dari fixture JSON (tanpa network). Tekan “Buka Tanya AI” di beranda
+atau di halaman detail, lalu:
 
-- [Urutan belajar dan tree](docs/STARTING_POINT.md)
-- [Tahap header dan checkpoint migrasi berikutnya](docs/SHARED_HEADER.md)
-- [Membuka screen dari host app](docs/HOST_INTEGRATION.md)
+- ketuk **Cek Portofolio** → status loading → intent `review-porto` → inquiry dummy → tabel;
+- tulis pertanyaan bebas → teks bermarkup (bold, coret, warna, link web/telepon/deeplink),
+  pilihan, media, action, dan suggestion;
+- tombol stop selama jawaban mengalir; menu titik tiga → percakapan baru;
+- kembali dengan tombol back atau swipe dari tepi kiri;
+- `--offline`: blocker host tampil di atas Tanya AI saat mengirim.
+
+- [Kontrak SSE, blok, markup dan link](docs/CHAT_CONTRACT.md)
+- [Integrasi host](docs/HOST_INTEGRATION.md)
+- [Status ukuran Figma](docs/FIGMA_SIZES.md)
 - [Pola view dan resource R.swift](docs/VIEW_TEMPLATE.md)
 - [Aturan implementasi](AGENTS.md)
-- [Hasil validasi](docs/VALIDATION.md)
 - [Keputusan revamp dan tahap berikutnya](docs/REVAMP_NOTES.md)
+- [Hasil validasi](docs/VALIDATION.md)
 
-PR starter ditujukan ke branch `startingpoint`; flow lengkap sebelumnya tetap
-tersedia di `main`/history. Jalankan `Scripts/verify.sh` sebelum review.
+Jalankan `Scripts/verify.sh` sebelum review.

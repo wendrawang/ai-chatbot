@@ -59,6 +59,7 @@ final class StartingPointUITests: XCTestCase {
         capture("starter-four-lines-keyboard")
         send.tap()
         XCTAssertEqual(input.value as? String, "")
+        waitForAnswer(in: application)
         XCTAssertFalse(send.isEnabled)
         XCTAssertEqual(input.frame.midY, send.frame.midY, accuracy: 1)
     }
@@ -74,6 +75,7 @@ final class StartingPointUITests: XCTestCase {
             input.typeText("Tap edge")
             send.coordinate(withNormalizedOffset: CGVector(dx: horizontal, dy: vertical)).tap()
             XCTAssertEqual(input.value as? String, "")
+            waitForAnswer(in: application)
             XCTAssertFalse(send.isEnabled)
         }
     }
@@ -101,16 +103,6 @@ final class StartingPointUITests: XCTestCase {
         XCTAssertEqual(input.value as? String, "")
         XCTAssertEqual(input.frame.midY, application.buttons["composer.send"].frame.midY, accuracy: 1)
         capture("starter-empty-after-clearing")
-    }
-
-    func testRejectedSubmissionKeepsDraft() {
-        launch(locale: "en", extra: ["--reject-send"])
-        let input = application.textViews["composer.input"]
-        XCTAssertTrue(input.waitForExistence(timeout: 10))
-        input.tap()
-        input.typeText("Keep my draft")
-        application.buttons["composer.send"].tap()
-        XCTAssertEqual(input.value as? String, "Keep my draft")
     }
 
     func testTextSizeSettingKeepsComposerFontAndLayoutFixed() {

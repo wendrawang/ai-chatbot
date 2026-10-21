@@ -7,9 +7,13 @@
 
 import Foundation
 import TanyaAI
+import UIKit
 
-/// View model halaman Tanya AI di host: menyusun konfigurasi package dan meneruskan kiriman ke use case.
+/// View model halaman Tanya AI di host: menyusun konfigurasi package, membuka link jawaban,
+/// dan meneruskan error service ke blocker host.
 final class TanyaAIScreenViewModel: ScreenContentViewModel {
+    @Published
+    var webLink: URL?
     let useCase: TanyaAIUseCase
 
     init(useCase: TanyaAIUseCase = TanyaAIUseCase()) {
@@ -22,8 +26,19 @@ final class TanyaAIScreenViewModel: ScreenContentViewModel {
     @MainActor
     func makeHost() -> TanyaAIHost {
         // Sandbox: bahasa dari launch option; host memakai Localize_Swift.
-        TanyaAIHost(locale: SandboxOptions.current.locale ?? .current) { [weak self] text in
-            self?.useCase.send(text) ?? false
+        let locale = SandboxOptions.current.locale ?? .current
+        return TanyaAIHost(
+            customerName: String(resource: R.string.localizable.sandboxCustomerName, locale: locale),
+            service: useCase.service, locale: locale
+        ) { [weak self] link in self?.open(link) }
+    }
+
+    /// Link web ke webview host; deeplink dan telepon ke handler sistem/host.
+    @MainActor
+    func open(_ link: TanyaAILink) {
+        switch link {
+        case .web(let url): webLink = url
+        case .deeplink(let url), .phone(let url): UIApplication.shared.open(url)
         }
     }
 }

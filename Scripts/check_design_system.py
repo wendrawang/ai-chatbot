@@ -13,11 +13,12 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
 errors = []
-# These files own technical metadata or format/transform arithmetic, not user-facing copy.
+# These files own technical metadata, format/transform arithmetic or OS availability checks.
 METADATA = {
-    'Typography/FontFace.swift', 'Extensions/Color+Hex.swift',
+    'Typography/FontFace.swift', 'Extensions/Color+Hex.swift', 'Foundations/Markup/MarkupSyntax.swift',
     'Foundations/Accessibility/ComponentIdentifier.swift',
-    'Chat/ChatElementIdentifier.swift',
+    'Chat/ChatElementIdentifier.swift', 'Host/TanyaAILink.swift', 'Service/IntentName.swift',
+    'Messages/ChatDateFormat.swift', 'Messages/MessageCell.swift',
     'TanyaAISandboxApp/SandboxOptions.swift'
 }
 paths = list((ROOT / 'Packages').glob('*/Sources/**/*.swift'))

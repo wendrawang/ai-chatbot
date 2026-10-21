@@ -1,4 +1,46 @@
-# Validasi starter
+# Validasi
+
+## Tanya AI sebagai view SwiftUI — 22 Oktober 2026
+
+Mengikuti PR #24: `makeViewController()` diganti `makeView()`, `ChatScreen` memakai
+`dismiss` SwiftUI bila host tidak memberi `onBack`, dan tampilan terang dibatasi lewat
+`.environment(\.colorScheme, .light)`. `ChatViewModel` tetap `@StateObject` di
+`ChatScreen`, jadi tidak dibuat ulang saat host render ulang. Sandbox memakai pola
+coordinator + destination; link web tetap dibuka di webview host (sheet) dan
+`TanyaAIPage` dihapus.
+
+
+## Aturan PR #24 pada chat lengkap — 21 Oktober 2026
+
+`TanyaAIHost` menjadi struct konfigurasi (`customerName`, `service`, `locale`,
+`colors`, `onOpenLink`); `TanyaAIHostEnvironment`/`HostEnvironmentReader` dihapus dan
+`ChatViewModel` menerima `locale` sebagai nilai. Sandbox memakai host tiruan SwiftUI
+dari PR #24: `TanyaAIUseCase` memiliki `SandboxChatService`, link web dibuka di webview
+host sebagai sheet, dan `--offline` membuat service gagal sehingga blocker host tampil
+di atas Tanya AI sementara chat menampilkan pesan gagal dengan retry.
+
+`Scripts/verify.sh` lulus pada iPhone 17 Pro Simulator (iOS 26.5): DesignKit 20,
+TanyaAI 15, Sandbox unit + UI 26, SwiftLint 0 violation.
+## Chat lengkap — 19 Oktober 2026
+
+Welcome, daftar pesan `UITableView`, jawaban berblok, markup, dan alur SSE + inquiry
+per intent (`review-porto`) dengan service dummy dari fixture JSON.
+`Scripts/verify.sh` (DerivedData bersih) lulus, lint 0 pelanggaran:
+
+| Suite | Isi | Hasil |
+| --- | --- | --- |
+| DesignKit | parser markup (contoh pengguna, streaming, link aman/berbahaya, tag tak dikenal, bersarang), komponen lama | 20 lulus |
+| TanyaAI | decode event dan blok, mapping `review-porto` + format angka per bahasa, view model (teks bebas, intent + `inquiryId`/parameter, stop lalu kirim lagi, error + coba lagi, opsi read-only, percakapan baru, klasifikasi link), host | 15 lulus |
+| Sandbox | navigasi revamp, blocker, logout, caret, container, scroll boundary | 8 lulus |
+| UI | composer, header + blur saat daftar digulir, welcome → intent → tabel, markup + link webview + opsi read-only, stop, percakapan baru, swipe-back | 14 lulus |
+
+Screenshot UI test diperiksa: welcome (header transparan di atas latar), tabel
+portofolio dengan footer total, dan jawaban bebas dengan bold/coret/warna/link merah
+bergaris bawah. Contoh kode di HOST_INTEGRATION ter-compile dengan
+`SWIFT_STRICT_CONCURRENCY=complete`. Belum ada pengukuran Instruments di device.
+
+R.swift: setelah aset baru, build incremental pada DerivedData lama bisa gagal
+menemukan accessor (`R.image.checkmark`); build bersih menyelesaikannya.
 
 ## Tanya AI sebagai view SwiftUI — 22 Oktober 2026
 

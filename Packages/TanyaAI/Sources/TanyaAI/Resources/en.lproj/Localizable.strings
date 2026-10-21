@@ -11,3 +11,27 @@
 "chat.newConversation" = "New conversation";
 "chat.title" = "Tanya AI";
 "chat.back" = "Back";
+
+"chat.stop" = "Stop answer";
+"chat.scrollToLatest" = "Go to latest message";
+"chat.thinking" = "Processing the best answer for you...";
+"chat.stopped" = "Answer stopped.";
+"chat.error" = "Sorry, something went wrong. Please try again.";
+"chat.retry" = "Try again";
+"chat.unsupported" = "Sorry, this request is not supported yet.";
+"welcome.greeting" = "Hi, %@!";
+"welcome.description" = "Discover financial insights to help you take smarter steps today";
+"welcome.start" = "Start here:";
+"quick.portfolio.title" = "Check Portfolio";
+"quick.portfolio.subtitle" = "Track your assets & investment performance";
+"quick.portfolio.prompt" = "Please check my portfolio";
+"quick.currency.title" = "Buy Foreign Currency";
+"quick.currency.subtitle" = "Check rates and buy foreign currency";
+"quick.currency.prompt" = "I want to buy foreign currency";
+"quick.reference.title" = "Request Reference Letter";
+"quick.reference.subtitle" = "Prepare a letter for your visa needs";
+"quick.reference.prompt" = "I want to request a bank reference letter";
+"portfolio.product" = "Product";
+"portfolio.currentValue" = "Current Value (IDR)";
+"portfolio.profit" = "Profit (IDR)";
+"portfolio.totalProfit" = "Total Profit (IDR)";
