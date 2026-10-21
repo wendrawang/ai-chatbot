@@ -151,8 +151,9 @@ Palette generated (`DefaultColorConstants`, `PremierColorConstants`,
 @Environment(\.designColors) private var colors
 // Di body: .foregroundColor(colors.colorsTextPrimaryDark)
 
-// Tanya AI: host mengisi palette pada TanyaAIHost (mis. setelah inquiry proposition)
-tanyaAI.colors = PremierColorConstants()
+// Tanya AI: host mengisi palette pada TanyaAIHost (mis. setelah inquiry proposition);
+// dibaca saat halaman dibuat
+host.colors = PremierColorConstants()
 
 // Layar SwiftUI lain yang memakai DesignKit: pasang di root layar tersebut
 SomeScreen()

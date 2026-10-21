@@ -94,8 +94,8 @@ Untuk membuka feature di atas `NavigationView` host existing, lihat
 ## Menjalankan dan bahasa
 
 `Scripts/run_sandbox.sh --language id`, `en`, atau `zh-Hans`. Tanpa override,
-locale mengikuti perangkat. Host mengisi `TanyaAIHost(locale:)` atau `tanyaAI.locale`
-dari setting bahasanya; perubahan langsung berlaku pada feature yang terbuka. `Bundle.module` milik TanyaAI
+locale mengikuti perangkat. Host mengisi `locale` pada `TanyaAIHost`
+dari setting bahasanya; nilai dibaca saat halaman dibuat. `Bundle.module` milik TanyaAI
 menyimpan copy, DesignKit tidak menyimpan copy fitur.
 
 UI starter mengikuti light palette Figma. Theme palette tersedia lewat

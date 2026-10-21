@@ -91,8 +91,8 @@ tersedia pada history/main.
 - Theme memakai environment SwiftUI standar, tanpa ThemeManager/singleton.
   Komponen membaca `@Environment(\.designColors) private var colors`; jangan
   menerima parameter `colors:` atau membuat `DefaultColorConstants()` sendiri.
-  Untuk Tanya AI, host mengisi `tanyaAI.colors` dan `tanyaAI.locale` saat nilainya
-  berubah (inquiry proposition, Localize_Swift); fitur yang terbuka langsung ikut.
+  Untuk Tanya AI, host mengisi `colors` dan `locale` pada `TanyaAIHost` (inquiry
+  proposition, Localize_Swift); nilainya dibaca saat halaman dibuat, tanpa live update.
   Screen DesignKit lain memasang `.designColors(_:)` di root-nya.
   Area yang harus bebas theme memakai `.defaultDesignColors()` pada subtree itu.
   CopyCatalog belum diperlukan.
@@ -155,12 +155,12 @@ tersedia pada history/main.
   ketikan tidak me-render ulang header dan daftar pesan. Starter tidak mengirim
   network, tidak menyimpan atau log isi pesan.
 - Integrasi host: `TanyaAIHost` hanya konfigurasi (`locale`, `colors`, `onSend`) dan
-  `makeViewController()`. Host mem-push halaman itu ke jalur navigasi bersih miliknya
-  (`RevampNavigationController`, nav bar disembunyikan, swipe-back bawaan). Package
+  `makeViewController()`. Host mem-push halaman itu lewat navigasinya sendiri
+  (host SwiftUI: `TanyaAIRouter` + satu link di base `Screen`, swipe-back bawaan). Package
   tidak membuat modal, transisi custom, NavigationView/NavigationStack, atau toolbar
   native. Tombol back memanggil `onBack` atau pop pada navigation controller host.
   Blocker host (no internet, session expired) tampil di atas halaman ini tanpa kode
-  di package. `TanyaAIHost` dimiliki session main host, tidak dibuat di body.
+  di package. `TanyaAIHost` adalah struct konfigurasi yang dibuat saat halaman dibuka.
 - UI owners `@MainActor`; putus delegate pada dismantle dan hindari retain cycle.
 - Tidak ada angka/string literal di kode package selain file definisi: token
   (`Tokens/`), metadata font (`FontFace`), identifier UI test, dan spesifikasi format
