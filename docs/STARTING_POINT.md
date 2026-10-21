@@ -80,10 +80,10 @@ Packages/
 6. Buat screen: area kosong, `ComposerSection` (draft `@State`) di bawah, margin luar.
    Baca locale host, resolve `R.string.localizable` melalui `String(resource:locale:)`
    dan kirimkan label ke komponen.
-7. Host mem-push `tanyaAI.makeViewController()` ke jalur navigasi bersihnya
-   (`RevampNavigationController`). Satu `TanyaAIHost` dimiliki session main host.
-   Tombol back atau swipe dari tepi kiri melakukan pop bawaan UIKit; navigasi legacy
-   host tidak disentuh. Lihat [integrasi host](HOST_INTEGRATION.md).
+7. Host mem-push `TanyaAIHost.makeViewController()` lewat navigasinya sendiri. Di host
+   SwiftUI, `TanyaAIRouter.instance.open()` dari halaman mana pun; base `Screen` yang
+   melakukan push. Tombol back atau swipe dari tepi kiri kembali ke halaman asal.
+   Lihat [integrasi host](HOST_INTEGRATION.md).
 
 Composer mengirim draft ke `ChatViewModel.send`: diterima bila tidak kosong dan tidak
 ada jawaban yang sedang mengalir; selama mengalir tombol kirim berganti stop.
@@ -94,8 +94,8 @@ Untuk membuka feature di atas `NavigationView` host existing, lihat
 ## Menjalankan dan bahasa
 
 `Scripts/run_sandbox.sh --language id`, `en`, atau `zh-Hans`. Tanpa override,
-locale mengikuti perangkat. Host mengisi `TanyaAIHost(locale:)` atau `tanyaAI.locale`
-dari setting bahasanya; perubahan langsung berlaku pada feature yang terbuka. `Bundle.module` milik TanyaAI
+locale mengikuti perangkat. Host mengisi `locale` pada `TanyaAIHost`
+dari setting bahasanya; nilai dibaca saat halaman dibuat. `Bundle.module` milik TanyaAI
 menyimpan copy, DesignKit tidak menyimpan copy fitur.
 
 UI starter mengikuti light palette Figma. Theme palette tersedia lewat

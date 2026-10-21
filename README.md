@@ -9,17 +9,20 @@ English, Bahasa Indonesia, dan 简体中文.
 ./Scripts/run_sandbox.sh --language id
 ./Scripts/run_sandbox.sh --language en
 ./Scripts/run_sandbox.sh --language zh-Hans
+./Scripts/run_sandbox.sh --language id --offline
 ```
 
-Sandbox meniru host: `AppDelegate` + `SceneDelegate` dengan `RevampNavigationController`
-sebagai root dan service dummy dari fixture JSON (tanpa network). Tekan “Buka Tanya AI”,
-lalu:
+Sandbox meniru host SwiftUI: `RootScreen` dengan prelogin dan main coordinator, base
+`Screen` per halaman, dan `TanyaAIRouter` untuk membuka Tanya AI dari halaman mana pun,
+dengan service dummy dari fixture JSON (tanpa network). Tekan “Buka Tanya AI” di beranda
+atau di halaman detail, lalu:
 
 - ketuk **Cek Portofolio** → status loading → intent `review-porto` → inquiry dummy → tabel;
 - tulis pertanyaan bebas → teks bermarkup (bold, coret, warna, link web/telepon/deeplink),
   pilihan, media, action, dan suggestion;
 - tombol stop selama jawaban mengalir; menu titik tiga → percakapan baru;
-- kembali dengan tombol back atau swipe dari tepi kiri.
+- kembali dengan tombol back atau swipe dari tepi kiri;
+- `--offline`: blocker host tampil di atas Tanya AI saat mengirim.
 
 - [Kontrak SSE, blok, markup dan link](docs/CHAT_CONTRACT.md)
 - [Integrasi host](docs/HOST_INTEGRATION.md)

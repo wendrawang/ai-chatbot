@@ -22,7 +22,7 @@ METADATA = {
     'TanyaAISandboxApp/SandboxOptions.swift'
 }
 paths = list((ROOT / 'Packages').glob('*/Sources/**/*.swift'))
-paths += list((ROOT / 'TanyaAISandboxApp').glob('*.swift'))
+paths += list((ROOT / 'TanyaAISandboxApp').glob('**/*.swift'))
 for path in sorted(paths):
     if 'Generated' in path.parts:
         continue

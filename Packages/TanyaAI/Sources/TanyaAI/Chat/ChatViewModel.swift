@@ -17,12 +17,12 @@ final class ChatViewModel: ObservableObject {
     @Published
     var isResponding = false
     let service: TanyaAIService
-    let locale: () -> Locale
+    let locale: Locale
     let onOpenLink: (TanyaAILink) -> Void
     var conversationId = UUID().uuidString
     var responseTask: Task<Void, Never>?
 
-    init(service: TanyaAIService, locale: @escaping () -> Locale, onOpenLink: @escaping (TanyaAILink) -> Void) {
+    init(service: TanyaAIService, locale: Locale, onOpenLink: @escaping (TanyaAILink) -> Void) {
         self.service = service
         self.locale = locale
         self.onOpenLink = onOpenLink
@@ -49,7 +49,7 @@ final class ChatViewModel: ObservableObject {
         guard let index = messages.indices.last, messages[index].role == .assistant, isResponding else { return }
         messages[index].status = nil
         if messages[index].text.isEmpty && messages[index].blocks.isEmpty {
-            messages[index].text = String(resource: R.string.localizable.chatStopped, locale: locale())
+            messages[index].text = String(resource: R.string.localizable.chatStopped, locale: locale)
         }
         isResponding = false
     }
@@ -102,7 +102,7 @@ extension ChatViewModel {
     func appendAssistant() -> String {
         let message = ChatMessage(
             id: UUID().uuidString, role: .assistant, createdAt: Date(), isDateVisible: isNewDay,
-            status: String(resource: R.string.localizable.chatThinking, locale: locale())
+            status: String(resource: R.string.localizable.chatThinking, locale: locale)
         )
         messages.append(message)
         isResponding = true

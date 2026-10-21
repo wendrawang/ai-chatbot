@@ -7,3 +7,13 @@
 
 "sandbox.open" = "打开 Tanya AI";
 "sandbox.customerName" = "Lara Croft";
+"sandbox.main.title" = "首页";
+"sandbox.detail.open" = "打开详情页";
+"sandbox.detail.title" = "详情页";
+"sandbox.back" = "返回";
+"sandbox.offline.simulate" = "模拟无网络";
+"sandbox.offline.title" = "无网络连接";
+"sandbox.offline.retry" = "重试";
+"sandbox.logout" = "退出登录";
+"sandbox.login" = "登录";
+"sandbox.prelogin.title" = "未登录";

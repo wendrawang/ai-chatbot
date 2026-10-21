@@ -33,15 +33,52 @@ final class TanyaAIHostTests: XCTestCase {
         await waitUntil(timeout: 3) { releasedPage == nil }
     }
 
-    func testLocaleAndPaletteCanChangeAfterCreation() {
-        let host = TanyaAIHost(
+    func testLocaleAndPaletteApplyWhenPageIsCreatedAndChangesWaitForNextPage() {
+        var host = TanyaAIHost(
             customerName: "Lara Croft", service: FakeChatService(), locale: Locale(identifier: "id"),
-            onOpenLink: { _ in }
+            colors: PremierColorConstants(), onOpenLink: { _ in }
         )
-        XCTAssertTrue(host.colors is DefaultColorConstants)
+        let openedProbe = EnvironmentProbe()
+        let openedWindow = makeWindow(root: host.applyingSettings(to: EnvironmentReader(probe: openedProbe)))
+        defer { openedWindow.isHidden = true }
+        XCTAssertTrue(openedProbe.colors is PremierColorConstants)
+        XCTAssertEqual(openedProbe.locale?.identifier, "id")
         host.locale = Locale(identifier: "zh-Hans")
-        host.colors = PremierColorConstants()
-        XCTAssertEqual(host.locale.identifier, "zh-Hans")
-        XCTAssertTrue(host.colors is PremierColorConstants)
+        host.colors = PrivateColorConstants()
+        let nextProbe = EnvironmentProbe()
+        let nextWindow = makeWindow(root: host.applyingSettings(to: EnvironmentReader(probe: nextProbe)))
+        defer { nextWindow.isHidden = true }
+        XCTAssertTrue(nextProbe.colors is PrivateColorConstants)
+        XCTAssertEqual(nextProbe.locale?.identifier, "zh-Hans")
+        openedWindow.rootViewController?.view.layoutIfNeeded()
+        XCTAssertTrue(openedProbe.colors is PremierColorConstants)
+        XCTAssertEqual(openedProbe.locale?.identifier, "id")
+    }
+
+    private func makeWindow(root: some View) -> UIWindow {
+        let window = UIWindow(frame: CGRect(x: 0, y: 0, width: 375, height: 812))
+        window.rootViewController = UIHostingController(rootView: root)
+        window.makeKeyAndVisible()
+        window.rootViewController?.view.layoutIfNeeded()
+        return window
+    }
+}
+
+private final class EnvironmentProbe {
+    var colors: (any FigmaColorProtocol)?
+    var locale: Locale?
+}
+
+private struct EnvironmentReader: View {
+    @Environment(\.designColors)
+    private var colors
+    @Environment(\.locale)
+    private var locale
+    let probe: EnvironmentProbe
+
+    var body: some View {
+        probe.colors = colors
+        probe.locale = locale
+        return Text("Content")
     }
 }

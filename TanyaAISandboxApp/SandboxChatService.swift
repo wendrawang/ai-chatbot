@@ -13,8 +13,13 @@ import TanyaAI
 final class SandboxChatService: TanyaAIService {
     private let script: SandboxScript?
     private let inquiryResponse: Data
+    private let isOffline: Bool
+    private let onFailure: @Sendable (Error) -> Void
 
-    init() {
+    /// `isOffline` meniru jaringan putus: setiap request gagal dan `onFailure` dipanggil.
+    init(isOffline: Bool = false, onFailure: @escaping @Sendable (Error) -> Void = { _ in }) {
+        self.isOffline = isOffline
+        self.onFailure = onFailure
         script = R.file.chatScriptsJson.url()
             .flatMap { try? Data(contentsOf: $0) }
             .flatMap { try? JSONDecoder().decode(SandboxScript.self, from: $0) }
@@ -22,6 +27,11 @@ final class SandboxChatService: TanyaAIService {
     }
 
     func streamChat(_ request: TanyaAIChatRequest) -> AsyncThrowingStream<TanyaAIServerEvent, Error> {
+        guard !isOffline else {
+            let error = URLError(.notConnectedToInternet)
+            onFailure(error)
+            return AsyncThrowingStream { $0.finish(throwing: error) }
+        }
         let steps = steps(for: request.text)
         return AsyncThrowingStream { continuation in
             let task = Task {
@@ -37,6 +47,11 @@ final class SandboxChatService: TanyaAIService {
     }
 
     func inquire(_ intent: TanyaAIIntent) async throws -> Data {
+        guard !isOffline else {
+            let error = URLError(.notConnectedToInternet)
+            onFailure(error)
+            throw error
+        }
         try await Task.sleep(nanoseconds: Self.nanoseconds(script?.inquiryDelay ?? .zero))
         return inquiryResponse
     }

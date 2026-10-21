@@ -1,5 +1,17 @@
 # Validasi
 
+
+## Aturan PR #24 pada chat lengkap — 21 Oktober 2026
+
+`TanyaAIHost` menjadi struct konfigurasi (`customerName`, `service`, `locale`,
+`colors`, `onOpenLink`); `TanyaAIHostEnvironment`/`HostEnvironmentReader` dihapus dan
+`ChatViewModel` menerima `locale` sebagai nilai. Sandbox memakai host tiruan SwiftUI
+dari PR #24: `TanyaAIUseCase` memiliki `SandboxChatService`, link web dibuka di webview
+host sebagai sheet, dan `--offline` membuat service gagal sehingga blocker host tampil
+di atas Tanya AI sementara chat menampilkan pesan gagal dengan retry.
+
+`Scripts/verify.sh` lulus pada iPhone 17 Pro Simulator (iOS 26.5): DesignKit 20,
+TanyaAI 15, Sandbox unit + UI 26, SwiftLint 0 violation.
 ## Chat lengkap — 19 Oktober 2026
 
 Welcome, daftar pesan `UITableView`, jawaban berblok, markup, dan alur SSE + inquiry
@@ -20,6 +32,38 @@ bergaris bawah. Contoh kode di HOST_INTEGRATION ter-compile dengan
 
 R.swift: setelah aset baru, build incremental pada DerivedData lama bisa gagal
 menemukan accessor (`R.image.checkmark`); build bersih menyelesaikannya.
+
+## Host tiruan SwiftUI — 20 Oktober 2026
+
+Sandbox kini meniru host: `RootScreen` (prelogin + main tetap hidup), base `Screen`,
+`ScreenContentViewModel`, coordinator dengan tag, extension pop-gesture global, dan
+`TanyaAIRouter` + satu link di base `Screen`. `RevampNavigationController`,
+`SandboxRouter`, `SandboxHostView` dan `RevampNavigationTests` dihapus.
+
+Dibuktikan oleh test:
+- Tanya AI terbuka full screen dari beranda dan dari halaman detail tanpa didaftarkan
+  per coordinator; ketukan ganda diabaikan; back kembali ke halaman asal;
+- SwiftUI mem-pop beberapa halaman sekaligus saat Tanya AI terbuka: router ikut
+  bersih dan Tanya AI bisa dibuka lagi;
+- logout menutup Tanya AI; swipe-back hanya aktif bila ada halaman untuk kembali;
+- UI test: `--offline` memunculkan blocker host di atas Tanya AI dan draft tetap ada
+  setelah "Coba lagi"; logout lalu login kembali ke main.
+
+Belum diuji pada perangkat iOS 15–17; simulator yang tersedia iOS 26.5.
+
+## Host lebih sederhana — 20 Oktober 2026
+
+`TanyaAIHostEnvironment` dan `HostEnvironmentReader` dihapus. `TanyaAIHost` menjadi
+struct konfigurasi; `locale` dan `colors` dipasang ke environment saat halaman dibuat.
+Live update dihapus karena bahasa diganti dari Settings dan theme dipilih saat inquiry
+proposition, keduanya sebelum Tanya AI dibuka. Init `ChatScreen` tanpa konten yang
+tidak dipakai juga dihapus.
+
+Dibuktikan oleh test: `locale`/`colors` diterapkan pada halaman baru, perubahan
+berlaku pada halaman berikutnya, dan halaman yang sudah terbuka tidak berubah.
+Integrasi host SwiftUI (coordinator + base screen) diuji pada replika: halaman full
+screen, blocker base screen tampil di atasnya, view model stabil saat parent render
+ulang, dan logout menutup Tanya AI.
 
 ## Jalur navigasi host — 18 Oktober 2026
 

@@ -7,3 +7,13 @@
 
 "sandbox.open" = "Open Tanya AI";
 "sandbox.customerName" = "Lara Croft";
+"sandbox.main.title" = "Home";
+"sandbox.detail.open" = "Open detail page";
+"sandbox.detail.title" = "Detail page";
+"sandbox.back" = "Back";
+"sandbox.offline.simulate" = "Simulate no internet";
+"sandbox.offline.title" = "No internet connection";
+"sandbox.offline.retry" = "Try again";
+"sandbox.logout" = "Log out";
+"sandbox.login" = "Log in";
+"sandbox.prelogin.title" = "Not logged in";

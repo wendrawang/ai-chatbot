@@ -1,16 +1,9 @@
 # Membuka Tanya AI dari host app
 
-Tanya AI adalah halaman biasa yang di-push ke **jalur navigasi bersih milik host**
-(`RevampNavigationController`). Package tidak membuat modal, animasi, atau navigation
-stack sendiri: push, pop, animasi dan swipe-back semuanya bawaan UIKit.
-
-```
-Window (SceneDelegate)
-└── RevampNavigationController      ← jalur bersih milik host, nav bar disembunyikan
-    ├── Main legacy                 ← NavigationView/tab lama tetap di dalam sini
-    ├── Tanya AI                    ← tanyaAI.makeViewController()
-    └── halaman revamp berikutnya   ← (nanti) halaman lanjutan Tanya AI, dsb.
-```
+Tanya AI adalah halaman biasa: `TanyaAIHost.makeViewController()` mengembalikan
+`UIViewController` yang di-push oleh navigasi milik host. Package tidak membuat
+modal, animasi, navigation stack, service, atau aturan bisnis sendiri, sehingga
+API yang sama dipakai oleh host SwiftUI saat ini maupun aplikasi revamp nanti.
 
 ## Package dan font
 
@@ -30,123 +23,81 @@ Font dibaca dari `Bundle.module` DesignKit; host tidak perlu menyalin file font 
 menambahkannya ke `UIAppFonts`. Daftar face ada di
 [katalog font](../Packages/DesignKit/Sources/DesignKit/Resources/Fonts/SOURCES.md).
 
-## 1. Jalur navigasi revamp di host
+## 1. Host SwiftUI saat ini: router + base `Screen`
 
-Satu class kecil di host. Nav bar disembunyikan karena setiap halaman revamp
-menggambar header 1:1 Figma sendiri; delegate gesture mengaktifkan lagi swipe-back
-bawaan yang ikut mati saat nav bar disembunyikan.
+Host memakai `NavigationView` dengan pola coordinator → screen → view model → use
+case, dan setiap halaman dibungkus base `Screen` (blocker no internet, session
+expired, loading dan snackbar dimiliki tiap halaman). Tanya AI tidak didaftarkan
+sebagai destinasi per coordinator. Base `Screen` memasang satu `NavigationLink`
+Tanya AI; `TanyaAIRouter` memilih `Screen` yang sedang tampil, lalu link milik
+halaman itu yang melakukan push.
 
-```swift
-import UIKit
+```
+Screen (setiap halaman host)
+├── NavigationLink Tanya AI      ← aktif hanya pada Screen yang dipilih router
+├── konten halaman
+└── blocker host                 ← juga menutup Tanya AI, karena Tanya AI dibungkus Screen
 
-final class RevampNavigationController: UINavigationController, UIGestureRecognizerDelegate {
-    override func viewDidLoad() {
-        super.viewDidLoad()
-        setNavigationBarHidden(true, animated: false)
-        interactivePopGestureRecognizer?.delegate = self
-    }
-
-    /// Swipe-back hanya saat ada halaman untuk kembali dan tidak sedang transisi.
-    func gestureRecognizerShouldBegin(_ gestureRecognizer: UIGestureRecognizer) -> Bool {
-        topViewController !== viewControllers.first && transitionCoordinator == nil
-    }
-}
+TanyaAIRouter.instance.open()    ← dari view, coordinator, atau callback mana pun
 ```
 
-Pasang sebagai root window saat masuk main (setelah login):
+Contoh lengkap ada di sandbox, satu tipe per file, dengan nama yang sama seperti host:
 
-```swift
-// SceneDelegate / router login milik host
-let main = MainTabBarController()                     // main legacy, tidak diubah
-let revampNavigation = RevampNavigationController(rootViewController: main)
-window.rootViewController = revampNavigation
-```
+| File | Peran |
+| --- | --- |
+| [Screen](../TanyaAISandboxApp/Host/Screen.swift) | Base screen host + link Tanya AI (`isTanyaAIAvailable`) |
+| [TanyaAIRouter](../TanyaAISandboxApp/TanyaAI/TanyaAIRouter.swift) | `open()`/`close()`, halaman yang tampil, sinkron saat SwiftUI pop |
+| [TanyaAIDestination](../TanyaAISandboxApp/TanyaAI/TanyaAIDestination.swift) | Tujuan link; `@StateObject` view model, `Screen(isTanyaAIAvailable: false)` |
+| [TanyaAIScreen](../TanyaAISandboxApp/TanyaAI/TanyaAIScreen.swift) | `ScreenContent` yang menampilkan halaman package |
+| [TanyaAIScreenViewModel](../TanyaAISandboxApp/TanyaAI/TanyaAIScreenViewModel.swift) | `makeHost()` dengan nama nasabah, service, bahasa/theme aktif; link web ke webview host; error ke blocker |
+| [TanyaAIUseCase](../TanyaAISandboxApp/TanyaAI/TanyaAIUseCase.swift) | Memiliki `TanyaAIService` host (sandbox: fixture `SandboxChatService`) |
+| [WebPage](../TanyaAISandboxApp/Host/WebPage.swift) | Webview host untuk link web jawaban (bukan Safari) |
+| [TanyaAIPage](../TanyaAISandboxApp/TanyaAI/TanyaAIPage.swift) | `UIViewControllerRepresentable` untuk `makeViewController()` |
+| [MainCoordinator](../TanyaAISandboxApp/Main/MainCoordinator.swift) | Hanya menutup Tanya AI saat logout |
+| [UINavigationController+PopGesture](../TanyaAISandboxApp/Host/UINavigationController+PopGesture.swift) | Salinan extension host untuk swipe-back dengan nav bar tersembunyi |
 
-Saat logout atau session timeout, host mengganti root window ke prelogin seperti
-biasa. Seluruh jalur, termasuk Tanya AI yang sedang terbuka, ikut dilepas.
-
-## 2. Session main dan cara membuka
-
-```swift
-import Combine
-import DesignKit
-import Localize_Swift
-import TanyaAI
-import UIKit
-
-/// Hidup selama user berada di main; dibuat saat login, dilepas saat kembali ke prelogin.
-@MainActor
-final class MainSession {
-    let tanyaAI: TanyaAIHost
-    let links: HostLinkRouter
-    weak var revampNavigation: UINavigationController? {
-        didSet { links.navigation = revampNavigation }
-    }
-    private weak var tanyaAIPage: UIViewController?
-    private var cancellables = Set<AnyCancellable>()
-
-    init(customerName: String, service: TanyaAIService) {
-        let links = HostLinkRouter()
-        self.links = links
-        tanyaAI = TanyaAIHost(
-            customerName: customerName, service: service,
-            locale: Locale(identifier: Localize.currentLanguage()),
-            onOpenLink: { [weak links] link in links?.open(link) }
-        )
-        // Localize.setCurrentLanguage(_:) dari Setting > Language mengirim notifikasi ini.
-        NotificationCenter.default
-            .publisher(for: Notification.Name(LCLLanguageChangeNotification))
-            .receive(on: DispatchQueue.main)
-            .sink { [weak self] _ in self?.applyCurrentLanguage() }
-            .store(in: &cancellables)
-    }
-
-    /// Entry point mana pun di main: tombol, tab, notifikasi, deeplink.
-    func openTanyaAI() {
-        guard tanyaAIPage == nil, let revampNavigation else { return }
-        let page = tanyaAI.makeViewController()
-        tanyaAIPage = page
-        revampNavigation.pushViewController(page, animated: true)
-    }
-
-    /// Panggil dari tempat inquiry proposition berhasil.
-    func didLoadProposition(_ proposition: CustomerProposition) {
-        switch proposition {
-        case .premier: tanyaAI.colors = PremierColorConstants()
-        case .privateBanking: tanyaAI.colors = PrivateColorConstants()
-        default: tanyaAI.colors = DefaultColorConstants()
-        }
-    }
-
-    private func applyCurrentLanguage() {
-        tanyaAI.locale = Locale(identifier: Localize.currentLanguage())
-    }
-}
-
-/// Link dari jawaban: webview host, handler deeplink host, atau telepon. Tanpa Safari.
-@MainActor
-final class HostLinkRouter {
-    weak var navigation: UINavigationController?
-
-    func open(_ link: TanyaAILink) {
-        switch link {
-        case .web(let url): navigation?.pushViewController(HostWebViewController(url: url), animated: true)
-        case .deeplink(let url): HostDeeplinkHandler.handle(url)
-        case .phone(let url): UIApplication.shared.open(url)
-        }
-    }
-}
-```
+Perubahan pada base `Screen` host hanya tiga hal: property router dan `screenID`,
+link yang dibungkus `if isTanyaAIAvailable`, serta `onAppear`/`onDisappear` yang
+memberi tahu router. Pemanggil `Screen { ... }` yang sudah ada tidak berubah.
 
 | Kebutuhan | Kode |
 | --- | --- |
-| Buka Tanya AI | `session.openTanyaAI()`; pengecekan `tanyaAIPage` mencegah push ganda |
-| Kembali | Tombol back header melakukan pop; swipe dari tepi kiri juga pop (bawaan UIKit) |
-| Back dengan aturan host | `tanyaAI.makeViewController(onBack: { ... })`; tanpa `onBack`, halaman pop sendiri |
-| Deeplink dari dalam Tanya AI | `revampNavigation.popViewController(animated:)` lalu push/route tujuan, atau langsung `setViewControllers` |
-| Ganti bahasa | Otomatis lewat notifikasi Localize_Swift; halaman yang terbuka langsung ikut |
-| Inquiry proposition selesai | `session.didLoadProposition(result)`; halaman yang terbuka langsung ikut |
-| Logout / session timeout | Ganti root window ke prelogin; Tanya AI ikut dilepas |
+| Buka Tanya AI | `TanyaAIRouter.instance.open()`; diabaikan bila sudah terbuka |
+| Kembali | Tombol back header (`close()`) atau swipe dari tepi kiri |
+| Halaman yang tidak boleh membuka Tanya AI | `Screen(isTanyaAIAvailable: false) { ... }` |
+| Deeplink dari dalam Tanya AI | `close()` dulu, lalu routing host seperti biasa |
+| Ganti bahasa / inquiry proposition selesai | Dibaca `makeHost()` saat Tanya AI dibuka berikutnya |
+| Logout | `MainCoordinator` memanggil `TanyaAIRouter.instance.close()` |
+
+Yang sengaja dihindari, dan alasannya (dibuktikan di replika):
+
+- **Push UIKit langsung ke navigation controller milik `NavigationView`.** Bila state
+  SwiftUI berubah saat Tanya AI terbuka (session expired, deeplink), stack UIKit dan
+  state SwiftUI tidak lagi sinkron.
+- **Membungkus `NavigationView` main dengan `UINavigationController` representable.**
+  Safe area dan layout main menjadi rusak.
+
+Batasan: link hanya ada pada halaman yang dibungkus `Screen`. Bila `open()` dipanggil
+dari sheet, tutup sheet lebih dulu.
+
+## 2. Aplikasi revamp dengan navigasi bersih
+
+Package tidak bergantung pada pola di atas. Router dan base `Screen` milik host; untuk
+navigasi lain cukup ganti pemanggilnya:
+
+- **UIKit coordinator / `UINavigationController`:**
+  `navigation.pushViewController(host.makeViewController(), animated: true)`. Tanpa
+  `onBack`, tombol back halaman melakukan pop sendiri.
+- **SwiftUI `NavigationStack` (iOS 16+):** tambahkan route Tanya AI pada path, lalu
+  `navigationDestination` menampilkan `TanyaAIPage` seperti di atas.
+
+`TanyaAIHost(customerName:service:locale:colors:onOpenLink:)`:
+
+- `customerName` untuk sapaan welcome ("Hi, Lara Croft!").
+- `service` (`TanyaAIService`) milik host: SSE chat dan inquiry BE per intent.
+- `onOpenLink` menerima `TanyaAILink`: `.web` ke webview host, `.deeplink` ke handler
+  deeplink host, `.phone` ke sistem. Tidak ada fallback Safari.
+- `locale` dan `colors` dibaca saat halaman dibuat.
 
 Menu titik tiga "Percakapan baru" ditangani Tanya AI sendiri: stream berjalan dihentikan,
 layar kembali ke welcome, dan `conversationId` baru dipakai untuk pertanyaan berikutnya.
@@ -218,20 +169,9 @@ final class HostChatService: TanyaAIService {
 
 Error jaringan dari stream menampilkan pesan gagal dengan chip "Coba lagi"; error
 inquiry menampilkan pesan gagal tanpa retry. Event `error` dari chat service memakai
-`isRetryable` untuk menentukan chip tersebut.
-
-## Blocker host: no internet, session expired, dan sejenisnya
-
-Karena Tanya AI hanya halaman di stack, blocker host tetap muncul di atasnya tanpa
-perubahan apa pun di Tanya AI:
-
-- **UIKit** (`present` dari `revampNavigation`, dari top view controller, atau window
-  overlay): tampil di atas Tanya AI.
-- **Sheet SwiftUI yang ditempel pada view main** (mis. bottom sheet session expired):
-  tetap tampil walaupun main sedang tertutup Tanya AI.
-
-Keduanya dibuktikan di `RevampNavigationTests`. Setelah session expired, host
-melanjutkan alurnya (mis. ganti root ke prelogin) seperti biasa.
+`isRetryable` untuk menentukan chip tersebut. Karena service milik host, host juga
+boleh melaporkan error yang sama ke blocker halamannya (no internet, session expired);
+sandbox mencontohkannya lewat `TanyaAIUseCase` dan `--offline`.
 
 ## Bahasa dan appearance
 
@@ -242,7 +182,7 @@ mendeklarasikan semua bahasa package, `CFBundleAllowMixedLocalizations = YES`
 memungkinkan resource dependency ikut dipilih
 ([dokumentasi Apple](https://developer.apple.com/documentation/bundleresources/information-property-list/cfbundleallowmixedlocalizations)).
 
-Palette mengikuti `tanyaAI.colors`; sebelum inquiry selesai memakai palette default.
+Palette mengikuti `colors` pada `TanyaAIHost`; sebelum inquiry selesai memakai palette default.
 Halaman Tanya AI memakai light appearance Figma (`overrideUserInterfaceStyle` hanya
 pada halaman itu, tidak mengubah host). Pemetaan proposition ke palette tetap di host
 karena aturan bisnis tidak masuk DesignKit.
@@ -250,17 +190,14 @@ karena aturan bisnis tidak masuk DesignKit.
 ## Isi folder `Host`
 
 - `TanyaAIHost.swift`: konfigurasi (`customerName`, `service`, `locale`, `colors`,
-  `onOpenLink`) dan `makeViewController()` untuk di-push host.
+  `onOpenLink`) dan `makeViewController()` yang memasang bahasa dan palette ke halaman baru.
 - `TanyaAIService.swift`: protocol SSE + inquiry beserta model request, event, intent.
 - `TanyaAILink.swift`: link jawaban yang sudah dikelompokkan (web, deeplink, telepon).
-- `TanyaAIHostEnvironment.swift`: meneruskan `locale`/`colors` ke halaman yang terbuka.
 
-Contoh lengkap host ada di sandbox: [AppDelegate](../TanyaAISandboxApp/AppDelegate.swift),
-[SceneDelegate](../TanyaAISandboxApp/SceneDelegate.swift),
-[RevampNavigationController](../TanyaAISandboxApp/RevampNavigationController.swift), dan
-[SandboxRouter](../TanyaAISandboxApp/SandboxRouter.swift), dengan service dummy
-[SandboxChatService](../TanyaAISandboxApp/SandboxChatService.swift) yang memutar fixture
-`Resources/Fixtures/ChatScripts.json` (SSE) dan `ReviewPortfolio.json` (inquiry BE).
-Jalankan `Scripts/run_sandbox.sh --language id`, tekan "Buka Tanya AI", lalu coba
-shortcut Cek Portofolio (intent → tabel) atau tulis pertanyaan bebas (markup, pilihan,
-media, action, suggestion).
+Jalankan `Scripts/run_sandbox.sh --language id`. Buka Tanya AI dari beranda atau dari
+halaman detail, coba shortcut Cek Portofolio (intent → tabel) atau pertanyaan bebas
+(markup, pilihan, media, action, suggestion), lalu kembali dengan tombol back atau
+swipe dari tepi kiri. Service dummy [SandboxChatService](../TanyaAISandboxApp/SandboxChatService.swift)
+memutar fixture `Resources/Fixtures/ChatScripts.json` (SSE) dan `ReviewPortfolio.json`
+(inquiry BE). `--offline` membuat service gagal: blocker host tampil di atas Tanya AI,
+dan setelah "Coba lagi" chat menampilkan pesan gagal dengan chip retry.

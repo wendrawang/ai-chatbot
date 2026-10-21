@@ -9,7 +9,7 @@ import UIKit
 import WebKit
 
 /// Contoh webview host untuk link web dari jawaban (bukan Safari).
-/// Nav bar bawaan ditampilkan hanya di halaman ini; jalur revamp tetap tanpa nav bar.
+/// Nav bar bawaan menampilkan judul domain; disembunyikan lagi saat halaman ditutup.
 final class SandboxWebViewController: UIViewController {
     private let url: URL
 

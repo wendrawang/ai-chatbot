@@ -7,3 +7,13 @@
 
 "sandbox.open" = "Buka Tanya AI";
 "sandbox.customerName" = "Lara Croft";
+"sandbox.main.title" = "Beranda";
+"sandbox.detail.open" = "Buka halaman detail";
+"sandbox.detail.title" = "Halaman detail";
+"sandbox.back" = "Kembali";
+"sandbox.offline.simulate" = "Simulasikan tanpa internet";
+"sandbox.offline.title" = "Tidak ada koneksi internet";
+"sandbox.offline.retry" = "Coba lagi";
+"sandbox.logout" = "Keluar";
+"sandbox.login" = "Masuk";
+"sandbox.prelogin.title" = "Belum masuk";

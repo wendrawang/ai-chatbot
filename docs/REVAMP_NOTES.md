@@ -11,12 +11,12 @@ ini menjelaskan alasannya.
 | Minimum OS | iOS 15 untuk package, sandbox dan host | Host ikut naik ke iOS 15 pada journey revamp. |
 | R.swift | `from: "7.8.0"` | Asset/locale akan bertambah; versi longgar mencegah konflik bila host juga memakai R.swift 7.x. |
 | Ukuran | 1:1 Figma lewat `.scaledToArtwork` | Termasuk area tap 24pt; tidak ada minimum 44. Keputusan UI/UX. |
-| Theme | `@Environment(\.designColors)`; host mengisi `tanyaAI.colors` | Tanpa singleton; `.defaultDesignColors()` untuk area bebas theme. |
-| Bahasa | Host mengisi `tanyaAI.locale` dari Localize_Swift | Host tidak memakai SwiftUI locale; satu property, berlaku juga saat fitur terbuka. |
+| Theme | `@Environment(\.designColors)`; host mengisi `colors` pada `TanyaAIHost` | Tanpa singleton; `.defaultDesignColors()` untuk area bebas theme. Dibaca saat halaman dibuat. |
+| Bahasa | Host mengisi `locale` pada `TanyaAIHost` dari Localize_Swift | Host tidak memakai SwiftUI locale. Dibaca saat halaman dibuat; bahasa diganti dari Settings, bukan saat Tanya AI terbuka, jadi tidak perlu live update. |
 | Nilai awal | `.zero`, `String()`, `[]` | Tidak ada literal tersebar dan tidak ada enum alias. |
 | Token custom | Dipisah per jenis: `CustomSizes`, `CustomTextLines` (`CustomMotion` saat ada animasi) | Aturan scaling jelas per file dan dijaga script; satu tempat untuk mengubah nilai per peran. |
 | Draft | `ComposerSection` memiliki `@State` | Ketikan tidak me-render ulang header/daftar pesan. |
-| Navigasi | Push ke `RevampNavigationController` milik host | Semua animasi dan swipe-back bawaan UIKit; jalur bersih terpisah dari navigasi legacy; blocker host tetap tampil di atasnya; logout melepas jalur. |
+| Navigasi | Package hanya memberi `makeViewController()`. Host SwiftUI: `TanyaAIRouter` + satu link di base `Screen` | Dibuka dari halaman mana pun tanpa daftar destinasi; stack tetap milik SwiftUI; blocker host tetap berlaku; aplikasi revamp cukup mengganti pemanggilnya. |
 
 ## Daftar pesan untuk ratusan chat (sudah diterapkan)
 

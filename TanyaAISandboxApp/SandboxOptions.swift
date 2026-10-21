@@ -11,11 +11,26 @@ import Foundation
 struct SandboxOptions {
     static let fontFailure = "Font registration failed: "
     static let openIdentifier = "sandbox.open"
+    static let detailOpenIdentifier = "sandbox.detail.open"
+    static let detailTanyaAIIdentifier = "sandbox.detail.tanyaAI"
+    static let offlineSimulateIdentifier = "sandbox.offline.simulate"
+    static let offlineIdentifier = "sandbox.offline"
+    static let offlineRetryIdentifier = "sandbox.offline.retry"
+    static let logoutIdentifier = "sandbox.logout"
+    static let loginIdentifier = "sandbox.login"
     private static let languageFlag = "--language"
+    private static let offlineFlag = "--offline"
+
+    /// Opsi dari argumen peluncuran proses ini.
+    static var current: SandboxOptions {
+        SandboxOptions(arguments: ProcessInfo.processInfo.arguments)
+    }
 
     let locale: Locale?
+    let isOffline: Bool
 
     init(arguments: [String]) {
+        isOffline = arguments.contains(Self.offlineFlag)
         if let position = arguments.firstIndex(of: Self.languageFlag),
             arguments.indices.contains(arguments.index(after: position))
         {

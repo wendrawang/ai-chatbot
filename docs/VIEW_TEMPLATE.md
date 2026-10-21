@@ -112,7 +112,7 @@ Tidak perlu menambahkan weak capture pada setiap closure SwiftUI secara otomatis
 | Identifier UI test komponen | `DesignKit/Foundations/Accessibility` |
 | Draft, menu sesi, aturan menerima submission | Screen/fitur pemilik (`TanyaAI/Chat`) |
 | API host: konfigurasi, locale/theme, pembuat halaman | `TanyaAI/Host` |
-| Navigasi, animasi push, swipe-back | Host (`RevampNavigationController`), bawaan UIKit |
+| Navigasi, animasi push, swipe-back | Host (router + base `Screen`, atau navigation milik aplikasi revamp) |
 
 Komponen umum yang sudah dibutuhkan beberapa caller dibuat reusable. Potongan
 yang baru *mungkin* dipakai ulang boleh tetap private sampai tanggung jawabnya
@@ -151,8 +151,9 @@ Palette generated (`DefaultColorConstants`, `PremierColorConstants`,
 @Environment(\.designColors) private var colors
 // Di body: .foregroundColor(colors.colorsTextPrimaryDark)
 
-// Tanya AI: host mengisi palette pada TanyaAIHost (mis. setelah inquiry proposition)
-tanyaAI.colors = PremierColorConstants()
+// Tanya AI: host mengisi palette pada TanyaAIHost (mis. setelah inquiry proposition);
+// dibaca saat halaman dibuat
+host.colors = PremierColorConstants()
 
 // Layar SwiftUI lain yang memakai DesignKit: pasang di root layar tersebut
 SomeScreen()

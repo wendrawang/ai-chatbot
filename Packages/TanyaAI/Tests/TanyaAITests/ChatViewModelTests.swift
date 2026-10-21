@@ -16,7 +16,7 @@ final class ChatViewModelTests: XCTestCase {
 
     private func makeModel() -> ChatViewModel {
         ChatViewModel(
-            service: service, locale: { Locale(identifier: "id") },
+            service: service, locale: Locale(identifier: "id"),
             onOpenLink: { [weak self] in self?.links.append($0) }
         )
     }

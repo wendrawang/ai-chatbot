@@ -44,11 +44,11 @@ extension ChatViewModel {
             let data = try await service.inquire(intent)
             guard !Task.isCancelled else { return }
             guard let mapping = IntentMappings.mapping(for: intent.name) else {
-                update(answerId) { $0.text = String(resource: R.string.localizable.chatUnsupported, locale: locale()) }
+                update(answerId) { $0.text = String(resource: R.string.localizable.chatUnsupported, locale: locale) }
                 finish(answerId)
                 return
             }
-            let blocks = try mapping.blocks(from: data, locale: locale())
+            let blocks = try mapping.blocks(from: data, locale: locale)
             guard !Task.isCancelled else { return }
             update(answerId) { $0.blocks += blocks }
             finish(answerId)
@@ -92,10 +92,10 @@ private extension ChatViewModel {
     func fail(_ answerId: String, isRetryable: Bool, prompt: String?) {
         guard isResponding else { return }
         update(answerId) { message in
-            message.text = String(resource: R.string.localizable.chatError, locale: locale())
+            message.text = String(resource: R.string.localizable.chatError, locale: locale)
             guard isRetryable, let prompt else { return }
             let retry = ActionItem(
-                label: String(resource: R.string.localizable.chatRetry, locale: locale()), style: .chip,
+                label: String(resource: R.string.localizable.chatRetry, locale: locale), style: .chip,
                 action: ActionTarget(type: .prompt, value: prompt, parameters: nil)
             )
             message.blocks = [.actions([retry])]
