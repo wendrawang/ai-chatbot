@@ -1,5 +1,123 @@
 # Validasi starter
 
+## Tanya AI sebagai view SwiftUI — 22 Oktober 2026
+
+`TanyaAIHost.makeViewController()` diganti `makeView()`: host SwiftUI tidak lagi
+membungkus halaman ke `UIHostingController` lalu ke representable. Tampilan terang
+dibatasi lewat `.environment(\.colorScheme, .light)`; tanpa `onBack`, tombol kembali
+memakai `dismiss` SwiftUI. Sandbox mengikuti pola host: coordinator hanya berisi
+`NavigationLink`, view model dipegang `@StateObject` di view tujuan
+(`TanyaAIDestination`, `DetailDestination`), dan main dibuang saat logout.
+`TanyaAIRouter` dan `TanyaAIPage` dihapus.
+
+Dibuktikan oleh test: halaman full screen dan composer ada di halaman yang di-push;
+render ulang halaman induk tidak mengganti halaman yang terbuka; UI test keyboard,
+inset visual, swipe-back, buka dari detail, blocker offline, dan logout/login lulus.
+
+## Host tiruan SwiftUI — 20 Oktober 2026
+
+Sandbox kini meniru host: `RootScreen` (prelogin + main tetap hidup), base `Screen`,
+`ScreenContentViewModel`, coordinator dengan tag, extension pop-gesture global, dan
+`TanyaAIRouter` + satu link di base `Screen`. `RevampNavigationController`,
+`SandboxRouter`, `SandboxHostView` dan `RevampNavigationTests` dihapus.
+
+Dibuktikan oleh test:
+- Tanya AI terbuka full screen dari beranda dan dari halaman detail tanpa didaftarkan
+  per coordinator; ketukan ganda diabaikan; back kembali ke halaman asal;
+- SwiftUI mem-pop beberapa halaman sekaligus saat Tanya AI terbuka: router ikut
+  bersih dan Tanya AI bisa dibuka lagi;
+- logout menutup Tanya AI; swipe-back hanya aktif bila ada halaman untuk kembali;
+- UI test: `--offline` memunculkan blocker host di atas Tanya AI dan draft tetap ada
+  setelah "Coba lagi"; logout lalu login kembali ke main.
+
+Belum diuji pada perangkat iOS 15–17; simulator yang tersedia iOS 26.5.
+
+## Host lebih sederhana — 20 Oktober 2026
+
+`TanyaAIHostEnvironment` dan `HostEnvironmentReader` dihapus. `TanyaAIHost` menjadi
+struct konfigurasi; `locale` dan `colors` dipasang ke environment saat halaman dibuat.
+Live update dihapus karena bahasa diganti dari Settings dan theme dipilih saat inquiry
+proposition, keduanya sebelum Tanya AI dibuka. Init `ChatScreen` tanpa konten yang
+tidak dipakai juga dihapus.
+
+Dibuktikan oleh test: `locale`/`colors` diterapkan pada halaman baru, perubahan
+berlaku pada halaman berikutnya, dan halaman yang sudah terbuka tidak berubah.
+Integrasi host SwiftUI (coordinator + base screen) diuji pada replika: halaman full
+screen, blocker base screen tampil di atasnya, view model stabil saat parent render
+ulang, dan logout menutup Tanya AI.
+
+## Jalur navigasi host — 18 Oktober 2026
+
+Tanya AI tidak lagi dipresentasikan sebagai modal dengan transisi custom. Host
+mem-push `tanyaAI.makeViewController()` ke `RevampNavigationController` (contoh di
+sandbox, yang kini memakai AppDelegate + SceneDelegate seperti host). Dihapus dari
+package: anchor `.tanyaAIHost`, present/dismiss, transisi dan swipe custom, logika
+menyembunyikan host, serta `CustomMotion` yang tidak lagi dipakai.
+
+Dibuktikan oleh test:
+- swipe-back native hanya aktif saat ada halaman untuk kembali; UI test dengan gesture
+  jari: geser pendek batal, geser panjang kembali ke host;
+- blocker UIKit (no internet) dan sheet SwiftUI dari main (session expired) tampil di
+  atas Tanya AI;
+- mengganti root window ke prelogin melepas Tanya AI; router tidak mem-push dua kali;
+- halaman dan konten dilepas setelah pop; `locale`/`colors` diterapkan dan live.
+
+UI test header kini menyasar scroll view konten secara eksplisit, karena
+`scrollViews.firstMatch` bisa menunjuk bar saran keyboard.
+
+## Tanpa literal di kode package — 18 Oktober 2026
+
+`forwardDirection = 1` dan batas `1` pada swipe-back dihapus; arah dihitung dari lebar
+layar dan arah layout. Transisi menjadi satu file tanpa pengecualian script, jadi
+literal baru di sana akan ditolak. Parser hex memakai `HexFormat` dengan konstanta
+format bernama dan urutan kanal `Channel`, tanpa mask/shift manual.
+
+## Tanpa forcing — 18 Oktober 2026
+
+`BoundedTextView` tidak lagi meng-override `text: String!`; `GrowingTextInput`
+memanggil `remeasure()` setelah teks/style berubah. Bacaan `UITextView.text` memakai
+`?? String()`. UI test memakai `let application = XCUIApplication()`. SwiftLint
+mengaktifkan `force_unwrapping` dan `implicitly_unwrapped_optional` (ditambah
+`force_cast`/`force_try` bawaan); keempatnya dibuktikan menolak pelanggaran sengaja.
+
+## Struktur untuk skala — 18 Oktober 2026
+
+Identifier UI test dikelompokkan per komponen; transisi akhirnya disatukan dalam satu file
+`Host/TanyaAIPushTransition.swift` (164 baris, sebelumnya 271 baris di 3 file); fixture window test Sandbox di file sendiri; alias
+`CustomColors.transparent` dihapus. Tipografi tetap memakai token `FigmaSize`
+per role secara langsung.
+
+## Pemisahan token custom — 18 Oktober 2026
+
+`CustomSizes` dipecah menjadi `CustomSizes` (dimensi, selalu di-scale),
+`CustomTextLines`, `CustomMotion`, `ArtworkScale`, dan `LayoutTolerance`. Perubahan
+murni penggantian nama; nilai tidak berubah. `check_design_system.py` sekarang
+menolak `CustomSizes` tanpa `.scaledToArtwork` serta baris/motion/toleransi yang
+di-scale; kedua aturan dibuktikan dengan pelanggaran sengaja. `Scripts/verify.sh`
+lulus: lint 0 pelanggaran, seluruh test package, hosted dan UI lulus.
+
+## Kesiapan revamp — 17 Oktober 2026
+
+Perubahan: host lifecycle (completion dismiss tidak hilang, `present()` → Bool,
+fitur tertutup saat main diganti prelogin), swipe-back interaktif, theme lewat
+environment, draft di `ComposerSection`, measurement editor hanya saat teks/lebar
+berubah, nilai awal bawaan tipe, R.swift `from: "7.8.0"`.
+
+`Scripts/verify.sh` lulus pada iPhone 17 Pro Simulator (Xcode 26), minimum iOS 15.
+Saat dijalankan tanpa trust plugin R.swift, `xcodebuild` memerlukan
+`-skipPackagePluginValidation`; script repo tidak diubah.
+
+| Suite | Hasil |
+| --- | --- |
+| DesignKit: + theme environment (3), editor remeasure saat lebar berubah (1) | 15 lulus |
+| TanyaAI: + animator saat host tertutup/swipe batal, interaksi swipe (3) | 10 lulus |
+| Hosted: + present Bool, completion ganda, swipe batal + deeplink, main→prelogin, root UIKit diganti, `locale`/`colors` dari host awal dan saat terbuka | 15 lulus |
+| UI: tiga bahasa, padding desain, keyboard, empat baris, header/menu | 11 lulus |
+
+Total **51 tes lulus**. Belum ada pengukuran Instruments/FPS; swipe-back diuji
+secara programatik melalui `UIPercentDrivenInteractiveTransition`, belum dengan
+gesture jari pada device.
+
 ## Pembagian view dan ukuran desain — 17 Oktober 2026
 
 Deklarasi view utama menyimpan input/state, initializer, `body`, dan bagian visual.

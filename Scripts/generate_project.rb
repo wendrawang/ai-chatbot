@@ -44,9 +44,13 @@ ui_test_target = project.new_target(
 )
 unit_test_target = project.new_target(:unit_test_bundle, 'TanyaAISandboxTests', :ios, '17.0')
 
-source_paths = Dir.glob(File.join(APP_PATH, '*.swift')).sort
+# Subfolder sandbox (Host, Main, Detail, TanyaAI) menjadi group dengan nama yang sama.
+source_groups = {}
+source_paths = Dir.glob(File.join(APP_PATH, '**', '*.swift')).sort
 source_references = source_paths.map do |source_path|
-  app_group.new_file(File.basename(source_path))
+  folder = File.dirname(source_path).delete_prefix(APP_PATH).delete_prefix('/')
+  group = folder.empty? ? app_group : (source_groups[folder] ||= app_group.new_group(folder, folder))
+  group.new_file(File.basename(source_path))
 end
 target.add_file_references(source_references)
 app_group.new_file('Info.plist')

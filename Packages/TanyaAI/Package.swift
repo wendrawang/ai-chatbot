@@ -15,7 +15,7 @@ let package = Package(
     products: [.library(name: "TanyaAI", targets: ["TanyaAI"])],
     dependencies: [
         .package(path: "../DesignKit"),
-        .package(url: "https://github.com/mac-cain13/R.swift.git", exact: "7.8.0")
+        .package(url: "https://github.com/mac-cain13/R.swift.git", from: "7.8.0")
     ],
     targets: [
         .target(

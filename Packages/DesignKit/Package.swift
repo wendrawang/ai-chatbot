@@ -13,7 +13,7 @@ let package = Package(
     defaultLocalization: "en",
     platforms: [.iOS(.v15)],
     products: [.library(name: "DesignKit", targets: ["DesignKit"])],
-    dependencies: [.package(url: "https://github.com/mac-cain13/R.swift.git", exact: "7.8.0")],
+    dependencies: [.package(url: "https://github.com/mac-cain13/R.swift.git", from: "7.8.0")],
     targets: [
         .target(
             name: "DesignKit", dependencies: [.product(name: "RswiftLibrary", package: "R.swift")],

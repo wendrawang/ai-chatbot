@@ -23,18 +23,36 @@ final class EditorTests: XCTestCase {
         editor.layoutSubviews()
         let firstHeight = editor.intrinsicContentSize.height
         editor.text = "One\nTwo\nThree\nFour"
-        editor.layoutSubviews()
+        editor.remeasure()
         let fourthHeight = editor.intrinsicContentSize.height
         XCTAssertGreaterThan(fourthHeight, firstHeight)
-        editor.text += "\nFive\n" + String(repeating: "m", count: 128)
-        editor.layoutSubviews()
+        editor.text = (editor.text ?? "") + "\nFive\n" + String(repeating: "m", count: 128)
+        editor.remeasure()
         XCTAssertEqual(editor.intrinsicContentSize.height, fourthHeight, accuracy: 1)
         XCTAssertTrue(editor.isScrollEnabled)
         XCTAssertEqual(editor.intrinsicContentSize.width, UIView.noIntrinsicMetric)
         editor.text = ""
-        editor.layoutSubviews()
+        editor.remeasure()
         XCTAssertLessThan(editor.intrinsicContentSize.height, fourthHeight)
         XCTAssertFalse(editor.isScrollEnabled)
+    }
+
+    func testWidthChangeRemeasuresWhileInternalScrollKeepsHeight() throws {
+        try FontFace.registerFonts()
+        let editor = BoundedTextView(frame: CGRect(x: 0, y: 0, width: 320, height: 300))
+        editor.font = FontFace.openSansRegular.font(size: 14)
+        editor.textContainerInset = .zero
+        editor.textContainer.lineFragmentPadding = 0
+        editor.text = String(repeating: "word ", count: 12)
+        editor.layoutSubviews()
+        let wideHeight = editor.intrinsicContentSize.height
+        editor.frame.size.width = 120
+        editor.layoutSubviews()
+        let narrowHeight = editor.intrinsicContentSize.height
+        XCTAssertGreaterThan(narrowHeight, wideHeight)
+        editor.contentOffset.y += 10
+        editor.layoutSubviews()
+        XCTAssertEqual(editor.intrinsicContentSize.height, narrowHeight)
     }
 
     func testComposerWrapsWithoutGrowingHorizontallyAcrossTextSizeSettings() throws {
@@ -72,7 +90,7 @@ final class EditorTests: XCTestCase {
             XCTAssertEqual(editor.intrinsicContentSize.height, ceil(lineHeight * 4), accuracy: 1)
             XCTAssertTrue(editor.isScrollEnabled)
             editor.text = ""
-            editor.layoutSubviews()
+            editor.remeasure()
             XCTAssertLessThan(editor.intrinsicContentSize.height, ceil(lineHeight * 4))
             XCTAssertFalse(editor.isScrollEnabled)
         }

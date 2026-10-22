@@ -72,9 +72,11 @@ protocol layout atau BaseViewModel. Content tidak membungkus ScrollView vertikal
 lagi. Lihat pemakaian lengkap pada `ChatScreen.swift` dan
 [shared header](SHARED_HEADER.md).
 
-Screen memiliki draft; `MessageComposer` menerima Binding dan callback. Presenter
-host tetap `.tanyaAIHost(host)` dengan satu `TanyaAIHost` milik `@StateObject` atau
-session owner. Host tidak dibuat ulang di `body`.
+Draft dimiliki section kecil (`ComposerSection`) dengan `@State`; `MessageComposer`
+menerima Binding dan callback. Dengan begitu ketikan hanya me-render composer,
+bukan header/daftar pesan di screen yang sama. Presenter
+host menampilkan `TanyaAIHost.makeView()` sebagai tujuan `NavigationLink` miliknya;
+view model halaman dipegang `@StateObject` di view tujuan, bukan dibuat di `body`.
 
 ## Callback dan typealias
 
@@ -105,9 +107,12 @@ Tidak perlu menambahkan weak capture pada setiap closure SwiftUI secara otomatis
 | --- | --- |
 | Header, container, composer, editor umum | `DesignKit/Components` |
 | Scroll boundary, sizing, locale resource | `DesignKit/Extensions` |
-| Token, custom size/color, registrasi font | `DesignKit/Tokens` dan `Typography` |
-| Draft, menu sesi, aturan menerima submission | Screen/fitur pemilik |
-| Bridge presentasi TanyaAI | `TanyaAI/Host` |
+| Token custom per jenis | `DesignKit/Tokens` |
+| Font file dan registrasi | `DesignKit/Typography` |
+| Identifier UI test komponen | `DesignKit/Foundations/Accessibility` |
+| Draft, menu sesi, aturan menerima submission | Screen/fitur pemilik (`TanyaAI/Chat`) |
+| API host: konfigurasi, locale/theme, pembuat halaman | `TanyaAI/Host` |
+| Navigasi, animasi push, swipe-back | Host (coordinator + destination, atau navigasi aplikasi revamp) |
 
 Komponen umum yang sudah dibutuhkan beberapa caller dibuat reusable. Potongan
 yang baru *mungkin* dipakai ulang boleh tetap private sampai tanggung jawabnya
@@ -115,8 +120,8 @@ jelas atau ada caller berikutnya. Saat memisahkan, kirim data dan callback dari
 caller; jangan memasukkan nama screen, routing fitur atau state bisnis ke DesignKit.
 
 Bagian rumit saat ini terisolasi: `GrowingTextInput`/`BoundedTextView` mengatur
-measurement, seleksi dan delegate editor; `TanyaAIPushTransition` mengatur transisi
-UIKit. Screen baru cukup memakai API publiknya. Lifecycle bridge mengikuti urutan
+measurement, seleksi dan delegate editor. Navigasi dan animasi halaman memakai
+navigasi bawaan milik host. Screen baru cukup memakai API publiknya. Lifecycle bridge mengikuti urutan
 make/update/dismantle, dan delegate diputus saat dismantle. Komentar menjelaskan
 alasan perilaku khusus, bukan mengulang arti setiap baris.
 
@@ -135,6 +140,34 @@ alasan perilaku khusus, bukan mengulang arti setiap baris.
 Tidak ada macro kustom, `@Observable`, `@Model`, `@Namespace`, atau `@ScaledMetric`
 pada starter. R.swift adalah plugin build yang menghasilkan source Swift biasa.
 Tidak perlu annotation baru untuk membuat komponen berikutnya.
+
+## Theme
+
+Palette generated (`DefaultColorConstants`, `PremierColorConstants`,
+`PrivateColorConstants`) dipilih lewat environment, bukan parameter per komponen:
+
+```swift
+// Komponen DesignKit / view fitur
+@Environment(\.designColors) private var colors
+// Di body: .foregroundColor(colors.colorsTextPrimaryDark)
+
+// Tanya AI: host mengisi palette pada TanyaAIHost (mis. setelah inquiry proposition);
+// dibaca saat halaman dibuat
+host.colors = PremierColorConstants()
+
+// Layar SwiftUI lain yang memakai DesignKit: pasang di root layar tersebut
+SomeScreen()
+    .designColors(PremierColorConstants())
+
+// Area yang harus tetap default walaupun theme lain dipilih
+PromoBanner()
+    .defaultDesignColors()
+```
+
+Tanpa `.designColors`, nilainya `DefaultColorConstants`. `TanyaAIHost.colors` dan
+`TanyaAIHost.locale` dipasang ke seluruh screen fitur, termasuk perubahan saat fitur
+terbuka. Warna di luar palette
+generated tetap memakai `CustomColors` dan tidak ikut theme.
 
 ## Localization otomatis
 
@@ -173,6 +206,10 @@ copy internal tidak menjadi API publik. Ketiganya memakai versi R.swift yang sam
 Jangan membuat enum nama asset/localization key atau mengedit R.generated.swift.
 Source generated berada di build folder, bukan di repo.
 
+R.swift dipasang `from: "7.8.0"` (sampai sebelum 8.0.0), sehingga host yang memakai
+R.swift 7.x lain tetap bisa resolve satu versi bersama. R.swift dipilih agar asset
+dan locale tetap aman saat jumlahnya bertambah.
+
 R.swift 7.8.0 terkadang belum memperbarui accessor setelah perubahan resource
 secara incremental. Jika nama baru belum muncul, jalankan Clean Build Folder
 lalu build lagi. Saat Xcode meminta kepercayaan plugin untuk pertama kali,
@@ -184,12 +221,23 @@ file dan nama PostScript berbeda; ketujuh font existing tetap dipertahankan.
 
 ## Aturan nilai
 
-- `InitialValues`: hanya data kosong/default bersama (`emptyString`,
-  `zeroInteger`, `zeroCGFloat`). Boolean ditulis langsung `true`/`false`.
-- `FigmaSize`: spacing role `small/medium/large` dan typography generated.
-- `CustomSizes`: ukuran/batas yang belum mempunyai role token, misalnya empat
-  baris editor dan ukuran visual tombol yang ditentukan UI/UX.
-- `CustomColors`: semantik warna tambahan; hex hanya di custom base palette.
+- Nilai awal: nilai bawaan tipe, `.zero`, `String()`, `[]`. Boolean ditulis
+  langsung `true`/`false`. Tidak ada enum alias nilai kosong.
+- Pilih file token berdasarkan jenis nilainya:
+
+| File | Isi | `.scaledToArtwork` |
+| --- | --- | --- |
+| `Generated/FigmaSize` | Spacing, ukuran icon, tipografi dari Figma. **Cek di sini dulu.** | Ya |
+| `CustomSizes` | Dimensi point yang belum ada di Figma: `Header.height`, `Shadow`, `Composer.sendButton` | **Selalu** |
+| `CustomTextLines` | Batas baris per peran: `composerInput = 1...4`, `headerTitle` | Tidak pernah |
+| `CustomColors` / `CustomBasePaletteColor` | Warna semantik tambahan / hex dasarnya | — |
+| `ArtworkScale` | Referensi 375×812 dan rasio layar untuk `.scaledToArtwork` | Tidak pernah |
+| `LayoutTolerance` | Toleransi pembulatan layout (bukan token desain) | Tidak pernah |
+
+- Contoh: alamat maksimal 5 baris menjadi `CustomTextLines.address = 5`, lalu
+  dibungkus komponen peran seperti `AddressText` supaya layar lain tidak menulis
+  `.lineLimit` sendiri. Saat batasnya menjadi 7, cukup ubah satu baris.
+- Palette generated: dibaca dari `@Environment(\.designColors)`, lihat bagian Theme.
 - Konstanta algoritma yang bukan data awal/ukuran disimpan private dekat pemiliknya.
 
 Semua dimensi, termasuk frame tombol dan tebal stroke, memakai `.scaledToArtwork`

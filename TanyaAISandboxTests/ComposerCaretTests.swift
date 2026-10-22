@@ -28,7 +28,7 @@ final class ComposerCaretTests: XCTestCase {
             editor.deleteBackward()
             editor.deleteBackward()
             fixture.settle()
-            XCTAssertTrue(editor.text.isEmpty)
+            XCTAssertEqual(editor.text, "")
             XCTAssertEqual(editor.bounds.height, emptyHeight, accuracy: 0.01)
             XCTAssertEqual(editor.caretRect(for: editor.beginningOfDocument), typedCaret, face.rawValue)
         }

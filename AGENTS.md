@@ -25,21 +25,39 @@ tersedia pada history/main.
 - Padding/spacing memakai `FigmaSize.spacingSmall`, `spacingMedium`, `spacingLarge`,
   `spacingExtraLarge`, atau `spacingDoubleExtraLarge`, sesuai peran. Jangan memakai
   `spacing4/8/16/...`. Typography memakai nama role, bukan token numerik polos.
-- `CustomSizes` hanya untuk ukuran yang belum mempunyai token dengan peran yang
-  sesuai: diameter tombol, radius, shadow, jumlah baris, toleransi.
+- Nilai desain di luar Figma dipisah per jenis, bukan dikumpulkan di satu file:
+
+  | File | Isi | `.scaledToArtwork` |
+  | --- | --- | --- |
+  | `Generated/FigmaSize` | Spacing, ukuran icon, tipografi dari Figma. **Cek di sini dulu.** | Ya |
+  | `CustomSizes` | Dimensi point yang belum ada di Figma: `Header.height`, `Shadow`, `Composer.sendButton` | **Selalu** |
+  | `CustomTextLines` | Batas baris per peran: `composerInput = 1...4`, `headerTitle` | Tidak pernah |
+  | `CustomColors` / `CustomBasePaletteColor` | Warna semantik tambahan / hex dasarnya | — |
+  | `ArtworkScale` | Referensi 375×812 dan rasio layar untuk `.scaledToArtwork` | Tidak pernah |
+  | `LayoutTolerance` | Toleransi pembulatan layout (bukan token desain) | Tidak pernah |
+
+  Nilai waktu/animasi custom nanti masuk `CustomMotion` (tidak di-scale), dibuat saat
+  ada animasi pertama yang memakainya.
+  Kelompok bersama dinamai per peran (`Header`, `Shadow`, `CustomTextLines.address`
+  bila nanti dibutuhkan). Nilai yang hanya dipakai satu komponen memakai namespace
+  nama komponen (`CustomSizes.Composer`) agar terhapus bersama komponennya. Tambah
+  nilai baru hanya ketika ada pemakainya. `check_design_system.py` menolak
+  `CustomSizes` tanpa `.scaledToArtwork` dan baris/motion/toleransi yang di-scale.
   Jangan membuat alias spacing generated atau memakai spacing sebagai radius.
-- `InitialValues` hanya menyimpan data kosong/default bersama, seperti string
-  kosong dan angka nol. Jangan membuat alias Boolean: gunakan `true`/`false`
-  langsung. Batas baris/ukuran masuk `CustomSizes`; konstanta algoritma yang bukan
-  ukuran tetap private pada pemiliknya. UI/source tidak menuliskan literal
-  angka/string default secara tersebar.
+- Nilai awal memakai nilai bawaan tipe: `.zero` untuk CGFloat/Int/TimeInterval,
+  `String()` untuk string kosong, `[]` untuk koleksi. Tidak ada enum alias seperti
+  `InitialValues`. Tulis tipe bila perlu: `var measuredHeight: CGFloat = .zero`.
+  Boolean ditulis langsung `true`/`false`. Batas baris masuk `CustomTextLines`, dimensi
+  masuk `CustomSizes`; konstanta algoritma yang bukan ukuran tetap private pada pemiliknya. UI/source
+  tidak menuliskan literal angka/string default secara tersebar.
   `.zero`, `.infinity`, enum UIKit/SwiftUI dan Boolean control flow adalah nilai
   bernama/logika, bukan token desain baru. Bit mask/radix/ASCII di parser hex
   adalah algoritma format, bukan ukuran UI. Tests boleh memiliki fixture literal.
 - `CustomBasePaletteColor` memiliki hex tambahan di luar palette generated.
   `CustomColors` mengatur penggunaan semantik/opacity. Warna yang sudah memiliki
   token Figma dipakai langsung; jangan disalin ulang sebagai custom color.
-- `.scaledToArtwork`: round(nilai / (375 / lebar UIScreen.main)), tanpa cap.
+- `.scaledToArtwork`: round(nilai / `ArtworkScale.currentRatio`), rasio = 375 / lebar
+  UIScreen.main, tanpa cap.
   Reference height 812 hanya metadata. Semua dimensi termasuk stroke dan area
   tombol memakai `.scaledToArtwork` langsung dari nilai desain. Jangan menambahkan
   batas minimum tap/stroke, hit frame tambahan, atau helper scaling terpisah.
@@ -54,8 +72,9 @@ tersedia pada history/main.
   dan `openSansRegular/Medium/Bold`. Jangan memakai case `.regular/.medium` yang
   ambigu antar-family. Tambahkan file asli beserta lisensi dan nama PostScript
   yang dibaca dari metadata; jangan menyamakan nama file dengan PostScript.
-- Composer memakai token `typographySizeDisplaySmall14` dan leading role yang
-  sama, hanya dengan `.scaledToArtwork`. Ukuran font/leading tidak mengikuti
+- Typography memakai token `FigmaSize` yang sudah berpasangan per role, misalnya
+  `typographySizeDisplaySmall14` dengan `typographyLineHeightDisplaySmall14`, dan
+  `FontFace` eksplisit. Composer memakai Display Small 14/21, hanya dengan `.scaledToArtwork`. Ukuran font/leading tidak mengikuti
   pengaturan Dynamic Type pengguna; jangan menambahkan `@ScaledMetric` atau
   UIFontMetrics. Editor dan placeholder menerima UIFont fixed yang sama.
   Glyph Chinese yang tidak ada di Open Sans menggunakan fallback native iOS.
@@ -69,13 +88,25 @@ tersedia pada history/main.
   Clean Build Folder jika accessor belum diperbarui oleh plugin.
 - Technical identifiers, filename/PostScript font dan diagnostic prefix tetap
   metadata eksplisit. Artwork sementara mempunyai TODO penggantian.
-- ThemeManager/CopyCatalog belum diperlukan pada tahap ini. Warna light Figma
-  digunakan langsung. Tambahkan mekanisme baru saat ada kebutuhan tahap berikutnya.
+- Theme memakai environment SwiftUI standar, tanpa ThemeManager/singleton.
+  Komponen membaca `@Environment(\.designColors) private var colors`; jangan
+  menerima parameter `colors:` atau membuat `DefaultColorConstants()` sendiri.
+  Untuk Tanya AI, host mengisi `colors` dan `locale` pada `TanyaAIHost` (inquiry
+  proposition, Localize_Swift); nilainya dibaca saat halaman dibuat, tanpa live update.
+  Screen DesignKit lain memasang `.designColors(_:)` di root-nya.
+  Area yang harus bebas theme memakai `.defaultDesignColors()` pada subtree itu.
+  CopyCatalog belum diperlukan.
 
 ## Komponen dan ownership
 
 - Struktur `Components/<NamaKomponen>`, `Extensions/<Type>+<Responsibility>.swift`.
   Nama DesignKit umum, tanpa prefix fitur. Jangan membuat ViewModel per komponen.
+- Identifier UI test dikelompokkan per komponen (`ComponentIdentifier.Header.title`,
+  `ComponentIdentifier.Composer.send`). String identifier adalah kontrak UI test.
+- Tidak ada alias untuk nilai sistem: `.clear`, bukan `CustomColors.transparent`.
+- TanyaAI dipisah per tanggung jawab: `Chat/` (screen dan section), `Host/` (API
+  untuk host: konfigurasi dan pembuat halaman). Folder baru seperti `Messages/` atau
+  `Service/` dibuat saat file pertamanya ada, bukan lebih awal.
 - Screen standar memakai composition `ScreenContainer` dari DesignKit: header,
   area scroll, trailing action dan footer. Container memiliki satu `isScrolled`
   dan ID coordinate space lokal. Jangan membuat inheritance/BaseScreen protocol, ViewModel
@@ -120,14 +151,27 @@ tersedia pada history/main.
   semua state: kosong, mengetik dan sesudah hapus. Jangan memusatkan caret kosong
   secara terpisah ke bounds, karena referensinya berbeda dari baseline saat mengetik.
 - `ChatScreen(onSend:)` mengosongkan draft hanya jika callback host mengembalikan
-  true. Starter tidak mengirim network, tidak menyimpan atau log isi pesan.
-- Integrasi host tetap `.tanyaAIHost(host)` + `host.present()`/`dismiss()`.
-  `TanyaAIHost` menampilkan `ChatScreen` langsung; jangan menambahkan wrapper
-  `HostedChatScreen`, NavigationView/NavigationStack atau toolbar native di SDK.
-  Presentasi fullscreen dengan animasi samping, terpisah dari navigation stack
-  host. Jangan menggantinya dengan NavigationLink atau push pada stack host.
-  Host dimiliki AppState/session owner atau `@StateObject`, tidak dibuat di body.
+  true. Draft dimiliki `ComposerSection` (`@State`), bukan `ChatScreen`, agar setiap
+  ketikan tidak me-render ulang header dan daftar pesan. Starter tidak mengirim
+  network, tidak menyimpan atau log isi pesan.
+- Integrasi host: `TanyaAIHost` hanya konfigurasi (`locale`, `colors`, `onSend`) dan
+  `makeView()` berupa view SwiftUI. Host menampilkannya lewat navigasinya sendiri
+  (host SwiftUI: coordinator + destination dengan `@StateObject`, swipe-back bawaan). Package
+  tidak membuat modal, transisi custom, NavigationView/NavigationStack, atau toolbar
+  native. Tombol back memanggil `onBack`, atau `dismiss` SwiftUI bila tidak diisi.
+  Blocker host (no internet, session expired) tampil di atas halaman ini tanpa kode
+  di package. `TanyaAIHost` adalah struct konfigurasi yang dibuat saat halaman dibuka.
 - UI owners `@MainActor`; putus delegate pada dismantle dan hindari retain cycle.
+- Tidak ada angka/string literal di kode package selain file definisi: token
+  (`Tokens/`), metadata font (`FontFace`), identifier UI test, dan spesifikasi format
+  hex (`HexFormat` private di `Color+Hex`). Arah dan rentang dihitung dari nilai yang
+  ada (lebar layar, arah layout, `.zero`), bukan konstanta `1`/`-1`.
+- Tanpa forcing di source maupun test: tidak ada `!` unwrap, `as!`, `try!`, atau
+  tipe `Type!`. SwiftLint (`force_unwrapping`, `implicitly_unwrapped_optional`,
+  `force_cast`, `force_try`) menolaknya. Property UIKit bertipe IUO seperti
+  `UITextView.text` dibaca sebagai optional (`editor.text ?? String()`), jangan
+  di-override atau dipakai langsung sebagai non-optional. Test memakai
+  `let application = XCUIApplication()` dan `XCTUnwrap`, bukan IUO di `setUp`.
 - Private view sections berupa noun: `field`, `surface`, `actionButton`.
   Deklarasi utama berurutan environment, binding/state, input, init, body, sections.
   Computed setup/perhitungan/validasi berada di `private extension` pada file yang

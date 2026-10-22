@@ -10,16 +10,16 @@ import UIKit
 public extension CGFloat {
     /// Uses the host's uncapped formula: round(value / (referenceWidth / screenWidth)).
     var scaledToArtwork: CGFloat {
-        scaledToArtwork(ratio: CustomSizes.Artwork.currentRatio)
+        scaledToArtwork(ratio: ArtworkScale.currentRatio)
     }
 }
 
 extension CGFloat {
     func scaledToArtwork(ratio: CGFloat) -> CGFloat {
-        guard isFinite, ratio.isFinite, ratio > InitialValues.zeroCGFloat else {
-            return InitialValues.zeroCGFloat
+        guard isFinite, ratio.isFinite, ratio > .zero else {
+            return .zero
         }
         let scaled = self / ratio
-        return scaled.isFinite ? scaled.rounded() : InitialValues.zeroCGFloat
+        return scaled.isFinite ? scaled.rounded() : .zero
     }
 }

@@ -17,11 +17,11 @@ errors = []
 METADATA = {
     'Typography/FontFace.swift', 'Extensions/Color+Hex.swift',
     'Foundations/Accessibility/ComponentIdentifier.swift',
-    'Host/TanyaAIPushTransition.swift', 'Chat/ChatElementIdentifier.swift',
+    'Chat/ChatElementIdentifier.swift',
     'TanyaAISandboxApp/SandboxOptions.swift'
 }
 paths = list((ROOT / 'Packages').glob('*/Sources/**/*.swift'))
-paths += list((ROOT / 'TanyaAISandboxApp').glob('*.swift'))
+paths += list((ROOT / 'TanyaAISandboxApp').glob('**/*.swift'))
 for path in sorted(paths):
     if 'Generated' in path.parts:
         continue
@@ -38,18 +38,25 @@ for path in sorted(paths):
         report('Use scaledToArtwork directly; tap/stroke sizes follow the design values.')
     if 'DesignKit' in path.parts and re.search(r'\bTanya\w*|\bimport\s+Tanya', source):
         report('DesignKit must remain feature-independent.')
+    if 'Tokens' not in path.parts:
+        # CustomSizes berisi dimensi point; selalu di-scale. Baris, waktu dan toleransi tidak pernah.
+        if re.search(r'\bCustomSizes\.\w+\.\w+\b(?!\s*\.scaledToArtwork)', text):
+            report('CustomSizes values are artwork points; use them with .scaledToArtwork.')
+        if re.search(r'\b(?:CustomTextLines|CustomMotion|LayoutTolerance|ArtworkScale)\b[\w.]*\.scaledToArtwork', text):
+            report('Line counts, motion, tolerances and artwork references are never scaled.')
     if 'Tokens' in path.parts or any(relative.endswith(item) for item in METADATA):
         continue
     if re.search(r'"(?:\\.|[^"\\])*"', text):
         report('Use generated R.swift for copy/assets; keep technical metadata with its owner.')
     if re.search(r'(?<![\w.$])\d+(?:\.\d+)?(?![\w.])', text):
-        report('Use FigmaSize, CustomSizes or InitialValues instead of numeric literals.')
+        report('Use FigmaSize, CustomSizes, CustomTextLines or the type value (.zero) instead of literals.')
     if re.search(r'\.(?:foregroundColor|background|fill|strokeBorder)\(\s*\.(?:red|white|black|gray|blue)', text):
         report('Use generated colors or CustomColors.')
+    if not relative.endswith('Extensions/View+DesignColors.swift') and re.search(r'\b\w+ColorConstants\(\)', text):
+        report('Read @Environment(\\.designColors); choose a palette with .designColors(_:) at the root.')
 
-initial_values = ROOT / 'Packages/DesignKit/Sources/DesignKit/Tokens/InitialValues.swift'
-if re.search(r'\b(?:true|false)\b|:\s*Bool\b', initial_values.read_text()):
-    errors.append('InitialValues must not contain Boolean aliases; use true/false at the call site.')
+if re.search(r'\bInitialValues\b', '\n'.join(path.read_text() for path in paths)):
+    errors.append('Use the type value (.zero, String()) instead of an InitialValues alias.')
 if re.search(r'@(?:Observable|Model|Namespace|ScaledMetric)\b|#(?:externalMacro|Observable|Model)\b',
              '\n'.join(path.read_text() for path in paths)):
     errors.append('Starter uses basic SwiftUI wrappers only; no macros, Namespace or ScaledMetric.')

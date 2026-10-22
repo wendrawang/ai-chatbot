@@ -12,14 +12,14 @@ public extension View {
     /// Reports the initial value, then only changes across the top boundary. Each observer is independent.
     @MainActor
     func onScrollBoundaryChange<Space: Hashable>(
-        in coordinateSpace: Space, threshold: CGFloat = CustomSizes.Layout.measurementTolerance,
+        in coordinateSpace: Space, threshold: CGFloat = LayoutTolerance.measurement,
         perform: @escaping (Bool) -> Void
     ) -> some View {
         background {
             GeometryReader { geometry in
                 let isScrolled =
                     geometry.frame(in: .named(coordinateSpace)).minY
-                    < -max(InitialValues.zeroCGFloat, threshold)
+                    < -max(.zero, threshold)
                 Color.clear
                     .onAppear { perform(isScrolled) }
                     .onChange(of: isScrolled, perform: perform)

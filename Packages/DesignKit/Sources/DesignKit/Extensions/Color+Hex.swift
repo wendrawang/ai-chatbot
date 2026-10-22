@@ -9,32 +9,55 @@ import SwiftUI
 
 public extension Color {
     /// Accepts RGB, RRGGBB or AARRGGBB. Invalid input uses an explicit, nonoptional fallback.
-    init(hex: String, fallback: Color = CustomColors.transparent) {
-        let cleaned = hex.trimmingCharacters(in: .whitespacesAndNewlines)
-        let digits = cleaned.hasPrefix("#") ? cleaned.dropFirst() : cleaned[...]
-        let isValid = digits.utf8.allSatisfy { byte in
-            (48...57).contains(byte) || (65...70).contains(byte) || (97...102).contains(byte)
-        }
-        guard [3, 6, 8].contains(digits.count), isValid,
-            let value = UInt64(digits, radix: 16)
+    init(hex: String, fallback: Color = .clear) {
+        guard let digits = HexFormat.normalizedDigits(hex),
+            let alpha = HexFormat.value(of: .alpha, in: digits),
+            let red = HexFormat.value(of: .red, in: digits),
+            let green = HexFormat.value(of: .green, in: digits),
+            let blue = HexFormat.value(of: .blue, in: digits)
         else {
             self = fallback
             return
         }
-        let alpha, red, green, blue: UInt64
-        switch digits.count {
-        case 3:
-            (alpha, red, green, blue) = (255, ((value >> 8) & 0xF) * 17, ((value >> 4) & 0xF) * 17, (value & 0xF) * 17)
-        case 6:
-            (alpha, red, green, blue) = (255, (value >> 16) & 0xFF, (value >> 8) & 0xFF, value & 0xFF)
-        case 8:
-            (alpha, red, green, blue) = ((value >> 24) & 0xFF, (value >> 16) & 0xFF, (value >> 8) & 0xFF, value & 0xFF)
-        default:
-            self = fallback
-            return
+        self.init(.sRGB, red: red, green: green, blue: blue, opacity: alpha)
+    }
+}
+
+/// Spesifikasi format hex. Angka di sini aturan format, bukan nilai desain.
+private enum HexFormat {
+    /// Urutan kanal pada AARRGGBB; rawValue adalah posisi kanal.
+    enum Channel: Int, CaseIterable {
+        case alpha, red, green, blue
+    }
+
+    static let prefix = "#"
+    static let radix = 16
+    static let digitsPerChannel = 2
+    static let channelMaximum: Double = 255
+    static let opaqueAlpha = "FF"
+    /// RGB: satu digit per kanal tanpa alpha.
+    static let shortLength = Channel.allCases.count - 1
+    /// RRGGBB: dua digit per kanal tanpa alpha.
+    static let opaqueLength = shortLength * digitsPerChannel
+    /// AARRGGBB: bentuk lengkap yang dibaca per kanal.
+    static let fullLength = Channel.allCases.count * digitsPerChannel
+
+    /// Ubah RGB/RRGGBB/AARRGGBB menjadi AARRGGBB; nil bila panjang atau karakter tidak valid.
+    static func normalizedDigits(_ hex: String) -> String? {
+        var digits = hex.trimmingCharacters(in: .whitespacesAndNewlines)
+        if digits.hasPrefix(prefix) { digits.removeFirst(prefix.count) }
+        guard digits.allSatisfy(\.isHexDigit) else { return nil }
+        if digits.count == shortLength {
+            digits = digits.map { String(repeating: $0, count: digitsPerChannel) }.joined()
         }
-        self.init(
-            .sRGB, red: Double(red) / 255, green: Double(green) / 255,
-            blue: Double(blue) / 255, opacity: Double(alpha) / 255)
+        if digits.count == opaqueLength { digits = opaqueAlpha + digits }
+        return digits.count == fullLength ? digits : nil
+    }
+
+    /// Nilai kanal 0...1 dari string AARRGGBB.
+    static func value(of channel: Channel, in digits: String) -> Double? {
+        let start = digits.index(digits.startIndex, offsetBy: channel.rawValue * digitsPerChannel)
+        let end = digits.index(start, offsetBy: digitsPerChannel)
+        return UInt8(digits[start..<end], radix: radix).map { Double($0) / channelMaximum }
     }
 }

@@ -20,7 +20,7 @@ public struct GrowingTextInput: UIViewRepresentable {
 
     public init(
         text: Binding<String>, font: UIFont, textColor: UIColor,
-        lineSpacing: CGFloat = InitialValues.zeroCGFloat, accessibilityLabel: String
+        lineSpacing: CGFloat = .zero, accessibilityLabel: String
     ) {
         self._text = text
         self.font = font
@@ -32,9 +32,9 @@ public struct GrowingTextInput: UIViewRepresentable {
     public func makeUIView(context: Context) -> BoundedTextView {
         let editor = BoundedTextView()
         editor.delegate = context.coordinator
-        editor.backgroundColor = UIColor(CustomColors.transparent)
+        editor.backgroundColor = .clear
         editor.textContainerInset = .zero
-        editor.textContainer.lineFragmentPadding = InitialValues.zeroCGFloat
+        editor.textContainer.lineFragmentPadding = .zero
         editor.adjustsFontForContentSizeCategory = false
         editor.isScrollEnabled = false
         editor.text = text
@@ -47,14 +47,12 @@ public struct GrowingTextInput: UIViewRepresentable {
     public func updateUIView(_ editor: BoundedTextView, context: Context) {
         context.coordinator.parent = self
         editor.accessibilityLabel = accessibilityLabel
-        if editor.font != font || editor.textColor != textColor || editor.lineSpacing != lineSpacing {
-            applyStyle(to: editor)
-        }
-        if editor.text != text {
-            editor.text = text
-            applyStyle(to: editor)
-        }
-        editor.setNeedsLayout()
+        let isStyleChanged = editor.font != font || editor.textColor != textColor || editor.lineSpacing != lineSpacing
+        let isTextChanged = editor.text != text
+        if isTextChanged { editor.text = text }
+        guard isStyleChanged || isTextChanged else { return }
+        applyStyle(to: editor)
+        editor.remeasure()
     }
 
     public func makeCoordinator() -> Coordinator { Coordinator(parent: self) }
@@ -68,8 +66,9 @@ public struct GrowingTextInput: UIViewRepresentable {
         init(parent: GrowingTextInput) { self.parent = parent }
 
         public func textViewDidChange(_ editor: UITextView) {
-            parent.text = editor.text
-            editor.setNeedsLayout()
+            // UITextView.text bertipe String!; baca sebagai optional agar tidak ada unwrap paksa.
+            parent.text = editor.text ?? String()
+            (editor as? BoundedTextView)?.remeasure()
         }
     }
 }
@@ -80,7 +79,7 @@ private extension GrowingTextInput {
     func applyStyle(to editor: BoundedTextView) {
         guard editor.markedTextRange == nil else { return }
         let paragraph = NSMutableParagraphStyle()
-        paragraph.lineSpacing = max(InitialValues.zeroCGFloat, lineSpacing)
+        paragraph.lineSpacing = max(.zero, lineSpacing)
         editor.lineSpacing = paragraph.lineSpacing
         let attributes: [NSAttributedString.Key: Any] = [
             .font: font, .foregroundColor: textColor, .paragraphStyle: paragraph
@@ -90,7 +89,7 @@ private extension GrowingTextInput {
         editor.typingAttributes = attributes
         let selection = editor.selectedRange
         editor.textStorage.addAttributes(
-            attributes, range: NSRange(location: InitialValues.zeroInteger, length: editor.textStorage.length)
+            attributes, range: NSRange(location: .zero, length: editor.textStorage.length)
         )
         editor.selectedRange = selection
     }

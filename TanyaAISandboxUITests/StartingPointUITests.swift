@@ -8,12 +8,11 @@
 import XCTest
 
 final class StartingPointUITests: XCTestCase {
-    private var application: XCUIApplication!
+    private let application = XCUIApplication()
 
     override func setUp() {
         super.setUp()
         continueAfterFailure = false
-        application = XCUIApplication()
     }
 
     func testThreeLanguagesShowLocalizedEmptyComposer() {
@@ -149,7 +148,7 @@ final class StartingPointUITests: XCTestCase {
         }
     }
 
-    func testHostCanCloseAndReopenWithoutNavigationLink() {
+    func testBackReturnsToHostAndReopensWithEmptyDraft() {
         launch(locale: "en")
         let input = application.textViews["composer.input"]
         XCTAssertTrue(input.waitForExistence(timeout: 10))
@@ -163,6 +162,25 @@ final class StartingPointUITests: XCTestCase {
         XCTAssertTrue(input.waitForExistence(timeout: 10))
         XCTAssertEqual(input.value as? String, "")
         XCTAssertFalse(application.buttons["composer.send"].isEnabled)
+    }
+
+    func testSwipeFromLeadingEdgeReturnsToHostWithNativeNavigation() {
+        launch(locale: "en")
+        let input = application.textViews["composer.input"]
+        XCTAssertTrue(input.waitForExistence(timeout: 10))
+        let edge = application.coordinate(withNormalizedOffset: CGVector(dx: 0.005, dy: 0.5))
+        // Geser pendek dibatalkan oleh UINavigationController: tetap di Tanya AI.
+        edge.press(
+            forDuration: 0.05, thenDragTo: application.coordinate(withNormalizedOffset: CGVector(dx: 0.15, dy: 0.5)),
+            withVelocity: .slow, thenHoldForDuration: 0.2
+        )
+        XCTAssertTrue(input.waitForExistence(timeout: 3))
+        edge.press(
+            forDuration: 0.05, thenDragTo: application.coordinate(withNormalizedOffset: CGVector(dx: 0.9, dy: 0.5)),
+            withVelocity: .fast, thenHoldForDuration: 0
+        )
+        XCTAssertTrue(application.buttons["sandbox.open"].waitForExistence(timeout: 5))
+        XCTAssertFalse(input.exists)
     }
 
     private func launch(locale: String, extra: [String] = []) {

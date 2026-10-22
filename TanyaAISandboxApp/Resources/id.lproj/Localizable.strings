@@ -9,3 +9,13 @@
 "sandbox.demo.title" = "Konten contoh";
 "sandbox.demo.body" = "Gulir contoh ini untuk melihat batas header dan blur latar. Judul dan tombol kembali tetap di tempat saat teks bergerak di belakangnya.";
 "sandbox.demo.end" = "Akhir contoh";
+"sandbox.main.title" = "Beranda";
+"sandbox.detail.open" = "Buka halaman detail";
+"sandbox.detail.title" = "Halaman detail";
+"sandbox.back" = "Kembali";
+"sandbox.offline.simulate" = "Simulasikan tanpa internet";
+"sandbox.offline.title" = "Tidak ada koneksi internet";
+"sandbox.offline.retry" = "Coba lagi";
+"sandbox.logout" = "Keluar";
+"sandbox.login" = "Masuk";
+"sandbox.prelogin.title" = "Belum masuk";
