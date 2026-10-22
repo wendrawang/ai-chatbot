@@ -8,10 +8,10 @@
 import SwiftUI
 
 /// A centered title with equal action slots. The caller owns scroll state and navigation.
+/// Saat diam transparan, sehingga latar screen tembus sampai status bar. Saat konten digulir,
+/// latar menjadi putih dan gradient tipis di bawahnya memudarkan konten yang lewat di belakangnya.
 @MainActor
 public struct ScreenHeader<Trailing: View>: View {
-    @Environment(\.accessibilityReduceTransparency)
-    private var isTransparencyReduced
     @Environment(\.designColors)
     private var colors
     private let title: String
@@ -49,11 +49,7 @@ public struct ScreenHeader<Trailing: View>: View {
         .padding(.horizontal, FigmaSize.spacingLarge.scaledToArtwork)
         .frame(height: CustomSizes.Header.height.scaledToArtwork)
         .background(surface.ignoresSafeArea(edges: .top))
-        .overlay(alignment: .bottom) {
-            if isScrolled {
-                colors.colorsOutlineNetral.frame(height: FigmaSize.weightOutline.scaledToArtwork)
-            }
-        }
+        .overlay(alignment: .bottom) { fade }
         .accessibilityElement(children: .contain)
         .accessibilityIdentifier(isScrolled ? ComponentIdentifier.Header.scrolled : ComponentIdentifier.Header.root)
     }
@@ -73,12 +69,22 @@ public struct ScreenHeader<Trailing: View>: View {
         .accessibilityIdentifier(ComponentIdentifier.Header.back)
     }
 
-    @ViewBuilder
     private var surface: some View {
-        if isScrolled && !isTransparencyReduced {
-            Rectangle().fill(.ultraThinMaterial)
-        } else {
-            colors.colorsSurfacePrimary
+        isScrolled ? colors.colorsSurfacePrimary : Color.clear
+    }
+
+    /// Di luar frame header: tidak mengubah tinggi header dan tidak menangkap sentuhan.
+    @ViewBuilder
+    private var fade: some View {
+        if isScrolled {
+            LinearGradient(
+                colors: [colors.colorsSurfacePrimary, colors.colorsSurfacePrimary.opacity(.zero)],
+                startPoint: .top, endPoint: .bottom
+            )
+            .frame(height: FigmaSize.spacingLarge.scaledToArtwork)
+            .offset(y: FigmaSize.spacingLarge.scaledToArtwork)
+            .allowsHitTesting(false)
+            .accessibilityHidden(true)
         }
     }
 }

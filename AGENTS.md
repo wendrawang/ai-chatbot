@@ -99,7 +99,8 @@ tersedia pada history/main.
 
 ## Komponen dan ownership
 
-- Struktur `Components/<NamaKomponen>`, `Extensions/<Type>+<Responsibility>.swift`.
+- Struktur `Components/<NamaKomponen>`, `Extensions/<Type>+<Responsibility>.swift`,
+  modifier permukaan bersama di `Foundations/Surface`.
   Nama DesignKit umum, tanpa prefix fitur. Jangan membuat ViewModel per komponen.
 - Identifier UI test dikelompokkan per komponen (`ComponentIdentifier.Header.title`,
   `ComponentIdentifier.Composer.send`). String identifier adalah kontrak UI test.
@@ -130,6 +131,8 @@ tersedia pada history/main.
   intent, bubble atau database pada tahap header.
 - `let` untuk input, `@Binding` untuk state caller, `@State` untuk draft lokal.
   Screen memiliki margin luar; komponen memiliki padding dalam/surface/shadow.
+  Kartu dan bayangan memakai `.cardStyle()`/`.designShadow()` dari DesignKit; jangan
+  menyusun ulang radius, garis tepi, atau shadow di setiap view.
 - Callback sederhana ditulis langsung (`() -> Void`, `(String) -> Bool`) dengan
   nama aksi dan kontrak hasil yang jelas. Typealias hanya untuk signature kompleks
   atau kontrak domain bersama, diletakkan dekat pemiliknya, bukan catalog global.

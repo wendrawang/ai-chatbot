@@ -59,6 +59,23 @@ public struct ActionRow: View {
 ```
 
 Komponen memiliki padding dalam/surface sendiri. Screen memberi margin luar.
+
+Permukaan yang berulang memakai modifier DesignKit, bukan disusun ulang di setiap view:
+
+| Kebutuhan | Pakai |
+| --- | --- |
+| Kartu (isi putih, radius, garis tepi, bayangan) | `.cardStyle()` |
+| Bayangan saja | `.designShadow()` |
+
+```swift
+VStack { ... }
+    .padding(FigmaSize.spacingLarge.scaledToArtwork)   // padding isi milik komponen
+    .cardStyle()
+```
+
+Nilainya ada di satu tempat (`CustomSizes.Card`, `CustomSizes.Shadow`, `CustomColors`).
+Bila desain mengubah radius atau bayangan kartu, cukup ubah token itu. Tambahkan
+modifier baru hanya bila pola yang sama sudah dipakai di lebih dari satu komponen.
 Jangan menambahkan padding yang sama pada dua level. Buat `struct View` terpisah
 jika mempunyai tanggung jawab sendiri atau dipakai ulang; properti private cukup
 untuk potongan layout lokal. ViewModel baru diperlukan ketika ada state/logic
@@ -66,7 +83,7 @@ fitur yang memang perlu dimiliki, bukan karena ada sebuah view.
 
 ## Screen berikutnya
 
-Pakai composition `ScreenContainer` agar header, boundary/blur, scroll dan footer
+Pakai composition `ScreenContainer` agar header, boundary/fade, scroll dan footer
 konsisten. Isi `content`, `trailing`, dan `footer`; tidak perlu extend BaseScreen,
 protocol layout atau BaseViewModel. Content tidak membungkus ScrollView vertikal
 lagi. Lihat pemakaian lengkap pada `ChatScreen.swift` dan
