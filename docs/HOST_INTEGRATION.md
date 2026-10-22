@@ -81,9 +81,7 @@ struct TanyaAIScreen: ScreenContent {
 final class TanyaAIScreenViewModel: ScreenContentViewModel {
     @MainActor
     func makeHost() -> TanyaAIHost {
-        TanyaAIHost(locale: Locale(identifier: Localize.currentLanguage())) { [weak self] text in
-            self?.useCase.send(text) ?? false
-        }
+        TanyaAIHost(locale: Locale(identifier: Localize.currentLanguage()), service: useCase.service)
     }
 }
 ```
@@ -110,10 +108,15 @@ Untuk navigasi lain cukup ganti pemanggilnya:
 - **UIKit coordinator / `UINavigationController`:**
   `navigation.pushViewController(UIHostingController(rootView: host.makeView(onBack: pop)), animated: true)`.
 
-`onSend` mengembalikan `true` bila host menerima draft (composer dikosongkan) dan
-`false` untuk mempertahankannya. Nilai ini bukan konfirmasi request network berhasil.
-`onNewConversation` opsional; tanpa handler, item menu "Percakapan baru" disabled.
-`locale` dan `colors` dibaca saat halaman dibuat.
+`TanyaAIHost(locale:colors:service:onNewConversation:)`:
+
+- `service` (`TanyaAIService`) milik host: init sesi, history berhalaman, stream SSE
+  persistent, dan kirim chat. Bentuk JSON di [CHAT_CONTRACT.md](CHAT_CONTRACT.md).
+  Error jaringan boleh juga dilaporkan host ke blocker halamannya (sandbox: `TanyaAIUseCase`).
+- `onNewConversation` opsional; tanpa handler, item menu "Percakapan baru" disabled.
+- `locale` dan `colors` dibaca saat halaman dibuat.
+
+Sesi dibuka saat halaman tampil dan stream ditutup saat halaman dilepas.
 
 ## Bahasa dan appearance
 
@@ -131,14 +134,12 @@ karena aturan bisnis tidak masuk DesignKit.
 
 ## Isi folder `Host`
 
-- `TanyaAIHost.swift`: konfigurasi (`locale`, `colors`, `onSend`) dan
-  `makeView()` yang memasang bahasa dan palette ke halaman baru.
-
-Overload `makeView { ContentView() }` menerima konten SwiftUI untuk area scroll; sandbox
-memakainya pada mode `--header-demo`. Konten tidak perlu mempunyai ScrollView, header,
-atau composer sendiri, dan dilepas setelah halaman di-pop.
+- `TanyaAIHost.swift`: konfigurasi (`locale`, `colors`, `service`) dan `makeView()` yang
+  memasang bahasa dan palette ke halaman baru.
+- `TanyaAIService.swift`: protocol jaringan host dan `TanyaAIServerEvent`.
 
 Jalankan `Scripts/run_sandbox.sh --language id`. Buka Tanya AI dari beranda atau dari
-halaman detail, kembali dengan tombol back atau swipe dari tepi kiri. `--offline`
-membuat kiriman memunculkan blocker host di atas Tanya AI; tombol "Coba lagi"
-menutupnya dan draft tetap ada.
+halaman detail, kirim pertanyaan (mis. "saldo", "transfer", "promo", "markdown"), lalu
+kembali dengan tombol back atau swipe dari tepi kiri. `--long-history` mengisi history
+panjang untuk mencoba paging dan header saat digulir. `--offline` membuat init sesi gagal:
+blocker host tampil di atas Tanya AI, dan chat menampilkan "Koneksi terputus. Coba lagi".

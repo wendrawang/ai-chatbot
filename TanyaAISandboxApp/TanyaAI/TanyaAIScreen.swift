@@ -15,12 +15,6 @@ struct TanyaAIScreen: ScreenContent {
     let onBack: () -> Void
 
     var body: some View {
-        let host = viewModel.makeHost()
-        // Sandbox: mode --header-demo mengisi area scroll dengan konten contoh.
-        if SandboxOptions.current.isHeaderDemo {
-            host.makeView(onBack: onBack) { HeaderDemoContent() }
-        } else {
-            host.makeView(onBack: onBack)
-        }
+        viewModel.makeHost().makeView(onBack: onBack)
     }
 }

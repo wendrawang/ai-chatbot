@@ -117,9 +117,9 @@ Titik tiga membuka menu “Percakapan baru” dalam English/Indonesia/简体中�
 `onNewConversation` hanya mengirim aksi ke host. Tanpa handler, item disabled;
 belum ada reset draft atau flow sesi/welcome pada tahap ini.
 
-Jalankan `Scripts/run_sandbox.sh --language id --header-demo`, lalu buka feature.
-Mode ini memberi paragraf dummy yang cukup panjang untuk mencapai akhir, kembali
-ke atas, dan melihat teks di belakang header. Tanpa flag, area chat tetap kosong.
+Jalankan `Scripts/run_sandbox.sh --language id --long-history`, lalu buka feature.
+Daftar dibuka di pesan terbaru dengan konten di belakang header; gulir ke atas sampai
+history habis dan header kembali transparan.
 Asset back/more/send masih PDF vector sementara, dengan TODO di xcassets.
 Localization dan nama asset dibaca melalui R.swift generated; lihat
 [pola view dan resource](VIEW_TEMPLATE.md).

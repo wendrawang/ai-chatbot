@@ -7,23 +7,18 @@
 
 import Foundation
 
-/// Sandbox: menerima draft tanpa backend. `--reject-send` menolak draft;
-/// `--offline` melaporkan error tidak ada internet ke view model.
+/// Use case Tanya AI di host: memiliki service chat (init, history, SSE, kirim).
+/// Sandbox memakai fixture lokal; `--offline` membuat service gagal dan melapor ke halaman host.
 final class TanyaAIUseCase {
-    let callback = BaseCallback()
-    private let options: SandboxOptions
+    let callback: BaseCallback
+    let service: SandboxChatService
 
     init(options: SandboxOptions = .current) {
-        self.options = options
-    }
-
-    /// true = draft diterima host; false = draft tetap di composer.
-    func send(_ text: String) -> Bool {
-        // TODO: Panggil service chat host setelah contract BE tersedia.
-        guard !options.isOffline else {
-            callback.onSubmissionFailed(URLError(.notConnectedToInternet))
-            return false
+        let callback = BaseCallback()
+        self.callback = callback
+        // Error jaringan dilaporkan ke blocker host, selain ke status koneksi di dalam chat.
+        service = SandboxChatService(options: options) { error in
+            Task { @MainActor in callback.onSubmissionFailed(error) }
         }
-        return !options.isRejectingSend
     }
 }

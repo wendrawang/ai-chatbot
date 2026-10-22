@@ -8,40 +8,53 @@
 import DesignKit
 import SwiftUI
 
-/// The feature owns its header; the draft lives in ComposerSection. Content is injected.
+/// Halaman Tanya AI: header, daftar pesan, status koneksi, dan composer.
+/// Draft hidup di `ComposerSection`; percakapan dimiliki `ChatViewModel`.
 @MainActor
-public struct ChatScreen<Content: View>: View {
+struct ChatScreen: View {
     @Environment(\.locale)
     private var locale
     @Environment(\.dismiss)
     private var dismiss
     @Environment(\.designColors)
     private var colors
-    private let isEnabled: Bool
+    @StateObject
+    private var viewModel: ChatViewModel
+    @State
+    private var isScrolled = false
     private let onBack: (() -> Void)?
     private let onNewConversation: (() -> Void)?
-    private let onSend: (String) -> Bool
-    private let content: Content
 
-    public init(
-        isEnabled: Bool = true, onBack: (() -> Void)? = nil,
-        onNewConversation: (() -> Void)? = nil, onSend: @escaping (String) -> Bool,
-        @ViewBuilder content: () -> Content
+    init(
+        viewModel: @autoclosure @escaping () -> ChatViewModel, onBack: (() -> Void)?,
+        onNewConversation: (() -> Void)?
     ) {
-        self.isEnabled = isEnabled
+        _viewModel = StateObject(wrappedValue: viewModel())
         self.onBack = onBack
         self.onNewConversation = onNewConversation
-        self.onSend = onSend
-        self.content = content()
     }
 
-    public var body: some View {
-        ScreenContainer(
-            title: String(resource: R.string.localizable.chatTitle, locale: locale),
-            backLabel: String(resource: R.string.localizable.chatBack, locale: locale),
-            onBack: close, content: { content }, trailing: { moreMenu },
-            footer: { ComposerSection(isEnabled: isEnabled, onSend: onSend) }
-        )
+    var body: some View {
+        VStack(spacing: .zero) {
+            ZStack(alignment: .top) {
+                MessageList(
+                    isScrolled: $isScrolled, messages: viewModel.messages, isReplying: viewModel.isReplying,
+                    handlers: handlers,
+                    topInset: CustomSizes.Header.height.scaledToArtwork + FigmaSize.spacingLarge.scaledToArtwork
+                )
+                ScreenHeader(
+                    title: String(resource: R.string.localizable.chatTitle, locale: locale),
+                    backLabel: String(resource: R.string.localizable.chatBack, locale: locale),
+                    isScrolled: isScrolled, onBack: close, trailing: { moreMenu }
+                )
+            }
+            if viewModel.phase != .ready {
+                ConnectionBanner(isFailed: viewModel.phase == .failed, onRetry: viewModel.retry)
+            }
+            ComposerSection(isEnabled: viewModel.phase == .ready, onSend: viewModel.send)
+        }
+        .background(colors.colorsSurfacePrimary.ignoresSafeArea())
+        .onAppear(perform: viewModel.start)
     }
 
     private var moreMenu: some View {
@@ -67,5 +80,12 @@ public struct ChatScreen<Content: View>: View {
 private extension ChatScreen {
     func close() {
         if let onBack { onBack() } else { dismiss() }
+    }
+
+    var handlers: MessageHandlers {
+        MessageHandlers(
+            resend: { [weak model = viewModel] id in model?.resend(id) },
+            loadOlder: { [weak model = viewModel] in model?.loadOlder() }
+        )
     }
 }

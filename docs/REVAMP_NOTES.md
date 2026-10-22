@@ -70,27 +70,12 @@ Saran bertahap:
    Ini mengubah aturan "tanpa artwork environment" yang berlaku sekarang, jadi
    putuskan bersama tim ketika target perangkat lipat sudah pasti.
 
-## Seam backend (contract belum ada)
+## Seam backend
 
-Endgame: host yang memanggil service, TanyaAI menerima payload dan menerjemahkannya
-ke UI. Buat seam paling tipis saat migrasi pengiriman dimulai:
-
-```swift
-// Host yang melakukan network; TanyaAI hanya decode + map ke model UI.
-public protocol TanyaAIChatService {
-    func send(_ text: String) async throws -> Data
-}
-```
-
-- `TanyaAIHost(service:)` menggantikan `onSend: (String) -> Bool`. Ini perubahan
-  API, jadi lakukan sekali saat contract pertama tersedia.
-- `ResponseDTO` dan mapper bersifat internal di TanyaAI. Saat contract berubah,
-  hanya dua file ini yang ikut berubah.
-- Implementasi dummy ada di Sandbox, bukan di package produksi.
-- Mulai dari request/response biasa. Ganti ke `AsyncThrowingStream` hanya jika
-  backend memang streaming.
-- Jangan memindahkan DependencyContainer, Coordinator, atau file alias dari `main`
-  sebelum ada kebutuhan nyata.
+Sudah dibuat: `TanyaAIService` (init, history berhalaman, SSE persistent, kirim) milik host,
+dengan kontrak JSON di `docs/CHAT_CONTRACT.md`. TanyaAI hanya decode (`Service/ChatPayload`)
+dan menampilkan; implementasi dummy ada di Sandbox, bukan di package produksi. Saat kontrak
+BE final berbeda, yang berubah hanya `ChatPayload` dan dokumen kontrak.
 
 ## Persiapan Swift 6
 

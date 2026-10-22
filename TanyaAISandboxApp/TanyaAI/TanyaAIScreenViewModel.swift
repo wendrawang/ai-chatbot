@@ -8,7 +8,7 @@
 import Foundation
 import TanyaAI
 
-/// View model halaman Tanya AI di host: menyusun konfigurasi package dan meneruskan kiriman ke use case.
+/// View model halaman Tanya AI di host: menyusun konfigurasi package dan meneruskan error service ke blocker.
 final class TanyaAIScreenViewModel: ScreenContentViewModel {
     let useCase: TanyaAIUseCase
 
@@ -22,8 +22,6 @@ final class TanyaAIScreenViewModel: ScreenContentViewModel {
     @MainActor
     func makeHost() -> TanyaAIHost {
         // Sandbox: bahasa dari launch option; host memakai Localize_Swift.
-        TanyaAIHost(locale: SandboxOptions.current.locale ?? .current) { [weak self] text in
-            self?.useCase.send(text) ?? false
-        }
+        TanyaAIHost(locale: SandboxOptions.current.locale ?? .current, service: useCase.service)
     }
 }
