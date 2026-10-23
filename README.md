@@ -29,6 +29,7 @@ saat scroll. Integrasi biasa tetap membuka area percakapan kosong.
 - [Membuka screen dari host app](docs/HOST_INTEGRATION.md)
 - [Pola view dan resource R.swift](docs/VIEW_TEMPLATE.md)
 - [Aturan implementasi](AGENTS.md)
+- [Menjalankan tes (Xcode, workspace host, terminal)](docs/TESTING.md)
 - [Hasil validasi](docs/VALIDATION.md)
 - [Keputusan revamp dan tahap berikutnya](docs/REVAMP_NOTES.md)
 
