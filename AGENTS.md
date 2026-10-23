@@ -99,7 +99,8 @@ tersedia pada history/main.
 
 ## Komponen dan ownership
 
-- Struktur `Components/<NamaKomponen>`, `Extensions/<Type>+<Responsibility>.swift`.
+- Struktur `Components/<NamaKomponen>`, `Extensions/<Type>+<Responsibility>.swift`,
+  `ViewModifier` bersama di `ViewModifiers/<Nama>.swift`.
   Nama DesignKit umum, tanpa prefix fitur. Jangan membuat ViewModel per komponen.
 - Identifier UI test dikelompokkan per komponen (`ComponentIdentifier.Header.title`,
   `ComponentIdentifier.Composer.send`). String identifier adalah kontrak UI test.
@@ -130,6 +131,8 @@ tersedia pada history/main.
   intent, bubble atau database pada tahap header.
 - `let` untuk input, `@Binding` untuk state caller, `@State` untuk draft lokal.
   Screen memiliki margin luar; komponen memiliki padding dalam/surface/shadow.
+  Kartu dan bayangan memakai `.cardStyle()`/`.designShadow()` dari DesignKit; jangan
+  menyusun ulang radius, garis tepi, atau shadow di setiap view.
 - Callback sederhana ditulis langsung (`() -> Void`, `(String) -> Bool`) dengan
   nama aksi dan kontrak hasil yang jelas. Typealias hanya untuk signature kompleks
   atau kontrak domain bersama, diletakkan dekat pemiliknya, bukan catalog global.
@@ -150,11 +153,14 @@ tersedia pada history/main.
   berada di tengah field saat kosong. Pertahankan geometri caret native pada
   semua state: kosong, mengetik dan sesudah hapus. Jangan memusatkan caret kosong
   secara terpisah ke bounds, karena referensinya berbeda dari baseline saat mengetik.
-- `ChatScreen(onSend:)` mengosongkan draft hanya jika callback host mengembalikan
-  true. Draft dimiliki `ComposerSection` (`@State`), bukan `ChatScreen`, agar setiap
-  ketikan tidak me-render ulang header dan daftar pesan. Starter tidak mengirim
-  network, tidak menyimpan atau log isi pesan.
-- Integrasi host: `TanyaAIHost` hanya konfigurasi (`locale`, `colors`, `onSend`) dan
+- Draft dimiliki `ComposerSection` (`@State`), bukan `ChatScreen`, agar setiap ketikan
+  tidak me-render ulang header dan daftar pesan; draft dikosongkan bila chat diterima.
+  Jangan log isi pesan.
+- Jaringan milik host lewat `TanyaAIService` (init, history, SSE persistent, kirim).
+  TanyaAI hanya decode JSON kontrak (`Service/ChatPayload`) dan menampilkan. Percakapan
+  dimiliki `ChatViewModel`; pesan berupa value type agar daftar hanya me-render baris
+  yang berubah. Kontrak: `docs/CHAT_CONTRACT.md`.
+- Integrasi host: `TanyaAIHost` hanya konfigurasi (`locale`, `colors`, `service`) dan
   `makeView()` berupa view SwiftUI. Host menampilkannya lewat navigasinya sendiri
   (host SwiftUI: coordinator + destination dengan `@StateObject`, swipe-back bawaan). Package
   tidak membuat modal, transisi custom, NavigationView/NavigationStack, atau toolbar

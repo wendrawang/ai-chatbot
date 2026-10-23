@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import TanyaAI
 import UIKit
 import XCTest
 
@@ -40,14 +41,43 @@ final class SandboxHostTests: XCTestCase {
         XCTAssertEqual(host.navigation?.viewControllers.count, 2)
     }
 
-    func testRejectedOrOfflineSendKeepsDraftAndOfflineShowsTheHostBlocker() {
-        XCTAssertTrue(TanyaAIUseCase(options: SandboxOptions(arguments: [])).send("Halo"))
-        XCTAssertFalse(TanyaAIUseCase(options: SandboxOptions(arguments: ["--reject-send"])).send("Halo"))
+    func testOfflineServiceFailsAndShowsTheHostBlocker() async {
         let offline = TanyaAIScreenViewModel(useCase: TanyaAIUseCase(options: SandboxOptions(arguments: ["--offline"])))
-        XCTAssertFalse(offline.useCase.send("Halo"))
-        XCTAssertTrue(offline.isNetworkUnavailable)
+        do {
+            _ = try await offline.useCase.service.start()
+            XCTFail("Service offline harus gagal")
+        } catch {
+            XCTAssertEqual((error as? URLError)?.code, .notConnectedToInternet)
+        }
+        await waitUntil { offline.isNetworkUnavailable }
         offline.retry()
         XCTAssertFalse(offline.isNetworkUnavailable)
+    }
+
+    func testDummyServiceAnswersThroughTheStreamThatStaysOpen() async throws {
+        let service = SandboxChatService(options: SandboxOptions(arguments: []))
+        let session = try JSONSerialization.jsonObject(with: await service.start()) as? [String: Any]
+        let sessionId = try XCTUnwrap(session?["sessionId"] as? String)
+        let stream = service.events(sessionId: sessionId)
+        let sent = try JSONSerialization.jsonObject(with: await service.send("Cek saldo", sessionId: sessionId))
+        let questionId = try XCTUnwrap((sent as? [String: Any])?["id"] as? String)
+        for try await event in stream where event.name == "message" {
+            let reply = try XCTUnwrap(try JSONSerialization.jsonObject(with: event.data) as? [String: Any])
+            XCTAssertEqual(reply["replyTo"] as? String, questionId)
+            XCTAssertTrue((reply["text"] as? String)?.contains("Saldo") == true)
+            break
+        }
+    }
+
+    func testDummyHistoryIsPagedFromTheNewest() async throws {
+        let service = SandboxChatService(options: SandboxOptions(arguments: ["--long-history"]))
+        let latest = try page(await service.history(sessionId: "session", before: nil))
+        XCTAssertEqual(latest.messages.count, 20)
+        XCTAssertTrue(latest.isMoreAvailable)
+        let oldestId = try XCTUnwrap(latest.messages.first?["id"] as? String)
+        let older = try page(await service.history(sessionId: "session", before: oldestId))
+        XCTAssertEqual(older.messages.count, 20)
+        XCTAssertNotEqual(older.messages.last?["id"] as? String, oldestId)
     }
 
     func testPopGestureNeedsAPageToReturnTo() throws {
@@ -63,6 +93,11 @@ final class SandboxHostTests: XCTestCase {
 }
 
 private extension SandboxHostTests {
+    func page(_ data: Data) throws -> (messages: [[String: Any]], isMoreAvailable: Bool) {
+        let body = try XCTUnwrap(try JSONSerialization.jsonObject(with: data) as? [String: Any])
+        return (body["messages"] as? [[String: Any]] ?? [], body["hasMore"] as? Bool ?? false)
+    }
+
     /// Editor composer Tanya AI berupa UITextView, jadi bisa dicari langsung di hierarki halaman.
     static func textView(in root: UIView) -> UITextView? {
         if let textView = root as? UITextView { return textView }

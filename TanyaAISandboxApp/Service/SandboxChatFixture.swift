@@ -1,0 +1,57 @@
+//
+//  SandboxChatFixture.swift
+//  TanyaAISandboxApp
+//
+//  Created by Wendra on 22/10/26.
+//
+
+import Foundation
+
+/// Isi `Resources/Fixtures/ChatDummy.json`: history awal, jawaban per kata kunci, dan waktu tunda.
+struct SandboxChatFixture: Decodable {
+    struct Entry: Decodable {
+        let role: SandboxMessage.Role
+        let text: String
+    }
+
+    struct Reply: Decodable {
+        let keywords: [String]
+        let text: String
+    }
+
+    let pageSize: Int
+    /// Detik sebelum jawaban dikirim lewat stream.
+    let replyDelay: Double
+    /// Detik antar event heartbeat.
+    let heartbeatInterval: Double
+    let messageEvent: String
+    let heartbeatEvent: String
+    /// Pengali history untuk `--long-history` (menguji paging dan scroll panjang).
+    let longHistoryRepeat: Int
+    let history: [Entry]
+    let replies: [Reply]
+    let fallback: String
+
+    static func bundled() -> SandboxChatFixture? {
+        R.file.chatDummyJson.url()
+            .flatMap { try? Data(contentsOf: $0) }
+            .flatMap { try? JSONDecoder().decode(SandboxChatFixture.self, from: $0) }
+    }
+
+    /// History dengan waktu mundur per menit dari sekarang, terlama lebih dulu.
+    func historyMessages(isLong: Bool) -> [SandboxMessage] {
+        let entries = isLong ? Array(repeating: history, count: longHistoryRepeat).flatMap { $0 } : history
+        let now = Date()
+        return entries.enumerated().map { index, entry in
+            let minutesAgo = entries.count - index
+            let createdAt = Calendar.current.date(byAdding: .minute, value: -minutesAgo, to: now) ?? now
+            return SandboxMessage(role: entry.role, text: entry.text, createdAt: createdAt)
+        }
+    }
+
+    /// Jawaban pertama yang kata kuncinya ada di pertanyaan; selain itu jawaban default.
+    func reply(to question: String) -> String {
+        let lowered = question.lowercased()
+        return replies.first { $0.keywords.contains(where: lowered.contains) }?.text ?? fallback
+    }
+}

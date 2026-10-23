@@ -1,0 +1,55 @@
+{
+  "pageSize": 20,
+  "replyDelay": 1.2,
+  "heartbeatInterval": 5,
+  "messageEvent": "message",
+  "heartbeatEvent": "heartbeat",
+  "longHistoryRepeat": 15,
+  "history": [
+    {
+      "role": "user",
+      "text": "Halo"
+    },
+    {
+      "role": "assistant",
+      "text": "Halo! Saya Tanya AI. Coba tanyakan **saldo**, **transfer**, **promo**, atau ketik *markdown* untuk melihat semua format jawaban."
+    },
+    {
+      "role": "user",
+      "text": "Ada promo apa minggu ini?"
+    },
+    {
+      "role": "assistant",
+      "text": "Minggu ini ada cashback 10% untuk pembayaran QRIS, maksimal Rp25.000 per transaksi."
+    }
+  ],
+  "replies": [
+    {
+      "keywords": [
+        "saldo",
+        "balance"
+      ],
+      "text": "Saldo **Tabungan OCBC** kamu saat ini **Rp12.500.000**.\n\nSaldo dihitung per hari ini pukul 09.00 WIB."
+    },
+    {
+      "keywords": [
+        "transfer"
+      ],
+      "text": "Untuk transfer:\n\n1. Buka menu **Transfer**\n2. Pilih rekening tujuan\n3. Masukkan nominal, lalu konfirmasi dengan PIN\n\n> Transfer antar bank memakai BI-FAST dengan biaya Rp2.500."
+    },
+    {
+      "keywords": [
+        "promo"
+      ],
+      "text": "Promo aktif:\n\n- Cashback 10% QRIS\n- Gratis biaya transfer 5x per bulan\n- Bunga deposito spesial 4,5% p.a.\n\nDetail ada di [halaman promo](https://www.ocbc.id/id/promo)."
+    },
+    {
+      "keywords": [
+        "markdown",
+        "format"
+      ],
+      "text": "# Judul\n## Subjudul\n\nTeks **tebal**, *miring*, ~~coret~~, dan `kode`.\n\n- Poin pertama\n- Poin kedua yang lebih panjang sehingga turun ke baris berikutnya\n\n1. Langkah satu\n2. Langkah dua\n\n> Ini kutipan.\n\n```\nlet saldo = 12_500_000\nprint(saldo)\n```\n\n| Produk | Bunga | Minimum |\n| --- | :---: | ---: |\n| Tabungan | 1% | Rp100.000 |\n| Deposito | 4,5% | Rp8.000.000 |\n\n[Buka OCBC](https://www.ocbc.id)"
+    }
+  ],
+  "fallback": "Maaf, saya belum mengerti. Coba tanyakan **saldo**, **transfer**, **promo**, atau ketik *markdown*."
+}

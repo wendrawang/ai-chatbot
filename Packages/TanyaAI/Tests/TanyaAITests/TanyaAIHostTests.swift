@@ -14,33 +14,33 @@ import XCTest
 
 @MainActor
 final class TanyaAIHostTests: XCTestCase {
-    func testPageAndInjectedContentReleaseAfterPopWhileHostStaysOwned() async {
-        let host = TanyaAIHost { _ in true }
+    func testPageOpensTheSessionAndClosesTheStreamWhenReleased() async {
+        let service = FakeChatService()
+        let host = TanyaAIHost(service: service)
         let navigation = UINavigationController(rootViewController: UIViewController())
         let window = makeWindow(root: navigation)
         defer { window.isHidden = true }
-        weak var releasedOwner: NSObject?
         weak var releasedPage: UIViewController?
         do {
-            let owner = NSObject()
-            releasedOwner = owner
-            let page = UIHostingController(rootView: host.makeView { Text(owner.description) })
+            let page = UIHostingController(rootView: host.makeView())
             releasedPage = page
             navigation.pushViewController(page, animated: false)
             page.view.layoutIfNeeded()
+            await waitUntil { await service.openedStreams == 1 }
             navigation.popViewController(animated: false)
         }
-        let released = XCTNSPredicateExpectation(
-            predicate: NSPredicate { _, _ in releasedOwner == nil && releasedPage == nil }, object: nil
-        )
-        await fulfillment(of: [released], timeout: 3)
+        await waitUntil { releasedPage == nil }
+        await waitUntil { await service.closedStreams == 1 }
+        let startCount = await service.startCount
+        XCTAssertEqual(startCount, 1)
     }
 
     func testLocaleAndPaletteApplyWhenPageIsCreatedAndChangesWaitForNextPage() {
-        var host = TanyaAIHost(locale: Locale(identifier: "id"), colors: PremierColorConstants()) { _ in true }
+        var host = TanyaAIHost(
+            locale: Locale(identifier: "id"), colors: PremierColorConstants(), service: FakeChatService())
         let openedProbe = EnvironmentProbe()
         let openedWindow = makeWindow(
-            root: UIHostingController(rootView: host.makeView { EnvironmentReader(probe: openedProbe) }))
+            root: UIHostingController(rootView: host.applyingSettings(to: EnvironmentReader(probe: openedProbe))))
         defer { openedWindow.isHidden = true }
         XCTAssertTrue(openedProbe.colors is PremierColorConstants)
         XCTAssertEqual(openedProbe.locale?.identifier, "id")
@@ -48,13 +48,22 @@ final class TanyaAIHostTests: XCTestCase {
         host.colors = PrivateColorConstants()
         let nextProbe = EnvironmentProbe()
         let nextWindow = makeWindow(
-            root: UIHostingController(rootView: host.makeView { EnvironmentReader(probe: nextProbe) }))
+            root: UIHostingController(rootView: host.applyingSettings(to: EnvironmentReader(probe: nextProbe))))
         defer { nextWindow.isHidden = true }
         XCTAssertTrue(nextProbe.colors is PrivateColorConstants)
         XCTAssertEqual(nextProbe.locale?.identifier, "zh-Hans")
         openedWindow.rootViewController?.view.layoutIfNeeded()
         XCTAssertTrue(openedProbe.colors is PremierColorConstants)
         XCTAssertEqual(openedProbe.locale?.identifier, "id")
+    }
+
+    private func waitUntil(_ condition: () async -> Bool) async {
+        let deadline = Date().addingTimeInterval(3)
+        while Date() < deadline {
+            if await condition() { return }
+            try? await Task.sleep(nanoseconds: 10_000_000)
+        }
+        XCTFail("Kondisi tidak terpenuhi")
     }
 
     private func makeWindow(root: UIViewController) -> UIWindow {

@@ -1,5 +1,33 @@
 # Validasi starter
 
+## Alur chat dengan SSE persistent — 22 Oktober 2026
+
+`TanyaAIHost(service:)` menggantikan `onSend`. Saat halaman tampil: init sesi → history →
+stream SSE tetap terbuka; chat dikirim lewat `send` terpisah dan jawaban datang lewat
+stream. Reconnect otomatis sekali (init ulang + history + stream), lalu status "Koneksi
+terputus. Coba lagi". Daftar pesan memakai `UITableView` diffable (cell hosting SwiftUI,
+fallback iOS 15), history lama dimuat saat mendekati atas tanpa menggeser posisi baca.
+Sandbox memakai service dummy dari `ChatDummy.json`; `--long-history` dan `--offline`.
+
+Dibuktikan oleh test: urutan init → history → stream; chat tampil langsung lalu
+terkonfirmasi dan dijawab lewat stream; heartbeat dan pesan ganda diabaikan; stream putus
+reconnect sekali lalu gagal dan pulih lewat coba lagi; init gagal; kirim gagal lalu kirim
+ulang; paging history; jawaban sebelum konfirmasi kirim; halaman membuka sesi dan menutup
+stream saat dilepas. UI test: pertanyaan dijawab lewat stream, header solid saat digulir dan
+kembali transparan setelah history lama habis termuat, blocker offline.
+
+## Style permukaan dan header — 22 Oktober 2026
+
+DesignKit menambah `.cardStyle()` (isi, radius, garis tepi, bayangan) dan
+`.designShadow()`. `MessageComposer` memakai `.cardStyle()`, jadi tampilannya tidak
+berubah; radius pindah dari `CustomSizes.Composer` ke `CustomSizes.Card`.
+`ScreenHeader` kini transparan saat diam dan putih saat digulir, dengan gradient
+setinggi `spacingLarge` di bawahnya; material blur dan separator dihapus.
+
+Dibuktikan oleh test: kedua modifier tidak mengubah ukuran layout; di app host,
+warna piksel menunjukkan header tembus ke latar saat diam, putih saat digulir,
+gradient di antara keduanya, dan latar kembali terlihat di bawah gradient.
+
 ## Tanya AI sebagai view SwiftUI — 22 Oktober 2026
 
 `TanyaAIHost.makeViewController()` diganti `makeView()`: host SwiftUI tidak lagi

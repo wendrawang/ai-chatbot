@@ -30,13 +30,15 @@ TanyaAISandboxApp/HeaderDemoContent.swift # fixture scroll, bukan UI produksi
    dengan `.scaledToArtwork`, tanpa batas minimum SDK. Label dan action datang
    dari caller; tidak ada copy TanyaAI di sini.
    Trailing slot untuk satu action; caller memberi label/tap target yang sesuai.
-3. Surface biasa opaque. Saat `isScrolled`, gunakan `.ultraThinMaterial` dan
-   separator token outline di bawah. Jika Reduce Transparency aktif, pertahankan
-   separator dengan surface opaque. Tidak ada blur pada teks/judul/icon sendiri.
+3. Saat diam, surface transparan sehingga latar screen (warna atau gambar) tembus sampai
+   status bar. Saat `isScrolled`, surface menjadi `colorsSurfacePrimary` dan gradient
+   setinggi `spacingLarge` di bawah header memudarkan konten yang lewat di belakangnya.
+   Gradient berada di luar frame header: tinggi header tetap dan sentuhan tidak tertangkap.
+   Tidak memakai material blur, jadi tidak ada cabang khusus Reduce Transparency.
 4. Buat `ScreenContainer` untuk menyusun header sebagai overlay di atas ScrollView. Padding
    awal konten adalah tinggi header ditambah `spacingLarge`, jadi konten tidak
-   tertutup saat posisi teratas. Konten dapat bergerak di belakang material ketika
-   digulir. Header tidak menggambar status bar palsu; safe area tetap milik iOS.
+   tertutup saat posisi teratas. Konten dapat bergerak di belakang header dan
+   gradient ketika digulir. Header tidak menggambar status bar palsu; safe area tetap milik iOS.
 5. `.onScrollBoundaryChange` memakai GeometryReader di background root konten.
    Callback memberi nilai awal, lalu `.onChange` mengamati Boolean ketika offset
    melewati toleransi. Tidak diperlukan PreferenceKey bersama antar observer.
@@ -115,9 +117,9 @@ Titik tiga membuka menu “Percakapan baru” dalam English/Indonesia/简体中�
 `onNewConversation` hanya mengirim aksi ke host. Tanpa handler, item disabled;
 belum ada reset draft atau flow sesi/welcome pada tahap ini.
 
-Jalankan `Scripts/run_sandbox.sh --language id --header-demo`, lalu buka feature.
-Mode ini memberi paragraf dummy yang cukup panjang untuk mencapai akhir, kembali
-ke atas, dan melihat teks di belakang header. Tanpa flag, area chat tetap kosong.
+Jalankan `Scripts/run_sandbox.sh --language id --long-history`, lalu buka feature.
+Daftar dibuka di pesan terbaru dengan konten di belakang header; gulir ke atas sampai
+history habis dan header kembali transparan.
 Asset back/more/send masih PDF vector sementara, dengan TODO di xcassets.
 Localization dan nama asset dibaca melalui R.swift generated; lihat
 [pola view dan resource](VIEW_TEMPLATE.md).

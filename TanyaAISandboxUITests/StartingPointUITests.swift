@@ -103,14 +103,27 @@ final class StartingPointUITests: XCTestCase {
         capture("starter-empty-after-clearing")
     }
 
-    func testRejectedSubmissionKeepsDraft() {
-        launch(locale: "en", extra: ["--reject-send"])
+    func testQuestionAppearsAtOnceAndIsAnsweredThroughTheOpenStream() {
+        launch(locale: "id")
         let input = application.textViews["composer.input"]
         XCTAssertTrue(input.waitForExistence(timeout: 10))
+        let answers = application.staticTexts.matching(identifier: "chat.answer")
+        XCTAssertTrue(answers.firstMatch.waitForExistence(timeout: 10), "history awal harus tampil")
+        let historyAnswers = answers.count
         input.tap()
-        input.typeText("Keep my draft")
+        input.typeText("Cek saldo")
         application.buttons["composer.send"].tap()
-        XCTAssertEqual(input.value as? String, "Keep my draft")
+        XCTAssertEqual(input.value as? String, "")
+        // Chat user langsung tampil; status "sedang menjawab" terlalu singkat untuk query UI test
+        // dan diuji di ChatViewModelTests.
+        let questions = application.staticTexts.matching(identifier: "chat.question")
+        XCTAssertTrue(
+            questions.element(matching: NSPredicate(format: "label == %@", "Cek saldo")).waitForExistence(timeout: 5))
+        let answered = XCTNSPredicateExpectation(
+            predicate: NSPredicate { _, _ in answers.count > historyAnswers }, object: nil)
+        wait(for: [answered], timeout: 10)
+        XCTAssertFalse(application.staticTexts["chat.replying"].exists)
+        capture("chat-answered")
     }
 
     func testTextSizeSettingKeepsComposerFontAndLayoutFixed() {

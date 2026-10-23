@@ -65,6 +65,12 @@ localization = resources_group.new_variant_group('Localizable.strings')
 end
 target.resources_build_phase.add_file_reference(localization)
 
+# Fixture BE dummy (history, jawaban); R.swift membuat accessor R.file.*.
+fixtures_group = resources_group.new_group('Fixtures', 'Fixtures')
+Dir.glob(File.join(APP_PATH, 'Resources', 'Fixtures', '*.json')).sort.each do |fixture_path|
+  target.resources_build_phase.add_file_reference(fixtures_group.new_file(File.basename(fixture_path)))
+end
+
 target.build_configurations.each do |configuration|
   settings = configuration.build_settings
   settings['PRODUCT_BUNDLE_IDENTIFIER'] = 'com.example.tanyaai.sandbox'

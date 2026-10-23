@@ -7,7 +7,7 @@
 
 import Foundation
 
-/// Developer-only launch metadata. The host callback accepts drafts without contacting a backend.
+/// Developer-only launch metadata. Jawaban berasal dari fixture lokal tanpa backend.
 struct SandboxOptions {
     static let fontFailure = "Font registration failed: "
     static let openIdentifier = "sandbox.open"
@@ -22,9 +22,8 @@ struct SandboxOptions {
     static let demoEndIdentifier = "sandbox.demo.end"
     static let demoParagraphCount = 12
     private static let languageFlag = "--language"
-    private static let rejectFlag = "--reject-send"
-    private static let headerDemoFlag = "--header-demo"
     private static let offlineFlag = "--offline"
+    private static let longHistoryFlag = "--long-history"
 
     /// Opsi dari argumen peluncuran proses ini.
     static var current: SandboxOptions {
@@ -32,14 +31,13 @@ struct SandboxOptions {
     }
 
     let locale: Locale?
-    let isRejectingSend: Bool
-    let isHeaderDemo: Bool
     let isOffline: Bool
+    /// History panjang untuk menguji paging dan scroll.
+    let isLongHistory: Bool
 
     init(arguments: [String]) {
-        isRejectingSend = arguments.contains(Self.rejectFlag)
-        isHeaderDemo = arguments.contains(Self.headerDemoFlag)
         isOffline = arguments.contains(Self.offlineFlag)
+        isLongHistory = arguments.contains(Self.longHistoryFlag)
         if let position = arguments.firstIndex(of: Self.languageFlag),
             arguments.indices.contains(arguments.index(after: position))
         {
