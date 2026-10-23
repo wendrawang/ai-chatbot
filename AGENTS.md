@@ -100,7 +100,7 @@ tersedia pada history/main.
 ## Komponen dan ownership
 
 - Struktur `Components/<NamaKomponen>`, `Extensions/<Type>+<Responsibility>.swift`,
-  modifier permukaan bersama di `Foundations/Surface`.
+  `ViewModifier` bersama di `ViewModifiers/<Nama>.swift`.
   Nama DesignKit umum, tanpa prefix fitur. Jangan membuat ViewModel per komponen.
 - Identifier UI test dikelompokkan per komponen (`ComponentIdentifier.Header.title`,
   `ComponentIdentifier.Composer.send`). String identifier adalah kontrak UI test.
