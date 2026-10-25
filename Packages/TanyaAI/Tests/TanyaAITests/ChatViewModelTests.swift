@@ -5,13 +5,15 @@
 //  Created by Wendra on 22/10/26.
 //
 
-import XCTest
+import Foundation
+import Testing
 
 @testable import TanyaAI
 
 @MainActor
-final class ChatViewModelTests: XCTestCase {
-    func testOpeningRunsStartThenHistoryThenKeepsTheStreamOpen() async {
+struct ChatViewModelTests {
+    @Test
+    func openingRunsStartThenHistoryThenKeepsTheStreamOpen() async {
         let service = FakeChatService()
         await service.setLatestPage(
             FakeChatService.page(
@@ -26,28 +28,30 @@ final class ChatViewModelTests: XCTestCase {
         await waitUntil { await service.openedStreams == 1 }
         let startCount = await service.startCount
         let cursors = await service.historyCursors
-        XCTAssertEqual(startCount, 1)
-        XCTAssertEqual(cursors, [nil])
-        XCTAssertEqual(viewModel.messages.map(\.id), ["m1", "m2"])
-        XCTAssertTrue(viewModel.isMoreHistoryAvailable)
+        #expect(startCount == 1)
+        #expect(cursors == [nil])
+        #expect(viewModel.messages.map(\.id) == ["m1", "m2"])
+        #expect(viewModel.isMoreHistoryAvailable)
     }
 
-    func testSendIsShownAtOnceThenConfirmedAndAnsweredThroughTheStream() async {
+    @Test
+    func sendIsShownAtOnceThenConfirmedAndAnsweredThroughTheStream() async {
         let (service, viewModel) = await openedConversation()
-        XCTAssertFalse(viewModel.send("   "))
-        XCTAssertTrue(viewModel.send(" Saldo saya? "))
-        XCTAssertEqual(viewModel.messages.last?.text, "Saldo saya?")
-        XCTAssertEqual(viewModel.messages.last?.delivery, .sending)
+        #expect(!viewModel.send("   "))
+        #expect(viewModel.send(" Saldo saya? "))
+        #expect(viewModel.messages.last?.text == "Saldo saya?")
+        #expect(viewModel.messages.last?.delivery == .sending)
         await waitUntil { viewModel.messages.last?.id == "user-1" }
-        XCTAssertEqual(viewModel.messages.last?.delivery, .sent)
-        XCTAssertTrue(viewModel.isReplying)
+        #expect(viewModel.messages.last?.delivery == .sent)
+        #expect(viewModel.isReplying)
         await service.emit(
             "message", FakeChatService.message(id: "a1", role: "assistant", text: "Rp1", replyTo: "user-1"))
         await waitUntil { viewModel.messages.last?.id == "a1" }
-        XCTAssertFalse(viewModel.isReplying)
+        #expect(!viewModel.isReplying)
     }
 
-    func testHeartbeatAndRepeatedMessagesLeaveTheListUnchanged() async {
+    @Test
+    func heartbeatAndRepeatedMessagesLeaveTheListUnchanged() async {
         let (service, viewModel) = await openedConversation()
         await service.emit("message", FakeChatService.message(id: "a1", role: "assistant", text: "Hai"))
         await waitUntil { viewModel.messages.count == 1 }
@@ -56,10 +60,11 @@ final class ChatViewModelTests: XCTestCase {
         await service.emit("unknown")
         await service.emit("message", FakeChatService.message(id: "a2", role: "assistant", text: "Lagi", minute: 1))
         await waitUntil { viewModel.messages.count == 2 }
-        XCTAssertEqual(viewModel.messages.map(\.id), ["a1", "a2"])
+        #expect(viewModel.messages.map(\.id) == ["a1", "a2"])
     }
 
-    func testDroppedStreamReconnectsOnceThenFailsAndRetryRecovers() async {
+    @Test
+    func droppedStreamReconnectsOnceThenFailsAndRetryRecovers() async {
         let (service, viewModel) = await openedConversation()
         await service.setLatestPage(
             FakeChatService.page(
@@ -72,38 +77,41 @@ final class ChatViewModelTests: XCTestCase {
         await service.drop()
         await waitUntil { viewModel.phase == .failed }
         let startCount = await service.startCount
-        XCTAssertEqual(startCount, 2)
+        #expect(startCount == 2)
         viewModel.retry()
         await waitUntil { viewModel.phase == .ready }
-        XCTAssertEqual(viewModel.messages.map(\.id), ["missed"])
+        #expect(viewModel.messages.map(\.id) == ["missed"])
     }
 
-    func testStartFailureShowsFailedStateAndRetryRecovers() async {
+    @Test
+    func startFailureShowsFailedStateAndRetryRecovers() async {
         let service = FakeChatService()
         await service.setStartFailing(true)
         let viewModel = ChatViewModel(service: service)
         viewModel.start()
         await waitUntil { viewModel.phase == .failed }
-        XCTAssertFalse(viewModel.send("Halo"))
+        #expect(!viewModel.send("Halo"))
         await service.setStartFailing(false)
         viewModel.retry()
         await waitUntil { viewModel.phase == .ready }
     }
 
-    func testFailedSendStaysVisibleAndCanBeResent() async {
+    @Test
+    func failedSendStaysVisibleAndCanBeResent() async {
         let (service, viewModel) = await openedConversation()
         await service.setSendFailing(true)
-        XCTAssertTrue(viewModel.send("Transfer"))
+        #expect(viewModel.send("Transfer"))
         await waitUntil { viewModel.messages.last?.delivery == .failed }
-        XCTAssertFalse(viewModel.isReplying)
+        #expect(!viewModel.isReplying)
         await service.setSendFailing(false)
         viewModel.resend(viewModel.messages.last?.id ?? "")
         await waitUntil { viewModel.messages.last?.delivery == .sent }
         let sent = await service.sentTexts
-        XCTAssertEqual(sent, ["Transfer", "Transfer"])
+        #expect(sent == ["Transfer", "Transfer"])
     }
 
-    func testOlderHistoryIsAddedAboveUntilThereIsNoMore() async {
+    @Test
+    func olderHistoryIsAddedAboveUntilThereIsNoMore() async {
         let service = FakeChatService()
         await service.setLatestPage(
             FakeChatService.page(
@@ -119,13 +127,14 @@ final class ChatViewModelTests: XCTestCase {
         viewModel.loadOlder()
         viewModel.loadOlder()
         await waitUntil { viewModel.messages.map(\.id) == ["m1", "m3"] }
-        XCTAssertFalse(viewModel.isMoreHistoryAvailable)
+        #expect(!viewModel.isMoreHistoryAvailable)
         viewModel.loadOlder()
         let cursors = await service.historyCursors
-        XCTAssertEqual(cursors, [nil, "m3"])
+        #expect(cursors == [nil, "m3"])
     }
 
-    func testAnswerArrivingBeforeTheSendConfirmationIsNotLeftWaiting() {
+    @Test
+    func answerArrivingBeforeTheSendConfirmationIsNotLeftWaiting() {
         let viewModel = ChatViewModel(service: FakeChatService())
         viewModel.phase = .ready
         viewModel.messages = [ChatMessage.pendingQuestion("Halo")]
@@ -136,7 +145,7 @@ final class ChatViewModelTests: XCTestCase {
         viewModel.didDeliver(
             pendingId: pendingId,
             stored: ChatMessage(id: "user-1", role: .user, text: "Halo", createdAt: Date(), replyTo: nil))
-        XCTAssertFalse(viewModel.isReplying)
+        #expect(!viewModel.isReplying)
     }
 }
 
@@ -150,14 +159,5 @@ private extension ChatViewModelTests {
         await waitUntil { viewModel.phase == .ready }
         await waitUntil { await service.openedStreams == 1 }
         return (service, viewModel)
-    }
-
-    func waitUntil(timeout: TimeInterval = 3, _ condition: () async -> Bool) async {
-        let deadline = Date().addingTimeInterval(timeout)
-        while Date() < deadline {
-            if await condition() { return }
-            try? await Task.sleep(nanoseconds: 10_000_000)
-        }
-        XCTFail("Kondisi tidak terpenuhi dalam \(timeout) detik")
     }
 }

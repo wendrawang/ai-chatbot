@@ -7,32 +7,35 @@
 
 import DesignKit
 import SwiftUI
-import XCTest
+import Testing
 
-@MainActor
-final class ScreenContainerTests: XCTestCase {
-    func testMultipleBuilderChildrenShareMarginsAndHeaderInset() throws {
-        let first = FrameProbe()
-        let second = FrameProbe()
-        let content = ScreenContainer(
-            title: "General screen", backLabel: "Back", onBack: {},
-            content: {
-                FrameSample(probe: first)
-                FrameSample(probe: second)
-            }
-        )
-        let fixture = try HostWindowFixture(content)
-        defer { fixture.close() }
-        let firstFrame = try XCTUnwrap(first.frame)
-        let secondFrame = try XCTUnwrap(second.frame)
-        XCTAssertEqual(secondFrame.minY, firstFrame.maxY, accuracy: 1)
-        XCTAssertEqual(firstFrame.minX, FigmaSize.spacingLarge.scaledToArtwork, accuracy: 1)
-        XCTAssertEqual(secondFrame.minX, firstFrame.minX, accuracy: 1)
-        XCTAssertEqual(secondFrame.width, firstFrame.width, accuracy: 1)
-        let expectedTop =
-            fixture.controller.view.safeAreaInsets.top
-            + CustomSizes.Header.height.scaledToArtwork + FigmaSize.spacingLarge.scaledToArtwork
-        XCTAssertEqual(firstFrame.minY, expectedTop, accuracy: 1)
+extension HostWindowTests {
+    @MainActor
+    struct ScreenContainerTests {
+        @Test
+        func multipleBuilderChildrenShareMarginsAndHeaderInset() throws {
+            let first = FrameProbe()
+            let second = FrameProbe()
+            let content = ScreenContainer(
+                title: "General screen", backLabel: "Back", onBack: {},
+                content: {
+                    FrameSample(probe: first)
+                    FrameSample(probe: second)
+                }
+            )
+            let fixture = try HostWindowFixture(content)
+            defer { fixture.close() }
+            let firstFrame = try #require(first.frame)
+            let secondFrame = try #require(second.frame)
+            #expect(abs(secondFrame.minY - firstFrame.maxY) <= 1)
+            #expect(abs(firstFrame.minX - FigmaSize.spacingLarge.scaledToArtwork) <= 1)
+            #expect(abs(secondFrame.minX - firstFrame.minX) <= 1)
+            #expect(abs(secondFrame.width - firstFrame.width) <= 1)
+            let expectedTop =
+                fixture.controller.view.safeAreaInsets.top
+                + CustomSizes.Header.height.scaledToArtwork + FigmaSize.spacingLarge.scaledToArtwork
+            #expect(abs(firstFrame.minY - expectedTop) <= 1)
+        }
     }
 }
 

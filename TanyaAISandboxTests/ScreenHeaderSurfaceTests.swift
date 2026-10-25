@@ -7,28 +7,31 @@
 
 import DesignKit
 import SwiftUI
+import Testing
 import UIKit
-import XCTest
 
-/// Diuji di app host karena warna piksel hanya bisa dibaca dari window dengan scene sungguhan.
-@MainActor
-final class ScreenHeaderSurfaceTests: XCTestCase {
-    func testHeaderIsTransparentAtRestAndOpaqueWithFadeWhenScrolled() throws {
-        let height = CustomSizes.Header.height.scaledToArtwork
-        let fade = FigmaSize.spacingLarge.scaledToArtwork
-        let atRest = try render(isScrolled: false)
-        let scrolled = try render(isScrolled: true)
-        // Titik di padding kiri header, jauh dari tombol back dan judul; y dihitung dari bawah safe area.
-        let inHeader = height / 2
-        let inFade = height + fade / 2
-        let belowFade = height + fade + 4
+extension HostWindowTests {
+    /// Diuji di app host karena warna piksel hanya bisa dibaca dari window dengan scene sungguhan.
+    @MainActor
+    struct ScreenHeaderSurfaceTests {
+        @Test
+        func headerIsTransparentAtRestAndOpaqueWithFadeWhenScrolled() throws {
+            let height = CustomSizes.Header.height.scaledToArtwork
+            let fade = FigmaSize.spacingLarge.scaledToArtwork
+            let atRest = try render(isScrolled: false)
+            let scrolled = try render(isScrolled: true)
+            // Titik di padding kiri header, jauh dari tombol back dan judul; y dihitung dari bawah safe area.
+            let inHeader = height / 2
+            let inFade = height + fade / 2
+            let belowFade = height + fade + 4
 
-        XCTAssertTrue(isBackdrop(try atRest.pixel(atHeaderOffset: inHeader)), "header harus transparan saat diam")
-        XCTAssertTrue(isBackdrop(try atRest.pixel(atHeaderOffset: inFade)), "tidak ada fade saat diam")
-        XCTAssertTrue(isSurface(try scrolled.pixel(atHeaderOffset: inHeader)), "header harus putih saat digulir")
-        let fadePixel = try scrolled.pixel(atHeaderOffset: inFade)
-        XCTAssertFalse(isBackdrop(fadePixel) || isSurface(fadePixel), "gradient harus di antara putih dan latar")
-        XCTAssertTrue(isBackdrop(try scrolled.pixel(atHeaderOffset: belowFade)), "fade hanya setinggi spacingLarge")
+            #expect(isBackdrop(try atRest.pixel(atHeaderOffset: inHeader)), "header harus transparan saat diam")
+            #expect(isBackdrop(try atRest.pixel(atHeaderOffset: inFade)), "tidak ada fade saat diam")
+            #expect(isSurface(try scrolled.pixel(atHeaderOffset: inHeader)), "header harus putih saat digulir")
+            let fadePixel = try scrolled.pixel(atHeaderOffset: inFade)
+            #expect(!(isBackdrop(fadePixel) || isSurface(fadePixel)), "gradient harus di antara putih dan latar")
+            #expect(isBackdrop(try scrolled.pixel(atHeaderOffset: belowFade)), "fade hanya setinggi spacingLarge")
+        }
     }
 }
 
@@ -41,9 +44,9 @@ private struct RenderedHeader {
 
     func pixel(atHeaderOffset offset: CGFloat) throws -> [UInt8] {
         let point = CGRect(x: 2 * scale, y: (headerTop + offset) * scale, width: 1, height: 1)
-        let crop = try XCTUnwrap(image.cropping(to: point.integral))
+        let crop = try #require(image.cropping(to: point.integral))
         var data = [UInt8](repeating: .zero, count: 4)
-        let context = try XCTUnwrap(
+        let context = try #require(
             CGContext(
                 data: &data, width: 1, height: 1, bitsPerComponent: 8, bytesPerRow: 4,
                 space: CGColorSpaceCreateDeviceRGB(), bitmapInfo: CGImageAlphaInfo.premultipliedLast.rawValue
@@ -54,7 +57,7 @@ private struct RenderedHeader {
     }
 }
 
-private extension ScreenHeaderSurfaceTests {
+private extension HostWindowTests.ScreenHeaderSurfaceTests {
     /// Header di atas latar merah, seperti header di atas gambar latar chat.
     func render(isScrolled: Bool) throws -> RenderedHeader {
         let content = ZStack(alignment: .top) {
@@ -63,12 +66,12 @@ private extension ScreenHeaderSurfaceTests {
         }
         let fixture = try HostWindowFixture(content)
         defer { fixture.close() }
-        let window = try XCTUnwrap(fixture.controller.view.window)
+        let window = try #require(fixture.controller.view.window)
         let image = UIGraphicsImageRenderer(bounds: window.bounds).image { _ in
             window.drawHierarchy(in: window.bounds, afterScreenUpdates: true)
         }
         return RenderedHeader(
-            image: try XCTUnwrap(image.cgImage), scale: image.scale, headerTop: window.safeAreaInsets.top
+            image: try #require(image.cgImage), scale: image.scale, headerTop: window.safeAreaInsets.top
         )
     }
 

@@ -7,14 +7,17 @@
 
 import DesignKit
 import SwiftUI
+import Testing
 import UIKit
-import XCTest
 
 @testable import TanyaAI
 
+/// Berurutan karena test async membuka window dan menunggu di antaranya.
 @MainActor
-final class TanyaAIHostTests: XCTestCase {
-    func testPageOpensTheSessionAndClosesTheStreamWhenReleased() async {
+@Suite(.serialized)
+struct TanyaAIHostTests {
+    @Test
+    func pageOpensTheSessionAndClosesTheStreamWhenReleased() async {
         let service = FakeChatService()
         let host = TanyaAIHost(service: service)
         let navigation = UINavigationController(rootViewController: UIViewController())
@@ -32,38 +35,30 @@ final class TanyaAIHostTests: XCTestCase {
         await waitUntil { releasedPage == nil }
         await waitUntil { await service.closedStreams == 1 }
         let startCount = await service.startCount
-        XCTAssertEqual(startCount, 1)
+        #expect(startCount == 1)
     }
 
-    func testLocaleAndPaletteApplyWhenPageIsCreatedAndChangesWaitForNextPage() {
+    @Test
+    func localeAndPaletteApplyWhenPageIsCreatedAndChangesWaitForNextPage() {
         var host = TanyaAIHost(
             locale: Locale(identifier: "id"), colors: PremierColorConstants(), service: FakeChatService())
         let openedProbe = EnvironmentProbe()
         let openedWindow = makeWindow(
             root: UIHostingController(rootView: host.applyingSettings(to: EnvironmentReader(probe: openedProbe))))
         defer { openedWindow.isHidden = true }
-        XCTAssertTrue(openedProbe.colors is PremierColorConstants)
-        XCTAssertEqual(openedProbe.locale?.identifier, "id")
+        #expect(openedProbe.colors is PremierColorConstants)
+        #expect(openedProbe.locale?.identifier == "id")
         host.locale = Locale(identifier: "zh-Hans")
         host.colors = PrivateColorConstants()
         let nextProbe = EnvironmentProbe()
         let nextWindow = makeWindow(
             root: UIHostingController(rootView: host.applyingSettings(to: EnvironmentReader(probe: nextProbe))))
         defer { nextWindow.isHidden = true }
-        XCTAssertTrue(nextProbe.colors is PrivateColorConstants)
-        XCTAssertEqual(nextProbe.locale?.identifier, "zh-Hans")
+        #expect(nextProbe.colors is PrivateColorConstants)
+        #expect(nextProbe.locale?.identifier == "zh-Hans")
         openedWindow.rootViewController?.view.layoutIfNeeded()
-        XCTAssertTrue(openedProbe.colors is PremierColorConstants)
-        XCTAssertEqual(openedProbe.locale?.identifier, "id")
-    }
-
-    private func waitUntil(_ condition: () async -> Bool) async {
-        let deadline = Date().addingTimeInterval(3)
-        while Date() < deadline {
-            if await condition() { return }
-            try? await Task.sleep(nanoseconds: 10_000_000)
-        }
-        XCTFail("Kondisi tidak terpenuhi")
+        #expect(openedProbe.colors is PremierColorConstants)
+        #expect(openedProbe.locale?.identifier == "id")
     }
 
     private func makeWindow(root: UIViewController) -> UIWindow {

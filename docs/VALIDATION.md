@@ -1,5 +1,16 @@
 # Validasi starter
 
+## Unit test ke Swift Testing — 26 Oktober 2026
+
+Seluruh unit test (`DesignKitTests`, `TanyaAITests`, `TanyaAISandboxTests`) pindah dari
+XCTest ke Swift Testing tanpa mengubah perilaku yang diuji. `swift-tools-version` tetap
+5.7; Swift Testing ikut toolchain Xcode 16 ke atas. UI test tetap XCTest. Penantian async
+memakai `waitUntil` berbasis `Task.sleep`; suite sandbox yang memakai window berada di
+bawah `HostWindowTests` yang `.serialized`, dan `TanyaAIHostTests` juga `.serialized`.
+
+Hasil: DesignKit 17 tes (warna hex tidak valid tanpa fallback kini tes sendiri), TanyaAI
+12, sandbox unit 10, ditambah UI test XCTest; lint 0 pelanggaran.
+
 ## Alur chat dengan SSE persistent — 22 Oktober 2026
 
 `TanyaAIHost(service:)` menggantikan `onSend`. Saat halaman tampil: init sesi → history →
@@ -275,7 +286,7 @@ Pengujian presentasi memakai `TanyaAISandboxTests` dengan sandbox app sebagai
 test host dan UIWindowScene aktif. SwiftPM unit tests hanya menangani layout
 anchor/identity dan algoritma animator; logic test tanpa app tidak mempunyai
 scene aktif untuk menyelesaikan transisi fullscreen. Target hosted test memakai
-minimum iOS 17 sesuai XCTest toolchain; minimum app/package tetap iOS 15.
+minimum iOS 17 sesuai toolchain test; minimum app/package tetap iOS 15.
 
 ## Pemeriksaan visual
 

@@ -6,25 +6,28 @@
 //
 
 import SwiftUI
-import XCTest
+import Testing
 
 @testable import DesignKit
 
 @MainActor
-final class DesignColorsTests: XCTestCase {
-    func testDefaultPaletteWithoutHostTheme() {
+struct DesignColorsTests {
+    @Test
+    func defaultPaletteWithoutHostTheme() {
         let probe = PaletteProbe()
         render(PaletteReader(probe: probe))
-        XCTAssertTrue(probe.palette is DefaultColorConstants)
+        #expect(probe.palette is DefaultColorConstants)
     }
 
-    func testThemeReachesNestedComponents() {
+    @Test
+    func themeReachesNestedComponents() {
         let probe = PaletteProbe()
         render(VStack { PaletteReader(probe: probe) }.designColors(PremierColorConstants()))
-        XCTAssertTrue(probe.palette is PremierColorConstants)
+        #expect(probe.palette is PremierColorConstants)
     }
 
-    func testDefaultAreaIgnoresParentTheme() {
+    @Test
+    func defaultAreaIgnoresParentTheme() {
         let themed = PaletteProbe()
         let untouched = PaletteProbe()
         render(
@@ -34,8 +37,8 @@ final class DesignColorsTests: XCTestCase {
             }
             .designColors(PrivateColorConstants())
         )
-        XCTAssertTrue(themed.palette is PrivateColorConstants)
-        XCTAssertTrue(untouched.palette is DefaultColorConstants)
+        #expect(themed.palette is PrivateColorConstants)
+        #expect(untouched.palette is DefaultColorConstants)
     }
 
     private func render(_ content: some View) {

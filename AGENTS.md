@@ -176,8 +176,16 @@ tersedia pada history/main.
   tipe `Type!`. SwiftLint (`force_unwrapping`, `implicitly_unwrapped_optional`,
   `force_cast`, `force_try`) menolaknya. Property UIKit bertipe IUO seperti
   `UITextView.text` dibaca sebagai optional (`editor.text ?? String()`), jangan
-  di-override atau dipakai langsung sebagai non-optional. Test memakai
-  `let application = XCUIApplication()` dan `XCTUnwrap`, bukan IUO di `setUp`.
+  di-override atau dipakai langsung sebagai non-optional. Unit test memakai
+  `try #require(...)`; UI test memakai `let application = XCUIApplication()` dan
+  `XCTUnwrap`, bukan IUO di `setUp`.
+- Unit test (package dan `TanyaAISandboxTests`) memakai Swift Testing: `struct` suite,
+  `@Test`, `#expect`, `try #require`, dan `arguments:` untuk kasus berulang. UI test
+  (`TanyaAISandboxUITests`) tetap XCTest karena XCUITest belum ada di Swift Testing.
+  Swift Testing menjalankan test paralel: tunggu kondisi async dengan `waitUntil`
+  (`Task.sleep`, bukan RunLoop); suite yang membuka window atau menunggu sambil
+  memegang window diberi `@Suite(.serialized)`, dan di sandbox masuk lewat
+  `extension HostWindowTests`. Butuh Xcode 16 ke atas.
 - Private view sections berupa noun: `field`, `surface`, `actionButton`.
   Deklarasi utama berurutan environment, binding/state, input, init, body, sections.
   Computed setup/perhitungan/validasi berada di `private extension` pada file yang

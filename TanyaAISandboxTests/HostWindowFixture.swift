@@ -6,8 +6,13 @@
 //
 
 import SwiftUI
+import Testing
 import UIKit
-import XCTest
+
+/// Induk semua suite yang memakai window scene aplikasi. Swift Testing menjalankan test paralel,
+/// jadi suite di dalamnya dibuat berurutan agar window dan run loop tidak saling bertabrakan.
+@Suite(.serialized)
+enum HostWindowTests {}
 
 /// Window nyata pada scene aplikasi, dipakai bersama oleh test navigasi dan layout.
 @MainActor
@@ -16,7 +21,7 @@ final class HostWindowFixture {
     private let window: UIWindow
 
     init(root: UIViewController) throws {
-        let scene = try XCTUnwrap(UIApplication.shared.connectedScenes.compactMap { $0 as? UIWindowScene }.first)
+        let scene = try #require(UIApplication.shared.connectedScenes.compactMap { $0 as? UIWindowScene }.first)
         controller = root
         window = UIWindow(windowScene: scene)
         window.rootViewController = root

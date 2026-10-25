@@ -7,94 +7,99 @@
 
 import SwiftUI
 import TanyaAI
+import Testing
 import UIKit
-import XCTest
 
 @testable import Tanya_AI_Sandbox
 
-/// Host tiruan: Tanya AI dibuka lewat coordinator host dan tampil sebagai view SwiftUI biasa.
-@MainActor
-final class SandboxHostTests: XCTestCase {
-    func testTanyaAIOpensFullScreenAndClosesBackToMain() async throws {
-        let host = try HostHarness()
-        defer { host.close() }
-        host.probe.destination = TanyaAICoordinator.named
-        await waitUntil { host.navigation?.viewControllers.count == 2 }
-        host.settle()
-        let page = try XCTUnwrap(host.navigation?.topViewController)
-        XCTAssertEqual(page.view.convert(page.view.bounds, to: nil), host.windowBounds)
-        XCTAssertNotNil(Self.textView(in: page.view), "composer Tanya AI harus ada di halaman yang di-push")
-        host.probe.destination = nil
-        await waitUntil { host.navigation?.viewControllers.count == 1 }
-    }
-
-    func testParentRerenderKeepsTheOpenPage() async throws {
-        let host = try HostHarness()
-        defer { host.close() }
-        host.probe.destination = TanyaAICoordinator.named
-        await waitUntil { host.navigation?.viewControllers.count == 2 }
-        host.settle()
-        let page = try XCTUnwrap(host.navigation?.topViewController)
-        host.probe.tick += 1
-        host.settle()
-        XCTAssertTrue(host.navigation?.topViewController === page)
-        XCTAssertEqual(host.navigation?.viewControllers.count, 2)
-    }
-
-    func testOfflineServiceFailsAndShowsTheHostBlocker() async {
-        let offline = TanyaAIScreenViewModel(useCase: TanyaAIUseCase(options: SandboxOptions(arguments: ["--offline"])))
-        do {
-            _ = try await offline.useCase.service.start()
-            XCTFail("Service offline harus gagal")
-        } catch {
-            XCTAssertEqual((error as? URLError)?.code, .notConnectedToInternet)
+extension HostWindowTests {
+    /// Host tiruan: Tanya AI dibuka lewat coordinator host dan tampil sebagai view SwiftUI biasa.
+    @MainActor
+    struct SandboxHostTests {
+        @Test
+        func tanyaAIOpensFullScreenAndClosesBackToMain() async throws {
+            let host = try HostHarness()
+            defer { host.close() }
+            host.probe.destination = TanyaAICoordinator.named
+            await waitUntil { host.navigation?.viewControllers.count == 2 }
+            host.settle()
+            let page = try #require(host.navigation?.topViewController)
+            #expect(page.view.convert(page.view.bounds, to: nil) == host.windowBounds)
+            #expect(Self.textView(in: page.view) != nil, "composer Tanya AI harus ada di halaman yang di-push")
+            host.probe.destination = nil
+            await waitUntil { host.navigation?.viewControllers.count == 1 }
         }
-        await waitUntil { offline.isNetworkUnavailable }
-        offline.retry()
-        XCTAssertFalse(offline.isNetworkUnavailable)
-    }
 
-    func testDummyServiceAnswersThroughTheStreamThatStaysOpen() async throws {
-        let service = SandboxChatService(options: SandboxOptions(arguments: []))
-        let session = try JSONSerialization.jsonObject(with: await service.start()) as? [String: Any]
-        let sessionId = try XCTUnwrap(session?["sessionId"] as? String)
-        let stream = service.events(sessionId: sessionId)
-        let sent = try JSONSerialization.jsonObject(with: await service.send("Cek saldo", sessionId: sessionId))
-        let questionId = try XCTUnwrap((sent as? [String: Any])?["id"] as? String)
-        for try await event in stream where event.name == "message" {
-            let reply = try XCTUnwrap(try JSONSerialization.jsonObject(with: event.data) as? [String: Any])
-            XCTAssertEqual(reply["replyTo"] as? String, questionId)
-            XCTAssertTrue((reply["text"] as? String)?.contains("Saldo") == true)
-            break
+        @Test
+        func parentRerenderKeepsTheOpenPage() async throws {
+            let host = try HostHarness()
+            defer { host.close() }
+            host.probe.destination = TanyaAICoordinator.named
+            await waitUntil { host.navigation?.viewControllers.count == 2 }
+            host.settle()
+            let page = try #require(host.navigation?.topViewController)
+            host.probe.tick += 1
+            host.settle()
+            #expect(host.navigation?.topViewController === page)
+            #expect(host.navigation?.viewControllers.count == 2)
         }
-    }
 
-    func testDummyHistoryIsPagedFromTheNewest() async throws {
-        let service = SandboxChatService(options: SandboxOptions(arguments: ["--long-history"]))
-        let latest = try page(await service.history(sessionId: "session", before: nil))
-        XCTAssertEqual(latest.messages.count, 20)
-        XCTAssertTrue(latest.isMoreAvailable)
-        let oldestId = try XCTUnwrap(latest.messages.first?["id"] as? String)
-        let older = try page(await service.history(sessionId: "session", before: oldestId))
-        XCTAssertEqual(older.messages.count, 20)
-        XCTAssertNotEqual(older.messages.last?["id"] as? String, oldestId)
-    }
+        @Test
+        func offlineServiceFailsAndShowsTheHostBlocker() async {
+            let options = SandboxOptions(arguments: ["--offline"])
+            let offline = TanyaAIScreenViewModel(useCase: TanyaAIUseCase(options: options))
+            let error = await #expect(throws: URLError.self) { try await offline.useCase.service.start() }
+            #expect(error?.code == .notConnectedToInternet)
+            await waitUntil { offline.isNetworkUnavailable }
+            offline.retry()
+            #expect(!offline.isNetworkUnavailable)
+        }
 
-    func testPopGestureNeedsAPageToReturnTo() throws {
-        let navigation = UINavigationController(rootViewController: UIViewController())
-        let fixture = try HostWindowFixture(root: navigation)
-        defer { fixture.close() }
-        let swipe = try XCTUnwrap(navigation.interactivePopGestureRecognizer)
-        XCTAssertFalse(navigation.gestureRecognizerShouldBegin(swipe))
-        navigation.pushViewController(UIViewController(), animated: false)
-        fixture.settle()
-        XCTAssertTrue(navigation.gestureRecognizerShouldBegin(swipe))
+        @Test
+        func dummyServiceAnswersThroughTheStreamThatStaysOpen() async throws {
+            let service = SandboxChatService(options: SandboxOptions(arguments: []))
+            let session = try JSONSerialization.jsonObject(with: await service.start()) as? [String: Any]
+            let sessionId = try #require(session?["sessionId"] as? String)
+            let stream = service.events(sessionId: sessionId)
+            let sent = try JSONSerialization.jsonObject(with: await service.send("Cek saldo", sessionId: sessionId))
+            let questionId = try #require((sent as? [String: Any])?["id"] as? String)
+            for try await event in stream where event.name == "message" {
+                let reply = try #require(try JSONSerialization.jsonObject(with: event.data) as? [String: Any])
+                #expect(reply["replyTo"] as? String == questionId)
+                #expect((reply["text"] as? String)?.contains("Saldo") == true)
+                break
+            }
+        }
+
+        @Test
+        func dummyHistoryIsPagedFromTheNewest() async throws {
+            let service = SandboxChatService(options: SandboxOptions(arguments: ["--long-history"]))
+            let latest = try page(await service.history(sessionId: "session", before: nil))
+            #expect(latest.messages.count == 20)
+            #expect(latest.isMoreAvailable)
+            let oldestId = try #require(latest.messages.first?["id"] as? String)
+            let older = try page(await service.history(sessionId: "session", before: oldestId))
+            #expect(older.messages.count == 20)
+            #expect(older.messages.last?["id"] as? String != oldestId)
+        }
+
+        @Test
+        func popGestureNeedsAPageToReturnTo() throws {
+            let navigation = UINavigationController(rootViewController: UIViewController())
+            let fixture = try HostWindowFixture(root: navigation)
+            defer { fixture.close() }
+            let swipe = try #require(navigation.interactivePopGestureRecognizer)
+            #expect(!navigation.gestureRecognizerShouldBegin(swipe))
+            navigation.pushViewController(UIViewController(), animated: false)
+            fixture.settle()
+            #expect(navigation.gestureRecognizerShouldBegin(swipe))
+        }
     }
 }
 
-private extension SandboxHostTests {
+private extension HostWindowTests.SandboxHostTests {
     func page(_ data: Data) throws -> (messages: [[String: Any]], isMoreAvailable: Bool) {
-        let body = try XCTUnwrap(try JSONSerialization.jsonObject(with: data) as? [String: Any])
+        let body = try #require(try JSONSerialization.jsonObject(with: data) as? [String: Any])
         return (body["messages"] as? [[String: Any]] ?? [], body["hasMore"] as? Bool ?? false)
     }
 
@@ -102,11 +107,6 @@ private extension SandboxHostTests {
     static func textView(in root: UIView) -> UITextView? {
         if let textView = root as? UITextView { return textView }
         return root.subviews.lazy.compactMap { textView(in: $0) }.first
-    }
-
-    func waitUntil(_ condition: @escaping () -> Bool) async {
-        let met = XCTNSPredicateExpectation(predicate: NSPredicate { _, _ in condition() }, object: nil)
-        await fulfillment(of: [met], timeout: 3)
     }
 }
 

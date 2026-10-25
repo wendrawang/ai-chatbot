@@ -6,30 +6,34 @@
 //
 
 import DesignKit
-import XCTest
+import Foundation
+import Testing
 
 @testable import TanyaAI
 
-final class LocalizationTests: XCTestCase {
-    func testAllSupportedLanguagesHaveTranslatedLabels() {
+struct LocalizationTests {
+    @Test
+    func allSupportedLanguagesHaveTranslatedLabels() {
         let cases = [("en", "Send message"), ("id", "Kirim pesan"), ("zh-Hans", "发送消息"), ("zh_CN", "发送消息")]
         for (identifier, expected) in cases {
             let locale = Locale(identifier: identifier)
-            XCTAssertEqual(String(resource: TanyaAI.R.string.localizable.chatSend, locale: locale), expected)
+            #expect(String(resource: TanyaAI.R.string.localizable.chatSend, locale: locale) == expected)
             let placeholder = String(resource: TanyaAI.R.string.localizable.chatPlaceholder, locale: locale)
-            XCTAssertFalse(placeholder.isEmpty)
-            XCTAssertNotEqual(placeholder, "chat.placeholder")
+            #expect(!placeholder.isEmpty)
+            #expect(placeholder != "chat.placeholder")
         }
         for (identifier, expected) in [("en", "Back"), ("id", "Kembali"), ("zh-Hans", "返回")] {
             let locale = Locale(identifier: identifier)
-            XCTAssertEqual(String(resource: TanyaAI.R.string.localizable.chatBack, locale: locale), expected)
-            XCTAssertEqual(String(resource: TanyaAI.R.string.localizable.chatTitle, locale: locale), "Tanya AI")
+            #expect(String(resource: TanyaAI.R.string.localizable.chatBack, locale: locale) == expected)
+            #expect(String(resource: TanyaAI.R.string.localizable.chatTitle, locale: locale) == "Tanya AI")
         }
     }
 
-    func testUnsupportedLanguageFallsBackToEnglish() {
-        XCTAssertEqual(
-            String(resource: TanyaAI.R.string.localizable.chatSend, locale: Locale(identifier: "fr_FR")), "Send message"
+    @Test
+    func unsupportedLanguageFallsBackToEnglish() {
+        #expect(
+            String(resource: TanyaAI.R.string.localizable.chatSend, locale: Locale(identifier: "fr_FR"))
+                == "Send message"
         )
     }
 }
