@@ -1,6 +1,8 @@
 {
   "pageSize": 20,
   "replyDelay": 1.2,
+  "echoDelay": 0.3,
+  "slowReplyDelay": 8,
   "heartbeatInterval": 5,
   "messageEvent": "message",
   "heartbeatEvent": "heartbeat",
@@ -51,5 +53,22 @@
       "text": "# Judul\n## Subjudul\n\nTeks **tebal**, *miring*, ~~coret~~, dan `kode`.\n\n- Poin pertama\n- Poin kedua yang lebih panjang sehingga turun ke baris berikutnya\n\n1. Langkah satu\n2. Langkah dua\n\n> Ini kutipan.\n\n```\nlet saldo = 12_500_000\nprint(saldo)\n```\n\n| Produk | Bunga | Minimum |\n| --- | :---: | ---: |\n| Tabungan | 1% | Rp100.000 |\n| Deposito | 4,5% | Rp8.000.000 |\n\n[Buka OCBC](https://www.ocbc.id)"
     }
   ],
-  "fallback": "Maaf, saya belum mengerti. Coba tanyakan **saldo**, **transfer**, **promo**, atau ketik *markdown*."
+  "fallback": "Maaf, saya belum mengerti. Coba tanyakan **saldo**, **transfer**, **promo**, atau ketik *markdown*.",
+  "greeting": "Halo! Saya Tanya AI. Ada yang bisa saya bantu seputar keuangan dan layanan OCBC?",
+  "shortcuts": [
+    {
+      "id": "balance",
+      "label": "Cek saldo",
+      "message": "Berapa saldo saya?"
+    },
+    {
+      "id": "transfer",
+      "label": "Cara transfer"
+    },
+    {
+      "id": "promo",
+      "label": "Promo minggu ini",
+      "message": "Ada promo apa minggu ini?"
+    }
+  ]
 }

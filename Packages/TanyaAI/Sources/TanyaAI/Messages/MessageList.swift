@@ -18,6 +18,8 @@ struct MessageList: UIViewControllerRepresentable {
     @Binding
     var isScrolled: Bool
     let messages: [ChatMessage]
+    let welcome: ChatWelcome?
+    let isShortcutEnabled: Bool
     let isReplying: Bool
     let handlers: MessageHandlers
     let topInset: CGFloat
@@ -33,6 +35,9 @@ struct MessageList: UIViewControllerRepresentable {
         controller.handlers = handlers
         controller.tableView.contentInset.top = topInset
         controller.tableView.verticalScrollIndicatorInsets.top = topInset
-        controller.show(messages, isReplying: isReplying, locale: locale, colors: colors)
+        controller.show(
+            messages, welcome: welcome.map { .welcome($0, isEnabled: isShortcutEnabled) }, isReplying: isReplying,
+            locale: locale, colors: colors
+        )
     }
 }

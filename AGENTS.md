@@ -156,7 +156,8 @@ tersedia pada history/main.
 - Draft dimiliki `ComposerSection` (`@State`), bukan `ChatScreen`, agar setiap ketikan
   tidak me-render ulang header dan daftar pesan; draft dikosongkan bila chat diterima.
   Jangan log isi pesan.
-- Jaringan milik host lewat `TanyaAIService` (init, history, SSE persistent, kirim).
+- Jaringan milik host lewat `TanyaAIService` (init, history, config, SSE persistent, kirim, cancel).
+  Chat tampil dari stream, bukan dari `send`; satu pertanyaan per waktu. T&C milik host.
   TanyaAI hanya decode JSON kontrak (`Service/ChatPayload`) dan menampilkan. Percakapan
   dimiliki `ChatViewModel`; pesan berupa value type agar daftar hanya me-render baris
   yang berubah. Kontrak: `docs/CHAT_CONTRACT.md`.

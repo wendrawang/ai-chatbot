@@ -14,6 +14,7 @@ import UIKit
 @MainActor
 final class MessageListController: UIViewController, UITableViewDelegate {
     enum Item: Hashable {
+        case welcome
         case message(String)
         case replying
     }
@@ -23,6 +24,7 @@ final class MessageListController: UIViewController, UITableViewDelegate {
     var onScrolledChange: ((Bool) -> Void)?
     private var dataSource: UITableViewDiffableDataSource<Int, Item>?
     private var messages: [String: ChatMessage] = [:]
+    private var welcome: MessageRow.Kind?
     private var locale = Locale.current
     private var colors: any FigmaColorProtocol = EnvironmentValues().designColors
     private var isScrolled = false
@@ -57,8 +59,11 @@ final class MessageListController: UIViewController, UITableViewDelegate {
     }
 
     /// Terapkan pesan terbaru; baris yang sama persis tidak disentuh. History lama yang
-    /// ditambahkan di atas tidak menggeser posisi baca.
-    func show(_ newMessages: [ChatMessage], isReplying: Bool, locale: Locale, colors: any FigmaColorProtocol) {
+    /// ditambahkan di atas tidak menggeser posisi baca. `welcome` hanya tampil selama belum ada pesan.
+    func show(
+        _ newMessages: [ChatMessage], welcome newWelcome: MessageRow.Kind?, isReplying: Bool, locale: Locale,
+        colors: any FigmaColorProtocol
+    ) {
         let isEnvironmentChanged =
             locale != self.locale
             || ObjectIdentifier(type(of: colors)) != ObjectIdentifier(type(of: self.colors))
@@ -68,14 +73,23 @@ final class MessageListController: UIViewController, UITableViewDelegate {
         let changed = newMessages.filter {
             existing.contains(.message($0.id)) && (isEnvironmentChanged || messages[$0.id] != $0)
         }
+        let welcomeRow = newMessages.isEmpty ? newWelcome : nil
+        let isWelcomeChanged = existing.contains(.welcome) && (isEnvironmentChanged || welcome != welcomeRow)
+        welcome = welcomeRow
         let isPrepending = isOlderHistoryAdded(newMessages)
         let shouldFollow = isAtBottom || !isShowingContent
         let previousHeight = tableView.contentSize.height
         messages = Dictionary(uniqueKeysWithValues: newMessages.map { ($0.id, $0) })
         var snapshot = NSDiffableDataSourceSnapshot<Int, Item>()
         snapshot.appendSections([.zero])
-        snapshot.appendItems(newMessages.map { .message($0.id) } + (isReplying ? [.replying] : []))
-        snapshot.reconfigureItems(changed.map { .message($0.id) })
+        snapshot.appendItems(
+            (welcomeRow == nil ? [] : [.welcome]) + newMessages.map { .message($0.id) }
+                + (isReplying ? [.replying] : [])
+        )
+        // Reload, bukan reconfigure: cell hosting yang dikonfigurasi ulang tidak menggambar isi yang menambah
+        // tinggi (mis. catatan jawaban dihentikan) sampai cell dibuat ulang.
+        snapshot.reloadItems(
+            changed.map { Item.message($0.id) } + (isWelcomeChanged && welcomeRow != nil ? [.welcome] : []))
         dataSource?.apply(snapshot, animatingDifferences: false)
         isShowingContent = !newMessages.isEmpty
         if shouldFollow {
@@ -106,6 +120,9 @@ private extension MessageListController {
     func content(for item: Item) -> MessageRowContent? {
         guard let handlers else { return nil }
         switch item {
+        case .welcome:
+            guard let welcome else { return nil }
+            return MessageRowContent(row: welcome, handlers: handlers, locale: locale, colors: colors)
         case .message(let id):
             guard let message = messages[id] else { return nil }
             return MessageRowContent(row: .message(message), handlers: handlers, locale: locale, colors: colors)

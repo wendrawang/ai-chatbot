@@ -8,6 +8,7 @@
 import SwiftUI
 
 /// Inner spacing and appearance belong here; the screen owns outer margins.
+/// `action` mengganti tombol kirim dengan titik bergerak (sedang mengirim) atau stop (menunggu jawaban).
 @MainActor
 public struct MessageComposer: View {
     @Environment(\.designColors)
@@ -18,20 +19,27 @@ public struct MessageComposer: View {
     private let fontSize = FigmaSize.typographySizeDisplaySmall14.scaledToArtwork
     private let placeholder: String
     private let sendLabel: String
+    private let stopLabel: String
+    private let action: ComposerAction
     private let isEnabled: Bool
     private let fontFace: FontFace
     private let onSend: () -> Void
+    private let onStop: () -> Void
 
     public init(
-        text: Binding<String>, placeholder: String, sendLabel: String,
-        isEnabled: Bool = true, fontFace: FontFace = .openSansRegular, onSend: @escaping () -> Void
+        text: Binding<String>, placeholder: String, sendLabel: String, stopLabel: String,
+        action: ComposerAction = .send, isEnabled: Bool = true, fontFace: FontFace = .openSansRegular,
+        onSend: @escaping () -> Void, onStop: @escaping () -> Void = {}
     ) {
         self._text = text
         self.placeholder = placeholder
         self.sendLabel = sendLabel
+        self.stopLabel = stopLabel
+        self.action = action
         self.isEnabled = isEnabled
         self.fontFace = fontFace
         self.onSend = onSend
+        self.onStop = onStop
     }
 
     public var body: some View {
@@ -67,15 +75,24 @@ public struct MessageComposer: View {
         }
     }
 
+    @ViewBuilder
     private var actionButton: some View {
+        switch action {
+        case .send:
+            sendButton
+        case .sending:
+            sendingIndicator
+        case .stop:
+            stopButton
+        }
+    }
+
+    private var sendButton: some View {
         Button(action: onSend) {
             Image(R.image.sendArrow).resizable().scaledToFit()
                 .padding(CustomSizes.Composer.sendIconInset.scaledToArtwork)
                 .foregroundColor(colors.colorsIconLight)
-                .frame(
-                    width: CustomSizes.Composer.sendButton.scaledToArtwork,
-                    height: CustomSizes.Composer.sendButton.scaledToArtwork
-                )
+                .frame(width: buttonSize, height: buttonSize)
                 .background(Circle().fill(isSendEnabled ? colors.colorsButtonActive : colors.colorsIconDisabled))
                 .contentShape(Rectangle())
         }
@@ -84,6 +101,33 @@ public struct MessageComposer: View {
         .accessibilityLabel(sendLabel)
         .accessibilityIdentifier(ComponentIdentifier.Composer.send)
     }
+
+    private var sendingIndicator: some View {
+        LoadingDots(color: colors.colorsIconLight)
+            .frame(width: buttonSize, height: buttonSize)
+            .background(Circle().fill(colors.colorsButtonActive))
+            .accessibilityElement()
+            .accessibilityLabel(sendLabel)
+            .accessibilityIdentifier(ComponentIdentifier.Composer.sending)
+    }
+
+    private var stopButton: some View {
+        Button(action: onStop) {
+            RoundedRectangle(cornerRadius: CustomSizes.Composer.stopMarkRadius.scaledToArtwork)
+                .fill(colors.colorsIconLight)
+                .frame(
+                    width: CustomSizes.Composer.stopMark.scaledToArtwork,
+                    height: CustomSizes.Composer.stopMark.scaledToArtwork
+                )
+                .frame(width: buttonSize, height: buttonSize)
+                .background(Circle().fill(isEnabled ? colors.colorsButtonActive : colors.colorsIconDisabled))
+                .contentShape(Rectangle())
+        }
+        .buttonStyle(.plain)
+        .disabled(!isEnabled)
+        .accessibilityLabel(stopLabel)
+        .accessibilityIdentifier(ComponentIdentifier.Composer.stop)
+    }
 }
 
 // MARK: - Helpers
@@ -91,9 +135,11 @@ public struct MessageComposer: View {
 private extension MessageComposer {
     var inputFont: UIFont { fontFace.font(size: fontSize) }
 
+    var buttonSize: CGFloat { CustomSizes.Composer.sendButton.scaledToArtwork }
+
     /// Equal single-line rows center the field/button; a taller field keeps the button at its bottom.
     var singleLineRowHeight: CGFloat {
-        max(CustomSizes.Composer.sendButton.scaledToArtwork, ceil(inputFont.lineHeight + lineSpacing))
+        max(buttonSize, ceil(inputFont.lineHeight + lineSpacing))
     }
 
     var lineSpacing: CGFloat {

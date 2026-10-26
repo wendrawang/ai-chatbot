@@ -38,6 +38,18 @@ struct MessagePayload: Decodable {
     let createdAt: Date
 }
 
+struct ConfigPayload: Decodable {
+    let greeting: String
+    let shortcuts: [ShortcutPayload]?
+}
+
+struct ShortcutPayload: Decodable {
+    let id: String
+    let label: String
+    /// Teks yang dikirim sebagai chat; bila kosong memakai `label`.
+    let message: String?
+}
+
 /// Nama event SSE yang dikenali; event lain diabaikan.
 enum ServerEventName: String {
     case message, heartbeat, error

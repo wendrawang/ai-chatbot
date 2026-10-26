@@ -7,7 +7,8 @@
 
 import Foundation
 
-/// Isi `Resources/Fixtures/ChatDummy.json`: history awal, jawaban per kata kunci, dan waktu tunda.
+/// Isi `Resources/Fixtures/ChatDummy.json`: greeting, shortcut, history panjang, jawaban per kata kunci,
+/// dan waktu tunda.
 struct SandboxChatFixture: Decodable {
     struct Entry: Decodable {
         let role: SandboxMessage.Role
@@ -22,6 +23,10 @@ struct SandboxChatFixture: Decodable {
     let pageSize: Int
     /// Detik sebelum jawaban dikirim lewat stream.
     let replyDelay: Double
+    /// Detik sebelum pesan user dipantulkan lewat stream setelah `send`.
+    let echoDelay: Double
+    /// Tunda jawaban untuk `--slow-reply` (menguji tombol stop).
+    let slowReplyDelay: Double
     /// Detik antar event heartbeat.
     let heartbeatInterval: Double
     let messageEvent: String
@@ -29,6 +34,8 @@ struct SandboxChatFixture: Decodable {
     /// Pengali history untuk `--long-history` (menguji paging dan scroll panjang).
     let longHistoryRepeat: Int
     let history: [Entry]
+    let greeting: String
+    let shortcuts: [SandboxConfig.Shortcut]
     let replies: [Reply]
     let fallback: String
 
@@ -38,9 +45,9 @@ struct SandboxChatFixture: Decodable {
             .flatMap { try? JSONDecoder().decode(SandboxChatFixture.self, from: $0) }
     }
 
-    /// History dengan waktu mundur per menit dari sekarang, terlama lebih dulu.
-    func historyMessages(isLong: Bool) -> [SandboxMessage] {
-        let entries = isLong ? Array(repeating: history, count: longHistoryRepeat).flatMap { $0 } : history
+    /// History `--long-history` dengan waktu mundur per menit dari sekarang, terlama lebih dulu.
+    func longHistory() -> [SandboxMessage] {
+        let entries = Array(repeating: history, count: longHistoryRepeat).flatMap { $0 }
         let now = Date()
         return entries.enumerated().map { index, entry in
             let minutesAgo = entries.count - index

@@ -19,3 +19,5 @@
 "sandbox.logout" = "Log out";
 "sandbox.login" = "Log in";
 "sandbox.prelogin.title" = "Not logged in";
+"sandbox.terms.title" = "Terms & Conditions";
+"sandbox.terms.accept" = "Agree and continue";

@@ -19,5 +19,11 @@ enum ComponentIdentifier {
         static let root = "composer"
         static let input = "composer.input"
         static let send = "composer.send"
+        static let sending = "composer.sending"
+        static let stop = "composer.stop"
+    }
+
+    enum Suggestion {
+        static let root = "suggestion"
     }
 }

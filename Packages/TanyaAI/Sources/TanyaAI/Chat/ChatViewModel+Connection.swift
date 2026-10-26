@@ -14,11 +14,14 @@ extension ChatViewModel {
             let session = try ChatPayload.decode(SessionPayload.self, from: await service.start())
             let page = try ChatPayload.decode(
                 HistoryPayload.self, from: await service.history(sessionId: session.sessionId, before: nil))
-            guard !Task.isCancelled else { return }
             let isFirstConnection = sessionId == nil && messages.isEmpty
+            let welcome = await loadWelcome(isEmpty: page.messages.isEmpty, sessionId: session.sessionId)
+            guard !Task.isCancelled else { return }
             sessionId = session.sessionId
             merge(page.messages.map(ChatMessage.init))
             if isFirstConnection { isMoreHistoryAvailable = page.isMoreAvailable }
+            if let welcome { self.welcome = welcome }
+            reconcileTurn()
             phase = .ready
             openStream(sessionId: session.sessionId)
         } catch {
@@ -26,6 +29,15 @@ extension ChatViewModel {
             phase = .failed
         }
         connectionTask = nil
+    }
+
+    /// Config hanya untuk percakapan kosong. Gagal memuat config tidak menghalangi chat.
+    func loadWelcome(isEmpty: Bool, sessionId: String) async -> ChatWelcome? {
+        guard isEmpty, messages.isEmpty, welcome == nil,
+            let data = try? await service.config(sessionId: sessionId),
+            let payload = try? ChatPayload.decode(ConfigPayload.self, from: data)
+        else { return nil }
+        return ChatWelcome(payload)
     }
 
     func openStream(sessionId: String) {
@@ -46,8 +58,10 @@ extension ChatViewModel {
         case .message:
             isReconnectAllowed = true
             guard let payload = try? ChatPayload.decode(MessagePayload.self, from: event.data) else { return }
-            if let replyTo = payload.replyTo { pendingReplies.remove(replyTo) }
-            merge([ChatMessage(payload)])
+            let message = ChatMessage(payload)
+            if message.role == .assistant, let replyTo = message.replyTo, stoppedQuestions.contains(replyTo) { return }
+            merge([message])
+            advanceTurn(with: message)
         case .heartbeat:
             isReconnectAllowed = true
         case .error, .none:
@@ -65,30 +79,6 @@ extension ChatViewModel {
         }
         isReconnectAllowed = false
         connect()
-    }
-
-    func deliver(_ question: ChatMessage, sessionId: String) {
-        Task { [weak self, service] in
-            do {
-                let data = try await service.send(question.text, sessionId: sessionId)
-                let stored = try ChatPayload.decode(MessagePayload.self, from: data)
-                self?.didDeliver(pendingId: question.id, stored: ChatMessage(stored))
-            } catch {
-                self?.didFailDelivery(pendingId: question.id)
-            }
-        }
-    }
-
-    func didDeliver(pendingId: String, stored: ChatMessage) {
-        guard let index = messages.firstIndex(where: { $0.id == pendingId }) else { return }
-        messages[index] = stored
-        // Jawaban bisa saja tiba lebih dulu daripada konfirmasi kirim.
-        if !messages.contains(where: { $0.replyTo == stored.id }) { pendingReplies.insert(stored.id) }
-    }
-
-    func didFailDelivery(pendingId: String) {
-        guard let index = messages.firstIndex(where: { $0.id == pendingId }) else { return }
-        messages[index].delivery = .failed
     }
 
     func didLoadOlder(_ data: Data?) {

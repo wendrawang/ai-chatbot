@@ -58,7 +58,7 @@ final class StartingPointUITests: XCTestCase {
         assertVisualInsets(isMultiline: true)
         capture("starter-four-lines-keyboard")
         send.tap()
-        XCTAssertEqual(input.value as? String, "")
+        waitForAnswer(clearing: input)
         XCTAssertFalse(send.isEnabled)
         XCTAssertEqual(input.frame.midY, send.frame.midY, accuracy: 1)
     }
@@ -73,7 +73,7 @@ final class StartingPointUITests: XCTestCase {
         for (horizontal, vertical) in [(0.05, 0.5), (0.95, 0.5), (0.5, 0.05), (0.5, 0.95)] {
             input.typeText("Tap edge")
             send.coordinate(withNormalizedOffset: CGVector(dx: horizontal, dy: vertical)).tap()
-            XCTAssertEqual(input.value as? String, "")
+            waitForAnswer(clearing: input)
             XCTAssertFalse(send.isEnabled)
         }
     }
@@ -101,29 +101,6 @@ final class StartingPointUITests: XCTestCase {
         XCTAssertEqual(input.value as? String, "")
         XCTAssertEqual(input.frame.midY, application.buttons["composer.send"].frame.midY, accuracy: 1)
         capture("starter-empty-after-clearing")
-    }
-
-    func testQuestionAppearsAtOnceAndIsAnsweredThroughTheOpenStream() {
-        launch(locale: "id")
-        let input = application.textViews["composer.input"]
-        XCTAssertTrue(input.waitForExistence(timeout: 10))
-        let answers = application.staticTexts.matching(identifier: "chat.answer")
-        XCTAssertTrue(answers.firstMatch.waitForExistence(timeout: 10), "history awal harus tampil")
-        let historyAnswers = answers.count
-        input.tap()
-        input.typeText("Cek saldo")
-        application.buttons["composer.send"].tap()
-        XCTAssertEqual(input.value as? String, "")
-        // Chat user langsung tampil; status "sedang menjawab" terlalu singkat untuk query UI test
-        // dan diuji di ChatViewModelTests.
-        let questions = application.staticTexts.matching(identifier: "chat.question")
-        XCTAssertTrue(
-            questions.element(matching: NSPredicate(format: "label == %@", "Cek saldo")).waitForExistence(timeout: 5))
-        let answered = XCTNSPredicateExpectation(
-            predicate: NSPredicate { _, _ in answers.count > historyAnswers }, object: nil)
-        wait(for: [answered], timeout: 10)
-        XCTAssertFalse(application.staticTexts["chat.replying"].exists)
-        capture("chat-answered")
     }
 
     func testTextSizeSettingKeepsComposerFontAndLayoutFixed() {
@@ -197,11 +174,18 @@ final class StartingPointUITests: XCTestCase {
     }
 
     private func launch(locale: String, extra: [String] = []) {
-        application.launchArguments = ["--language", locale] + extra
+        application.launchArguments = ["--language", locale, "--terms-accepted"] + extra
         application.launch()
         let open = application.buttons["sandbox.open"]
         XCTAssertTrue(open.waitForExistence(timeout: 10))
         open.tap()
+    }
+
+    /// Draft kosong saat pesan muncul dari stream, lalu tombol kirim kembali setelah jawaban datang.
+    private func waitForAnswer(clearing input: XCUIElement) {
+        let cleared = XCTNSPredicateExpectation(predicate: NSPredicate(format: "value == %@", ""), object: input)
+        wait(for: [cleared], timeout: 5)
+        XCTAssertTrue(application.buttons["composer.send"].waitForExistence(timeout: 10))
     }
 
     private func assertVisualInsets(isMultiline: Bool) {

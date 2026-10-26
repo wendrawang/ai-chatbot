@@ -91,7 +91,7 @@ final class HeaderUITests: XCTestCase {
     }
 
     private func launch(locale: String, extra: [String] = []) {
-        application.launchArguments = ["--language", locale] + extra
+        application.launchArguments = ["--language", locale, "--terms-accepted"] + extra
         application.launch()
         let open = application.buttons["sandbox.open"]
         XCTAssertTrue(open.waitForExistence(timeout: 10))

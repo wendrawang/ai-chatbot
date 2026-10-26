@@ -8,11 +8,12 @@
 import DesignKit
 import SwiftUI
 
-/// Satu baris daftar: chat user, jawaban bot, atau penanda sedang menjawab.
+/// Satu baris daftar: greeting percakapan kosong, chat user, jawaban bot, atau penanda sedang menjawab.
 /// Tampilan sementara teks biasa; bubble final dan Markdown menyusul.
 @MainActor
 struct MessageRow: View {
     enum Kind: Equatable {
+        case welcome(ChatWelcome, isEnabled: Bool)
         case message(ChatMessage)
         case replying
     }
@@ -27,15 +28,15 @@ struct MessageRow: View {
     var body: some View {
         Group {
             switch kind {
+            case .welcome(let welcome, let isEnabled):
+                WelcomeRow(welcome: welcome, onShortcut: handlers.shortcut)
+                    .disabled(!isEnabled)
             case .message(let message) where message.role == .user:
                 question(message)
             case .message(let message):
                 answer(message)
             case .replying:
-                Text(String(resource: R.string.localizable.chatReplying, locale: locale))
-                    .foregroundColor(colors.colorsTextSecondary)
-                    .frame(maxWidth: .infinity, alignment: .leading)
-                    .accessibilityIdentifier(ChatElementIdentifier.replying)
+                replying
             }
         }
         .font(Font(FontFace.openSansRegular.font(size: FigmaSize.typographySizeDisplaySmall14.scaledToArtwork)))
@@ -54,23 +55,17 @@ struct MessageRow: View {
                         .fill(colors.colorsButtonActive)
                 )
                 .accessibilityIdentifier(ChatElementIdentifier.question)
-            if message.delivery == .failed {
-                failure(message)
+            if message.isAnswerStopped {
+                Text(String(resource: R.string.localizable.chatAnswerStopped, locale: locale))
+                    .font(
+                        Font(FontFace.openSansRegular.font(size: FigmaSize.typographySizeDisplayTiny12.scaledToArtwork))
+                    )
+                    .foregroundColor(colors.colorsTextSecondary)
+                    .accessibilityIdentifier(ChatElementIdentifier.answerStopped)
             }
         }
         .padding(.leading, FigmaSize.spacingExtraLarge.scaledToArtwork)
         .frame(maxWidth: .infinity, alignment: .trailing)
-    }
-
-    private func failure(_ message: ChatMessage) -> some View {
-        Button {
-            handlers.resend(message.id)
-        } label: {
-            Text(String(resource: R.string.localizable.chatSendFailed, locale: locale))
-                .foregroundColor(colors.colorsTextNegative)
-        }
-        .buttonStyle(.plain)
-        .accessibilityIdentifier(ChatElementIdentifier.resend)
     }
 
     private func answer(_ message: ChatMessage) -> some View {
@@ -79,11 +74,20 @@ struct MessageRow: View {
             .frame(maxWidth: .infinity, alignment: .leading)
             .accessibilityIdentifier(ChatElementIdentifier.answer)
     }
+
+    private var replying: some View {
+        LoadingDots(color: colors.colorsIconDark)
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .accessibilityElement()
+            .accessibilityLabel(String(resource: R.string.localizable.chatReplying, locale: locale))
+            .accessibilityIdentifier(ChatElementIdentifier.replying)
+    }
 }
 
 /// Aksi dari baris ke view model; closure agar baris tetap value type yang ringan.
 struct MessageHandlers {
-    let resend: (String) -> Void
+    /// Kirim teks shortcut sebagai chat.
+    let shortcut: (String) -> Void
     let loadOlder: () -> Void
 }
 

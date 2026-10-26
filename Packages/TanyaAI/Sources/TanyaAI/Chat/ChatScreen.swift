@@ -8,7 +8,7 @@
 import DesignKit
 import SwiftUI
 
-/// Halaman Tanya AI: header, daftar pesan, status koneksi, dan composer.
+/// Halaman Tanya AI: header, daftar pesan, status koneksi, pesan gagal, dan composer.
 /// Draft hidup di `ComposerSection`; percakapan dimiliki `ChatViewModel`.
 @MainActor
 struct ChatScreen: View {
@@ -38,7 +38,8 @@ struct ChatScreen: View {
         VStack(spacing: .zero) {
             ZStack(alignment: .top) {
                 MessageList(
-                    isScrolled: $isScrolled, messages: viewModel.messages, isReplying: viewModel.isReplying,
+                    isScrolled: $isScrolled, messages: viewModel.messages, welcome: viewModel.welcome,
+                    isShortcutEnabled: viewModel.isShortcutEnabled, isReplying: viewModel.turn.isReplying,
                     handlers: handlers,
                     topInset: CustomSizes.Header.height.scaledToArtwork + FigmaSize.spacingLarge.scaledToArtwork
                 )
@@ -51,7 +52,13 @@ struct ChatScreen: View {
             if viewModel.phase != .ready {
                 ConnectionBanner(isFailed: viewModel.phase == .failed, onRetry: viewModel.retry)
             }
-            ComposerSection(isEnabled: viewModel.phase == .ready, onSend: viewModel.send)
+            if let notice = viewModel.notice {
+                NoticeLabel(notice: notice)
+            }
+            ComposerSection(
+                action: viewModel.turn.composerAction, isEnabled: viewModel.phase == .ready,
+                deliveredQuestionId: viewModel.deliveredQuestionId, onSend: viewModel.send, onStop: viewModel.stop
+            )
         }
         .background(colors.colorsSurfacePrimary.ignoresSafeArea())
         .onAppear(perform: viewModel.start)
@@ -84,7 +91,7 @@ private extension ChatScreen {
 
     var handlers: MessageHandlers {
         MessageHandlers(
-            resend: { [weak model = viewModel] id in model?.resend(id) },
+            shortcut: { [weak model = viewModel] text in _ = model?.send(text) },
             loadOlder: { [weak model = viewModel] in model?.loadOlder() }
         )
     }

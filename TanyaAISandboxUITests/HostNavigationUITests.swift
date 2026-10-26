@@ -55,7 +55,7 @@ final class HostNavigationUITests: XCTestCase {
     }
 
     private func launch(extra: [String] = []) {
-        application.launchArguments = ["--language", "en"] + extra
+        application.launchArguments = ["--language", "en", "--terms-accepted"] + extra
         application.launch()
         XCTAssertTrue(application.buttons["sandbox.open"].waitForExistence(timeout: 10))
     }

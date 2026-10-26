@@ -19,3 +19,5 @@
 "sandbox.logout" = "Keluar";
 "sandbox.login" = "Masuk";
 "sandbox.prelogin.title" = "Belum masuk";
+"sandbox.terms.title" = "Syarat & Ketentuan";
+"sandbox.terms.accept" = "Setuju dan lanjutkan";

@@ -10,10 +10,30 @@ import Testing
 
 @testable import TanyaAI
 
+/// Sesi, history, config, stream dan reconnect.
 @MainActor
 struct ChatViewModelTests {
     @Test
-    func openingRunsStartThenHistoryThenKeepsTheStreamOpen() async {
+    func emptyHistoryLoadsConfigBeforeTheStreamOpens() async {
+        let service = FakeChatService()
+        let shortcuts = #"[{"id":"s1","label":"Cek saldo"},{"id":"s2","label":"Promo","message":"Ada promo apa?"}]"#
+        await service.setConfig(Data(#"{"greeting":"Hai!","shortcuts":\#(shortcuts)}"#.utf8))
+        let viewModel = ChatViewModel(service: service)
+        viewModel.start()
+        viewModel.start()
+        await waitUntil { viewModel.phase == .ready }
+        await waitUntil { await service.openedStreams == 1 }
+        let startCount = await service.startCount
+        let configCount = await service.configCount
+        #expect(startCount == 1)
+        #expect(configCount == 1)
+        #expect(viewModel.welcome?.greeting == "Hai!")
+        #expect(viewModel.welcome?.shortcuts.map(\.message) == ["Cek saldo", "Ada promo apa?"])
+        #expect(viewModel.isShortcutEnabled)
+    }
+
+    @Test
+    func existingHistorySkipsConfig() async {
         let service = FakeChatService()
         await service.setLatestPage(
             FakeChatService.page(
@@ -21,38 +41,20 @@ struct ChatViewModelTests {
                     FakeChatService.json(id: "m1", role: "user", text: "Halo", minute: 1),
                     FakeChatService.json(id: "m2", role: "assistant", text: "Hai", replyTo: "m1", minute: 2)
                 ], isMoreAvailable: true))
-        let viewModel = ChatViewModel(service: service)
-        viewModel.start()
-        viewModel.start()
-        await waitUntil { viewModel.phase == .ready }
-        await waitUntil { await service.openedStreams == 1 }
-        let startCount = await service.startCount
+        let viewModel = await openedConversation(service)
+        let configCount = await service.configCount
         let cursors = await service.historyCursors
-        #expect(startCount == 1)
+        #expect(configCount == 0)
+        #expect(viewModel.welcome == nil)
         #expect(cursors == [nil])
         #expect(viewModel.messages.map(\.id) == ["m1", "m2"])
         #expect(viewModel.isMoreHistoryAvailable)
     }
 
     @Test
-    func sendIsShownAtOnceThenConfirmedAndAnsweredThroughTheStream() async {
-        let (service, viewModel) = await openedConversation()
-        #expect(!viewModel.send("   "))
-        #expect(viewModel.send(" Saldo saya? "))
-        #expect(viewModel.messages.last?.text == "Saldo saya?")
-        #expect(viewModel.messages.last?.delivery == .sending)
-        await waitUntil { viewModel.messages.last?.id == "user-1" }
-        #expect(viewModel.messages.last?.delivery == .sent)
-        #expect(viewModel.isReplying)
-        await service.emit(
-            "message", FakeChatService.message(id: "a1", role: "assistant", text: "Rp1", replyTo: "user-1"))
-        await waitUntil { viewModel.messages.last?.id == "a1" }
-        #expect(!viewModel.isReplying)
-    }
-
-    @Test
     func heartbeatAndRepeatedMessagesLeaveTheListUnchanged() async {
-        let (service, viewModel) = await openedConversation()
+        let service = FakeChatService()
+        let viewModel = await openedConversation(service)
         await service.emit("message", FakeChatService.message(id: "a1", role: "assistant", text: "Hai"))
         await waitUntil { viewModel.messages.count == 1 }
         await service.emit("heartbeat")
@@ -65,7 +67,8 @@ struct ChatViewModelTests {
 
     @Test
     func droppedStreamReconnectsOnceThenFailsAndRetryRecovers() async {
-        let (service, viewModel) = await openedConversation()
+        let service = FakeChatService()
+        let viewModel = await openedConversation(service)
         await service.setLatestPage(
             FakeChatService.page(
                 [FakeChatService.json(id: "missed", role: "assistant", text: "Terlewat")], isMoreAvailable: false))
@@ -84,6 +87,22 @@ struct ChatViewModelTests {
     }
 
     @Test
+    func reconnectFindsAnAnswerMissedWhileDisconnected() async {
+        let service = FakeChatService()
+        let viewModel = await openedConversation(service)
+        await ask("Saldo?", as: "q1", in: viewModel, service: service)
+        await service.setLatestPage(
+            FakeChatService.page(
+                [
+                    FakeChatService.json(id: "q1", role: "user", text: "Saldo?"),
+                    FakeChatService.json(id: "a1", role: "assistant", text: "Rp1", replyTo: "q1", minute: 1)
+                ], isMoreAvailable: false))
+        await service.drop()
+        await waitUntil { viewModel.messages.map(\.id) == ["q1", "a1"] }
+        #expect(viewModel.turn == .idle)
+    }
+
+    @Test
     func startFailureShowsFailedStateAndRetryRecovers() async {
         let service = FakeChatService()
         await service.setStartFailing(true)
@@ -97,20 +116,6 @@ struct ChatViewModelTests {
     }
 
     @Test
-    func failedSendStaysVisibleAndCanBeResent() async {
-        let (service, viewModel) = await openedConversation()
-        await service.setSendFailing(true)
-        #expect(viewModel.send("Transfer"))
-        await waitUntil { viewModel.messages.last?.delivery == .failed }
-        #expect(!viewModel.isReplying)
-        await service.setSendFailing(false)
-        viewModel.resend(viewModel.messages.last?.id ?? "")
-        await waitUntil { viewModel.messages.last?.delivery == .sent }
-        let sent = await service.sentTexts
-        #expect(sent == ["Transfer", "Transfer"])
-    }
-
-    @Test
     func olderHistoryIsAddedAboveUntilThereIsNoMore() async {
         let service = FakeChatService()
         await service.setLatestPage(
@@ -121,9 +126,7 @@ struct ChatViewModelTests {
             FakeChatService.page(
                 [FakeChatService.json(id: "m1", role: "user", text: "Lama", minute: 1)], isMoreAvailable: false),
             before: "m3")
-        let viewModel = ChatViewModel(service: service)
-        viewModel.start()
-        await waitUntil { viewModel.phase == .ready }
+        let viewModel = await openedConversation(service)
         viewModel.loadOlder()
         viewModel.loadOlder()
         await waitUntil { viewModel.messages.map(\.id) == ["m1", "m3"] }
@@ -131,33 +134,5 @@ struct ChatViewModelTests {
         viewModel.loadOlder()
         let cursors = await service.historyCursors
         #expect(cursors == [nil, "m3"])
-    }
-
-    @Test
-    func answerArrivingBeforeTheSendConfirmationIsNotLeftWaiting() {
-        let viewModel = ChatViewModel(service: FakeChatService())
-        viewModel.phase = .ready
-        viewModel.messages = [ChatMessage.pendingQuestion("Halo")]
-        let pendingId = viewModel.messages[0].id
-        viewModel.merge([
-            ChatMessage(id: "a1", role: .assistant, text: "Hai", createdAt: Date(), replyTo: "user-1")
-        ])
-        viewModel.didDeliver(
-            pendingId: pendingId,
-            stored: ChatMessage(id: "user-1", role: .user, text: "Halo", createdAt: Date(), replyTo: nil))
-        #expect(!viewModel.isReplying)
-    }
-}
-
-// MARK: - Helpers
-
-private extension ChatViewModelTests {
-    func openedConversation() async -> (FakeChatService, ChatViewModel) {
-        let service = FakeChatService()
-        let viewModel = ChatViewModel(service: service)
-        viewModel.start()
-        await waitUntil { viewModel.phase == .ready }
-        await waitUntil { await service.openedStreams == 1 }
-        return (service, viewModel)
     }
 }

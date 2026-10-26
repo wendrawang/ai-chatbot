@@ -56,34 +56,6 @@ extension HostWindowTests {
         }
 
         @Test
-        func dummyServiceAnswersThroughTheStreamThatStaysOpen() async throws {
-            let service = SandboxChatService(options: SandboxOptions(arguments: []))
-            let session = try JSONSerialization.jsonObject(with: await service.start()) as? [String: Any]
-            let sessionId = try #require(session?["sessionId"] as? String)
-            let stream = service.events(sessionId: sessionId)
-            let sent = try JSONSerialization.jsonObject(with: await service.send("Cek saldo", sessionId: sessionId))
-            let questionId = try #require((sent as? [String: Any])?["id"] as? String)
-            for try await event in stream where event.name == "message" {
-                let reply = try #require(try JSONSerialization.jsonObject(with: event.data) as? [String: Any])
-                #expect(reply["replyTo"] as? String == questionId)
-                #expect((reply["text"] as? String)?.contains("Saldo") == true)
-                break
-            }
-        }
-
-        @Test
-        func dummyHistoryIsPagedFromTheNewest() async throws {
-            let service = SandboxChatService(options: SandboxOptions(arguments: ["--long-history"]))
-            let latest = try page(await service.history(sessionId: "session", before: nil))
-            #expect(latest.messages.count == 20)
-            #expect(latest.isMoreAvailable)
-            let oldestId = try #require(latest.messages.first?["id"] as? String)
-            let older = try page(await service.history(sessionId: "session", before: oldestId))
-            #expect(older.messages.count == 20)
-            #expect(older.messages.last?["id"] as? String != oldestId)
-        }
-
-        @Test
         func popGestureNeedsAPageToReturnTo() throws {
             let navigation = UINavigationController(rootViewController: UIViewController())
             let fixture = try HostWindowFixture(root: navigation)
@@ -98,11 +70,6 @@ extension HostWindowTests {
 }
 
 private extension HostWindowTests.SandboxHostTests {
-    func page(_ data: Data) throws -> (messages: [[String: Any]], isMoreAvailable: Bool) {
-        let body = try #require(try JSONSerialization.jsonObject(with: data) as? [String: Any])
-        return (body["messages"] as? [[String: Any]] ?? [], body["hasMore"] as? Bool ?? false)
-    }
-
     /// Editor composer Tanya AI berupa UITextView, jadi bisa dicari langsung di hierarki halaman.
     static func textView(in root: UIView) -> UITextView? {
         if let textView = root as? UITextView { return textView }

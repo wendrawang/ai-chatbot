@@ -8,21 +8,26 @@
 import Foundation
 import TanyaAI
 
-/// Peran host untuk sandbox: meniru BE (init, history berhalaman, SSE persistent dengan heartbeat,
-/// kirim chat) dari fixture lokal. Di host asli, kelas ini memanggil endpoint dan membuka SSE.
+/// Peran host untuk sandbox: meniru BE (init, history berhalaman, config, SSE persistent dengan heartbeat,
+/// kirim dan batalkan chat) dari fixture lokal. Di host asli, kelas ini memanggil endpoint ICT dan membuka SSE.
+/// Seperti BE, `send` hanya menerima: pesan user dan jawaban dikirim balik lewat stream.
 actor SandboxChatService: TanyaAIService {
     private let fixture: SandboxChatFixture?
     private let isOffline: Bool
+    private let replyDelay: Double
     private let onFailure: @Sendable (Error) -> Void
     private var messages: [SandboxMessage]
+    private var replies: [String: Task<Void, Never>] = [:]
     private var continuation: AsyncThrowingStream<TanyaAIServerEvent, Error>.Continuation?
 
     /// `options.isOffline` meniru jaringan putus: setiap request gagal dan `onFailure` dipanggil.
     init(options: SandboxOptions, onFailure: @escaping @Sendable (Error) -> Void = { _ in }) {
-        fixture = SandboxChatFixture.bundled()
+        let fixture = SandboxChatFixture.bundled()
+        self.fixture = fixture
         isOffline = options.isOffline
+        replyDelay = (options.isSlowReply ? fixture?.slowReplyDelay : fixture?.replyDelay) ?? .zero
         self.onFailure = onFailure
-        messages = fixture?.historyMessages(isLong: options.isLongHistory) ?? []
+        messages = options.isLongHistory ? fixture?.longHistory() ?? [] : []
     }
 
     func start() async throws -> Data {
@@ -37,6 +42,12 @@ actor SandboxChatService: TanyaAIService {
         return try Self.encode(SandboxHistory(messages: Array(messages[start..<end]), isMoreAvailable: start > .zero))
     }
 
+    func config(sessionId: String) async throws -> Data {
+        try failIfOffline()
+        return try Self.encode(
+            SandboxConfig(greeting: fixture?.greeting ?? String(), shortcuts: fixture?.shortcuts ?? []))
+    }
+
     nonisolated func events(sessionId: String) -> AsyncThrowingStream<TanyaAIServerEvent, Error> {
         AsyncThrowingStream { continuation in
             let task = Task { await self.keepAlive(continuation) }
@@ -44,12 +55,16 @@ actor SandboxChatService: TanyaAIService {
         }
     }
 
-    func send(_ text: String, sessionId: String) async throws -> Data {
+    func send(_ text: String, sessionId: String) async throws {
         try failIfOffline()
         let question = SandboxMessage(role: .user, text: text)
         messages.append(question)
-        Task { await self.answer(question) }
-        return try Self.encode(question)
+        replies[question.id] = Task { await self.deliver(question) }
+    }
+
+    func cancel(messageId: String, sessionId: String) async throws {
+        try failIfOffline()
+        replies.removeValue(forKey: messageId)?.cancel()
     }
 }
 
@@ -67,13 +82,22 @@ private extension SandboxChatService {
         }
     }
 
-    func answer(_ question: SandboxMessage) async {
+    /// Pantulkan pesan user lewat stream, lalu jawabannya; berhenti bila dibatalkan.
+    func deliver(_ question: SandboxMessage) async {
         guard let fixture else { return }
-        try? await Task.sleep(nanoseconds: Self.nanoseconds(fixture.replyDelay))
+        try? await Task.sleep(nanoseconds: Self.nanoseconds(fixture.echoDelay))
+        emit(question, event: fixture.messageEvent)
+        try? await Task.sleep(nanoseconds: Self.nanoseconds(replyDelay))
+        guard !Task.isCancelled else { return }
+        replies[question.id] = nil
         let reply = SandboxMessage(role: .assistant, text: fixture.reply(to: question.text), replyTo: question.id)
         messages.append(reply)
-        guard let data = try? Self.encode(reply) else { return }
-        continuation?.yield(TanyaAIServerEvent(name: fixture.messageEvent, data: data))
+        emit(reply, event: fixture.messageEvent)
+    }
+
+    func emit(_ message: SandboxMessage, event: String) {
+        guard let data = try? Self.encode(message) else { return }
+        continuation?.yield(TanyaAIServerEvent(name: event, data: data))
     }
 
     func failIfOffline() throws {

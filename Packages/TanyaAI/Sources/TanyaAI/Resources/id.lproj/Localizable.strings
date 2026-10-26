@@ -15,4 +15,7 @@
 "chat.disconnected" = "Koneksi terputus.";
 "chat.retry" = "Coba lagi";
 "chat.replying" = "Sedang menjawab…";
-"chat.sendFailed" = "Gagal terkirim. Ketuk untuk coba lagi.";
+"chat.sendFailed" = "Pesan gagal terkirim. Silakan coba lagi.";
+"chat.stop" = "Hentikan jawaban";
+"chat.stopFailed" = "Gagal menghentikan jawaban. Silakan coba lagi.";
+"chat.answerStopped" = "Jawaban dihentikan";

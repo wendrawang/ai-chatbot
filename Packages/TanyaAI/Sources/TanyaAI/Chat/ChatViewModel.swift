@@ -7,7 +7,8 @@
 
 import Foundation
 
-/// Pemilik percakapan: membuka sesi, menjaga stream SSE tetap hidup, mengirim chat, dan memuat history.
+/// Pemilik percakapan: membuka sesi, menjaga stream SSE tetap hidup, mengirim dan menghentikan chat,
+/// serta memuat history.
 @MainActor
 final class ChatViewModel: ObservableObject {
     enum Phase: Equatable {
@@ -17,18 +18,28 @@ final class ChatViewModel: ObservableObject {
     // Diubah hanya oleh ChatViewModel dan extension-nya; view hanya membaca.
     @Published
     var messages: [ChatMessage] = []
+    /// Greeting dan shortcut; hanya tampil selama percakapan masih kosong.
+    @Published
+    var welcome: ChatWelcome?
     @Published
     var phase = Phase.connecting
-    /// Id chat user yang sudah terkirim dan masih menunggu jawaban.
     @Published
-    var pendingReplies: Set<String> = []
+    var turn = ChatTurn.idle
+    @Published
+    var notice: ChatNotice?
+    /// Id pesan user terakhir hasil `send` yang muncul di stream; composer lalu mengosongkan draft.
+    @Published
+    var deliveredQuestionId: String?
     var isMoreHistoryAvailable = false
     var sessionId: String?
     /// Satu reconnect otomatis per putus; diisi lagi setiap ada event dari stream.
     var isReconnectAllowed = true
+    /// Pertanyaan yang jawabannya dihentikan; jawaban yang datang terlambat diabaikan.
+    var stoppedQuestions: Set<String> = []
     var connectionTask: Task<Void, Never>?
     var streamTask: Task<Void, Never>?
     var historyTask: Task<Void, Never>?
+    var turnTask: Task<Void, Never>?
     let service: TanyaAIService
 
     init(service: TanyaAIService) {
@@ -39,9 +50,11 @@ final class ChatViewModel: ObservableObject {
         connectionTask?.cancel()
         streamTask?.cancel()
         historyTask?.cancel()
+        turnTask?.cancel()
     }
 
-    var isReplying: Bool { !pendingReplies.isEmpty }
+    /// Shortcut hanya bisa dipakai di percakapan kosong yang siap menerima chat.
+    var isShortcutEnabled: Bool { phase == .ready && turn == .idle && messages.isEmpty }
 
     /// Dipanggil saat halaman tampil; tidak membuka sesi kedua bila sudah berjalan.
     func start() {
@@ -49,7 +62,7 @@ final class ChatViewModel: ObservableObject {
         connect()
     }
 
-    /// Init → history → buka stream. Juga dipakai tombol coba lagi.
+    /// Init → history → config (bila kosong) → buka stream. Juga dipakai tombol coba lagi.
     func connect() {
         connectionTask?.cancel()
         streamTask?.cancel()
@@ -62,29 +75,10 @@ final class ChatViewModel: ObservableObject {
         connect()
     }
 
-    /// True bila chat diterima (composer dikosongkan). Jawaban datang lewat stream.
-    func send(_ text: String) -> Bool {
-        let question = text.trimmingCharacters(in: .whitespacesAndNewlines)
-        guard !question.isEmpty, phase == .ready, let sessionId else { return false }
-        let pending = ChatMessage.pendingQuestion(question)
-        messages.append(pending)
-        deliver(pending, sessionId: sessionId)
-        return true
-    }
-
-    /// Kirim ulang chat yang gagal terkirim.
-    func resend(_ messageId: String) {
-        guard let index = messages.firstIndex(where: { $0.id == messageId }), messages[index].delivery == .failed,
-            let sessionId
-        else { return }
-        messages[index].delivery = .sending
-        deliver(messages[index], sessionId: sessionId)
-    }
-
     /// Muat halaman history sebelumnya saat daftar mendekati atas.
     func loadOlder() {
         guard isMoreHistoryAvailable, historyTask == nil, phase == .ready, let sessionId,
-            let oldest = messages.first(where: { $0.delivery == .sent })?.id
+            let oldest = messages.first?.id
         else { return }
         historyTask = Task { [weak self, service] in
             let data = try? await service.history(sessionId: sessionId, before: oldest)

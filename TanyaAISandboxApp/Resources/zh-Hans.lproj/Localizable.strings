@@ -19,3 +19,5 @@
 "sandbox.logout" = "退出登录";
 "sandbox.login" = "登录";
 "sandbox.prelogin.title" = "未登录";
+"sandbox.terms.title" = "条款与细则";
+"sandbox.terms.accept" = "同意并继续";

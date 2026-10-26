@@ -1,5 +1,21 @@
 # Validasi starter
 
+## Flow chat ICT, T&C host, dan stop — 26 Oktober 2026
+
+`TanyaAIService` kini `start` → `history` → `config` (hanya bila history kosong) → `events`,
+dengan `send` tanpa body balasan dan `cancel(messageId:)`. Pesan user tampil saat datang dari
+stream; tombol kirim berganti titik bergerak (`LoadingDots`) selama menunggu pesan itu, lalu stop
+selama menunggu jawaban. Greeting dan shortcut (`SuggestionChip`) tampil di percakapan kosong.
+T&C ditampilkan host sekali sebelum Tanya AI; persetujuan disimpan ke BE (opsional) dan perangkat.
+
+Dibuktikan oleh test: config hanya saat history kosong; chat tampil dari stream dan draft
+dikosongkan saat itu; kirim gagal; stop mengabaikan jawaban terlambat, stop gagal tetap menunggu,
+jawaban yang tiba saat stop tetap tampil; reconnect menemukan jawaban yang terlewat; shortcut hanya
+di percakapan kosong; ukuran composer sama di ketiga keadaan; T&C disimpan, tidak dimuat lagi,
+inquiry offline memunculkan blocker. UI test: T&C sekali lalu chat langsung, shortcut dijawab
+lewat stream, stop dengan `--slow-reply`. Baris yang isinya berubah di-reload (bukan reconfigure)
+karena cell hosting tidak menggambar isi baru yang menambah tinggi.
+
 ## Unit test ke Swift Testing — 26 Oktober 2026
 
 Seluruh unit test (`DesignKitTests`, `TanyaAITests`, `TanyaAISandboxTests`) pindah dari
