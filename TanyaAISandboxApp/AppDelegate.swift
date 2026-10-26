@@ -38,6 +38,6 @@ private extension AppDelegate {
     /// Opsi peluncuran untuk UI test: mulai tanpa persetujuan, atau dengan T&C sudah disetujui.
     func applyTermsOptions(_ options: SandboxOptions, to store: TanyaAITermsStore) {
         if options.isTermsReset { store.reset() }
-        if options.isTermsAccepted { store.accept(version: SandboxOptions.preAcceptedTermsVersion) }
+        if options.isTermsAccepted { store.accept() }
     }
 }

@@ -9,17 +9,13 @@ import Foundation
 
 /// Pesan dalam bentuk JSON kontrak (`docs/CHAT_CONTRACT.md`), sebagaimana dikirim BE.
 struct SandboxMessage: Codable {
-    enum Role: String, Codable {
-        case user, assistant
-    }
-
     let id: String
-    let role: Role
+    let role: SandboxRole
     let text: String
     let replyTo: String?
     let createdAt: Date
 
-    init(role: Role, text: String, replyTo: String? = nil, createdAt: Date = Date()) {
+    init(role: SandboxRole, text: String, replyTo: String? = nil, createdAt: Date = Date()) {
         id = UUID().uuidString
         self.role = role
         self.text = text

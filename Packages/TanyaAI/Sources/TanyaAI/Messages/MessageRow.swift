@@ -12,17 +12,11 @@ import SwiftUI
 /// Tampilan sementara teks biasa; bubble final dan Markdown menyusul.
 @MainActor
 struct MessageRow: View {
-    enum Kind: Equatable {
-        case welcome(ChatWelcome, isEnabled: Bool)
-        case message(ChatMessage)
-        case replying
-    }
-
     @Environment(\.locale)
     private var locale
     @Environment(\.designColors)
     private var colors
-    let kind: Kind
+    let kind: MessageRowKind
     let handlers: MessageHandlers
 
     var body: some View {
@@ -81,27 +75,5 @@ struct MessageRow: View {
             .accessibilityElement()
             .accessibilityLabel(String(resource: R.string.localizable.chatReplying, locale: locale))
             .accessibilityIdentifier(ChatElementIdentifier.replying)
-    }
-}
-
-/// Aksi dari baris ke view model; closure agar baris tetap value type yang ringan.
-struct MessageHandlers {
-    /// Kirim teks shortcut sebagai chat.
-    let shortcut: (String) -> Void
-    let loadOlder: () -> Void
-}
-
-/// Isi cell daftar. Cell UIKit tidak mewarisi environment SwiftUI, jadi locale dan palette
-/// dipasang ulang di sini.
-struct MessageRowContent: View {
-    let row: MessageRow.Kind
-    let handlers: MessageHandlers
-    let locale: Locale
-    let colors: any FigmaColorProtocol
-
-    var body: some View {
-        MessageRow(kind: row, handlers: handlers)
-            .environment(\.locale, locale)
-            .designColors(colors)
     }
 }

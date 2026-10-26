@@ -19,10 +19,8 @@ struct SandboxOptions {
     static let logoutIdentifier = "sandbox.logout"
     static let loginIdentifier = "sandbox.login"
     static let termsAcceptIdentifier = "sandbox.terms.accept"
-    /// Kunci UserDefaults versi T&C Tanya AI yang disetujui.
-    static let termsAcceptedKey = "tanyaAI.terms.acceptedVersion"
-    /// Versi yang dicatat oleh `--terms-accepted`.
-    static let preAcceptedTermsVersion = "launch-option"
+    /// Kunci UserDefaults persetujuan T&C Tanya AI.
+    static let termsAcceptedKey = "tanyaAI.terms.isAccepted"
     static let demoStartIdentifier = "sandbox.demo.start"
     static let demoEndIdentifier = "sandbox.demo.end"
     static let demoParagraphCount = 12

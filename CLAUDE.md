@@ -10,6 +10,8 @@ tanpa session/backend. Minimum iOS 15 (host ikut naik ke iOS 15 untuk revamp).
 - Flow chat: init → history → config (bila kosong) → SSE; chat tampil dari stream, tombol kirim
   → titik bergerak → stop (cancel). T&C ditampilkan host sebelum Tanya AI. Kontrak:
   [docs/CHAT_CONTRACT.md](docs/CHAT_CONTRACT.md).
+- Satu file satu tipe, tanpa tipe nested (kecuali token/`ComponentIdentifier`); class hanya bila
+  framework mewajibkan (`ObservableObject`, subclass UIKit, delegate). Dijaga `check_methods.swift`.
 - Unit test memakai Swift Testing (`@Test`, `#expect`, `#require`); UI test tetap
   XCTest. Suite yang memakai window di sandbox masuk `HostWindowTests` (berurutan).
 - Keputusan arsitektur dan saran tahap berikutnya: [docs/REVAMP_NOTES.md](docs/REVAMP_NOTES.md).

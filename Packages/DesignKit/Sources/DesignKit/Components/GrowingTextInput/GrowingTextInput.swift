@@ -45,7 +45,7 @@ public struct GrowingTextInput: UIViewRepresentable {
     }
 
     public func updateUIView(_ editor: BoundedTextView, context: Context) {
-        context.coordinator.parent = self
+        context.coordinator.text = $text
         editor.accessibilityLabel = accessibilityLabel
         let isStyleChanged = editor.font != font || editor.textColor != textColor || editor.lineSpacing != lineSpacing
         let isTextChanged = editor.text != text
@@ -55,21 +55,10 @@ public struct GrowingTextInput: UIViewRepresentable {
         editor.remeasure()
     }
 
-    public func makeCoordinator() -> Coordinator { Coordinator(parent: self) }
+    public func makeCoordinator() -> GrowingTextInputCoordinator { GrowingTextInputCoordinator(text: $text) }
 
-    public static func dismantleUIView(_ editor: BoundedTextView, coordinator: Coordinator) {
+    public static func dismantleUIView(_ editor: BoundedTextView, coordinator: GrowingTextInputCoordinator) {
         editor.delegate = nil
-    }
-
-    public final class Coordinator: NSObject, UITextViewDelegate {
-        var parent: GrowingTextInput
-        init(parent: GrowingTextInput) { self.parent = parent }
-
-        public func textViewDidChange(_ editor: UITextView) {
-            // UITextView.text bertipe String!; baca sebagai optional agar tidak ada unwrap paksa.
-            parent.text = editor.text ?? String()
-            (editor as? BoundedTextView)?.remeasure()
-        }
     }
 }
 

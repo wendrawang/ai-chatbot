@@ -7,15 +7,8 @@
 
 /// Isi percakapan kosong dari config BE: greeting dan shortcut yang dikirim sebagai chat.
 struct ChatWelcome: Equatable {
-    struct Shortcut: Identifiable, Equatable {
-        let id: String
-        let label: String
-        /// Teks yang dikirim saat shortcut ditekan.
-        let message: String
-    }
-
     let greeting: String
-    let shortcuts: [Shortcut]
+    let shortcuts: [ChatShortcut]
 }
 
 extension ChatWelcome {
@@ -23,7 +16,7 @@ extension ChatWelcome {
         greeting = payload.greeting
         shortcuts = (payload.shortcuts ?? []).map { shortcut in
             let message = shortcut.message.flatMap { $0.isEmpty ? nil : $0 } ?? shortcut.label
-            return Shortcut(id: shortcut.id, label: shortcut.label, message: message)
+            return ChatShortcut(id: shortcut.id, label: shortcut.label, message: message)
         }
     }
 }

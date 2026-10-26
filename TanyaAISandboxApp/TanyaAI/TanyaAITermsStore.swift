@@ -7,8 +7,7 @@
 
 import Foundation
 
-/// Persetujuan T&C Tanya AI di perangkat. Versi yang disetujui disimpan agar host bisa
-/// menampilkan T&C lagi bila nanti BE memakai versi baru.
+/// Persetujuan T&C Tanya AI di perangkat; sekali disetujui, T&C tidak tampil lagi.
 struct TanyaAITermsStore {
     private let defaults: UserDefaults
 
@@ -16,12 +15,10 @@ struct TanyaAITermsStore {
         self.defaults = defaults
     }
 
-    var acceptedVersion: String? { defaults.string(forKey: SandboxOptions.termsAcceptedKey) }
+    var isAccepted: Bool { defaults.bool(forKey: SandboxOptions.termsAcceptedKey) }
 
-    var isAccepted: Bool { acceptedVersion != nil }
-
-    func accept(version: String) {
-        defaults.set(version, forKey: SandboxOptions.termsAcceptedKey)
+    func accept() {
+        defaults.set(true, forKey: SandboxOptions.termsAcceptedKey)
     }
 
     func reset() {

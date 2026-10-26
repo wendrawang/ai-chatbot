@@ -10,12 +10,8 @@ import Foundation
 /// Satu baris percakapan, selalu berasal dari BE (history atau stream).
 /// Value type agar daftar hanya me-render ulang baris yang berubah.
 struct ChatMessage: Identifiable, Equatable {
-    enum Role: Equatable {
-        case user, assistant
-    }
-
     let id: String
-    let role: Role
+    let role: ChatRole
     let text: String
     let createdAt: Date
     let replyTo: String?
@@ -26,8 +22,8 @@ struct ChatMessage: Identifiable, Equatable {
 extension ChatMessage {
     init(_ payload: MessagePayload) {
         self.init(
-            id: payload.id, role: payload.role == .user ? .user : .assistant, text: payload.text,
-            createdAt: payload.createdAt, replyTo: payload.replyTo
+            id: payload.id, role: payload.role, text: payload.text, createdAt: payload.createdAt,
+            replyTo: payload.replyTo
         )
     }
 }

@@ -7,18 +7,12 @@
 
 import Foundation
 
-/// Use case Tanya AI di host: memiliki service chat (init, history, SSE, kirim).
-/// Sandbox memakai fixture lokal; `--offline` membuat service gagal dan melapor ke halaman host.
-final class TanyaAIUseCase {
-    let callback: BaseCallback
+/// Use case Tanya AI di host: memiliki service chat (init, history, config, SSE, kirim, cancel).
+/// Sandbox memakai fixture lokal; `--offline` membuat service gagal dan `onFailure` dipanggil.
+struct TanyaAIUseCase {
     let service: SandboxChatService
 
-    init(options: SandboxOptions = .current) {
-        let callback = BaseCallback()
-        self.callback = callback
-        // Error jaringan dilaporkan ke blocker host, selain ke status koneksi di dalam chat.
-        service = SandboxChatService(options: options) { error in
-            Task { @MainActor in callback.onSubmissionFailed(error) }
-        }
+    init(options: SandboxOptions = .current, onFailure: @escaping @Sendable (Error) -> Void = { _ in }) {
+        service = SandboxChatService(options: options, onFailure: onFailure)
     }
 }

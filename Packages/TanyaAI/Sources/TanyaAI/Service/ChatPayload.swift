@@ -7,54 +7,7 @@
 
 import Foundation
 
-// Body JSON dari host, sesuai `docs/CHAT_CONTRACT.md`. Hanya dipakai untuk decode.
-// Nama key JSON adalah metadata kontrak, jadi boleh ditulis langsung di file ini.
-
-struct SessionPayload: Decodable {
-    let sessionId: String
-}
-
-struct HistoryPayload: Decodable {
-    enum CodingKeys: String, CodingKey {
-        case messages
-        case isMoreAvailable = "hasMore"
-    }
-
-    /// Urut dari terlama ke terbaru.
-    let messages: [MessagePayload]
-    let isMoreAvailable: Bool
-}
-
-struct MessagePayload: Decodable {
-    enum Role: String, Decodable {
-        case user, assistant
-    }
-
-    let id: String
-    let role: Role
-    let text: String
-    /// Untuk jawaban bot: id chat user yang dijawab.
-    let replyTo: String?
-    let createdAt: Date
-}
-
-struct ConfigPayload: Decodable {
-    let greeting: String
-    let shortcuts: [ShortcutPayload]?
-}
-
-struct ShortcutPayload: Decodable {
-    let id: String
-    let label: String
-    /// Teks yang dikirim sebagai chat; bila kosong memakai `label`.
-    let message: String?
-}
-
-/// Nama event SSE yang dikenali; event lain diabaikan.
-enum ServerEventName: String {
-    case message, heartbeat, error
-}
-
+/// Decode body JSON dari host sesuai `docs/CHAT_CONTRACT.md`.
 enum ChatPayload {
     static func decode<Payload: Decodable>(_ type: Payload.Type, from data: Data) throws -> Payload {
         let decoder = JSONDecoder()

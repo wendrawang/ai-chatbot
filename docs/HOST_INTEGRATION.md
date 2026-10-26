@@ -124,11 +124,11 @@ Sesi dibuka saat halaman tampil dan stream ditutup saat halaman dilepas.
 T&C milik host, karena isinya dokumen legal dari BE dan persetujuannya disimpan host.
 Package tidak tahu tentang T&C dan hanya dibuka setelah disetujui.
 
-1. Destination memeriksa persetujuan di perangkat (`TanyaAITermsStore`, UserDefaults berisi
-   versi yang disetujui). Bila sudah ada, chat langsung tampil tanpa inquiry.
+1. Destination memeriksa persetujuan di perangkat (`TanyaAITermsStore`, Bool di UserDefaults).
+   Bila sudah disetujui, chat langsung tampil tanpa inquiry.
 2. Bila belum: halaman T&C host melakukan inquiry ke BE (gagal = blocker host dengan coba lagi).
 3. Setuju: simpan ke BE (opsional; hapus panggilan `accept` di use case bila BE tidak butuh),
-   lalu simpan versi di perangkat. Destination berganti ke chat **tanpa push baru**, jadi back
+   lalu simpan di perangkat. Destination berganti ke chat **tanpa push baru**, jadi back
    tetap kembali ke halaman sebelum Tanya AI.
 
 ```swift

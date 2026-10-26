@@ -27,14 +27,3 @@ public protocol TanyaAIService {
     /// Hentikan jawaban untuk chat user `messageId` (id pesan user dari stream).
     func cancel(messageId: String, sessionId: String) async throws
 }
-
-/// Satu event SSE: nama dari baris `event:` dan isi dari baris `data:`.
-public struct TanyaAIServerEvent: Equatable, Sendable {
-    public let name: String
-    public let data: Data
-
-    public init(name: String, data: Data) {
-        self.name = name
-        self.data = data
-    }
-}

@@ -56,7 +56,7 @@ struct ChatScreen: View {
                 NoticeLabel(notice: notice)
             }
             ComposerSection(
-                action: viewModel.turn.composerAction, isEnabled: viewModel.phase == .ready,
+                action: composerAction, isEnabled: viewModel.phase == .ready,
                 deliveredQuestionId: viewModel.deliveredQuestionId, onSend: viewModel.send, onStop: viewModel.stop
             )
         }
@@ -87,6 +87,14 @@ struct ChatScreen: View {
 private extension ChatScreen {
     func close() {
         if let onBack { onBack() } else { dismiss() }
+    }
+
+    var composerAction: ComposerAction {
+        switch viewModel.turn {
+        case .idle: return .send
+        case .sending: return .sending
+        case .waiting, .stopping: return .stop
+        }
     }
 
     var handlers: MessageHandlers {

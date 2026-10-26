@@ -10,18 +10,21 @@ import TanyaAI
 
 /// View model halaman Tanya AI di host: menyusun konfigurasi package dan meneruskan error service ke blocker.
 final class TanyaAIScreenViewModel: ScreenContentViewModel {
-    let useCase: TanyaAIUseCase
+    private let options: SandboxOptions
+    /// Dibuat saat pertama dipakai agar error service bisa diteruskan ke blocker halaman ini.
+    private(set) lazy var useCase = TanyaAIUseCase(options: options) { [weak self] error in
+        Task { @MainActor in self?.didReceiveError(error) }
+    }
 
-    init(useCase: TanyaAIUseCase = TanyaAIUseCase()) {
-        self.useCase = useCase
+    init(options: SandboxOptions = .current) {
+        self.options = options
         super.init()
-        useCase.callback.onSubmissionFailed = { [weak self] error in self?.didReceiveError(error) }
     }
 
     /// Bahasa dan theme yang aktif saat halaman dibuat.
     @MainActor
     func makeHost() -> TanyaAIHost {
         // Sandbox: bahasa dari launch option; host memakai Localize_Swift.
-        TanyaAIHost(locale: SandboxOptions.current.locale ?? .current, service: useCase.service)
+        TanyaAIHost(locale: options.locale ?? .current, service: useCase.service)
     }
 }

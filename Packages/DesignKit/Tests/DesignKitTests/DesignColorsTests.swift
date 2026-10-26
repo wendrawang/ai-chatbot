@@ -14,31 +14,31 @@ import Testing
 struct DesignColorsTests {
     @Test
     func defaultPaletteWithoutHostTheme() {
-        let probe = PaletteProbe()
-        render(PaletteReader(probe: probe))
-        #expect(probe.palette is DefaultColorConstants)
+        var palette: (any FigmaColorProtocol)?
+        render(PaletteReader { palette = $0 })
+        #expect(palette is DefaultColorConstants)
     }
 
     @Test
     func themeReachesNestedComponents() {
-        let probe = PaletteProbe()
-        render(VStack { PaletteReader(probe: probe) }.designColors(PremierColorConstants()))
-        #expect(probe.palette is PremierColorConstants)
+        var palette: (any FigmaColorProtocol)?
+        render(VStack { PaletteReader { palette = $0 } }.designColors(PremierColorConstants()))
+        #expect(palette is PremierColorConstants)
     }
 
     @Test
     func defaultAreaIgnoresParentTheme() {
-        let themed = PaletteProbe()
-        let untouched = PaletteProbe()
+        var themed: (any FigmaColorProtocol)?
+        var untouched: (any FigmaColorProtocol)?
         render(
             VStack {
-                PaletteReader(probe: themed)
-                VStack { PaletteReader(probe: untouched) }.defaultDesignColors()
+                PaletteReader { themed = $0 }
+                VStack { PaletteReader { untouched = $0 } }.defaultDesignColors()
             }
             .designColors(PrivateColorConstants())
         )
-        #expect(themed.palette is PrivateColorConstants)
-        #expect(untouched.palette is DefaultColorConstants)
+        #expect(themed is PrivateColorConstants)
+        #expect(untouched is DefaultColorConstants)
     }
 
     private func render(_ content: some View) {
@@ -47,20 +47,5 @@ struct DesignColorsTests {
         window.makeKeyAndVisible()
         window.rootViewController?.view.layoutIfNeeded()
         window.isHidden = true
-    }
-}
-
-private final class PaletteProbe {
-    var palette: (any FigmaColorProtocol)?
-}
-
-private struct PaletteReader: View {
-    @Environment(\.designColors)
-    private var colors
-    let probe: PaletteProbe
-
-    var body: some View {
-        probe.palette = colors
-        return Color.clear.frame(width: 1, height: 1)
     }
 }

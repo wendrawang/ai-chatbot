@@ -51,6 +51,6 @@ struct MainScreen: ScreenContent {
         HostButton(
             title: String(resource: R.string.localizable.sandboxLogout, locale: locale),
             identifier: SandboxOptions.logoutIdentifier
-        ) { appState.state = .prelogin }
+        ) { appState.isLoggedIn = false }
     }
 }

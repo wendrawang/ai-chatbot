@@ -1,5 +1,14 @@
 # Validasi starter
 
+## Satu file satu tipe — 27 Oktober 2026
+
+Seluruh repo dirapikan: satu tipe per file, tanpa tipe nested di luar token/`ComponentIdentifier`,
+dan class hanya untuk base framework. `BaseCallback` dihapus (use case jadi struct, error service
+diteruskan lewat closure ke view model yang membuat use case secara lazy), `AppState` memakai
+`isLoggedIn`, `CodingKeys` diganti enum key sendiri, probe test diganti closure, dan suite window
+sandbox menjadi satu `HostWindowTests` berurutan dengan extension per file. Persetujuan T&C cukup
+Bool. `Scripts/check_methods.swift` kini juga menolak pelanggaran aturan tipe.
+
 ## Flow chat ICT, T&C host, dan stop — 26 Oktober 2026
 
 `TanyaAIService` kini `start` → `history` → `config` (hanya bila history kosong) → `events`,

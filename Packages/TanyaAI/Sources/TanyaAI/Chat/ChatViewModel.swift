@@ -11,10 +11,6 @@ import Foundation
 /// serta memuat history.
 @MainActor
 final class ChatViewModel: ObservableObject {
-    enum Phase: Equatable {
-        case connecting, ready, failed
-    }
-
     // Diubah hanya oleh ChatViewModel dan extension-nya; view hanya membaca.
     @Published
     var messages: [ChatMessage] = []
@@ -22,7 +18,7 @@ final class ChatViewModel: ObservableObject {
     @Published
     var welcome: ChatWelcome?
     @Published
-    var phase = Phase.connecting
+    var phase = ChatPhase.connecting
     @Published
     var turn = ChatTurn.idle
     @Published

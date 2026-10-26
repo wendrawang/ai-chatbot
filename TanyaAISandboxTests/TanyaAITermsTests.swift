@@ -21,8 +21,7 @@ struct TanyaAITermsTests {
 
     @Test
     func acceptingSavesToTheBackendAndTheDevice() async {
-        let useCase = TanyaAITermsUseCase(options: SandboxOptions(arguments: []), store: store)
-        let viewModel = TanyaAITermsViewModel(useCase: useCase)
+        let viewModel = TanyaAITermsViewModel(options: SandboxOptions(arguments: []), store: store)
         #expect(!viewModel.isAccepted)
         viewModel.load()
         await waitUntil { viewModel.phase != .loading }
@@ -33,16 +32,15 @@ struct TanyaAITermsTests {
         #expect(!terms.paragraphs.isEmpty)
         viewModel.accept()
         await waitUntil { viewModel.isAccepted }
-        let saved = await useCase.service.acceptedVersions
+        let saved = await viewModel.useCase.service.acceptedVersions
         #expect(saved == [terms.version])
-        #expect(store.acceptedVersion == terms.version)
+        #expect(store.isAccepted)
     }
 
     @Test
     func acceptedTermsAreNotLoadedAgain() async {
-        store.accept(version: "2026-10")
-        let viewModel = TanyaAITermsViewModel(
-            useCase: TanyaAITermsUseCase(options: SandboxOptions(arguments: []), store: store))
+        store.accept()
+        let viewModel = TanyaAITermsViewModel(options: SandboxOptions(arguments: []), store: store)
         #expect(viewModel.isAccepted)
         viewModel.load()
         #expect(viewModel.phase == .loading)
@@ -50,12 +48,11 @@ struct TanyaAITermsTests {
 
     @Test
     func offlineInquiryShowsTheHostBlockerAndRetryLoadsAgain() async {
-        let viewModel = TanyaAITermsViewModel(
-            useCase: TanyaAITermsUseCase(options: SandboxOptions(arguments: ["--offline"]), store: store))
+        let viewModel = TanyaAITermsViewModel(options: SandboxOptions(arguments: ["--offline"]), store: store)
         viewModel.load()
         await waitUntil { viewModel.phase == .failed }
         await waitUntil { viewModel.isNetworkUnavailable }
-        #expect(store.acceptedVersion == nil)
+        #expect(!store.isAccepted)
         viewModel.retry()
         #expect(!viewModel.isNetworkUnavailable)
         // Inquiry diulang dan gagal lagi, jadi blocker host muncul kembali.

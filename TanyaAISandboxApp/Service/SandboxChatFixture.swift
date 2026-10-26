@@ -10,16 +10,6 @@ import Foundation
 /// Isi `Resources/Fixtures/ChatDummy.json`: greeting, shortcut, history panjang, jawaban per kata kunci,
 /// dan waktu tunda.
 struct SandboxChatFixture: Decodable {
-    struct Entry: Decodable {
-        let role: SandboxMessage.Role
-        let text: String
-    }
-
-    struct Reply: Decodable {
-        let keywords: [String]
-        let text: String
-    }
-
     let pageSize: Int
     /// Detik sebelum jawaban dikirim lewat stream.
     let replyDelay: Double
@@ -33,10 +23,10 @@ struct SandboxChatFixture: Decodable {
     let heartbeatEvent: String
     /// Pengali history untuk `--long-history` (menguji paging dan scroll panjang).
     let longHistoryRepeat: Int
-    let history: [Entry]
+    let history: [SandboxFixtureEntry]
     let greeting: String
-    let shortcuts: [SandboxConfig.Shortcut]
-    let replies: [Reply]
+    let shortcuts: [SandboxShortcut]
+    let replies: [SandboxFixtureReply]
     let fallback: String
 
     static func bundled() -> SandboxChatFixture? {

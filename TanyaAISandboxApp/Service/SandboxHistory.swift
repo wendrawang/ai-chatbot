@@ -7,13 +7,15 @@
 
 import Foundation
 
-/// Satu halaman history, urut dari terlama ke terbaru. Nama key JSON adalah metadata kontrak.
+/// Satu halaman history, urut dari terlama ke terbaru.
 struct SandboxHistory: Encodable {
-    enum CodingKeys: String, CodingKey {
-        case messages
-        case isMoreAvailable = "hasMore"
-    }
-
     let messages: [SandboxMessage]
     let isMoreAvailable: Bool
+
+    // `isMoreAvailable` ditulis sebagai key JSON `hasMore`.
+    func encode(to encoder: Encoder) throws {
+        var container = encoder.container(keyedBy: SandboxHistoryKey.self)
+        try container.encode(messages, forKey: .messages)
+        try container.encode(isMoreAvailable, forKey: .hasMore)
+    }
 }

@@ -16,7 +16,7 @@ struct RootScreen: View {
     var body: some View {
         ZStack {
             PreloginScreen()
-            if appState.state == .loggedIn {
+            if appState.isLoggedIn {
                 MainCoordinator()
             }
         }
