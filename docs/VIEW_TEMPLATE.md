@@ -104,9 +104,9 @@ private let onBack: () -> Void
 private let onSend: (String) -> Bool
 ```
 
-Nama menyatakan aksi. Kontrak hasil wajib jelas: pada starter, `onSend` mengembalikan
-`true` ketika host menerima submission sehingga draft boleh dibersihkan; `false`
-mempertahankan draft. Ini bukan status sukses pengiriman ke backend.
+Nama menyatakan aksi. Kontrak hasil wajib jelas: `ComposerSection.onSend` mengembalikan
+`true` ketika chat diterima sehingga draft boleh dibersihkan; `false` mempertahankan
+draft. Ini bukan status sukses pengiriman ke backend.
 
 Tidak perlu satu file `TypeAliases.swift` untuk `Action`, `VoidCallback`, dan
 alias callback lain yang sudah mudah dibaca. Gunakan typealias ketika signature

@@ -11,3 +11,8 @@
 "chat.newConversation" = "新对话";
 "chat.title" = "Tanya AI";
 "chat.back" = "返回";
+"chat.connecting" = "正在连接…";
+"chat.disconnected" = "连接已断开。";
+"chat.retry" = "重试";
+"chat.replying" = "正在回答…";
+"chat.sendFailed" = "发送失败，点按重试。";

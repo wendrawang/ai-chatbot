@@ -11,3 +11,8 @@
 "chat.newConversation" = "New conversation";
 "chat.title" = "Tanya AI";
 "chat.back" = "Back";
+"chat.connecting" = "Connecting…";
+"chat.disconnected" = "Connection lost.";
+"chat.retry" = "Try again";
+"chat.replying" = "Answering…";
+"chat.sendFailed" = "Not sent. Tap to try again.";

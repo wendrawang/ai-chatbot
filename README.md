@@ -8,21 +8,21 @@ copy tersedia dalam English, Bahasa Indonesia, dan 简体中文.
 ./Scripts/run_sandbox.sh --language id
 ./Scripts/run_sandbox.sh --language en
 ./Scripts/run_sandbox.sh --language zh-Hans
-./Scripts/run_sandbox.sh --language id --header-demo
+./Scripts/run_sandbox.sh --language id --long-history
 ./Scripts/run_sandbox.sh --language id --offline
 ```
 
-Tombol kirim memanggil callback host. Sandbox menerima draft dan membersihkannya;
-belum ada network atau bubble pesan. `--reject-send` mendemonstrasikan draft yang
-harus dipertahankan saat host menolak submission.
+Saat dibuka, Tanya AI menjalankan init sesi, mengambil history, lalu membuka stream SSE yang
+tetap hidup. Chat dikirim lewat service terpisah dan jawaban datang lewat stream. Sandbox memakai
+service dummy dari fixture JSON (`saldo`, `transfer`, `promo`, `markdown`, selain itu jawaban
+default); kontraknya di [CHAT_CONTRACT.md](docs/CHAT_CONTRACT.md).
 
 Sandbox meniru host SwiftUI: `RootScreen` dengan prelogin dan main coordinator, base
 `Screen` per halaman, dan coordinator + destination untuk membuka Tanya AI dari beranda
 atau halaman detail.
 Tombol kembali atau swipe dari tepi kiri menutup feature dan mengembalikan layar host.
-`--offline` menampilkan blocker host di atas Tanya AI saat mengirim.
-Mode `--header-demo` menyisipkan teks dummy untuk mengecek separator dan blur
-saat scroll. Integrasi biasa tetap membuka area percakapan kosong.
+`--offline` membuat init sesi gagal: blocker host tampil di atas Tanya AI.
+`--long-history` mengisi history panjang untuk mencoba paging dan header saat digulir.
 
 - [Urutan belajar dan tree](docs/STARTING_POINT.md)
 - [Tahap header dan checkpoint migrasi berikutnya](docs/SHARED_HEADER.md)

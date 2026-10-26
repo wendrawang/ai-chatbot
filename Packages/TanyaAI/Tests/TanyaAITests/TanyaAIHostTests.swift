@@ -17,31 +17,34 @@ import UIKit
 @Suite(.serialized)
 struct TanyaAIHostTests {
     @Test
-    func pageAndInjectedContentReleaseAfterPopWhileHostStaysOwned() async {
-        let host = TanyaAIHost { _ in true }
+    func pageOpensTheSessionAndClosesTheStreamWhenReleased() async {
+        let service = FakeChatService()
+        let host = TanyaAIHost(service: service)
         let navigation = UINavigationController(rootViewController: UIViewController())
         let window = makeWindow(root: navigation)
         defer { window.isHidden = true }
-        weak var releasedOwner: NSObject?
         weak var releasedPage: UIViewController?
         do {
-            let owner = NSObject()
-            releasedOwner = owner
-            let page = UIHostingController(rootView: host.makeView { Text(owner.description) })
+            let page = UIHostingController(rootView: host.makeView())
             releasedPage = page
             navigation.pushViewController(page, animated: false)
             page.view.layoutIfNeeded()
+            await waitUntil { await service.openedStreams == 1 }
             navigation.popViewController(animated: false)
         }
-        await waitUntil { releasedOwner == nil && releasedPage == nil }
+        await waitUntil { releasedPage == nil }
+        await waitUntil { await service.closedStreams == 1 }
+        let startCount = await service.startCount
+        #expect(startCount == 1)
     }
 
     @Test
     func localeAndPaletteApplyWhenPageIsCreatedAndChangesWaitForNextPage() {
-        var host = TanyaAIHost(locale: Locale(identifier: "id"), colors: PremierColorConstants()) { _ in true }
+        var host = TanyaAIHost(
+            locale: Locale(identifier: "id"), colors: PremierColorConstants(), service: FakeChatService())
         let openedProbe = EnvironmentProbe()
         let openedWindow = makeWindow(
-            root: UIHostingController(rootView: host.makeView { EnvironmentReader(probe: openedProbe) }))
+            root: UIHostingController(rootView: host.applyingSettings(to: EnvironmentReader(probe: openedProbe))))
         defer { openedWindow.isHidden = true }
         #expect(openedProbe.colors is PremierColorConstants)
         #expect(openedProbe.locale?.identifier == "id")
@@ -49,7 +52,7 @@ struct TanyaAIHostTests {
         host.colors = PrivateColorConstants()
         let nextProbe = EnvironmentProbe()
         let nextWindow = makeWindow(
-            root: UIHostingController(rootView: host.makeView { EnvironmentReader(probe: nextProbe) }))
+            root: UIHostingController(rootView: host.applyingSettings(to: EnvironmentReader(probe: nextProbe))))
         defer { nextWindow.isHidden = true }
         #expect(nextProbe.colors is PrivateColorConstants)
         #expect(nextProbe.locale?.identifier == "zh-Hans")
