@@ -1,6 +1,13 @@
 .DS_Store
 .build/
 .swiftpm/
+# Kecuali shared scheme package: berisi aksi Test agar tes package bisa dijalankan
+# dari workspace aplikasi (tanpa ini tombol Test nonaktif).
+!Packages/*/.swiftpm/
+Packages/*/.swiftpm/*
+!Packages/*/.swiftpm/xcode/
+Packages/*/.swiftpm/xcode/*
+!Packages/*/.swiftpm/xcode/xcshareddata/
 # Package test resolution is local; the app workspace keeps its committed lock.
 Packages/*/Package.resolved
 DerivedData/
