@@ -7,14 +7,17 @@
 
 import DesignKit
 import SwiftUI
+import Testing
 import UIKit
-import XCTest
 
 @testable import TanyaAI
 
+/// Berurutan karena test async membuka window dan menunggu di antaranya.
 @MainActor
-final class TanyaAIHostTests: XCTestCase {
-    func testPageAndInjectedContentReleaseAfterPopWhileHostStaysOwned() async {
+@Suite(.serialized)
+struct TanyaAIHostTests {
+    @Test
+    func pageAndInjectedContentReleaseAfterPopWhileHostStaysOwned() async {
         let host = TanyaAIHost { _ in true }
         let navigation = UINavigationController(rootViewController: UIViewController())
         let window = makeWindow(root: navigation)
@@ -30,31 +33,29 @@ final class TanyaAIHostTests: XCTestCase {
             page.view.layoutIfNeeded()
             navigation.popViewController(animated: false)
         }
-        let released = XCTNSPredicateExpectation(
-            predicate: NSPredicate { _, _ in releasedOwner == nil && releasedPage == nil }, object: nil
-        )
-        await fulfillment(of: [released], timeout: 3)
+        await waitUntil { releasedOwner == nil && releasedPage == nil }
     }
 
-    func testLocaleAndPaletteApplyWhenPageIsCreatedAndChangesWaitForNextPage() {
+    @Test
+    func localeAndPaletteApplyWhenPageIsCreatedAndChangesWaitForNextPage() {
         var host = TanyaAIHost(locale: Locale(identifier: "id"), colors: PremierColorConstants()) { _ in true }
         let openedProbe = EnvironmentProbe()
         let openedWindow = makeWindow(
             root: UIHostingController(rootView: host.makeView { EnvironmentReader(probe: openedProbe) }))
         defer { openedWindow.isHidden = true }
-        XCTAssertTrue(openedProbe.colors is PremierColorConstants)
-        XCTAssertEqual(openedProbe.locale?.identifier, "id")
+        #expect(openedProbe.colors is PremierColorConstants)
+        #expect(openedProbe.locale?.identifier == "id")
         host.locale = Locale(identifier: "zh-Hans")
         host.colors = PrivateColorConstants()
         let nextProbe = EnvironmentProbe()
         let nextWindow = makeWindow(
             root: UIHostingController(rootView: host.makeView { EnvironmentReader(probe: nextProbe) }))
         defer { nextWindow.isHidden = true }
-        XCTAssertTrue(nextProbe.colors is PrivateColorConstants)
-        XCTAssertEqual(nextProbe.locale?.identifier, "zh-Hans")
+        #expect(nextProbe.colors is PrivateColorConstants)
+        #expect(nextProbe.locale?.identifier == "zh-Hans")
         openedWindow.rootViewController?.view.layoutIfNeeded()
-        XCTAssertTrue(openedProbe.colors is PremierColorConstants)
-        XCTAssertEqual(openedProbe.locale?.identifier, "id")
+        #expect(openedProbe.colors is PremierColorConstants)
+        #expect(openedProbe.locale?.identifier == "id")
     }
 
     private func makeWindow(root: UIViewController) -> UIWindow {

@@ -6,16 +6,17 @@
 //
 
 import SwiftUI
-import XCTest
+import Testing
 
 @testable import DesignKit
 
 @MainActor
-final class SurfaceStyleTests: XCTestCase {
-    func testSurfaceStylesOnlyDrawBehindContentWithoutChangingLayout() {
+struct SurfaceStyleTests {
+    @Test
+    func surfaceStylesOnlyDrawBehindContentWithoutChangingLayout() {
         let plain = size(of: Text("Kartu").padding())
-        XCTAssertEqual(size(of: Text("Kartu").padding().cardStyle()), plain)
-        XCTAssertEqual(size(of: Text("Kartu").padding().designShadow()), plain)
+        #expect(size(of: Text("Kartu").padding().cardStyle()) == plain)
+        #expect(size(of: Text("Kartu").padding().designShadow()) == plain)
     }
 }
 

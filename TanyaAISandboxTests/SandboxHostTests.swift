@@ -6,72 +6,74 @@
 //
 
 import SwiftUI
+import Testing
 import UIKit
-import XCTest
 
 @testable import Tanya_AI_Sandbox
 
-/// Host tiruan: Tanya AI dibuka lewat coordinator host dan tampil sebagai view SwiftUI biasa.
-@MainActor
-final class SandboxHostTests: XCTestCase {
-    func testTanyaAIOpensFullScreenAndClosesBackToMain() async throws {
-        let host = try HostHarness()
-        defer { host.close() }
-        host.probe.destination = TanyaAICoordinator.named
-        await waitUntil { host.navigation?.viewControllers.count == 2 }
-        host.settle()
-        let page = try XCTUnwrap(host.navigation?.topViewController)
-        XCTAssertEqual(page.view.convert(page.view.bounds, to: nil), host.windowBounds)
-        XCTAssertNotNil(Self.textView(in: page.view), "composer Tanya AI harus ada di halaman yang di-push")
-        host.probe.destination = nil
-        await waitUntil { host.navigation?.viewControllers.count == 1 }
-    }
+extension HostWindowTests {
+    /// Host tiruan: Tanya AI dibuka lewat coordinator host dan tampil sebagai view SwiftUI biasa.
+    @MainActor
+    struct SandboxHostTests {
+        @Test
+        func tanyaAIOpensFullScreenAndClosesBackToMain() async throws {
+            let host = try HostHarness()
+            defer { host.close() }
+            host.probe.destination = TanyaAICoordinator.named
+            await waitUntil { host.navigation?.viewControllers.count == 2 }
+            host.settle()
+            let page = try #require(host.navigation?.topViewController)
+            #expect(page.view.convert(page.view.bounds, to: nil) == host.windowBounds)
+            #expect(Self.textView(in: page.view) != nil, "composer Tanya AI harus ada di halaman yang di-push")
+            host.probe.destination = nil
+            await waitUntil { host.navigation?.viewControllers.count == 1 }
+        }
 
-    func testParentRerenderKeepsTheOpenPage() async throws {
-        let host = try HostHarness()
-        defer { host.close() }
-        host.probe.destination = TanyaAICoordinator.named
-        await waitUntil { host.navigation?.viewControllers.count == 2 }
-        host.settle()
-        let page = try XCTUnwrap(host.navigation?.topViewController)
-        host.probe.tick += 1
-        host.settle()
-        XCTAssertTrue(host.navigation?.topViewController === page)
-        XCTAssertEqual(host.navigation?.viewControllers.count, 2)
-    }
+        @Test
+        func parentRerenderKeepsTheOpenPage() async throws {
+            let host = try HostHarness()
+            defer { host.close() }
+            host.probe.destination = TanyaAICoordinator.named
+            await waitUntil { host.navigation?.viewControllers.count == 2 }
+            host.settle()
+            let page = try #require(host.navigation?.topViewController)
+            host.probe.tick += 1
+            host.settle()
+            #expect(host.navigation?.topViewController === page)
+            #expect(host.navigation?.viewControllers.count == 2)
+        }
 
-    func testRejectedOrOfflineSendKeepsDraftAndOfflineShowsTheHostBlocker() {
-        XCTAssertTrue(TanyaAIUseCase(options: SandboxOptions(arguments: [])).send("Halo"))
-        XCTAssertFalse(TanyaAIUseCase(options: SandboxOptions(arguments: ["--reject-send"])).send("Halo"))
-        let offline = TanyaAIScreenViewModel(useCase: TanyaAIUseCase(options: SandboxOptions(arguments: ["--offline"])))
-        XCTAssertFalse(offline.useCase.send("Halo"))
-        XCTAssertTrue(offline.isNetworkUnavailable)
-        offline.retry()
-        XCTAssertFalse(offline.isNetworkUnavailable)
-    }
+        @Test
+        func rejectedOrOfflineSendKeepsDraftAndOfflineShowsTheHostBlocker() {
+            #expect(TanyaAIUseCase(options: SandboxOptions(arguments: [])).send("Halo"))
+            #expect(!TanyaAIUseCase(options: SandboxOptions(arguments: ["--reject-send"])).send("Halo"))
+            let options = SandboxOptions(arguments: ["--offline"])
+            let offline = TanyaAIScreenViewModel(useCase: TanyaAIUseCase(options: options))
+            #expect(!offline.useCase.send("Halo"))
+            #expect(offline.isNetworkUnavailable)
+            offline.retry()
+            #expect(!offline.isNetworkUnavailable)
+        }
 
-    func testPopGestureNeedsAPageToReturnTo() throws {
-        let navigation = UINavigationController(rootViewController: UIViewController())
-        let fixture = try HostWindowFixture(root: navigation)
-        defer { fixture.close() }
-        let swipe = try XCTUnwrap(navigation.interactivePopGestureRecognizer)
-        XCTAssertFalse(navigation.gestureRecognizerShouldBegin(swipe))
-        navigation.pushViewController(UIViewController(), animated: false)
-        fixture.settle()
-        XCTAssertTrue(navigation.gestureRecognizerShouldBegin(swipe))
+        @Test
+        func popGestureNeedsAPageToReturnTo() throws {
+            let navigation = UINavigationController(rootViewController: UIViewController())
+            let fixture = try HostWindowFixture(root: navigation)
+            defer { fixture.close() }
+            let swipe = try #require(navigation.interactivePopGestureRecognizer)
+            #expect(!navigation.gestureRecognizerShouldBegin(swipe))
+            navigation.pushViewController(UIViewController(), animated: false)
+            fixture.settle()
+            #expect(navigation.gestureRecognizerShouldBegin(swipe))
+        }
     }
 }
 
-private extension SandboxHostTests {
+private extension HostWindowTests.SandboxHostTests {
     /// Editor composer Tanya AI berupa UITextView, jadi bisa dicari langsung di hierarki halaman.
     static func textView(in root: UIView) -> UITextView? {
         if let textView = root as? UITextView { return textView }
         return root.subviews.lazy.compactMap { textView(in: $0) }.first
-    }
-
-    func waitUntil(_ condition: @escaping () -> Bool) async {
-        let met = XCTNSPredicateExpectation(predicate: NSPredicate { _, _ in condition() }, object: nil)
-        await fulfillment(of: [met], timeout: 3)
     }
 }
 

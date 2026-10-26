@@ -153,11 +153,14 @@ tersedia pada history/main.
   berada di tengah field saat kosong. Pertahankan geometri caret native pada
   semua state: kosong, mengetik dan sesudah hapus. Jangan memusatkan caret kosong
   secara terpisah ke bounds, karena referensinya berbeda dari baseline saat mengetik.
-- `ChatScreen(onSend:)` mengosongkan draft hanya jika callback host mengembalikan
-  true. Draft dimiliki `ComposerSection` (`@State`), bukan `ChatScreen`, agar setiap
-  ketikan tidak me-render ulang header dan daftar pesan. Starter tidak mengirim
-  network, tidak menyimpan atau log isi pesan.
-- Integrasi host: `TanyaAIHost` hanya konfigurasi (`locale`, `colors`, `onSend`) dan
+- Draft dimiliki `ComposerSection` (`@State`), bukan `ChatScreen`, agar setiap ketikan
+  tidak me-render ulang header dan daftar pesan; draft dikosongkan bila chat diterima.
+  Jangan log isi pesan.
+- Jaringan milik host lewat `TanyaAIService` (init, history, SSE persistent, kirim).
+  TanyaAI hanya decode JSON kontrak (`Service/ChatPayload`) dan menampilkan. Percakapan
+  dimiliki `ChatViewModel`; pesan berupa value type agar daftar hanya me-render baris
+  yang berubah. Kontrak: `docs/CHAT_CONTRACT.md`.
+- Integrasi host: `TanyaAIHost` hanya konfigurasi (`locale`, `colors`, `service`) dan
   `makeView()` berupa view SwiftUI. Host menampilkannya lewat navigasinya sendiri
   (host SwiftUI: coordinator + destination dengan `@StateObject`, swipe-back bawaan). Package
   tidak membuat modal, transisi custom, NavigationView/NavigationStack, atau toolbar
@@ -173,8 +176,16 @@ tersedia pada history/main.
   tipe `Type!`. SwiftLint (`force_unwrapping`, `implicitly_unwrapped_optional`,
   `force_cast`, `force_try`) menolaknya. Property UIKit bertipe IUO seperti
   `UITextView.text` dibaca sebagai optional (`editor.text ?? String()`), jangan
-  di-override atau dipakai langsung sebagai non-optional. Test memakai
-  `let application = XCUIApplication()` dan `XCTUnwrap`, bukan IUO di `setUp`.
+  di-override atau dipakai langsung sebagai non-optional. Unit test memakai
+  `try #require(...)`; UI test memakai `let application = XCUIApplication()` dan
+  `XCTUnwrap`, bukan IUO di `setUp`.
+- Unit test (package dan `TanyaAISandboxTests`) memakai Swift Testing: `struct` suite,
+  `@Test`, `#expect`, `try #require`, dan `arguments:` untuk kasus berulang. UI test
+  (`TanyaAISandboxUITests`) tetap XCTest karena XCUITest belum ada di Swift Testing.
+  Swift Testing menjalankan test paralel: tunggu kondisi async dengan `waitUntil`
+  (`Task.sleep`, bukan RunLoop); suite yang membuka window atau menunggu sambil
+  memegang window diberi `@Suite(.serialized)`, dan di sandbox masuk lewat
+  `extension HostWindowTests`. Butuh Xcode 16 ke atas.
 - Private view sections berupa noun: `field`, `surface`, `actionButton`.
   Deklarasi utama berurutan environment, binding/state, input, init, body, sections.
   Computed setup/perhitungan/validasi berada di `private extension` pada file yang
