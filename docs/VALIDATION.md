@@ -1,5 +1,17 @@
 # Validasi starter
 
+## Style permukaan dan header — 22 Oktober 2026
+
+DesignKit menambah `.cardStyle()` (isi, radius, garis tepi, bayangan) dan
+`.designShadow()`. `MessageComposer` memakai `.cardStyle()`, jadi tampilannya tidak
+berubah; radius pindah dari `CustomSizes.Composer` ke `CustomSizes.Card`.
+`ScreenHeader` kini transparan saat diam dan putih saat digulir, dengan gradient
+setinggi `spacingLarge` di bawahnya; material blur dan separator dihapus.
+
+Dibuktikan oleh test: kedua modifier tidak mengubah ukuran layout; di app host,
+warna piksel menunjukkan header tembus ke latar saat diam, putih saat digulir,
+gradient di antara keduanya, dan latar kembali terlihat di bawah gradient.
+
 ## Tanya AI sebagai view SwiftUI — 22 Oktober 2026
 
 `TanyaAIHost.makeViewController()` diganti `makeView()`: host SwiftUI tidak lagi

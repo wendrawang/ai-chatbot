@@ -42,7 +42,7 @@ public struct MessageComposer: View {
                 .frame(minHeight: singleLineRowHeight)
         }
         .padding(FigmaSize.spacingLarge.scaledToArtwork)
-        .background(surface)
+        .cardStyle()
         .accessibilityElement(children: .contain)
         .accessibilityIdentifier(ComponentIdentifier.Composer.root)
     }
@@ -83,19 +83,6 @@ public struct MessageComposer: View {
         .disabled(!isSendEnabled)
         .accessibilityLabel(sendLabel)
         .accessibilityIdentifier(ComponentIdentifier.Composer.send)
-    }
-
-    private var surface: some View {
-        RoundedRectangle(cornerRadius: CustomSizes.Composer.cornerRadius.scaledToArtwork)
-            .fill(colors.colorsSurfacePrimary)
-            .shadow(
-                color: CustomColors.Shadow.color, radius: CustomSizes.Shadow.radius.scaledToArtwork,
-                y: CustomSizes.Shadow.offsetY.scaledToArtwork
-            )
-            .overlay(
-                RoundedRectangle(cornerRadius: CustomSizes.Composer.cornerRadius.scaledToArtwork)
-                    .strokeBorder(CustomColors.Stroke.color, lineWidth: FigmaSize.weightOutline.scaledToArtwork)
-            )
     }
 }
 
