@@ -5,17 +5,18 @@
 //  Created by Wendra on 17/10/26.
 //
 
+import Testing
 import UIKit
-import XCTest
 
 @testable import DesignKit
 
-final class AssetTests: XCTestCase {
-    func testGeneratedImageResourcesLoadFromThePackageBundle() throws {
+struct AssetTests {
+    @Test
+    func generatedImageResourcesLoadFromThePackageBundle() throws {
         for resource in [R.image.sendArrow, R.image.backArrow, R.image.moreMenu] {
-            let image = try XCTUnwrap(UIImage(resource: resource), resource.name)
-            XCTAssertEqual(image.size, CGSize(width: 24, height: 24), resource.name)
-            XCTAssertEqual(image.renderingMode, .alwaysTemplate, resource.name)
+            let image = try #require(UIImage(resource: resource), "\(resource.name)")
+            #expect(image.size == CGSize(width: 24, height: 24), "\(resource.name)")
+            #expect(image.renderingMode == .alwaysTemplate, "\(resource.name)")
         }
     }
 }

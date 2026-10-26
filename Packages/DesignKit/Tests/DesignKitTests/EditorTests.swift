@@ -6,13 +6,14 @@
 //
 
 import SwiftUI
-import XCTest
+import Testing
 
 @testable import DesignKit
 
 @MainActor
-final class EditorTests: XCTestCase {
-    func testEditorGrowsToFourLinesThenScrollsAndShrinksWhenCleared() throws {
+struct EditorTests {
+    @Test
+    func editorGrowsToFourLinesThenScrollsAndShrinksWhenCleared() throws {
         try FontFace.registerFonts()
         let editor = BoundedTextView(frame: CGRect(x: 0, y: 0, width: 220, height: 300))
         editor.font = FontFace.openSansRegular.font(size: 16)
@@ -25,19 +26,20 @@ final class EditorTests: XCTestCase {
         editor.text = "One\nTwo\nThree\nFour"
         editor.remeasure()
         let fourthHeight = editor.intrinsicContentSize.height
-        XCTAssertGreaterThan(fourthHeight, firstHeight)
+        #expect(fourthHeight > firstHeight)
         editor.text = (editor.text ?? "") + "\nFive\n" + String(repeating: "m", count: 128)
         editor.remeasure()
-        XCTAssertEqual(editor.intrinsicContentSize.height, fourthHeight, accuracy: 1)
-        XCTAssertTrue(editor.isScrollEnabled)
-        XCTAssertEqual(editor.intrinsicContentSize.width, UIView.noIntrinsicMetric)
+        #expect(abs(editor.intrinsicContentSize.height - fourthHeight) <= 1)
+        #expect(editor.isScrollEnabled)
+        #expect(editor.intrinsicContentSize.width == UIView.noIntrinsicMetric)
         editor.text = ""
         editor.remeasure()
-        XCTAssertLessThan(editor.intrinsicContentSize.height, fourthHeight)
-        XCTAssertFalse(editor.isScrollEnabled)
+        #expect(editor.intrinsicContentSize.height < fourthHeight)
+        #expect(!editor.isScrollEnabled)
     }
 
-    func testWidthChangeRemeasuresWhileInternalScrollKeepsHeight() throws {
+    @Test
+    func widthChangeRemeasuresWhileInternalScrollKeepsHeight() throws {
         try FontFace.registerFonts()
         let editor = BoundedTextView(frame: CGRect(x: 0, y: 0, width: 320, height: 300))
         editor.font = FontFace.openSansRegular.font(size: 14)
@@ -49,13 +51,14 @@ final class EditorTests: XCTestCase {
         editor.frame.size.width = 120
         editor.layoutSubviews()
         let narrowHeight = editor.intrinsicContentSize.height
-        XCTAssertGreaterThan(narrowHeight, wideHeight)
+        #expect(narrowHeight > wideHeight)
         editor.contentOffset.y += 10
         editor.layoutSubviews()
-        XCTAssertEqual(editor.intrinsicContentSize.height, narrowHeight)
+        #expect(editor.intrinsicContentSize.height == narrowHeight)
     }
 
-    func testComposerWrapsWithoutGrowingHorizontallyAcrossTextSizeSettings() throws {
+    @Test
+    func composerWrapsWithoutGrowingHorizontallyAcrossTextSizeSettings() throws {
         try FontFace.registerFonts()
         for width: CGFloat in [320, 375, 430] {
             for category: ContentSizeCategory in [.large, .accessibilityExtraExtraExtraLarge] {
@@ -68,13 +71,14 @@ final class EditorTests: XCTestCase {
                 controller.view.frame = CGRect(x: 0, y: 0, width: width, height: 800)
                 controller.view.layoutIfNeeded()
                 let size = controller.sizeThatFits(in: CGSize(width: width, height: 2_000))
-                XCTAssertLessThanOrEqual(size.width, width + 1)
-                XCTAssertTrue(size.height.isFinite && size.height > 0 && size.height < 1_000)
+                #expect(size.width <= width + 1)
+                #expect(size.height.isFinite && size.height > 0 && size.height < 1_000)
             }
         }
     }
 
-    func testLargePasteStaysBoundedAndReleasesEditor() async throws {
+    @Test
+    func largePasteStaysBoundedAndReleasesEditor() async throws {
         try FontFace.registerFonts()
         weak var releasedEditor: BoundedTextView?
         autoreleasepool {
@@ -87,17 +91,13 @@ final class EditorTests: XCTestCase {
             editor.text = String(repeating: "中文 English message ", count: 1_000)
             editor.layoutSubviews()
             let lineHeight = editor.font?.lineHeight ?? 0
-            XCTAssertEqual(editor.intrinsicContentSize.height, ceil(lineHeight * 4), accuracy: 1)
-            XCTAssertTrue(editor.isScrollEnabled)
+            #expect(abs(editor.intrinsicContentSize.height - ceil(lineHeight * 4)) <= 1)
+            #expect(editor.isScrollEnabled)
             editor.text = ""
             editor.remeasure()
-            XCTAssertLessThan(editor.intrinsicContentSize.height, ceil(lineHeight * 4))
-            XCTAssertFalse(editor.isScrollEnabled)
+            #expect(editor.intrinsicContentSize.height < ceil(lineHeight * 4))
+            #expect(!editor.isScrollEnabled)
         }
-        let released = XCTNSPredicateExpectation(
-            predicate: NSPredicate { _, _ in releasedEditor == nil }, object: nil
-        )
-        await fulfillment(of: [released], timeout: 2)
-        XCTAssertNil(releasedEditor)
+        await waitUntil(timeout: 2) { releasedEditor == nil }
     }
 }

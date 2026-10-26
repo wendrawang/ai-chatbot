@@ -6,13 +6,14 @@
 //
 
 import SwiftUI
-import XCTest
+import Testing
 
 @testable import DesignKit
 
 @MainActor
-final class ScreenHeaderTests: XCTestCase {
-    func testLongTitlesStayWithinCompactWidthsWithAndWithoutTrailingAction() throws {
+struct ScreenHeaderTests {
+    @Test
+    func longTitlesStayWithinCompactWidthsWithAndWithoutTrailingAction() throws {
         try FontFace.registerFonts()
         for width: CGFloat in [320, 375, 430] {
             for isScrolled in [false, true] {
@@ -22,18 +23,18 @@ final class ScreenHeaderTests: XCTestCase {
                     title: title, backLabel: "Back", isScrolled: isScrolled, onBack: {},
                     trailing: { Button("More") {} }
                 )
-                assertBounds(bare, width: width)
-                assertBounds(actions, width: width)
+                expectBounds(bare, width: width)
+                expectBounds(actions, width: width)
             }
         }
     }
 
-    private func assertBounds(_ content: some View, width: CGFloat) {
+    private func expectBounds(_ content: some View, width: CGFloat) {
         let controller = UIHostingController(rootView: content)
         controller.view.frame = CGRect(x: 0, y: 0, width: width, height: 800)
         controller.view.layoutIfNeeded()
         let size = controller.sizeThatFits(in: CGSize(width: width, height: 800))
-        XCTAssertLessThanOrEqual(size.width, width + 1)
-        XCTAssertEqual(size.height, CustomSizes.Header.height.scaledToArtwork, accuracy: 1)
+        #expect(size.width <= width + 1)
+        #expect(abs(size.height - CustomSizes.Header.height.scaledToArtwork) <= 1)
     }
 }
