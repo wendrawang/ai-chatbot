@@ -155,7 +155,7 @@ alasan perilaku khusus, bukan mengulang arti setiap baris.
 | `@main` | Entry point sandbox app. |
 
 Tidak ada macro kustom, `@Observable`, `@Model`, `@Namespace`, atau `@ScaledMetric`
-pada starter. R.swift adalah plugin build yang menghasilkan source Swift biasa.
+pada starter. R.swift menghasilkan source Swift biasa yang di-commit di `Generated/`.
 Tidak perlu annotation baru untuk membuat komponen berikutnya.
 
 ## Theme
@@ -217,20 +217,25 @@ Image(R.image.sendArrow)
 Image(DesignKit.R.image.moreMenu)
 ```
 
-DesignKit memakai `RswiftGeneratePublicResources` karena asset dapat dipakai
-fitur lain. TanyaAI dan sandbox memakai `RswiftGenerateInternalResources` agar
-copy internal tidak menjadi API publik. Ketiganya memakai versi R.swift yang sama.
+DesignKit di-generate dengan `--access-level public` karena asset dapat dipakai
+fitur lain. TanyaAI dan sandbox memakai access level internal agar copy internal
+tidak menjadi API publik. Ketiganya memakai versi R.swift yang sama.
 Jangan membuat enum nama asset/localization key atau mengedit R.generated.swift.
-Source generated berada di build folder, bukan di repo.
+
+Accessor tidak dibuat oleh build tool plugin. `./Scripts/generate_resources.sh`
+menulis `Generated/R.generated.swift` di DesignKit, TanyaAI dan sandbox, lalu file
+itu di-commit. Dengan begitu host dan CI hanya meng-compile source biasa dan tidak
+melewati validasi plugin Xcode ("Trust & Enable"), yang gagal di CI non-interaktif.
+Jalankan script setiap kali asset, font atau string berubah; `verify.sh` meng-generate
+ulang dan gagal bila hasilnya berbeda dari yang di-commit.
 
 R.swift dipasang `from: "7.8.0"` (sampai sebelum 8.0.0), sehingga host yang memakai
 R.swift 7.x lain tetap bisa resolve satu versi bersama. R.swift dipilih agar asset
 dan locale tetap aman saat jumlahnya bertambah.
 
-R.swift 7.8.0 terkadang belum memperbarui accessor setelah perubahan resource
-secara incremental. Jika nama baru belum muncul, jalankan Clean Build Folder
-lalu build lagi. Saat Xcode meminta kepercayaan plugin untuk pertama kali,
-setujui plugin R.swift package tersebut. Jangan mematikan validasi plugin global.
+Script memakai command plugin `rswift-generate-resources` untuk package dan CLI
+`rswift` dari checkout yang sama untuk target app sandbox. Command plugin hanya
+berjalan saat dipanggil manual, tidak saat build.
 
 Tiga ikon PDF sementara memiliki TODO penggantian export resmi Figma di
 `Assets.xcassets/README.md`. Font tetap memakai `FontFace` karena metadata nama

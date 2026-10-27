@@ -1,5 +1,18 @@
 # Validasi starter
 
+## R.swift tanpa build tool plugin — 27 Oktober 2026
+
+CI host (fastlane gym, Xcode 26) gagal di `Validate plug-in "RswiftGenerateInternalResources"`
+dan `"RswiftGeneratePublicResources"`: build tool plugin wajib disetujui per mesin, dan
+runner non-interaktif tidak bisa menyetujuinya. Mengubah `xcargs` CI memerlukan
+persetujuan terpisah, jadi plugin dilepas dari DesignKit, TanyaAI dan sandbox.
+`./Scripts/generate_resources.sh` menulis `Generated/R.generated.swift` yang di-commit;
+API `R.*` tidak berubah. Hasil generate stabil (dua kali jalan identik), dan `verify.sh`
+gagal bila hasil generate ulang berbeda dari yang di-commit.
+
+Build package dengan DerivedData baru, tanpa `-skipPackagePluginValidation`, tidak lagi
+menjalankan langkah validasi plugin.
+
 ## Unit test ke Swift Testing — 26 Oktober 2026
 
 Seluruh unit test (`DesignKitTests`, `TanyaAITests`, `TanyaAISandboxTests`) pindah dari

@@ -20,6 +20,9 @@ excluded:
   - .build
   - DerivedData
   - Packages/DesignKit/Sources/DesignKit/Tokens/Generated
+  - Packages/DesignKit/Sources/DesignKit/Generated
+  - Packages/TanyaAI/Sources/TanyaAI/Generated
+  - TanyaAISandboxApp/Generated
   - Packages/TanyaAI/.build
   - Packages/TanyaAI/.swiftpm
   - Packages/DesignKit/.build

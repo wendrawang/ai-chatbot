@@ -49,9 +49,9 @@ Satu package, satu kelas, atau satu fungsi tes:
 ```sh
 cd Packages/TanyaAI
 xcodebuild test -scheme TanyaAI -destination "$(python3 ../../Scripts/simulator_destination.py)" \
-  -skipPackagePluginValidation -only-testing:TanyaAITests/ChatViewModelTests
+  -only-testing:TanyaAITests/ChatViewModelTests
 ```
 
-`-skipPackagePluginValidation` menggantikan klik "Trust & Enable" untuk plugin R.swift.
+Tidak ada build tool plugin, jadi `-skipPackagePluginValidation` tidak diperlukan.
 Bila muncul error accessor R.swift yang tidak ada (mis. `has no member 'chatRetry'`) padahal
-string sudah ada, bersihkan build (⇧⌘K) atau DerivedData lalu jalankan ulang.
+string sudah ada, jalankan `./Scripts/generate_resources.sh` lalu commit hasilnya.

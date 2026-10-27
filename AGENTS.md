@@ -80,12 +80,14 @@ tersedia pada history/main.
   Glyph Chinese yang tidak ada di Open Sans menggunakan fallback native iOS.
 - Copy fitur berada di resource `en`, `id`, `zh-Hans`. Screen membaca locale dari
   environment dan menyuplai label ke DesignKit. Tidak ada copy bisnis di DesignKit.
-- Localization dan xcassets diakses melalui R.swift generated saat build, bukan
-  enum pemetaan key/nama asset manual. DesignKit memakai plugin public resources;
-  fitur dan sandbox memakai internal resources. Gunakan `String(resource:locale:)`
+- Localization dan xcassets diakses melalui accessor R.swift, bukan enum pemetaan
+  key/nama asset manual. DesignKit memakai access level public; fitur dan sandbox
+  internal. Gunakan `String(resource:locale:)`
   untuk mengikuti environment locale, dan `Image(R.image.namaAsset)` untuk gambar.
-  Jangan mengedit/commit R.generated.swift. Setelah menambah resource, build ulang;
-  Clean Build Folder jika accessor belum diperbarui oleh plugin.
+  `Generated/R.generated.swift` di setiap target di-commit dan jangan diedit manual.
+  Tidak ada build tool plugin, supaya CI host tidak gagal di validasi plugin.
+  Setelah resource berubah, jalankan `./Scripts/generate_resources.sh` dan commit
+  hasilnya; `verify.sh` gagal bila file tersebut tertinggal.
 - Technical identifiers, filename/PostScript font dan diagnostic prefix tetap
   metadata eksplisit. Artwork sementara mempunyai TODO penggantian.
 - Theme memakai environment SwiftUI standar, tanpa ThemeManager/singleton.

@@ -43,8 +43,8 @@ Packages/
 ## Urutan implementasi
 
 1. Pasang package/resource dan pertahankan `Tokens/Generated` milik Anda.
-   R.swift 7.8.0 menghasilkan accessor localization/xcassets saat build; tidak
-   perlu menulis enum pemetaan. Ikuti [pola view dan resource](VIEW_TEMPLATE.md).
+   R.swift 7.8.0 menghasilkan accessor localization/xcassets lewat
+   `./Scripts/generate_resources.sh` (hasilnya di-commit); tidak perlu menulis enum pemetaan. Ikuti [pola view dan resource](VIEW_TEMPLATE.md).
 2. Tulis token custom per jenis (`CustomSizes`, `CustomTextLines`), custom palette dan extension sizing/hex. Nilai awal memakai
    nilai bawaan tipe (`.zero`, `String()`), tanpa enum alias. Gunakan `true`/`false` langsung. Padding mengambil `spacingSmall/Medium/Large` langsung. `Color(hex:)` menerima
    RGB, RRGGBB atau AARRGGBB dan memakai fallback nonoptional untuk input invalid.

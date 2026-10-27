@@ -17,8 +17,7 @@ let package = Package(
     targets: [
         .target(
             name: "DesignKit", dependencies: [.product(name: "RswiftLibrary", package: "R.swift")],
-            resources: [.copy("Resources/Fonts"), .process("Resources/Assets.xcassets")],
-            plugins: [.plugin(name: "RswiftGeneratePublicResources", package: "R.swift")]),
+            resources: [.copy("Resources/Fonts"), .process("Resources/Assets.xcassets")]),
         .testTarget(name: "DesignKitTests", dependencies: ["DesignKit"])
     ]
 )

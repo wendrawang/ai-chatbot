@@ -18,6 +18,15 @@ TEST_DESTINATION="${TANYA_AI_TEST_DESTINATION:-$(python3 "$PROJECT_ROOT/Scripts/
 printf 'Testing on %s\n' "$TEST_DESTINATION"
 
 ruby "$PROJECT_ROOT/Scripts/generate_project.rb"
+
+# Accessor R.swift di-commit, jadi generate ulang harus tidak mengubah apa pun.
+"$PROJECT_ROOT/Scripts/generate_resources.sh"
+STALE_RESOURCES="$(git -C "$PROJECT_ROOT" status --porcelain -- '*R.generated.swift')"
+if [ -n "$STALE_RESOURCES" ]; then
+  printf 'R.generated.swift belum di-commit setelah resource berubah:\n%s\n' "$STALE_RESOURCES"
+  exit 1
+fi
+
 "$PROJECT_ROOT/Scripts/check_style.sh"
 
 xcodebuild \

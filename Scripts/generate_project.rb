@@ -148,7 +148,8 @@ project.root_object.package_references << design_kit_reference
   linked_target.frameworks_build_phase.files << build_file
 end
 
-# R.swift runs in each resource-owning target; the app never borrows package accessors.
+# Accessor R.swift di-generate oleh Scripts/generate_resources.sh dan di-commit;
+# target hanya menautkan library runtime, tanpa build tool plugin.
 rswift_reference = project.new(Xcodeproj::Project::Object::XCRemoteSwiftPackageReference)
 rswift_reference.repositoryURL = 'https://github.com/mac-cain13/R.swift.git'
 rswift_reference.requirement = { 'kind' => 'exactVersion', 'version' => '7.8.0' }
@@ -161,13 +162,6 @@ target.package_product_dependencies << rswift_library
 rswift_build_file = project.new(Xcodeproj::Project::Object::PBXBuildFile)
 rswift_build_file.product_ref = rswift_library
 target.frameworks_build_phase.files << rswift_build_file
-
-# Plugin references omit package, following R.swift's own Xcode project examples.
-rswift_plugin = project.new(Xcodeproj::Project::Object::XCSwiftPackageProductDependency)
-rswift_plugin.product_name = 'plugin:RswiftGenerateInternalResources'
-plugin_dependency = project.new(Xcodeproj::Project::Object::PBXTargetDependency)
-plugin_dependency.product_ref = rswift_plugin
-target.dependencies << plugin_dependency
 
 project.save
 

@@ -24,8 +24,7 @@ let package = Package(
                 .product(name: "DesignKit", package: "DesignKit"),
                 .product(name: "RswiftLibrary", package: "R.swift")
             ],
-            resources: [.process("Resources")],
-            plugins: [.plugin(name: "RswiftGenerateInternalResources", package: "R.swift")]),
+            resources: [.process("Resources")]),
         .testTarget(name: "TanyaAITests", dependencies: ["TanyaAI", "DesignKit"])
     ]
 )
