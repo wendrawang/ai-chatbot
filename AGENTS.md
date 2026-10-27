@@ -99,6 +99,17 @@ tersedia pada history/main.
 
 ## Komponen dan ownership
 
+- **Satu file satu tipe** (`struct`, `enum`, `class`, `actor`, `protocol`), nama file = nama tipe.
+  **Tidak ada tipe nested** (struct/enum/class di dalam tipe atau extension), termasuk `CodingKeys`:
+  pakai enum key sendiri (`HistoryPayloadKey`) dengan `init(from:)`/`encode(to:)`. Pengecualian
+  hanya token (`Tokens/`) dan `ComponentIdentifier`. `extension` boleh di file lain
+  (`ChatViewModel+Turn.swift`, `extension HostWindowTests`).
+- **Class hanya bila framework mewajibkan**: `ObservableObject`, subclass UIKit
+  (`UIViewController`, `UITableViewCell`, `UITextView`, delegate `NSObject`), `AppDelegate`/
+  `SceneDelegate`, `XCTestCase`. Use case, store, fixture dan probe test memakai struct; state
+  bersama yang async memakai actor; probe test memakai closure yang menangkap `var` lokal.
+- Guard: `Scripts/check_methods.swift` (dijalankan `check_style.sh`) menolak file berisi lebih
+  dari satu tipe, tipe nested di luar token, dan class tanpa base framework.
 - Struktur `Components/<NamaKomponen>`, `Extensions/<Type>+<Responsibility>.swift`,
   `ViewModifier` bersama di `ViewModifiers/<Nama>.swift`.
   Nama DesignKit umum, tanpa prefix fitur. Jangan membuat ViewModel per komponen.
@@ -156,7 +167,8 @@ tersedia pada history/main.
 - Draft dimiliki `ComposerSection` (`@State`), bukan `ChatScreen`, agar setiap ketikan
   tidak me-render ulang header dan daftar pesan; draft dikosongkan bila chat diterima.
   Jangan log isi pesan.
-- Jaringan milik host lewat `TanyaAIService` (init, history, SSE persistent, kirim).
+- Jaringan milik host lewat `TanyaAIService` (init, history, config, SSE persistent, kirim, cancel).
+  Chat tampil dari stream, bukan dari `send`; satu pertanyaan per waktu. T&C milik host.
   TanyaAI hanya decode JSON kontrak (`Service/ChatPayload`) dan menampilkan. Percakapan
   dimiliki `ChatViewModel`; pesan berupa value type agar daftar hanya me-render baris
   yang berubah. Kontrak: `docs/CHAT_CONTRACT.md`.
@@ -170,7 +182,7 @@ tersedia pada history/main.
 - UI owners `@MainActor`; putus delegate pada dismantle dan hindari retain cycle.
 - Tidak ada angka/string literal di kode package selain file definisi: token
   (`Tokens/`), metadata font (`FontFace`), identifier UI test, dan spesifikasi format
-  hex (`HexFormat` private di `Color+Hex`). Arah dan rentang dihitung dari nilai yang
+  hex (`Extensions/HexFormat.swift`). Arah dan rentang dihitung dari nilai yang
   ada (lebar layar, arah layout, `.zero`), bukan konstanta `1`/`-1`.
 - Tanpa forcing di source maupun test: tidak ada `!` unwrap, `as!`, `try!`, atau
   tipe `Type!`. SwiftLint (`force_unwrapping`, `implicitly_unwrapped_optional`,

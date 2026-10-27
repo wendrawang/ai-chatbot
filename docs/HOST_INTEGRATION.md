@@ -81,9 +81,7 @@ struct TanyaAIScreen: ScreenContent {
 final class TanyaAIScreenViewModel: ScreenContentViewModel {
     @MainActor
     func makeHost() -> TanyaAIHost {
-        TanyaAIHost(locale: Locale(identifier: Localize.currentLanguage())) { [weak self] text in
-            self?.useCase.send(text) ?? false
-        }
+        TanyaAIHost(locale: Locale(identifier: Localize.currentLanguage()), service: useCase.service)
     }
 }
 ```
@@ -110,10 +108,49 @@ Untuk navigasi lain cukup ganti pemanggilnya:
 - **UIKit coordinator / `UINavigationController`:**
   `navigation.pushViewController(UIHostingController(rootView: host.makeView(onBack: pop)), animated: true)`.
 
-`onSend` mengembalikan `true` bila host menerima draft (composer dikosongkan) dan
-`false` untuk mempertahankannya. Nilai ini bukan konfirmasi request network berhasil.
-`onNewConversation` opsional; tanpa handler, item menu "Percakapan baru" disabled.
-`locale` dan `colors` dibaca saat halaman dibuat.
+`TanyaAIHost(locale:colors:service:onNewConversation:)`:
+
+- `service` (`TanyaAIService`) milik host: init sesi, history berhalaman, config greeting/shortcut,
+  stream SSE persistent, kirim chat, dan batalkan jawaban. Bentuk JSON di
+  [CHAT_CONTRACT.md](CHAT_CONTRACT.md).
+  Error jaringan boleh juga dilaporkan host ke blocker halamannya (sandbox: `TanyaAIUseCase`).
+- `onNewConversation` opsional; tanpa handler, item menu "Percakapan baru" disabled.
+- `locale` dan `colors` dibaca saat halaman dibuat.
+
+Sesi dibuka saat halaman tampil dan stream ditutup saat halaman dilepas.
+
+## T&C sebelum Tanya AI
+
+T&C milik host, karena isinya dokumen legal dari BE dan persetujuannya disimpan host.
+Package tidak tahu tentang T&C dan hanya dibuka setelah disetujui.
+
+1. Destination memeriksa persetujuan di perangkat (`TanyaAITermsStore`, Bool di UserDefaults).
+   Bila sudah disetujui, chat langsung tampil tanpa inquiry.
+2. Bila belum: halaman T&C host melakukan inquiry ke BE (gagal = blocker host dengan coba lagi).
+3. Setuju: simpan ke BE (opsional; hapus panggilan `accept` di use case bila BE tidak butuh),
+   lalu simpan di perangkat. Destination berganti ke chat **tanpa push baru**, jadi back
+   tetap kembali ke halaman sebelum Tanya AI.
+
+```swift
+// TanyaAIDestination.swift
+struct TanyaAIDestination: View {
+    @StateObject private var termsViewModel = TanyaAITermsViewModel()
+    @StateObject private var viewModel = TanyaAIScreenViewModel()
+    let onBack: () -> Void
+
+    var body: some View {
+        if termsViewModel.isAccepted {
+            Screen { TanyaAIScreen(viewModel: viewModel, onBack: onBack) }
+        } else {
+            Screen { TanyaAITermsScreen(viewModel: termsViewModel, onBack: onBack) }
+        }
+    }
+}
+```
+
+Contoh lengkap: `TanyaAITermsStore`, `TanyaAITermsUseCase`, `TanyaAITermsViewModel` dan
+`TanyaAITermsScreen` di folder [TanyaAI sandbox](../TanyaAISandboxApp/TanyaAI). Sandbox:
+`--reset-terms` menghapus persetujuan saat aplikasi dibuka, `--terms-accepted` melewatinya.
 
 ## Bahasa dan appearance
 
@@ -131,14 +168,13 @@ karena aturan bisnis tidak masuk DesignKit.
 
 ## Isi folder `Host`
 
-- `TanyaAIHost.swift`: konfigurasi (`locale`, `colors`, `onSend`) dan
-  `makeView()` yang memasang bahasa dan palette ke halaman baru.
-
-Overload `makeView { ContentView() }` menerima konten SwiftUI untuk area scroll; sandbox
-memakainya pada mode `--header-demo`. Konten tidak perlu mempunyai ScrollView, header,
-atau composer sendiri, dan dilepas setelah halaman di-pop.
+- `TanyaAIHost.swift`: konfigurasi (`locale`, `colors`, `service`) dan `makeView()` yang
+  memasang bahasa dan palette ke halaman baru.
+- `TanyaAIService.swift`: protocol jaringan host dan `TanyaAIServerEvent`.
 
 Jalankan `Scripts/run_sandbox.sh --language id`. Buka Tanya AI dari beranda atau dari
-halaman detail, kembali dengan tombol back atau swipe dari tepi kiri. `--offline`
-membuat kiriman memunculkan blocker host di atas Tanya AI; tombol "Coba lagi"
-menutupnya dan draft tetap ada.
+halaman detail, setujui T&C (sekali), pilih shortcut atau kirim pertanyaan (mis. "saldo",
+"transfer", "promo", "markdown"), lalu kembali dengan tombol back atau swipe dari tepi kiri.
+`--slow-reply` memperlambat jawaban untuk mencoba tombol stop. `--long-history` mengisi history
+panjang untuk mencoba paging dan header saat digulir. `--offline` membuat init sesi gagal:
+blocker host tampil di atas Tanya AI, dan chat menampilkan "Koneksi terputus. Coba lagi".

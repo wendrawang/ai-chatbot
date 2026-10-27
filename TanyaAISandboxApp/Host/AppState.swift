@@ -8,13 +8,9 @@
 import Foundation
 
 /// Tiruan state aplikasi host. Sandbox mulai dalam keadaan login agar langsung ke main.
+/// Class karena dipakai sebagai `ObservableObject`.
 @MainActor
 final class AppState: ObservableObject {
-    enum State {
-        case prelogin
-        case loggedIn
-    }
-
     @Published
-    var state = State.loggedIn
+    var isLoggedIn = true
 }

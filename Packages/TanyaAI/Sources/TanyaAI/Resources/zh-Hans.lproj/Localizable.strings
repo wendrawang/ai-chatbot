@@ -11,3 +11,11 @@
 "chat.newConversation" = "新对话";
 "chat.title" = "Tanya AI";
 "chat.back" = "返回";
+"chat.connecting" = "正在连接…";
+"chat.disconnected" = "连接已断开。";
+"chat.retry" = "重试";
+"chat.replying" = "正在回答…";
+"chat.sendFailed" = "消息未发送，请重试。";
+"chat.stop" = "停止回答";
+"chat.stopFailed" = "无法停止回答，请重试。";
+"chat.answerStopped" = "回答已停止";

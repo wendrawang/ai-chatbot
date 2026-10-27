@@ -26,8 +26,24 @@ public enum CustomSizes {
         public static let offsetY: CGFloat = 2
     }
 
+    public enum MessageList {
+        /// Jarak dari tepi bawah yang masih dianggap "di pesan terbaru", dan dari tepi atas
+        /// yang memicu muat history sebelumnya.
+        public static let edgeThreshold: CGFloat = 48
+    }
+
     public enum Composer {
         public static let sendButton: CGFloat = 24
         public static let sendIconInset: CGFloat = 6
+        /// Kotak di tombol stop saat menunggu jawaban.
+        public static let stopMark: CGFloat = 8
+        public static let stopMarkRadius: CGFloat = 2
+    }
+
+    public enum LoadingDots {
+        public static let dot: CGFloat = 4
+        public static let spacing: CGFloat = 2
+        /// Tinggi lompatan setiap titik.
+        public static let bounce: CGFloat = 2
     }
 }

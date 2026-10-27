@@ -15,9 +15,9 @@ ROOT = Path(__file__).resolve().parent.parent
 errors = []
 # These files own technical metadata or format/transform arithmetic, not user-facing copy.
 METADATA = {
-    'Typography/FontFace.swift', 'Extensions/Color+Hex.swift',
+    'Typography/FontFace.swift', 'Extensions/HexFormat.swift',
     'Foundations/Accessibility/ComponentIdentifier.swift',
-    'Chat/ChatElementIdentifier.swift',
+    'Chat/ChatElementIdentifier.swift', 'Messages/MessageCell.swift',
     'TanyaAISandboxApp/SandboxOptions.swift'
 }
 paths = list((ROOT / 'Packages').glob('*/Sources/**/*.swift'))

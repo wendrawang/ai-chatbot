@@ -84,9 +84,9 @@ Packages/
    Tombol back atau swipe dari tepi kiri kembali ke halaman asal.
    Lihat [integrasi host](HOST_INTEGRATION.md).
 
-Screen menggunakan `ChatScreen(onSend:)`. Callback mendapat draft dan mengembalikan
-Bool: true membersihkan draft, false mempertahankan teks/seleksi. Draft whitespace
-menonaktifkan action. Callback belum mengimplikasikan pesan terkirim ke backend.
+`ChatScreen` memakai `ChatViewModel`: chat yang diterima langsung tampil dan draft
+dibersihkan; draft whitespace menonaktifkan action. Pengiriman ke BE dan jawaban
+lewat stream mengikuti [kontrak chat](CHAT_CONTRACT.md).
 
 Untuk membuka feature di atas `NavigationView` host existing, lihat
 [contoh integrasi host](HOST_INTEGRATION.md), termasuk bootstrap font dan bahasa.

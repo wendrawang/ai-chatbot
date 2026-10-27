@@ -15,29 +15,23 @@ final class HeaderUITests: XCTestCase {
         continueAfterFailure = false
     }
 
-    func testHeaderBoundaryTracksScrollWithoutMovingHeaderOrComposer() {
-        launch(locale: "id", extra: ["--header-demo"])
-        let header = application.otherElements["header"]
-        XCTAssertTrue(header.waitForExistence(timeout: 10))
+    func testHeaderTurnsSolidWhileScrollingAndOlderHistoryLoadsAtTheTop() {
+        launch(locale: "id", extra: ["--long-history"])
+        let messages = application.tables["chat.messages"]
+        XCTAssertTrue(messages.waitForExistence(timeout: 10))
+        // Daftar dibuka di pesan terbaru, jadi konten sudah berada di belakang header.
+        XCTAssertTrue(application.otherElements["header.scrolled"].waitForExistence(timeout: 10))
         let title = application.staticTexts["header.title"]
         let titleFrame = title.frame
         let composerFrame = application.otherElements["composer"].frame
-        let first = application.staticTexts["sandbox.demo.start"]
-        XCTAssertGreaterThanOrEqual(first.frame.minY - header.frame.maxY, 15)
         assertActionsAndTitle()
-        capture("header-demo-top")
-        let scroll = contentScroll
-        scroll.swipeUp()
-        XCTAssertTrue(application.otherElements["header.scrolled"].waitForExistence(timeout: 5))
-        XCTAssertEqual(title.frame, titleFrame)
-        XCTAssertEqual(application.otherElements["composer"].frame, composerFrame)
-        capture("header-demo-scrolled")
-        for _ in 0..<12 where !application.staticTexts["sandbox.demo.end"].isHittable { scroll.swipeUp() }
-        XCTAssertTrue(application.staticTexts["sandbox.demo.end"].isHittable)
-        for _ in 0..<12 where !application.otherElements["header"].exists { scroll.swipeDown() }
+        capture("chat-header-scrolled")
+        // Gulir ke atas sampai history lama habis termuat dan header kembali transparan.
+        for _ in 0..<30 where !application.otherElements["header"].exists { messages.swipeDown() }
         XCTAssertTrue(application.otherElements["header"].waitForExistence(timeout: 5))
         XCTAssertEqual(title.frame, titleFrame)
-        capture("header-demo-returned")
+        XCTAssertEqual(application.otherElements["composer"].frame, composerFrame)
+        capture("chat-header-top")
         application.buttons["header.back"].tap()
         XCTAssertTrue(application.buttons["sandbox.open"].waitForExistence(timeout: 5))
     }
@@ -64,7 +58,7 @@ final class HeaderUITests: XCTestCase {
         launch(
             locale: "zh-Hans",
             extra: [
-                "--header-demo", "-UIPreferredContentSizeCategoryName", "UICTContentSizeCategoryAccessibilityXXXL"
+                "--long-history", "-UIPreferredContentSizeCategoryName", "UICTContentSizeCategoryAccessibilityXXXL"
             ])
         let input = application.textViews["composer.input"]
         XCTAssertTrue(input.waitForExistence(timeout: 10))
@@ -76,8 +70,7 @@ final class HeaderUITests: XCTestCase {
         XCTAssertTrue(send.isHittable)
         XCTAssertLessThanOrEqual(send.frame.maxY, application.keyboards.firstMatch.frame.minY + 1)
         assertActionsAndTitle()
-        contentScroll.swipeUp()
-        XCTAssertTrue(application.otherElements["header.scrolled"].waitForExistence(timeout: 5))
+        application.tables["chat.messages"].swipeDown()
         XCTAssertEqual(application.staticTexts["header.title"].frame, titleFrame)
         application.buttons["header.back"].tap()
         XCTAssertTrue(application.buttons["sandbox.open"].waitForExistence(timeout: 5))
@@ -97,13 +90,8 @@ final class HeaderUITests: XCTestCase {
         XCTAssertLessThanOrEqual(title.maxX, more.minX)
     }
 
-    /// Scroll konten demo. `scrollViews.firstMatch` bisa menunjuk bar saran keyboard.
-    private var contentScroll: XCUIElement {
-        application.scrollViews.containing(.staticText, identifier: "sandbox.demo.start").firstMatch
-    }
-
     private func launch(locale: String, extra: [String] = []) {
-        application.launchArguments = ["--language", locale] + extra
+        application.launchArguments = ["--language", locale, "--terms-accepted"] + extra
         application.launch()
         let open = application.buttons["sandbox.open"]
         XCTAssertTrue(open.waitForExistence(timeout: 10))

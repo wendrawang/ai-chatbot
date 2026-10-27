@@ -18,6 +18,7 @@ final class AppDelegate: UIResponder, UIApplicationDelegate {
         do { try FontFace.registerFonts() } catch {
             assertionFailure(SandboxOptions.fontFailure + String(describing: error))
         }
+        applyTermsOptions(SandboxOptions.current, to: TanyaAITermsStore())
         return true
     }
 
@@ -28,5 +29,15 @@ final class AppDelegate: UIResponder, UIApplicationDelegate {
         let configuration = UISceneConfiguration(name: nil, sessionRole: connectingSceneSession.role)
         configuration.delegateClass = SceneDelegate.self
         return configuration
+    }
+}
+
+// MARK: - Helpers
+
+private extension AppDelegate {
+    /// Opsi peluncuran untuk UI test: mulai tanpa persetujuan, atau dengan T&C sudah disetujui.
+    func applyTermsOptions(_ options: SandboxOptions, to store: TanyaAITermsStore) {
+        if options.isTermsReset { store.reset() }
+        if options.isTermsAccepted { store.accept() }
     }
 }

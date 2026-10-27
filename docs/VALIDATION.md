@@ -1,5 +1,46 @@
 # Validasi starter
 
+## Perbaikan dari review — 27 Oktober 2026
+
+Empat bug direproduksi dengan test lebih dulu (`ChatRecoveryTests`, gagal sebelum diperbaiki):
+
+1. Stream putus saat mengirim membuat composer macet di loading. Kini pesan user baru di history
+   setelah reconnect dianggap pertanyaan giliran itu.
+2. Replay pesan user lama membajak giliran pertanyaan berikutnya. Kini hanya pesan yang benar-benar
+   baru (`merge` mengembalikan pesan yang ditambahkan) yang memajukan giliran.
+3. View model tertahan sampai request awal selesai karena `await self?.establish()`. Init/history/
+   config kini berjalan di `ChatSessionStart.load` tanpa memegang view model.
+4. Jawaban yang dihentikan muncul lagi lewat history. Filter kini berlaku di `merge` untuk semua sumber.
+
+`merge` menambahkan pesan baru di akhir tanpa mengurutkan ulang; pengurutan penuh hanya saat history
+lama masuk. Helper hitung di `ConnectionBanner`, `NoticeLabel` dan `TanyaAITermsScreen` dipindah ke
+`private extension`. UI test menyimpan screenshot `chat-sending` dan `chat-waiting`.
+
+## Satu file satu tipe — 27 Oktober 2026
+
+Seluruh repo dirapikan: satu tipe per file, tanpa tipe nested di luar token/`ComponentIdentifier`,
+dan class hanya untuk base framework. `BaseCallback` dihapus (use case jadi struct, error service
+diteruskan lewat closure ke view model yang membuat use case secara lazy), `AppState` memakai
+`isLoggedIn`, `CodingKeys` diganti enum key sendiri, probe test diganti closure, dan suite window
+sandbox menjadi satu `HostWindowTests` berurutan dengan extension per file. Persetujuan T&C cukup
+Bool. `Scripts/check_methods.swift` kini juga menolak pelanggaran aturan tipe.
+
+## Flow chat ICT, T&C host, dan stop — 26 Oktober 2026
+
+`TanyaAIService` kini `start` → `history` → `config` (hanya bila history kosong) → `events`,
+dengan `send` tanpa body balasan dan `cancel(messageId:)`. Pesan user tampil saat datang dari
+stream; tombol kirim berganti titik bergerak (`LoadingDots`) selama menunggu pesan itu, lalu stop
+selama menunggu jawaban. Greeting dan shortcut (`SuggestionChip`) tampil di percakapan kosong.
+T&C ditampilkan host sekali sebelum Tanya AI; persetujuan disimpan ke BE (opsional) dan perangkat.
+
+Dibuktikan oleh test: config hanya saat history kosong; chat tampil dari stream dan draft
+dikosongkan saat itu; kirim gagal; stop mengabaikan jawaban terlambat, stop gagal tetap menunggu,
+jawaban yang tiba saat stop tetap tampil; reconnect menemukan jawaban yang terlewat; shortcut hanya
+di percakapan kosong; ukuran composer sama di ketiga keadaan; T&C disimpan, tidak dimuat lagi,
+inquiry offline memunculkan blocker. UI test: T&C sekali lalu chat langsung, shortcut dijawab
+lewat stream, stop dengan `--slow-reply`. Baris yang isinya berubah di-reload (bukan reconfigure)
+karena cell hosting tidak menggambar isi baru yang menambah tinggi.
+
 ## Unit test ke Swift Testing — 26 Oktober 2026
 
 Seluruh unit test (`DesignKitTests`, `TanyaAITests`, `TanyaAISandboxTests`) pindah dari
@@ -10,6 +51,22 @@ bawah `HostWindowTests` yang `.serialized`, dan `TanyaAIHostTests` juga `.serial
 
 Hasil: DesignKit 17 tes (warna hex tidak valid tanpa fallback kini tes sendiri), TanyaAI
 4, sandbox unit 8, ditambah UI test XCTest; lint 0 pelanggaran.
+
+## Alur chat dengan SSE persistent — 22 Oktober 2026
+
+`TanyaAIHost(service:)` menggantikan `onSend`. Saat halaman tampil: init sesi → history →
+stream SSE tetap terbuka; chat dikirim lewat `send` terpisah dan jawaban datang lewat
+stream. Reconnect otomatis sekali (init ulang + history + stream), lalu status "Koneksi
+terputus. Coba lagi". Daftar pesan memakai `UITableView` diffable (cell hosting SwiftUI,
+fallback iOS 15), history lama dimuat saat mendekati atas tanpa menggeser posisi baca.
+Sandbox memakai service dummy dari `ChatDummy.json`; `--long-history` dan `--offline`.
+
+Dibuktikan oleh test: urutan init → history → stream; chat tampil langsung lalu
+terkonfirmasi dan dijawab lewat stream; heartbeat dan pesan ganda diabaikan; stream putus
+reconnect sekali lalu gagal dan pulih lewat coba lagi; init gagal; kirim gagal lalu kirim
+ulang; paging history; jawaban sebelum konfirmasi kirim; halaman membuka sesi dan menutup
+stream saat dilepas. UI test: pertanyaan dijawab lewat stream, header solid saat digulir dan
+kembali transparan setelah history lama habis termuat, blocker offline.
 
 ## Style permukaan dan header — 22 Oktober 2026
 

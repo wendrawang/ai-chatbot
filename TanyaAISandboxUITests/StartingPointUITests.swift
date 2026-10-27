@@ -58,7 +58,7 @@ final class StartingPointUITests: XCTestCase {
         assertVisualInsets(isMultiline: true)
         capture("starter-four-lines-keyboard")
         send.tap()
-        XCTAssertEqual(input.value as? String, "")
+        waitForAnswer(clearing: input)
         XCTAssertFalse(send.isEnabled)
         XCTAssertEqual(input.frame.midY, send.frame.midY, accuracy: 1)
     }
@@ -73,7 +73,7 @@ final class StartingPointUITests: XCTestCase {
         for (horizontal, vertical) in [(0.05, 0.5), (0.95, 0.5), (0.5, 0.05), (0.5, 0.95)] {
             input.typeText("Tap edge")
             send.coordinate(withNormalizedOffset: CGVector(dx: horizontal, dy: vertical)).tap()
-            XCTAssertEqual(input.value as? String, "")
+            waitForAnswer(clearing: input)
             XCTAssertFalse(send.isEnabled)
         }
     }
@@ -101,16 +101,6 @@ final class StartingPointUITests: XCTestCase {
         XCTAssertEqual(input.value as? String, "")
         XCTAssertEqual(input.frame.midY, application.buttons["composer.send"].frame.midY, accuracy: 1)
         capture("starter-empty-after-clearing")
-    }
-
-    func testRejectedSubmissionKeepsDraft() {
-        launch(locale: "en", extra: ["--reject-send"])
-        let input = application.textViews["composer.input"]
-        XCTAssertTrue(input.waitForExistence(timeout: 10))
-        input.tap()
-        input.typeText("Keep my draft")
-        application.buttons["composer.send"].tap()
-        XCTAssertEqual(input.value as? String, "Keep my draft")
     }
 
     func testTextSizeSettingKeepsComposerFontAndLayoutFixed() {
@@ -184,11 +174,18 @@ final class StartingPointUITests: XCTestCase {
     }
 
     private func launch(locale: String, extra: [String] = []) {
-        application.launchArguments = ["--language", locale] + extra
+        application.launchArguments = ["--language", locale, "--terms-accepted"] + extra
         application.launch()
         let open = application.buttons["sandbox.open"]
         XCTAssertTrue(open.waitForExistence(timeout: 10))
         open.tap()
+    }
+
+    /// Draft kosong saat pesan muncul dari stream, lalu tombol kirim kembali setelah jawaban datang.
+    private func waitForAnswer(clearing input: XCUIElement) {
+        let cleared = XCTNSPredicateExpectation(predicate: NSPredicate(format: "value == %@", ""), object: input)
+        wait(for: [cleared], timeout: 5)
+        XCTAssertTrue(application.buttons["composer.send"].waitForExistence(timeout: 10))
     }
 
     private func assertVisualInsets(isMultiline: Bool) {

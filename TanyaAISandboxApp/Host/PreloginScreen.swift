@@ -24,7 +24,7 @@ struct PreloginScreen: View {
             HostButton(
                 title: String(resource: R.string.localizable.sandboxLogin, locale: locale),
                 identifier: SandboxOptions.loginIdentifier
-            ) { appState.state = .loggedIn }
+            ) { appState.isLoggedIn = true }
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .background(colors.colorsSurfacePrimary.ignoresSafeArea())

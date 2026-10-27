@@ -32,20 +32,17 @@ final class HostNavigationUITests: XCTestCase {
         XCTAssertFalse(application.textViews["composer.input"].exists)
     }
 
-    func testOfflineBlockerCoversTanyaAIAndRetryKeepsTheDraft() {
+    func testOfflineBlockerCoversTanyaAIAndTheChatOffersRetry() {
         launch(extra: ["--offline"])
         application.buttons["sandbox.open"].tap()
-        let input = application.textViews["composer.input"]
-        XCTAssertTrue(input.waitForExistence(timeout: 10))
-        input.tap()
-        input.typeText("Saldo saya")
-        application.buttons["composer.send"].tap()
-        let retry = application.buttons["sandbox.offline.retry"]
-        XCTAssertTrue(retry.waitForExistence(timeout: 5))
-        XCTAssertFalse(input.isHittable)
-        retry.tap()
-        XCTAssertTrue(input.waitForExistence(timeout: 5))
-        XCTAssertEqual(input.value as? String, "Saldo saya")
+        // Init sesi gagal: blocker host tampil di atas Tanya AI.
+        let blockerRetry = application.buttons["sandbox.offline.retry"]
+        XCTAssertTrue(blockerRetry.waitForExistence(timeout: 10))
+        blockerRetry.tap()
+        // Setelah blocker ditutup, chat menampilkan status putus dengan tombol coba lagi.
+        XCTAssertTrue(application.buttons["chat.retry"].waitForExistence(timeout: 5))
+        XCTAssertTrue(application.textViews["composer.input"].isHittable)
+        XCTAssertFalse(application.buttons["composer.send"].isEnabled)
     }
 
     func testLogoutAndLoginReturnToMain() {
@@ -58,7 +55,7 @@ final class HostNavigationUITests: XCTestCase {
     }
 
     private func launch(extra: [String] = []) {
-        application.launchArguments = ["--language", "en"] + extra
+        application.launchArguments = ["--language", "en", "--terms-accepted"] + extra
         application.launch()
         XCTAssertTrue(application.buttons["sandbox.open"].waitForExistence(timeout: 10))
     }

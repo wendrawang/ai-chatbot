@@ -11,3 +11,11 @@
 "chat.newConversation" = "Percakapan baru";
 "chat.title" = "Tanya AI";
 "chat.back" = "Kembali";
+"chat.connecting" = "Menghubungkan…";
+"chat.disconnected" = "Koneksi terputus.";
+"chat.retry" = "Coba lagi";
+"chat.replying" = "Sedang menjawab…";
+"chat.sendFailed" = "Pesan gagal terkirim. Silakan coba lagi.";
+"chat.stop" = "Hentikan jawaban";
+"chat.stopFailed" = "Gagal menghentikan jawaban. Silakan coba lagi.";
+"chat.answerStopped" = "Jawaban dihentikan";
