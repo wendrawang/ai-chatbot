@@ -11,6 +11,8 @@
 /// Gambar non-ikon (ilustrasi, latar) dibuat enum terpisah karena sifatnya berbeda.
 public enum DesignIcon: String, CaseIterable {
     case backArrow
+    case chevronRight
+    case lightbulb
     case moreMenu
     case sendArrow
 }

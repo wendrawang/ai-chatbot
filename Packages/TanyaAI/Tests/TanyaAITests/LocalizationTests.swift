@@ -29,6 +29,13 @@ struct LocalizationTests {
         }
     }
 
+    @Test(arguments: [("en", "Start here:", "Waiting for reply"), ("id", "Mulai dari sini:", "Menunggu jawaban")])
+    func welcomeAndReplyingCopyFollowTheHostLocale(language: String, title: String, replying: String) {
+        let locale = Locale(identifier: language)
+        #expect(String(ChatCopy.shortcutsTitle, locale: locale) == title)
+        #expect(String(ChatCopy.replying, locale: locale) == replying)
+    }
+
     @Test
     func unsupportedLanguageFallsBackToEnglish() {
         #expect(String(ChatCopy.send, locale: Locale(identifier: "fr_FR")) == "Send message")

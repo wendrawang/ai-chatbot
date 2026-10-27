@@ -17,6 +17,8 @@ enum ChatCopy: String, CaseIterable {
     case newConversation = "chat.newConversation"
     case title = "chat.title"
     case back = "chat.back"
+    case replying = "chat.replying"
+    case shortcutsTitle = "welcome.shortcutsTitle"
 }
 
 extension String {

@@ -18,7 +18,8 @@ METADATA = {
     'Typography/FontFace.swift', 'Extensions/Color+Hex.swift', 'Extensions/String+Resource.swift',
     'Foundations/Accessibility/ComponentIdentifier.swift',
     'Chat/ChatElementIdentifier.swift', 'Chat/ChatCopy.swift',
-    'TanyaAISandboxApp/SandboxOptions.swift', 'TanyaAISandboxApp/SandboxCopy.swift'
+    'TanyaAISandboxApp/SandboxOptions.swift', 'TanyaAISandboxApp/SandboxCopy.swift',
+    'TanyaAISandboxApp/SandboxFixtureFile.swift'
 }
 paths = list((ROOT / 'Packages').glob('*/Sources/**/*.swift'))
 paths += list((ROOT / 'TanyaAISandboxApp').glob('**/*.swift'))

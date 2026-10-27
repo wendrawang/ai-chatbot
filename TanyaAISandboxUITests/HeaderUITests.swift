@@ -42,7 +42,8 @@ final class HeaderUITests: XCTestCase {
         XCTAssertTrue(application.buttons["sandbox.open"].waitForExistence(timeout: 5))
     }
 
-    func testOptionsAreLocalizedAndSessionActionWaitsForHostHandler() {
+    /// Sandbox memasang handler percakapan baru (keluar dari menunggu jawaban), jadi item aktif.
+    func testOptionsAreLocalizedAndNewConversationUsesTheHostHandler() {
         for (locale, label, item) in [
             ("en", "Conversation options", "New conversation"),
             ("id", "Opsi percakapan", "Percakapan baru"),
@@ -55,7 +56,7 @@ final class HeaderUITests: XCTestCase {
             application.buttons["chat.more"].tap()
             let action = application.buttons[item]
             XCTAssertTrue(action.waitForExistence(timeout: 5))
-            XCTAssertFalse(action.isEnabled)
+            XCTAssertTrue(action.isEnabled)
             application.terminate()
         }
     }

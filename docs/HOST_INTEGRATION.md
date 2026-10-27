@@ -115,6 +115,47 @@ Untuk navigasi lain cukup ganti pemanggilnya:
 `onNewConversation` opsional; tanpa handler, item menu "Percakapan baru" disabled.
 `locale` dan `colors` dibaca saat halaman dibuat.
 
+## Halaman sambutan dan menunggu jawaban
+
+Host memanggil inquiry init Tanya AI, lalu men-decode objek `data` langsung ke
+`WelcomeContent` (envelope `response_code` dan field T&C tetap milik host):
+
+```swift
+struct TanyaAIInitResponse: Decodable {
+    let data: WelcomeContent   // isTncAgreed / tncCode dibaca host dari model lain bila perlu
+}
+```
+
+| Bagian halaman | Sumber |
+| --- | --- |
+| Sapaan (`greetings.title`/`description`) | BE |
+| Judul, deskripsi, ikon kartu (`shortcuts[].title`/`description`/`iconUrl`) | BE |
+| Emblem, latar, judul "Mulai dari sini:", chevron | FE (package) |
+
+Kontrak memakai key `description` (apib awal menulis `descripton`; BE diminta memperbaiki).
+`iconUrl` kosong atau tidak valid membuat ikon kosong tanpa membatalkan kartu lain.
+
+Ketuk kartu mengirim `prompt` lewat `onSend`, sama seperti chat dari composer. Setelah
+host menerima chat, isi `isAwaitingReply: true` sampai jawaban datang: tombol kirim
+menjadi titik bergerak dan kartu nonaktif; draft tetap bisa diketik.
+
+```swift
+TanyaAIHost(
+    locale: locale, colors: colors, isAwaitingReply: isAwaitingReply, welcome: welcome,
+    onNewConversation: { [weak self] in self?.startNewConversation() },
+    onSend: { [weak self] text in self?.send(text) ?? false }
+)
+```
+
+Ikon kartu dimuat `RemoteImage` dengan cache memori bersama (`RemoteImageLoader.shared`):
+dibuka ulang tidak mengunduh lagi selama aplikasi hidup; cache disk mengikuti `URLCache`
+dan header HTTP server gambar.
+
+Fallback ikon: selama mengunduh kotak ikon kosong; bila `iconUrl` kosong/tidak valid, unduhan
+gagal, atau data bukan gambar, tampil ikon default FE (lampu, TODO ganti ikon desain). Kartu
+tetap tampil dan bisa diketuk. Kegagalan tidak di-cache, jadi halaman berikutnya mencoba lagi.
+Cek di sandbox dengan `Scripts/run_sandbox.sh --broken-icons`.
+
 ## Bahasa dan appearance
 
 Copy tersedia untuk `en`, `id`, dan `zh-Hans`, termasuk label kembali. Kode bahasa
@@ -131,8 +172,8 @@ karena aturan bisnis tidak masuk DesignKit.
 
 ## Isi folder `Host`
 
-- `TanyaAIHost.swift`: konfigurasi (`locale`, `colors`, `onSend`) dan
-  `makeView()` yang memasang bahasa dan palette ke halaman baru.
+- `TanyaAIHost.swift`: konfigurasi (`locale`, `colors`, `welcome`, `isAwaitingReply`,
+  `onSend`) dan `makeView()` yang memasang bahasa dan palette ke halaman baru.
 
 Overload `makeView { ContentView() }` menerima konten SwiftUI untuk area scroll; sandbox
 memakainya pada mode `--header-demo`. Konten tidak perlu mempunyai ScrollView, header,
@@ -141,4 +182,6 @@ atau composer sendiri, dan dilepas setelah halaman di-pop.
 Jalankan `Scripts/run_sandbox.sh --language id`. Buka Tanya AI dari beranda atau dari
 halaman detail, kembali dengan tombol back atau swipe dari tepi kiri. `--offline`
 membuat kiriman memunculkan blocker host di atas Tanya AI; tombol "Coba lagi"
-menutupnya dan draft tetap ada.
+menutupnya dan draft tetap ada. Welcome sandbox dibaca dari
+`Resources/Fixtures/TanyaAIInitDummy.json`; setelah chat/shortcut diterima, sandbox
+menunggu jawaban sampai "Percakapan baru" dipilih (belum ada stream).

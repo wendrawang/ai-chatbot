@@ -11,3 +11,5 @@
 "chat.newConversation" = "新对话";
 "chat.title" = "Tanya AI";
 "chat.back" = "返回";
+"chat.replying" = "正在等待回复";
+"welcome.shortcutsTitle" = "从这里开始：";

@@ -11,3 +11,5 @@
 "chat.newConversation" = "Percakapan baru";
 "chat.title" = "Tanya AI";
 "chat.back" = "Kembali";
+"chat.replying" = "Menunggu jawaban";
+"welcome.shortcutsTitle" = "Mulai dari sini:";

@@ -1,5 +1,27 @@
 # Validasi starter
 
+## Halaman sambutan dari BE — 27 Oktober 2026
+
+Welcome mengikuti apib inquiry init: host men-decode objek `data` ke `WelcomeContent`
+(sapaan + shortcut, urutan BE). Kartu memakai `ActionCard` DesignKit dengan ikon dari
+`iconUrl` lewat `RemoteImage`; emblem, latar, judul daftar dan chevron dari FE. Ketuk kartu
+mengirim `prompt` lewat `onSend`; selama `isAwaitingReply` tombol kirim menjadi
+`LoadingDots` dan kartu nonaktif. Ukuran/tipografi masih estimasi screenshot (TODO).
+
+Dibuktikan oleh test: decode contoh BE (field T&C diabaikan), `iconUrl` kosong/null/tidak
+ada tetap memberi kartu, key `descripton` ditolak (BE diminta memperbaiki); loader gambar
+mengunduh sekali lalu dari memori, tiga permintaan bersamaan berbagi satu unduhan, unduhan
+gagal tidak di-cache dan dicoba lagi, data bukan gambar memberi nil; setiap `ChatImage`
+termuat dari bundle package; view model sandbox membaca fixture, menunggu jawaban setelah
+chat diterima sampai percakapan baru, dan tidak menunggu bila ditolak/offline. UI test:
+sapaan dan tiga kartu berurutan (id), ketuk kartu mengubah label kirim menjadi "Waiting for
+reply" dan menonaktifkan kirim serta kartu walau draft diisi, lalu percakapan baru
+memulihkannya. Tes ketuk tepi tombol kirim kini memulai percakapan baru di antara kiriman.
+
+Fallback ikon: `RemoteImage` menampilkan placeholder selama mengunduh lalu `fallback` bila
+unduhan gagal; URL nil langsung fallback tanpa mengunduh; gambar berhasil tidak pernah
+menampilkan fallback. UI test `--broken-icons`: kartu tetap tampil dan bisa diketuk.
+
 ## Tanpa R.swift — 27 Oktober 2026
 
 CI host (fastlane gym, Xcode 26) gagal di `Validate plug-in "RswiftGenerate…Resources"`:

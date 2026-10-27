@@ -21,10 +21,13 @@ struct SandboxOptions {
     static let demoStartIdentifier = "sandbox.demo.start"
     static let demoEndIdentifier = "sandbox.demo.end"
     static let demoParagraphCount = 12
+    /// File yang tidak ada: unduhan ikon pasti gagal tanpa bergantung pada jaringan.
+    static let brokenIconURL = URL(fileURLWithPath: "/sandbox/missing-icon.png")
     private static let languageFlag = "--language"
     private static let rejectFlag = "--reject-send"
     private static let headerDemoFlag = "--header-demo"
     private static let offlineFlag = "--offline"
+    private static let brokenIconsFlag = "--broken-icons"
 
     /// Opsi dari argumen peluncuran proses ini.
     static var current: SandboxOptions {
@@ -35,11 +38,14 @@ struct SandboxOptions {
     let isRejectingSend: Bool
     let isHeaderDemo: Bool
     let isOffline: Bool
+    /// `--broken-icons`: semua `iconUrl` shortcut gagal diunduh untuk memeriksa ikon fallback.
+    let isIconBroken: Bool
 
     init(arguments: [String]) {
         isRejectingSend = arguments.contains(Self.rejectFlag)
         isHeaderDemo = arguments.contains(Self.headerDemoFlag)
         isOffline = arguments.contains(Self.offlineFlag)
+        isIconBroken = arguments.contains(Self.brokenIconsFlag)
         if let position = arguments.firstIndex(of: Self.languageFlag),
             arguments.indices.contains(arguments.index(after: position))
         {

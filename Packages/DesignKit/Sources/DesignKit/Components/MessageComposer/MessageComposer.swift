@@ -19,17 +19,20 @@ public struct MessageComposer: View {
     private let placeholder: String
     private let sendLabel: String
     private let isEnabled: Bool
+    private let isLoading: Bool
     private let fontFace: FontFace
     private let onSend: () -> Void
 
     public init(
         text: Binding<String>, placeholder: String, sendLabel: String,
-        isEnabled: Bool = true, fontFace: FontFace = .openSansRegular, onSend: @escaping () -> Void
+        isEnabled: Bool = true, isLoading: Bool = false, fontFace: FontFace = .openSansRegular,
+        onSend: @escaping () -> Void
     ) {
         self._text = text
         self.placeholder = placeholder
         self.sendLabel = sendLabel
         self.isEnabled = isEnabled
+        self.isLoading = isLoading
         self.fontFace = fontFace
         self.onSend = onSend
     }
@@ -67,22 +70,32 @@ public struct MessageComposer: View {
         }
     }
 
+    /// Saat `isLoading`, panah diganti titik bergerak dan tombol tidak bisa ditekan; draft tetap bisa diketik.
     private var actionButton: some View {
         Button(action: onSend) {
-            Image(DesignIcon.sendArrow).resizable().scaledToFit()
-                .padding(CustomSizes.Composer.sendIconInset.scaledToArtwork)
-                .foregroundColor(colors.colorsIconLight)
+            actionIcon
                 .frame(
                     width: CustomSizes.Composer.sendButton.scaledToArtwork,
                     height: CustomSizes.Composer.sendButton.scaledToArtwork
                 )
-                .background(Circle().fill(isSendEnabled ? colors.colorsButtonActive : colors.colorsIconDisabled))
+                .background(Circle().fill(buttonFill))
                 .contentShape(Rectangle())
         }
         .buttonStyle(.plain)
         .disabled(!isSendEnabled)
         .accessibilityLabel(sendLabel)
         .accessibilityIdentifier(ComponentIdentifier.Composer.send)
+    }
+
+    @ViewBuilder
+    private var actionIcon: some View {
+        if isLoading {
+            LoadingDots(color: colors.colorsIconLight)
+        } else {
+            Image(DesignIcon.sendArrow).resizable().scaledToFit()
+                .padding(CustomSizes.Composer.sendIconInset.scaledToArtwork)
+                .foregroundColor(colors.colorsIconLight)
+        }
     }
 }
 
@@ -101,7 +114,12 @@ private extension MessageComposer {
         return max(.zero, leading - inputFont.lineHeight)
     }
 
+    /// Merah saat bisa dikirim atau sedang menunggu; abu-abu saat draft kosong/nonaktif.
+    var buttonFill: Color {
+        isSendEnabled || isLoading ? colors.colorsButtonActive : colors.colorsIconDisabled
+    }
+
     var isSendEnabled: Bool {
-        isEnabled && !text.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
+        isEnabled && !isLoading && !text.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
     }
 }

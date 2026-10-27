@@ -32,12 +32,13 @@ tersedia pada history/main.
   | `Generated/FigmaSize` | Spacing, ukuran icon, tipografi dari Figma. **Cek di sini dulu.** | Ya |
   | `CustomSizes` | Dimensi point yang belum ada di Figma: `Header.height`, `Shadow`, `Composer.sendButton` | **Selalu** |
   | `CustomTextLines` | Batas baris per peran: `composerInput = 1...4`, `headerTitle` | Tidak pernah |
+  | `CustomMotion` | Waktu animasi (detik) dan jumlah titik `LoadingDots` | Tidak pernah |
   | `CustomColors` / `CustomBasePaletteColor` | Warna semantik tambahan / hex dasarnya | — |
   | `ArtworkScale` | Referensi 375×812 dan rasio layar untuk `.scaledToArtwork` | Tidak pernah |
   | `LayoutTolerance` | Toleransi pembulatan layout (bukan token desain) | Tidak pernah |
 
-  Nilai waktu/animasi custom nanti masuk `CustomMotion` (tidak di-scale), dibuat saat
-  ada animasi pertama yang memakainya.
+  Nilai waktu/animasi custom masuk `CustomMotion` (tidak di-scale). Animasi menghormati
+  Reduce Motion (`LoadingDots` diam).
   Kelompok bersama dinamai per peran (`Header`, `Shadow`, `CustomTextLines.address`
   bila nanti dibutuhkan). Nilai yang hanya dipakai satu komponen memakai namespace
   nama komponen (`CustomSizes.Composer`) agar terhapus bersama komponennya. Tambah
@@ -127,8 +128,15 @@ tersedia pada history/main.
   baru di body atau memakai satu ID global untuk beberapa area scroll. Tambahkan
   konsep/property wrapper lain hanya ketika ada kebutuhan yang jelas.
 - Menu/sesi adalah tanggung jawab fitur/host. `onNewConversation` hanya callback;
-  tanpa handler, item menu disabled. Jangan menambah session, welcome, reset draft,
-  intent, bubble atau database pada tahap header.
+  tanpa handler, item menu disabled. Jangan menambah session, reset draft, intent,
+  bubble atau database sebelum diminta.
+- Welcome berasal dari BE: `WelcomeContent`/`WelcomeGreeting`/`WelcomeShortcut` (folder
+  `Welcome/`) decode objek `data` inquiry init; field T&C milik host diabaikan. `iconUrl`
+  kosong/tidak valid menjadi nil tanpa menggagalkan seluruh welcome. Shortcut dikirim lewat
+  `onSend(prompt)`; status menunggu jawaban (`isAwaitingReply`) milik host.
+- Gambar dari URL memakai `RemoteImage` + `RemoteImageLoader` DesignKit (cache memori
+  `NSCache` bersama, unduhan URL sama digabung, gagal tidak di-cache, disk mengikuti
+  `URLCache`/header HTTP). Jangan memakai `AsyncImage` atau loader lain di package.
 - `let` untuk input, `@Binding` untuk state caller, `@State` untuk draft lokal.
   Screen memiliki margin luar; komponen memiliki padding dalam/surface/shadow.
   Kartu dan bayangan memakai `.cardStyle()`/`.designShadow()` dari DesignKit; jangan

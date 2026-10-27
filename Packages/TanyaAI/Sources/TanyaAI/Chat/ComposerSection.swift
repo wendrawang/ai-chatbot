@@ -16,18 +16,20 @@ struct ComposerSection: View {
     @State
     private var draft = String()
     private let isEnabled: Bool
+    private let isAwaitingReply: Bool
     private let onSend: (String) -> Bool
 
-    init(isEnabled: Bool, onSend: @escaping (String) -> Bool) {
+    init(isEnabled: Bool, isAwaitingReply: Bool, onSend: @escaping (String) -> Bool) {
         self.isEnabled = isEnabled
+        self.isAwaitingReply = isAwaitingReply
         self.onSend = onSend
     }
 
     var body: some View {
         MessageComposer(
             text: $draft, placeholder: String(ChatCopy.placeholder, locale: locale),
-            sendLabel: String(ChatCopy.send, locale: locale), isEnabled: isEnabled,
-            onSend: submit
+            sendLabel: String(isAwaitingReply ? ChatCopy.replying : ChatCopy.send, locale: locale),
+            isEnabled: isEnabled, isLoading: isAwaitingReply, onSend: submit
         )
         .padding(.horizontal, FigmaSize.spacingLarge.scaledToArtwork)
         .padding(.vertical, FigmaSize.spacingMedium.scaledToArtwork)

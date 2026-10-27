@@ -11,3 +11,5 @@
 "chat.newConversation" = "New conversation";
 "chat.title" = "Tanya AI";
 "chat.back" = "Back";
+"chat.replying" = "Waiting for reply";
+"welcome.shortcutsTitle" = "Start here:";

@@ -21,6 +21,12 @@ public enum CustomSizes {
         public static let cornerRadius: CGFloat = 8
     }
 
+    /// Gambar bulat di atas sapaan halaman sambutan.
+    /// TODO: Cocokkan dengan nilai Figma; sementara estimasi dari screenshot.
+    public enum Emblem {
+        public static let size: CGFloat = 64
+    }
+
     public enum Shadow {
         public static let radius: CGFloat = 10
         public static let offsetY: CGFloat = 2
@@ -29,5 +35,20 @@ public enum CustomSizes {
     public enum Composer {
         public static let sendButton: CGFloat = 24
         public static let sendIconInset: CGFloat = 6
+    }
+
+    /// Kotak ikon dan chevron bulat pada kartu aksi.
+    /// TODO: Cocokkan dengan nilai Figma; sementara estimasi dari screenshot.
+    public enum ActionCard {
+        public static let iconBox: CGFloat = 40
+        public static let chevron: CGFloat = 20
+    }
+
+    /// Titik loading pada tombol kirim composer.
+    /// TODO: Cocokkan dengan nilai Figma; sementara estimasi.
+    public enum LoadingDots {
+        public static let dot: CGFloat = 4
+        public static let gap: CGFloat = 2
+        public static let bounce: CGFloat = 3
     }
 }

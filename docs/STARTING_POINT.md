@@ -2,7 +2,8 @@
 
 Tuliskan implementasi per bagian, lalu jalankan checkpoint sebelum lanjut.
 Target ini sengaja tidak mempunyai session SDK, ViewModel, backend, bubble,
-welcome, rich text, table, transaction, ThemeManager, atau CopyCatalog.
+rich text, table, transaction, ThemeManager, atau CopyCatalog. Halaman sambutan
+ditambahkan kemudian; lihat [integrasi host](HOST_INTEGRATION.md#halaman-sambutan-dan-menunggu-jawaban).
 
 ## Tree
 
