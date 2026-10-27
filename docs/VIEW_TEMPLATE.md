@@ -155,7 +155,7 @@ alasan perilaku khusus, bukan mengulang arti setiap baris.
 | `@main` | Entry point sandbox app. |
 
 Tidak ada macro kustom, `@Observable`, `@Model`, `@Namespace`, atau `@ScaledMetric`
-pada starter. R.swift adalah plugin build yang menghasilkan source Swift biasa.
+pada starter. Tidak ada build tool plugin; resource diakses lewat enum key.
 Tidak perlu annotation baru untuk membuat komponen berikutnya.
 
 ## Theme
@@ -196,41 +196,37 @@ fitur; sandbox memiliki copy demo. DesignKit menerima label dari caller.
 @Environment(\.locale) private var locale
 
 // Di dalam feature TanyaAI:
-String(resource: R.string.localizable.chatSend, locale: locale)
+String(ChatCopy.send, locale: locale)
 ```
 
-`String(resource:locale:)` hanya menjembatani locale SwiftUI ke resource R.swift;
-tidak menyimpan daftar key/bahasa. Bundle memilih terjemahan yang sesuai, termasuk
-`zh_CN` ke `zh-Hans`, dengan English sebagai fallback. Pemanggilan diulang ketika
-environment locale berubah. Untuk copy tanpa override locale, accessor native
-`R.string.localizable.chatSend()` juga tersedia.
+Key copy ditulis sekali di enum milik target resource-nya (`ChatCopy` untuk TanyaAI,
+`SandboxCopy` untuk sandbox). `String(key:bundle:locale:)` di DesignKit memilih
+`.lproj` sesuai locale host, termasuk `zh_CN` ke `zh-Hans`, dengan English sebagai
+fallback, lalu mengambil copy dari bundle tersebut. Pemanggilan diulang ketika
+environment locale berubah. Key yang tidak ada mengembalikan key itu sendiri.
 
-## Asset otomatis
+Menambah copy:
+1. Tambah key di `Resources/{en,id,zh-Hans}.lproj/Localizable.strings`.
+2. Tambah case di `ChatCopy` dengan raw value key tersebut.
+3. `LocalizationTests` gagal bila key enum dan isi ketiga tabel tidak sama persis
+   (typo, key lupa diterjemahkan, atau key yang sudah tidak dipakai).
 
-Masukkan imageset ke `DesignKit/Resources/Assets.xcassets`, lalu build:
+## Ikon
+
+Masukkan imageset ke `DesignKit/Resources/Assets.xcassets`, lalu tambah case dengan
+nama yang sama di `DesignIcon` (`Foundations/Iconography`):
 
 ```swift
-// Dari DesignKit:
-Image(R.image.sendArrow)
-
-// Dari target lain, gunakan module untuk menghindari bentrok dengan R lokal:
-Image(DesignKit.R.image.moreMenu)
+Image(DesignIcon.sendArrow)          // SwiftUI, dari DesignKit atau fitur
+UIImage(DesignIcon.sendArrow)        // UIKit, nil bila imageset tidak ada
 ```
 
-DesignKit memakai `RswiftGeneratePublicResources` karena asset dapat dipakai
-fitur lain. TanyaAI dan sandbox memakai `RswiftGenerateInternalResources` agar
-copy internal tidak menjadi API publik. Ketiganya memakai versi R.swift yang sama.
-Jangan membuat enum nama asset/localization key atau mengedit R.generated.swift.
-Source generated berada di build folder, bukan di repo.
+`AssetTests` memastikan setiap case termuat dari bundle package dan setiap imageset
+punya case. `DesignIcon` khusus ikon template; ilustrasi atau gambar latar nanti
+memakai enum sendiri karena tidak di-tint dan ukurannya berbeda.
 
-R.swift dipasang `from: "7.8.0"` (sampai sebelum 8.0.0), sehingga host yang memakai
-R.swift 7.x lain tetap bisa resolve satu versi bersama. R.swift dipilih agar asset
-dan locale tetap aman saat jumlahnya bertambah.
-
-R.swift 7.8.0 terkadang belum memperbarui accessor setelah perubahan resource
-secara incremental. Jika nama baru belum muncul, jalankan Clean Build Folder
-lalu build lagi. Saat Xcode meminta kepercayaan plugin untuk pertama kali,
-setujui plugin R.swift package tersebut. Jangan mematikan validasi plugin global.
+Tidak memakai R.swift: build tool plugin wajib di-trust per mesin ("Trust & Enable"),
+sehingga CI host non-interaktif gagal di langkah "Validate plug-in".
 
 Tiga ikon PDF sementara memiliki TODO penggantian export resmi Figma di
 `Assets.xcassets/README.md`. Font tetap memakai `FontFace` karena metadata nama

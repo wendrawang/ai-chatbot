@@ -24,7 +24,7 @@ struct MainScreen: ScreenContent {
 
     var body: some View {
         VStack(spacing: FigmaSize.spacingLarge.scaledToArtwork) {
-            Text(String(resource: R.string.localizable.sandboxMainTitle, locale: locale))
+            Text(String(SandboxCopy.mainTitle, locale: locale))
                 .font(
                     Font(FontFace.firaSansSemiBold.font(size: FigmaSize.typographySizeDisplayNormal16.scaledToArtwork)))
             actions
@@ -37,19 +37,19 @@ struct MainScreen: ScreenContent {
     @ViewBuilder
     private var actions: some View {
         HostButton(
-            title: String(resource: R.string.localizable.sandboxOpen, locale: locale),
+            title: String(SandboxCopy.open, locale: locale),
             identifier: SandboxOptions.openIdentifier, action: onOpenTanyaAI
         )
         HostButton(
-            title: String(resource: R.string.localizable.sandboxDetailOpen, locale: locale),
+            title: String(SandboxCopy.detailOpen, locale: locale),
             identifier: SandboxOptions.detailOpenIdentifier, action: onOpenDetail
         )
         HostButton(
-            title: String(resource: R.string.localizable.sandboxOfflineSimulate, locale: locale),
+            title: String(SandboxCopy.offlineSimulate, locale: locale),
             identifier: SandboxOptions.offlineSimulateIdentifier
         ) { viewModel.didReceiveError(URLError(.notConnectedToInternet)) }
         HostButton(
-            title: String(resource: R.string.localizable.sandboxLogout, locale: locale),
+            title: String(SandboxCopy.logout, locale: locale),
             identifier: SandboxOptions.logoutIdentifier
         ) { appState.state = .prelogin }
     }

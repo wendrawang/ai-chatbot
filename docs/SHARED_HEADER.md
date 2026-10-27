@@ -9,7 +9,7 @@ DesignKit/Sources/DesignKit/
 ├── Components/ScreenContainer/ScreenContainer.swift
 ├── Extensions/View+ScrollBoundary.swift
 ├── Tokens/CustomSizes.swift              # Header: tinggi dan jumlah baris
-└── Resources/Assets.xcassets/            # back/more/send dummy; R.swift generated
+└── Resources/Assets.xcassets/            # back/more/send dummy; nama di DesignIcon
 
 TanyaAI/Sources/TanyaAI/
 ├── Chat/ChatScreen.swift                 # content/menu/composer; layout dari container
@@ -121,7 +121,7 @@ Jalankan `Scripts/run_sandbox.sh --language id --header-demo`, lalu buka feature
 Mode ini memberi paragraf dummy yang cukup panjang untuk mencapai akhir, kembali
 ke atas, dan melihat teks di belakang header. Tanpa flag, area chat tetap kosong.
 Asset back/more/send masih PDF vector sementara, dengan TODO di xcassets.
-Localization dan nama asset dibaca melalui R.swift generated; lihat
+Localization dan nama asset dibaca melalui `ChatCopy`/`DesignIcon`; lihat
 [pola view dan resource](VIEW_TEMPLATE.md).
 
 ## Checkpoint sebelum lanjut

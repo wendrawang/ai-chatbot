@@ -11,12 +11,29 @@ import UIKit
 @testable import DesignKit
 
 struct AssetTests {
+    @Test(arguments: DesignIcon.allCases)
+    func everyIconLoadsFromThePackageBundle(icon: DesignIcon) throws {
+        let loaded = try #require(UIImage(icon), "\(icon)")
+        #expect(loaded.size == CGSize(width: 24, height: 24))
+        #expect(loaded.renderingMode == .alwaysTemplate)
+    }
+
     @Test
-    func generatedImageResourcesLoadFromThePackageBundle() throws {
-        for resource in [R.image.sendArrow, R.image.backArrow, R.image.moreMenu] {
-            let image = try #require(UIImage(resource: resource), "\(resource.name)")
-            #expect(image.size == CGSize(width: 24, height: 24), "\(resource.name)")
-            #expect(image.renderingMode == .alwaysTemplate, "\(resource.name)")
-        }
+    func everyImagesetHasAnIconCase() throws {
+        let names = try FileManager.default.contentsOfDirectory(atPath: Self.catalogSourcePath)
+            .filter { $0.hasSuffix(".imageset") }
+            .map { String($0.dropLast(".imageset".count)) }
+        #expect(Set(names) == Set(DesignIcon.allCases.map(\.rawValue)))
+    }
+}
+
+// MARK: - Helpers
+
+private extension AssetTests {
+    /// Asset catalog sumber; dibaca dari repo karena `.car` hasil compile tidak bisa didaftar namanya.
+    static var catalogSourcePath: String {
+        URL(fileURLWithPath: #filePath)
+            .deletingLastPathComponent().deletingLastPathComponent().deletingLastPathComponent()
+            .appendingPathComponent("Sources/DesignKit/Resources/Assets.xcassets").path
     }
 }

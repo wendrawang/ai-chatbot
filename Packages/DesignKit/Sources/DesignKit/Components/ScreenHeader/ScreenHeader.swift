@@ -56,7 +56,7 @@ public struct ScreenHeader<Trailing: View>: View {
 
     private var backButton: some View {
         Button(action: onBack) {
-            Image(R.image.backArrow).resizable().scaledToFit()
+            Image(DesignIcon.backArrow).resizable().scaledToFit()
                 .frame(
                     width: actionSize,
                     height: actionSize
