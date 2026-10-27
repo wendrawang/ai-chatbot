@@ -22,6 +22,12 @@ Fallback ikon: `RemoteImage` menampilkan placeholder selama mengunduh lalu `fall
 unduhan gagal; URL nil langsung fallback tanpa mengunduh; gambar berhasil tidak pernah
 menampilkan fallback. UI test `--broken-icons`: kartu tetap tampil dan bisa diketuk.
 
+Tindak lanjut review: status HTTP 404/500/503 ditolak walau body-nya PNG valid (sebelumnya
+masuk cache); ikon 2048×2048 di-decode langsung ke 72 px (tampil 24 pt @3x) lewat ImageIO,
+gambar kecil tidak diperbesar, URL sama dengan ukuran berbeda disimpan terpisah; cache memori
+memakai biaya bitmap dan batas total. Teks welcome dan kartu memakai line-height pasangan
+token lewat `UIFont.lineSpacing(forLineHeight:)` (rumus yang sama dengan composer).
+
 ## Tanpa R.swift — 27 Oktober 2026
 
 CI host (fastlane gym, Xcode 26) gagal di `Validate plug-in "RswiftGenerate…Resources"`:

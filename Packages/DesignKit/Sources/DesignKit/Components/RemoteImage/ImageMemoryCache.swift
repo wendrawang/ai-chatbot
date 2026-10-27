@@ -7,16 +7,22 @@
 
 import UIKit
 
-/// Penyimpanan gambar di memori per URL. `NSCache` aman dipakai dari thread mana pun (dokumentasi Apple)
-/// dan otomatis melepas isi saat memori menipis, jadi aman dibaca langsung tanpa menunggu actor.
+/// Penyimpanan gambar di memori per URL dan ukuran. `NSCache` aman dipakai dari thread mana pun
+/// (dokumentasi Apple), jadi aman dibaca langsung tanpa menunggu actor. Biaya tiap gambar = ukuran
+/// bitmap-nya; total dibatasi `RemoteImageLimits.memoryCostLimit` dan dilepas saat memori menipis.
 struct ImageMemoryCache: @unchecked Sendable {
-    private let storage = NSCache<NSURL, UIImage>()
+    private let storage = NSCache<ImageCacheKey, UIImage>()
 
-    func image(for url: URL) -> UIImage? {
-        storage.object(forKey: url as NSURL)
+    init(costLimit: Int = RemoteImageLimits.memoryCostLimit) {
+        storage.totalCostLimit = costLimit
     }
 
-    func store(_ image: UIImage, for url: URL) {
-        storage.setObject(image, forKey: url as NSURL)
+    func image(for key: ImageCacheKey) -> UIImage? {
+        storage.object(forKey: key)
+    }
+
+    func store(_ image: UIImage, for key: ImageCacheKey) {
+        let cost = image.cgImage.map { $0.bytesPerRow * $0.height } ?? .zero
+        storage.setObject(image, forKey: key, cost: cost)
     }
 }

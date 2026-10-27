@@ -149,7 +149,9 @@ TanyaAIHost(
 
 Ikon kartu dimuat `RemoteImage` dengan cache memori bersama (`RemoteImageLoader.shared`):
 dibuka ulang tidak mengunduh lagi selama aplikasi hidup; cache disk mengikuti `URLCache`
-dan header HTTP server gambar.
+dan header HTTP server gambar. Hanya respons HTTP 2xx yang dipakai (503 berisi gambar tetap
+gagal). Gambar di-downsample ke ukuran tampil × skala layar, dan cache memori dibatasi
+`RemoteImageLimits.memoryCostLimit` (biaya = ukuran bitmap).
 
 Fallback ikon: selama mengunduh kotak ikon kosong; bila `iconUrl` kosong/tidak valid, unduhan
 gagal, atau data bukan gambar, tampil ikon default FE (lampu, TODO ganti ikon desain). Kartu

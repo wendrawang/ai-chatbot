@@ -24,7 +24,7 @@ struct RemoteImageTests {
         let loader = RemoteImageLoader { _ in throw URLError(.cannotFindHost) }
         let window = show(
             RemoteImage(
-                url: url, loader: loader,
+                url: url, pointSize: 24, loader: loader,
                 placeholder: { Color.clear.onAppear { isPlaceholderShown = true } },
                 fallback: { Color.clear.onAppear { isFallbackShown = true } }
             )
@@ -45,7 +45,7 @@ struct RemoteImageTests {
         }
         let window = show(
             RemoteImage(
-                url: nil, loader: loader,
+                url: nil, pointSize: 24, loader: loader,
                 placeholder: { Color.clear.onAppear { isPlaceholderShown = true } },
                 fallback: { Color.clear.onAppear { isFallbackShown = true } }
             )
@@ -59,17 +59,21 @@ struct RemoteImageTests {
     @Test
     func loadedImageNeverShowsTheFallback() async throws {
         var isFallbackShown = false
+        let counter = DownloadCounter()
         let data = try #require(Self.imageData)
-        let loader = RemoteImageLoader { _ in data }
+        let loader = RemoteImageLoader { _ in
+            _ = await counter.increment()
+            return data
+        }
         let window = show(
             RemoteImage(
-                url: url, loader: loader, placeholder: { Color.clear },
+                url: url, pointSize: 24, loader: loader, placeholder: { Color.clear },
                 fallback: { Color.clear.onAppear { isFallbackShown = true } }
             )
         )
         defer { window.isHidden = true }
-        await waitUntil { loader.cachedImage(for: url) != nil }
-        try await Task.sleep(nanoseconds: 100_000_000)
+        await waitUntil { await counter.count == 1 }
+        try await Task.sleep(nanoseconds: 200_000_000)
         #expect(!isFallbackShown)
     }
 }
