@@ -15,7 +15,8 @@ struct SandboxChatFixture: Decodable {
     let replyDelay: Double
     /// Detik sebelum pesan user dipantulkan lewat stream setelah `send`.
     let echoDelay: Double
-    /// Tunda jawaban untuk `--slow-reply` (menguji tombol stop).
+    /// Tunda pantulan dan jawaban untuk `--slow-reply` (melihat loading dan menguji tombol stop).
+    let slowEchoDelay: Double
     let slowReplyDelay: Double
     /// Detik antar event heartbeat.
     let heartbeatInterval: Double

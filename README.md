@@ -26,7 +26,7 @@ atau halaman detail.
 Tombol kembali atau swipe dari tepi kiri menutup feature dan mengembalikan layar host.
 `--offline` membuat init sesi gagal: blocker host tampil di atas Tanya AI.
 `--long-history` mengisi history panjang untuk mencoba paging dan header saat digulir.
-`--slow-reply` memperlambat jawaban untuk mencoba stop; `--reset-terms` menampilkan T&C lagi.
+`--slow-reply` memperlambat pantulan dan jawaban untuk melihat loading dan mencoba stop; `--reset-terms` menampilkan T&C lagi.
 
 - [Urutan belajar dan tree](docs/STARTING_POINT.md)
 - [Tahap header dan checkpoint migrasi berikutnya](docs/SHARED_HEADER.md)

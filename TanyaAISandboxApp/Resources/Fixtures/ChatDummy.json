@@ -3,6 +3,7 @@
   "replyDelay": 1.2,
   "echoDelay": 0.3,
   "slowReplyDelay": 8,
+  "slowEchoDelay": 2.5,
   "heartbeatInterval": 5,
   "messageEvent": "message",
   "heartbeatEvent": "heartbeat",

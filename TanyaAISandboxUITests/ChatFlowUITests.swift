@@ -57,8 +57,15 @@ final class ChatFlowUITests: XCTestCase {
         input.tap()
         input.typeText("Promo")
         application.buttons["composer.send"].tap()
+        // Mengirim: titik bergerak di tombol, draft tetap sampai pesan datang dari stream.
+        XCTAssertTrue(application.otherElements["composer.sending"].waitForExistence(timeout: 2))
+        XCTAssertEqual(input.value as? String, "Promo")
+        capture("chat-sending")
         let stop = application.buttons["composer.stop"]
         XCTAssertTrue(stop.waitForExistence(timeout: 5))
+        // Menunggu jawaban: pesan user tampil, titik di daftar, tombol stop.
+        XCTAssertTrue(application.otherElements["chat.replying"].waitForExistence(timeout: 2))
+        capture("chat-waiting")
         XCTAssertEqual(stop.label, "Hentikan jawaban")
         XCTAssertEqual(input.value as? String, "")
         stop.tap()

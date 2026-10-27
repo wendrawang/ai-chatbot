@@ -54,8 +54,13 @@ extension ChatViewModel {
         }
     }
 
-    /// Setelah reconnect: jawaban yang terlewat mungkin sudah ada di history.
-    func reconcileTurn() {
+    /// Setelah reconnect: pesan user dan jawaban yang terlewat mungkin sudah ada di history (`fresh`).
+    func reconcileTurn(with fresh: [ChatMessage]) {
+        // Satu pertanyaan per waktu, jadi pesan user baru di history adalah pertanyaan giliran ini.
+        if turn == .sending, let question = fresh.last(where: { $0.role == .user }) {
+            turn = .waiting(questionId: question.id)
+            deliveredQuestionId = question.id
+        }
         switch turn {
         case .waiting(let questionId), .stopping(let questionId):
             if messages.contains(where: { $0.replyTo == questionId }) { turn = .idle }

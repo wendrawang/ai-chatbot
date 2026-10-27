@@ -36,8 +36,12 @@ struct ConnectionBanner: View {
         .accessibilityElement(children: .contain)
         .accessibilityIdentifier(ChatElementIdentifier.connection)
     }
+}
 
-    private var message: String {
+// MARK: - Helpers
+
+private extension ConnectionBanner {
+    var message: String {
         String(
             resource: isFailed ? R.string.localizable.chatDisconnected : R.string.localizable.chatConnecting,
             locale: locale

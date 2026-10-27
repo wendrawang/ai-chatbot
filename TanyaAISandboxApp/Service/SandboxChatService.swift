@@ -14,6 +14,7 @@ import TanyaAI
 actor SandboxChatService: TanyaAIService {
     private let fixture: SandboxChatFixture?
     private let isOffline: Bool
+    private let echoDelay: Double
     private let replyDelay: Double
     private let onFailure: @Sendable (Error) -> Void
     private var messages: [SandboxMessage]
@@ -25,6 +26,7 @@ actor SandboxChatService: TanyaAIService {
         let fixture = SandboxChatFixture.bundled()
         self.fixture = fixture
         isOffline = options.isOffline
+        echoDelay = (options.isSlowReply ? fixture?.slowEchoDelay : fixture?.echoDelay) ?? .zero
         replyDelay = (options.isSlowReply ? fixture?.slowReplyDelay : fixture?.replyDelay) ?? .zero
         self.onFailure = onFailure
         messages = options.isLongHistory ? fixture?.longHistory() ?? [] : []
@@ -85,7 +87,7 @@ private extension SandboxChatService {
     /// Pantulkan pesan user lewat stream, lalu jawabannya; berhenti bila dibatalkan.
     func deliver(_ question: SandboxMessage) async {
         guard let fixture else { return }
-        try? await Task.sleep(nanoseconds: Self.nanoseconds(fixture.echoDelay))
+        try? await Task.sleep(nanoseconds: Self.nanoseconds(echoDelay))
         emit(question, event: fixture.messageEvent)
         try? await Task.sleep(nanoseconds: Self.nanoseconds(replyDelay))
         guard !Task.isCancelled else { return }

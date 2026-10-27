@@ -23,8 +23,10 @@ Putus lagi     ─► status "Koneksi terputus. Coba lagi"
 - **Chat tampil dari stream, bukan dari `send`.** Sukses `send` hanya berarti BE menerima.
   Draft baru dikosongkan saat pesan user muncul di stream; bila diubah lebih dulu, draft dibiarkan.
 - Reconnect otomatis diisi ulang setiap ada event (`message` atau `heartbeat`). History setelah
-  init ulang mengisi pesan yang terlewat, termasuk jawaban yang ditunggu; pesan dengan `id` yang
-  sudah tampil diabaikan.
+  init ulang mengisi pesan yang terlewat. Bila stream putus saat mengirim, pesan user baru di history
+  dianggap pertanyaan giliran itu (lalu menunggu jawabannya, atau selesai bila jawabannya sudah ada).
+- Pesan dengan `id` yang sudah tampil diabaikan dan **tidak** memajukan giliran (replay event aman).
+- Jawaban untuk pertanyaan yang dihentikan diabaikan dari stream **dan** history.
 
 ## Pesan
 
@@ -102,5 +104,5 @@ dulu tetap tampil. Bila gagal, tetap menunggu jawaban dan muncul "Gagal menghent
 [SandboxChatService](../TanyaAISandboxApp/Service/SandboxChatService.swift) meniru kontrak
 ini dari [ChatDummy.json](../TanyaAISandboxApp/Resources/Fixtures/ChatDummy.json): greeting
 dan shortcut, history panjang (`--long-history`), pantulan pesan user, jawaban per kata kunci
-(`saldo`, `transfer`, `promo`, `markdown`), jawaban default, tunda jawaban (`--slow-reply` untuk
-mencoba stop), dan interval heartbeat.
+(`saldo`, `transfer`, `promo`, `markdown`), jawaban default, tunda pantulan dan jawaban
+(`--slow-reply` untuk melihat loading dan mencoba stop), dan interval heartbeat.

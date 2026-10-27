@@ -25,8 +25,12 @@ struct NoticeLabel: View {
             .padding(.horizontal, FigmaSize.spacingLarge.scaledToArtwork)
             .accessibilityIdentifier(ChatElementIdentifier.notice)
     }
+}
 
-    private var message: String {
+// MARK: - Helpers
+
+private extension NoticeLabel {
+    var message: String {
         switch notice {
         case .sendFailed: return String(resource: R.string.localizable.chatSendFailed, locale: locale)
         case .stopFailed: return String(resource: R.string.localizable.chatStopFailed, locale: locale)

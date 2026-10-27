@@ -1,5 +1,21 @@
 # Validasi starter
 
+## Perbaikan dari review — 27 Oktober 2026
+
+Empat bug direproduksi dengan test lebih dulu (`ChatRecoveryTests`, gagal sebelum diperbaiki):
+
+1. Stream putus saat mengirim membuat composer macet di loading. Kini pesan user baru di history
+   setelah reconnect dianggap pertanyaan giliran itu.
+2. Replay pesan user lama membajak giliran pertanyaan berikutnya. Kini hanya pesan yang benar-benar
+   baru (`merge` mengembalikan pesan yang ditambahkan) yang memajukan giliran.
+3. View model tertahan sampai request awal selesai karena `await self?.establish()`. Init/history/
+   config kini berjalan di `ChatSessionStart.load` tanpa memegang view model.
+4. Jawaban yang dihentikan muncul lagi lewat history. Filter kini berlaku di `merge` untuk semua sumber.
+
+`merge` menambahkan pesan baru di akhir tanpa mengurutkan ulang; pengurutan penuh hanya saat history
+lama masuk. Helper hitung di `ConnectionBanner`, `NoticeLabel` dan `TanyaAITermsScreen` dipindah ke
+`private extension`. UI test menyimpan screenshot `chat-sending` dan `chat-waiting`.
+
 ## Satu file satu tipe — 27 Oktober 2026
 
 Seluruh repo dirapikan: satu tipe per file, tanpa tipe nested di luar token/`ComponentIdentifier`,

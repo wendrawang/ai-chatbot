@@ -22,6 +22,9 @@ actor FakeChatService: TanyaAIService {
     var isStartFailing = false
     var isSendFailing = false
     var isCancelFailing = false
+    /// Tahan `start` sampai `releaseStart()`, meniru request awal yang lambat.
+    var isStartHeld = false
+    private var startGate: CheckedContinuation<Void, Never>?
     /// Isi history per cursor `before`; nil = halaman terbaru.
     var pages: [String: Data] = [:]
     var latestPage = FakeChatService.page([], isMoreAvailable: false)
@@ -30,6 +33,7 @@ actor FakeChatService: TanyaAIService {
 
     func start() async throws -> Data {
         startCount += 1
+        if isStartHeld { await withCheckedContinuation { startGate = $0 } }
         if isStartFailing { throw URLError(.notConnectedToInternet) }
         return Data(#"{"sessionId":"session-\#(startCount)"}"#.utf8)
     }
@@ -65,6 +69,13 @@ actor FakeChatService: TanyaAIService {
     func setStartFailing(_ isFailing: Bool) { isStartFailing = isFailing }
     func setSendFailing(_ isFailing: Bool) { isSendFailing = isFailing }
     func setCancelFailing(_ isFailing: Bool) { isCancelFailing = isFailing }
+    func holdStart() { isStartHeld = true }
+
+    func releaseStart() {
+        isStartHeld = false
+        startGate?.resume()
+        startGate = nil
+    }
     func setLatestPage(_ data: Data) { latestPage = data }
     func setPage(_ data: Data, before messageId: String) { pages[messageId] = data }
     func setConfig(_ data: Data) { configData = data }

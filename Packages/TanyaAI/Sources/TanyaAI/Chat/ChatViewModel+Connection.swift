@@ -9,35 +9,21 @@ import Foundation
 
 /// Sesi, stream SSE, reconnect, dan penggabungan pesan.
 extension ChatViewModel {
-    func establish() async {
-        do {
-            let session = try ChatPayload.decode(SessionPayload.self, from: await service.start())
-            let page = try ChatPayload.decode(
-                HistoryPayload.self, from: await service.history(sessionId: session.sessionId, before: nil))
-            let isFirstConnection = sessionId == nil && messages.isEmpty
-            let welcome = await loadWelcome(isEmpty: page.messages.isEmpty, sessionId: session.sessionId)
-            guard !Task.isCancelled else { return }
-            sessionId = session.sessionId
-            merge(page.messages.map(ChatMessage.init))
-            if isFirstConnection { isMoreHistoryAvailable = page.isMoreAvailable }
-            if let welcome { self.welcome = welcome }
-            reconcileTurn()
-            phase = .ready
-            openStream(sessionId: session.sessionId)
-        } catch {
-            guard !Task.isCancelled else { return }
-            phase = .failed
-        }
+    func didConnect(_ start: ChatSessionStart) {
         connectionTask = nil
+        let isFirstConnection = sessionId == nil && messages.isEmpty
+        sessionId = start.sessionId
+        let fresh = merge(start.page.messages.map(ChatMessage.init))
+        if isFirstConnection { isMoreHistoryAvailable = start.page.isMoreAvailable }
+        if let welcome = start.welcome { self.welcome = welcome }
+        reconcileTurn(with: fresh)
+        phase = .ready
+        openStream(sessionId: start.sessionId)
     }
 
-    /// Config hanya untuk percakapan kosong. Gagal memuat config tidak menghalangi chat.
-    func loadWelcome(isEmpty: Bool, sessionId: String) async -> ChatWelcome? {
-        guard isEmpty, messages.isEmpty, welcome == nil,
-            let data = try? await service.config(sessionId: sessionId),
-            let payload = try? ChatPayload.decode(ConfigPayload.self, from: data)
-        else { return nil }
-        return ChatWelcome(payload)
+    func didFailConnecting() {
+        connectionTask = nil
+        phase = .failed
     }
 
     func openStream(sessionId: String) {
@@ -58,10 +44,8 @@ extension ChatViewModel {
         case .message:
             isReconnectAllowed = true
             guard let payload = try? ChatPayload.decode(MessagePayload.self, from: event.data) else { return }
-            let message = ChatMessage(payload)
-            if message.role == .assistant, let replyTo = message.replyTo, stoppedQuestions.contains(replyTo) { return }
-            merge([message])
-            advanceTurn(with: message)
+            // Hanya pesan yang benar-benar baru yang memajukan giliran; replay event diabaikan.
+            for message in merge([ChatMessage(payload)]) { advanceTurn(with: message) }
         case .heartbeat:
             isReconnectAllowed = true
         case .error, .none:
@@ -88,13 +72,31 @@ extension ChatViewModel {
         merge(page.messages.map(ChatMessage.init))
     }
 
-    /// Tambah pesan yang belum ada (berdasarkan id), lalu urutkan kronologis tanpa mengacak waktu yang sama.
-    func merge(_ incoming: [ChatMessage]) {
+    /// Tambah pesan yang belum ada (berdasarkan id) dan bukan jawaban yang sudah dihentikan, dari stream
+    /// maupun history. Mengembalikan pesan yang benar-benar ditambahkan.
+    @discardableResult
+    func merge(_ incoming: [ChatMessage]) -> [ChatMessage] {
         let known = Set(messages.map(\.id))
-        let fresh = incoming.filter { !known.contains($0.id) }
-        guard !fresh.isEmpty else { return }
-        messages = (messages + fresh).enumerated()
-            .sorted { ($0.element.createdAt, $0.offset) < ($1.element.createdAt, $1.offset) }
-            .map(\.element)
+        let fresh = incoming.filter { !known.contains($0.id) && !isStoppedAnswer($0) }
+        guard !fresh.isEmpty else { return [] }
+        let isAppending = messages.last.map { last in fresh.allSatisfy { $0.createdAt >= last.createdAt } } ?? true
+        if isAppending, Self.isChronological(fresh) {
+            // Jalur umum (pesan baru dari stream): cukup ditambahkan di akhir tanpa mengurutkan ulang.
+            messages += fresh
+        } else {
+            // History lama atau urutan acak: urutkan kronologis tanpa mengacak waktu yang sama.
+            messages = (messages + fresh).enumerated()
+                .sorted { ($0.element.createdAt, $0.offset) < ($1.element.createdAt, $1.offset) }
+                .map(\.element)
+        }
+        return fresh
+    }
+
+    func isStoppedAnswer(_ message: ChatMessage) -> Bool {
+        message.role == .assistant && message.replyTo.map(stoppedQuestions.contains) == true
+    }
+
+    static func isChronological(_ messages: [ChatMessage]) -> Bool {
+        zip(messages, messages.dropFirst()).allSatisfy { $0.createdAt <= $1.createdAt }
     }
 }

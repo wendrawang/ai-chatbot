@@ -63,7 +63,18 @@ final class ChatViewModel: ObservableObject {
         connectionTask?.cancel()
         streamTask?.cancel()
         phase = .connecting
-        connectionTask = Task { [weak self] in await self?.establish() }
+        let isWelcomeNeeded = messages.isEmpty && welcome == nil
+        // `self` hanya disentuh setelah request selesai, agar halaman yang ditutup tidak tertahan.
+        connectionTask = Task { [weak self, service] in
+            do {
+                let start = try await ChatSessionStart.load(from: service, isWelcomeNeeded: isWelcomeNeeded)
+                guard !Task.isCancelled else { return }
+                self?.didConnect(start)
+            } catch {
+                guard !Task.isCancelled else { return }
+                self?.didFailConnecting()
+            }
+        }
     }
 
     func retry() {

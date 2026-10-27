@@ -56,8 +56,12 @@ struct TanyaAITermsScreen: ScreenContent {
         .disabled(!isAcceptEnabled)
         .padding(FigmaSize.spacingLarge.scaledToArtwork)
     }
+}
 
-    private var isAcceptEnabled: Bool {
+// MARK: - Helpers
+
+private extension TanyaAITermsScreen {
+    var isAcceptEnabled: Bool {
         guard case .loaded = viewModel.phase else { return false }
         return !viewModel.isAccepting
     }
