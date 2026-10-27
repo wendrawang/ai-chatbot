@@ -214,15 +214,16 @@ Menambah copy:
 ## Asset
 
 Masukkan imageset ke `DesignKit/Resources/Assets.xcassets`, lalu tambah case dengan
-nama yang sama di `DesignImage`:
+nama yang sama di `DesignIcon` (`Foundations/Iconography`):
 
 ```swift
-Image(DesignImage.sendArrow)          // SwiftUI, dari DesignKit atau fitur
-UIImage(DesignImage.sendArrow)        // UIKit, nil bila imageset tidak ada
+Image(DesignIcon.sendArrow)          // SwiftUI, dari DesignKit atau fitur
+UIImage(DesignIcon.sendArrow)        // UIKit, nil bila imageset tidak ada
 ```
 
 `AssetTests` memastikan setiap case termuat dari bundle package dan setiap imageset
-punya case. Fixture JSON sandbox dibaca lewat `SandboxFixtureFile`.
+punya case. `DesignIcon` khusus ikon template; ilustrasi atau gambar latar nanti
+memakai enum sendiri karena tidak di-tint dan ukurannya berbeda. Fixture JSON sandbox dibaca lewat `SandboxFixtureFile`.
 
 Tidak memakai R.swift: build tool plugin wajib di-trust per mesin ("Trust & Enable"),
 sehingga CI host non-interaktif gagal di langkah "Validate plug-in".

@@ -69,7 +69,7 @@ struct ChatScreen: View {
             Button(String(ChatCopy.newConversation, locale: locale)) { onNewConversation?() }
                 .disabled(onNewConversation == nil)
         } label: {
-            Image(DesignImage.moreMenu).resizable().scaledToFit()
+            Image(DesignIcon.moreMenu).resizable().scaledToFit()
                 .frame(
                     width: FigmaSize.weightIconSmall.scaledToArtwork,
                     height: FigmaSize.weightIconSmall.scaledToArtwork

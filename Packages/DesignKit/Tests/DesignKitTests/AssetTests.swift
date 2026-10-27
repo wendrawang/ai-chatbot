@@ -11,19 +11,19 @@ import UIKit
 @testable import DesignKit
 
 struct AssetTests {
-    @Test(arguments: DesignImage.allCases)
-    func everyDesignImageLoadsFromThePackageBundle(image: DesignImage) throws {
-        let loaded = try #require(UIImage(image), "\(image)")
+    @Test(arguments: DesignIcon.allCases)
+    func everyIconLoadsFromThePackageBundle(icon: DesignIcon) throws {
+        let loaded = try #require(UIImage(icon), "\(icon)")
         #expect(loaded.size == CGSize(width: 24, height: 24))
         #expect(loaded.renderingMode == .alwaysTemplate)
     }
 
     @Test
-    func everyImagesetHasADesignImageCase() throws {
+    func everyImagesetHasAnIconCase() throws {
         let names = try FileManager.default.contentsOfDirectory(atPath: Self.catalogSourcePath)
             .filter { $0.hasSuffix(".imageset") }
             .map { String($0.dropLast(".imageset".count)) }
-        #expect(Set(names) == Set(DesignImage.allCases.map(\.rawValue)))
+        #expect(Set(names) == Set(DesignIcon.allCases.map(\.rawValue)))
     }
 }
 

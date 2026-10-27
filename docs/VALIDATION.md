@@ -5,9 +5,9 @@
 CI host (fastlane gym, Xcode 26) gagal di `Validate plug-in "RswiftGenerate…Resources"`:
 build tool plugin wajib di-trust per mesin dan runner non-interaktif tidak bisa. R.swift
 dilepas dari DesignKit, TanyaAI dan sandbox. Copy memakai enum key (`ChatCopy`,
-`SandboxCopy`) dan `String(key:bundle:locale:)`; gambar memakai `DesignImage`; fixture
+`SandboxCopy`) dan `String(key:bundle:locale:)`; ikon memakai `DesignIcon` (`Foundations/Iconography`); fixture
 memakai `SandboxFixtureFile`. Pengganti pengecekan compile R.swift: tes per bahasa bahwa
-key enum sama persis dengan isi `Localizable.strings`, tes setiap `DesignImage` termuat
+key enum sama persis dengan isi `Localizable.strings`, tes setiap `DesignIcon` termuat
 dan setiap imageset punya case, serta tes setiap fixture ter-bundle.
 
 ## Perbaikan dari review — 27 Oktober 2026

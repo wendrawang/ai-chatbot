@@ -48,7 +48,7 @@ for path in sorted(paths):
     if 'Tokens' in path.parts or any(relative.endswith(item) for item in METADATA):
         continue
     if re.search(r'"(?:\\.|[^"\\])*"', text):
-        report('Use copy key enums (ChatCopy, SandboxCopy) and DesignImage; keep technical metadata with its owner.')
+        report('Use copy key enums (ChatCopy, SandboxCopy) and DesignIcon; keep technical metadata with its owner.')
     if re.search(r'(?<![\w.$])\d+(?:\.\d+)?(?![\w.])', text):
         report('Use FigmaSize, CustomSizes, CustomTextLines or the type value (.zero) instead of literals.')
     if re.search(r'\.(?:foregroundColor|background|fill|strokeBorder)\(\s*\.(?:red|white|black|gray|blue)', text):

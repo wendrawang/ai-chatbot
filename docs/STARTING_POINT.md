@@ -22,11 +22,13 @@ Packages/
 │       ├── Extensions/
 │       │   ├── CGFloat+Artwork.swift
 │       │   ├── Color+Hex.swift
+│       │   ├── Image+DesignIcon.swift     # Image/UIImage dari DesignIcon
 │       │   ├── String+Resource.swift      # copy sesuai locale host
 │       │   ├── View+DesignColors.swift    # theme environment + area default
 │       │   └── View+ScrollBoundary.swift  # observer umum untuk tahap header
 │       ├── Typography/FontFace.swift + FontLoader.swift
 │       ├── Resources/Fonts/ + Assets.xcassets/
+│       ├── Foundations/Iconography/DesignIcon.swift  # nama ikon = imageset
 │       ├── Foundations/Accessibility/
 │       └── Components/
 │           ├── GrowingTextInput/         # bridge + BoundedTextView
@@ -43,7 +45,7 @@ Packages/
 ## Urutan implementasi
 
 1. Pasang package/resource dan pertahankan `Tokens/Generated` milik Anda.
-   Key copy di `ChatCopy` dan nama gambar di `DesignImage`; tes memastikan
+   Key copy di `ChatCopy` dan nama ikon di `DesignIcon`; tes memastikan
    keduanya sama dengan isi resource. Ikuti [pola view dan resource](VIEW_TEMPLATE.md).
 2. Tulis token custom per jenis (`CustomSizes`, `CustomTextLines`), custom palette dan extension sizing/hex. Nilai awal memakai
    nilai bawaan tipe (`.zero`, `String()`), tanpa enum alias. Gunakan `true`/`false` langsung. Padding mengambil `spacingSmall/Medium/Large` langsung. `Color(hex:)` menerima
