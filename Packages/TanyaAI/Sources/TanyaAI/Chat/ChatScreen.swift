@@ -37,8 +37,8 @@ public struct ChatScreen<Content: View>: View {
 
     public var body: some View {
         ScreenContainer(
-            title: String(resource: R.string.localizable.chatTitle, locale: locale),
-            backLabel: String(resource: R.string.localizable.chatBack, locale: locale),
+            title: String(ChatCopy.title, locale: locale),
+            backLabel: String(ChatCopy.back, locale: locale),
             onBack: close, content: { content }, trailing: { moreMenu },
             footer: { ComposerSection(isEnabled: isEnabled, onSend: onSend) }
         )
@@ -46,10 +46,10 @@ public struct ChatScreen<Content: View>: View {
 
     private var moreMenu: some View {
         Menu {
-            Button(String(resource: R.string.localizable.chatNewConversation, locale: locale)) { onNewConversation?() }
+            Button(String(ChatCopy.newConversation, locale: locale)) { onNewConversation?() }
                 .disabled(onNewConversation == nil)
         } label: {
-            Image(DesignKit.R.image.moreMenu).resizable().scaledToFit()
+            Image(DesignIcon.moreMenu).resizable().scaledToFit()
                 .frame(
                     width: FigmaSize.weightIconSmall.scaledToArtwork,
                     height: FigmaSize.weightIconSmall.scaledToArtwork
@@ -57,7 +57,7 @@ public struct ChatScreen<Content: View>: View {
                 .foregroundColor(colors.colorsIconDark)
                 .contentShape(Rectangle())
         }
-        .accessibilityLabel(String(resource: R.string.localizable.chatMore, locale: locale))
+        .accessibilityLabel(String(ChatCopy.more, locale: locale))
         .accessibilityIdentifier(ChatElementIdentifier.more)
     }
 }

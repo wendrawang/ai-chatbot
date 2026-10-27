@@ -1,5 +1,16 @@
 # Validasi starter
 
+## Tanpa R.swift — 27 Oktober 2026
+
+CI host (fastlane gym, Xcode 26) gagal di `Validate plug-in "RswiftGenerate…Resources"`:
+build tool plugin wajib di-trust per mesin dan runner non-interaktif tidak bisa. R.swift
+dilepas dari DesignKit, TanyaAI dan sandbox. Copy memakai enum key (`ChatCopy`,
+`SandboxCopy`) dan `String(key:bundle:locale:)`; ikon memakai `DesignIcon`
+(`Foundations/Iconography`). Pengganti pengecekan compile R.swift: tes per bahasa bahwa
+key enum sama persis dengan isi `Localizable.strings`, serta tes setiap `DesignIcon`
+termuat dan setiap imageset punya case. Lookup copy sengaja tanpa cache; biayanya setara
+Localize_Swift di host dan R.swift sebelumnya.
+
 ## Unit test ke Swift Testing — 26 Oktober 2026
 
 Seluruh unit test (`DesignKitTests`, `TanyaAITests`, `TanyaAISandboxTests`) pindah dari

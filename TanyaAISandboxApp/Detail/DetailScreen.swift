@@ -24,12 +24,12 @@ struct DetailScreen: ScreenContent {
     var body: some View {
         VStack(spacing: FigmaSize.spacingLarge.scaledToArtwork) {
             ScreenHeader(
-                title: String(resource: R.string.localizable.sandboxDetailTitle, locale: locale),
-                backLabel: String(resource: R.string.localizable.sandboxBack, locale: locale),
+                title: String(SandboxCopy.detailTitle, locale: locale),
+                backLabel: String(SandboxCopy.back, locale: locale),
                 isScrolled: false, onBack: { dismiss() }
             )
             HostButton(
-                title: String(resource: R.string.localizable.sandboxOpen, locale: locale),
+                title: String(SandboxCopy.open, locale: locale),
                 identifier: SandboxOptions.detailTanyaAIIdentifier, action: onOpenTanyaAI
             )
             Spacer()
