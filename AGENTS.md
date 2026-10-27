@@ -138,10 +138,7 @@ tersedia pada history/main.
   `NSCache` bersama, unduhan URL sama digabung, gagal tidak di-cache, disk mengikuti
   `URLCache`/header HTTP). Jangan memakai `AsyncImage` atau loader lain di package.
   Hanya HTTP 2xx yang diterima; gambar di-downsample ke `pointSize` × skala layar dan cache
-  dibatasi biaya bitmap (`RemoteImageLimits`).
-- Teks multiline memakai line-height pasangan tokennya:
-  `.lineSpacing(font.lineSpacing(forLineHeight: FigmaSize.typographyLineHeight…))`.
-- `let` untuk input, `@Binding` untuk state caller, `@State` untuk draft lokal.
+  dibatasi biaya bitmap (`RemoteImageLimits`).- `let` untuk input, `@Binding` untuk state caller, `@State` untuk draft lokal.
   Screen memiliki margin luar; komponen memiliki padding dalam/surface/shadow.
   Kartu dan bayangan memakai `.cardStyle()`/`.designShadow()` dari DesignKit; jangan
   menyusun ulang radius, garis tepi, atau shadow di setiap view.

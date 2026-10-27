@@ -25,8 +25,8 @@ menampilkan fallback. UI test `--broken-icons`: kartu tetap tampil dan bisa dike
 Tindak lanjut review: status HTTP 404/500/503 ditolak walau body-nya PNG valid (sebelumnya
 masuk cache); ikon 2048×2048 di-decode langsung ke 72 px (tampil 24 pt @3x) lewat ImageIO,
 gambar kecil tidak diperbesar, URL sama dengan ukuran berbeda disimpan terpisah; cache memori
-memakai biaya bitmap dan batas total. Teks welcome dan kartu memakai line-height pasangan
-token lewat `UIFont.lineSpacing(forLineHeight:)` (rumus yang sama dengan composer).
+memakai biaya bitmap dan batas total. Line-height teks welcome/kartu sengaja mengikuti
+bawaan font (keputusan user): tidak ada kompensasi `lineSpacing` di luar composer.
 
 ## Tanpa R.swift — 27 Oktober 2026
 

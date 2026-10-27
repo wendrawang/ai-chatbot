@@ -61,12 +61,10 @@ public struct ActionCard<Icon: View>: View {
     private var texts: some View {
         VStack(alignment: .leading, spacing: FigmaSize.spacingSmall.scaledToArtwork) {
             Text(title)
-                .font(Font(titleFont))
-                .lineSpacing(titleFont.lineSpacing(forLineHeight: titleLineHeight))
+                .font(titleFont)
                 .foregroundColor(colors.colorsTextPrimaryDark)
             Text(description)
-                .font(Font(descriptionFont))
-                .lineSpacing(descriptionFont.lineSpacing(forLineHeight: descriptionLineHeight))
+                .font(descriptionFont)
                 .foregroundColor(colors.colorsTextSecondary)
         }
         .multilineTextAlignment(.leading)
@@ -91,17 +89,12 @@ private extension ActionCard {
     var boxSize: CGFloat { CustomSizes.ActionCard.iconBox.scaledToArtwork }
     var chevronSize: CGFloat { CustomSizes.ActionCard.chevron.scaledToArtwork }
 
-    /// Display Small 14/21. TODO: Cocokkan role tipografi dengan Figma; sementara estimasi dari screenshot.
-    var titleFont: UIFont {
-        FontFace.firaSansSemiBold.font(size: FigmaSize.typographySizeDisplaySmall14.scaledToArtwork)
+    /// TODO: Cocokkan role tipografi dengan Figma; sementara estimasi dari screenshot.
+    var titleFont: Font {
+        Font(FontFace.firaSansSemiBold.font(size: FigmaSize.typographySizeDisplaySmall14.scaledToArtwork))
     }
 
-    var titleLineHeight: CGFloat { FigmaSize.typographyLineHeightDisplaySmall14.scaledToArtwork }
-
-    /// Display Tiny 12/18.
-    var descriptionFont: UIFont {
-        FontFace.openSansRegular.font(size: FigmaSize.typographySizeDisplayTiny12.scaledToArtwork)
+    var descriptionFont: Font {
+        Font(FontFace.openSansRegular.font(size: FigmaSize.typographySizeDisplayTiny12.scaledToArtwork))
     }
-
-    var descriptionLineHeight: CGFloat { FigmaSize.typographyLineHeightDisplayTiny12.scaledToArtwork }
 }

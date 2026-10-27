@@ -44,13 +44,11 @@ struct WelcomeSection: View {
                 .accessibilityHidden(true)
             VStack(spacing: FigmaSize.spacingSmall.scaledToArtwork) {
                 Text(content.greetings.title)
-                    .font(Font(titleFont))
-                    .lineSpacing(titleFont.lineSpacing(forLineHeight: titleLineHeight))
+                    .font(titleFont)
                     .foregroundColor(colors.colorsTextPrimaryDark)
                     .accessibilityAddTraits(.isHeader)
                 Text(content.greetings.description)
-                    .font(Font(bodyFont))
-                    .lineSpacing(bodyFont.lineSpacing(forLineHeight: bodyLineHeight))
+                    .font(bodyFont)
                     .foregroundColor(colors.colorsTextSecondary)
             }
         }
@@ -92,8 +90,7 @@ struct WelcomeSection: View {
                 .foregroundColor(colors.colorsIconColored)
                 .accessibilityHidden(true)
             Text(String(ChatCopy.shortcutsTitle, locale: locale))
-                .font(Font(sectionFont))
-                .lineSpacing(sectionFont.lineSpacing(forLineHeight: bodyLineHeight))
+                .font(sectionFont)
                 .foregroundColor(colors.colorsTextPrimaryDark)
                 .accessibilityAddTraits(.isHeader)
         }
@@ -105,22 +102,15 @@ struct WelcomeSection: View {
 private extension WelcomeSection {
     var iconSize: CGFloat { FigmaSize.weightIconSmall.scaledToArtwork }
 
-    /// Heading Small 20/30.
-    var titleFont: UIFont {
-        FontFace.firaSansSemiBold.font(size: FigmaSize.typographySizeHeadingSmall20.scaledToArtwork)
+    var titleFont: Font {
+        Font(FontFace.firaSansSemiBold.font(size: FigmaSize.typographySizeHeadingSmall20.scaledToArtwork))
     }
 
-    var titleLineHeight: CGFloat { FigmaSize.typographyLineHeightHeadingSmall20.scaledToArtwork }
-
-    /// Display Small 14/21, sama dengan `bodyFont` dengan bobot semibold.
-    var sectionFont: UIFont {
-        FontFace.firaSansSemiBold.font(size: FigmaSize.typographySizeDisplaySmall14.scaledToArtwork)
+    var sectionFont: Font {
+        Font(FontFace.firaSansSemiBold.font(size: FigmaSize.typographySizeDisplaySmall14.scaledToArtwork))
     }
 
-    /// Display Small 14/21.
-    var bodyFont: UIFont {
-        FontFace.openSansRegular.font(size: FigmaSize.typographySizeDisplaySmall14.scaledToArtwork)
+    var bodyFont: Font {
+        Font(FontFace.openSansRegular.font(size: FigmaSize.typographySizeDisplaySmall14.scaledToArtwork))
     }
-
-    var bodyLineHeight: CGFloat { FigmaSize.typographyLineHeightDisplaySmall14.scaledToArtwork }
 }

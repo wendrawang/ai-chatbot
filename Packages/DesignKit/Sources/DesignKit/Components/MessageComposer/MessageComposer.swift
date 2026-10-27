@@ -110,7 +110,8 @@ private extension MessageComposer {
     }
 
     var lineSpacing: CGFloat {
-        inputFont.lineSpacing(forLineHeight: FigmaSize.typographyLineHeightDisplaySmall14.scaledToArtwork)
+        let leading = FigmaSize.typographyLineHeightDisplaySmall14.scaledToArtwork
+        return max(.zero, leading - inputFont.lineHeight)
     }
 
     /// Merah saat bisa dikirim atau sedang menunggu; abu-abu saat draft kosong/nonaktif.
