@@ -33,6 +33,13 @@ struct TanyaAIScreenViewModelTests {
     }
 
     @Test
+    func slowIconsModePointsIconsAtAnAddressThatNeverAnswers() throws {
+        let welcome = try #require(makeViewModel(arguments: ["--slow-icons"]).welcome)
+        #expect(welcome.shortcuts.allSatisfy { $0.iconURL == SandboxOptions.slowIconURL })
+        #expect(makeViewModel().welcome?.shortcuts.first?.iconURL != SandboxOptions.slowIconURL)
+    }
+
+    @Test
     func headerDemoShowsItsSampleContentInsteadOfTheWelcome() {
         #expect(makeViewModel(arguments: ["--header-demo"]).welcome == nil)
     }

@@ -23,11 +23,14 @@ struct SandboxOptions {
     static let demoParagraphCount = 12
     /// File yang tidak ada: unduhan ikon pasti gagal tanpa bergantung pada jaringan.
     static let brokenIconURL = URL(fileURLWithPath: "/sandbox/missing-icon.png")
+    /// Alamat TEST-NET (RFC 5737) yang tidak pernah menjawab: ikon tertahan di state loading sampai timeout.
+    static let slowIconURL = URL(string: "https://192.0.2.1/icon.png")
     private static let languageFlag = "--language"
     private static let rejectFlag = "--reject-send"
     private static let headerDemoFlag = "--header-demo"
     private static let offlineFlag = "--offline"
     private static let brokenIconsFlag = "--broken-icons"
+    private static let slowIconsFlag = "--slow-icons"
 
     /// Opsi dari argumen peluncuran proses ini.
     static var current: SandboxOptions {
@@ -38,14 +41,21 @@ struct SandboxOptions {
     let isRejectingSend: Bool
     let isHeaderDemo: Bool
     let isOffline: Bool
-    /// `--broken-icons`: semua `iconUrl` shortcut gagal diunduh untuk memeriksa ikon fallback.
-    let isIconBroken: Bool
+    /// Pengganti semua `iconUrl` shortcut: `--broken-icons` (gagal, cek fallback) atau
+    /// `--slow-icons` (tidak menjawab, cek loading). Nil = URL dari fixture.
+    let iconOverrideURL: URL?
 
     init(arguments: [String]) {
         isRejectingSend = arguments.contains(Self.rejectFlag)
         isHeaderDemo = arguments.contains(Self.headerDemoFlag)
         isOffline = arguments.contains(Self.offlineFlag)
-        isIconBroken = arguments.contains(Self.brokenIconsFlag)
+        if arguments.contains(Self.brokenIconsFlag) {
+            iconOverrideURL = Self.brokenIconURL
+        } else if arguments.contains(Self.slowIconsFlag) {
+            iconOverrideURL = Self.slowIconURL
+        } else {
+            iconOverrideURL = nil
+        }
         if let position = arguments.firstIndex(of: Self.languageFlag),
             arguments.indices.contains(arguments.index(after: position))
         {

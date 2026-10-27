@@ -9,24 +9,22 @@ mengirim `prompt` lewat `onSend`; selama `isAwaitingReply` tombol kirim menjadi
 `LoadingDots` dan kartu nonaktif. Ukuran/tipografi masih estimasi screenshot (TODO).
 
 Dibuktikan oleh test: decode contoh BE (field T&C diabaikan), `iconUrl` kosong/null/tidak
-ada tetap memberi kartu, key `descripton` ditolak (BE diminta memperbaiki); loader gambar
-mengunduh sekali lalu dari memori, tiga permintaan bersamaan berbagi satu unduhan, unduhan
-gagal tidak di-cache dan dicoba lagi, data bukan gambar memberi nil; setiap `ChatImage`
+ada tetap memberi kartu, key `descripton` ditolak (BE diminta memperbaiki); setiap `ChatImage`
 termuat dari bundle package; view model sandbox membaca fixture, menunggu jawaban setelah
 chat diterima sampai percakapan baru, dan tidak menunggu bila ditolak/offline. UI test:
 sapaan dan tiga kartu berurutan (id), ketuk kartu mengubah label kirim menjadi "Waiting for
 reply" dan menonaktifkan kirim serta kartu walau draft diisi, lalu percakapan baru
 memulihkannya. Tes ketuk tepi tombol kirim kini memulai percakapan baru di antara kiriman.
 
-Fallback ikon: `RemoteImage` menampilkan placeholder selama mengunduh lalu `fallback` bila
-unduhan gagal; URL nil langsung fallback tanpa mengunduh; gambar berhasil tidak pernah
-menampilkan fallback. UI test `--broken-icons`: kartu tetap tampil dan bisa diketuk.
+Ikon dari URL: `RemoteImage` kini pembungkus `KFImage` Kingfisher 8.14 (keputusan user:
+pakai library teruji, menggantikan loader buatan sendiri). Cache memori + disk, downsample
+(`DownsamplingImageProcessor`), validasi status HTTP (200..<400) dan batal saat view hilang
+ditangani Kingfisher. Test: unduhan gagal menampilkan placeholder lalu fallback; URL nil
+langsung fallback. UI test `--slow-icons`: spinner tampil di kotak ikon dan kartu sudah bisa
+diketuk; `--broken-icons`: ikon fallback tampil dan kartu tetap bisa diketuk.
 
-Tindak lanjut review: status HTTP 404/500/503 ditolak walau body-nya PNG valid (sebelumnya
-masuk cache); ikon 2048×2048 di-decode langsung ke 72 px (tampil 24 pt @3x) lewat ImageIO,
-gambar kecil tidak diperbesar, URL sama dengan ukuran berbeda disimpan terpisah; cache memori
-memakai biaya bitmap dan batas total. Line-height teks welcome/kartu sengaja mengikuti
-bawaan font (keputusan user): tidak ada kompensasi `lineSpacing` di luar composer.
+Line-height teks welcome/kartu sengaja mengikuti bawaan font (keputusan user): tidak ada
+kompensasi `lineSpacing` di luar composer.
 
 ## Tanpa R.swift — 27 Oktober 2026
 

@@ -16,7 +16,7 @@ errors = []
 # These files own technical metadata or format/transform arithmetic, not user-facing copy.
 METADATA = {
     'Typography/FontFace.swift', 'Extensions/Color+Hex.swift', 'Extensions/String+Resource.swift',
-    'Foundations/Accessibility/ComponentIdentifier.swift', 'Components/RemoteImage/RemoteImageLimits.swift',
+    'Foundations/Accessibility/ComponentIdentifier.swift',
     'Chat/ChatElementIdentifier.swift', 'Chat/ChatCopy.swift',
     'TanyaAISandboxApp/SandboxOptions.swift', 'TanyaAISandboxApp/SandboxCopy.swift',
     'TanyaAISandboxApp/SandboxFixtureFile.swift'

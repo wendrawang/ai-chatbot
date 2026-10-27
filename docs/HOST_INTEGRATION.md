@@ -147,16 +147,16 @@ TanyaAIHost(
 )
 ```
 
-Ikon kartu dimuat `RemoteImage` dengan cache memori bersama (`RemoteImageLoader.shared`):
-dibuka ulang tidak mengunduh lagi selama aplikasi hidup; cache disk mengikuti `URLCache`
-dan header HTTP server gambar. Hanya respons HTTP 2xx yang dipakai (503 berisi gambar tetap
-gagal). Gambar di-downsample ke ukuran tampil × skala layar, dan cache memori dibatasi
-`RemoteImageLimits.memoryCostLimit` (biaya = ukuran bitmap).
+Ikon kartu dimuat `RemoteImage` DesignKit, pembungkus `KFImage` Kingfisher (dependency SPM
+DesignKit, Kingfisher 8.14+, butuh Xcode 26). Cache memori + disk memakai `ImageCache.default`
+Kingfisher (bawaan: disk kedaluwarsa 7 hari); host bisa mengatur batasnya di bootstrap bila
+perlu. Status HTTP di luar 200..<400 dianggap gagal. Gambar di-downsample ke ukuran tampil ×
+skala layar, dan unduhan dibatalkan saat view hilang.
 
-Fallback ikon: selama mengunduh kotak ikon kosong; bila `iconUrl` kosong/tidak valid, unduhan
-gagal, atau data bukan gambar, tampil ikon default FE (lampu, TODO ganti ikon desain). Kartu
-tetap tampil dan bisa diketuk. Kegagalan tidak di-cache, jadi halaman berikutnya mencoba lagi.
-Cek di sandbox dengan `Scripts/run_sandbox.sh --broken-icons`.
+Selama mengunduh kotak ikon menampilkan spinner (`ProgressView`); bila `iconUrl` kosong/tidak
+valid atau unduhan gagal, tampil ikon default FE (lampu, TODO ganti ikon desain). Kartu tetap
+tampil dan bisa diketuk. Kegagalan tidak di-cache, jadi halaman berikutnya mencoba lagi.
+Cek di sandbox dengan `Scripts/run_sandbox.sh --broken-icons` (fallback) atau `--slow-icons` (loading).
 
 ## Bahasa dan appearance
 

@@ -66,7 +66,7 @@ struct WelcomeSection: View {
                     onTap: { onSelect(shortcut) },
                     icon: {
                         RemoteImage(
-                            url: shortcut.iconURL, pointSize: iconSize, placeholder: { Color.clear },
+                            url: shortcut.iconURL, pointSize: iconSize, placeholder: { loadingIcon },
                             fallback: { fallbackIcon }
                         )
                     }
@@ -74,6 +74,13 @@ struct WelcomeSection: View {
                 .accessibilityIdentifier(ChatElementIdentifier.shortcut(index))
             }
         }
+    }
+
+    /// Spinner bawaan iOS selama ikon diunduh; kartu sudah bisa diketuk sebelum ikon muncul.
+    private var loadingIcon: some View {
+        ProgressView()
+            .progressViewStyle(.circular)
+            .tint(colors.colorsIconColored)
     }
 
     /// Ikon FE saat `iconUrl` kosong/tidak valid atau gagal diunduh; kartu tetap bisa diketuk.

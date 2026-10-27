@@ -9,7 +9,8 @@ import Foundation
 import TanyaAI
 
 /// Sandbox: menerima draft tanpa backend. `--reject-send` menolak draft;
-/// `--offline` melaporkan error tidak ada internet ke view model; `--broken-icons` membuat ikon shortcut gagal.
+/// `--offline` melaporkan error tidak ada internet ke view model; `--broken-icons`/`--slow-icons` membuat ikon
+/// shortcut gagal/tertahan loading.
 final class TanyaAIUseCase {
     let callback = BaseCallback()
     private let options: SandboxOptions
@@ -36,15 +37,14 @@ final class TanyaAIUseCase {
             let data = try? Data(contentsOf: url)
         else { return nil }
         guard let welcome = try? JSONDecoder().decode(TanyaAIInitResponse.self, from: data).data else { return nil }
-        return options.isIconBroken ? Self.breakingIcons(of: welcome) : welcome
+        guard let iconURL = options.iconOverrideURL else { return welcome }
+        return Self.replacingIcons(of: welcome, with: iconURL)
     }
 
-    /// `--broken-icons`: isi tetap dari fixture, hanya URL ikon diarahkan ke file yang tidak ada.
-    private static func breakingIcons(of welcome: WelcomeContent) -> WelcomeContent {
+    /// `--broken-icons`/`--slow-icons`: isi tetap dari fixture, hanya URL ikon yang diganti.
+    private static func replacingIcons(of welcome: WelcomeContent, with iconURL: URL) -> WelcomeContent {
         let shortcuts = welcome.shortcuts.map {
-            WelcomeShortcut(
-                title: $0.title, description: $0.description, iconURL: SandboxOptions.brokenIconURL, prompt: $0.prompt
-            )
+            WelcomeShortcut(title: $0.title, description: $0.description, iconURL: iconURL, prompt: $0.prompt)
         }
         return WelcomeContent(greetings: welcome.greetings, shortcuts: shortcuts)
     }

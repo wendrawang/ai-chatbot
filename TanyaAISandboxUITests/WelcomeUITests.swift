@@ -61,6 +61,17 @@ final class WelcomeUITests: XCTestCase {
         XCTAssertEqual(application.buttons["composer.send"].label, "Menunggu jawaban")
     }
 
+    /// Ikon belum selesai diunduh: kotak ikon menampilkan spinner, kartu sudah bisa diketuk.
+    func testLoadingIconsKeepShortcutsTappable() {
+        launch(locale: "id", extra: ["--slow-icons"])
+        let shortcut = application.buttons["welcome.shortcut.0"]
+        XCTAssertTrue(shortcut.waitForExistence(timeout: 10))
+        XCTAssertTrue(application.activityIndicators.firstMatch.waitForExistence(timeout: 5))
+        capture("welcome-loading-icons")
+        shortcut.tap()
+        XCTAssertEqual(application.buttons["composer.send"].label, "Menunggu jawaban")
+    }
+
     private func launch(locale: String, extra: [String] = []) {
         application.launchArguments = ["--language", locale] + extra
         application.launch()

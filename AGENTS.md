@@ -134,11 +134,11 @@ tersedia pada history/main.
   `Welcome/`) decode objek `data` inquiry init; field T&C milik host diabaikan. `iconUrl`
   kosong/tidak valid menjadi nil tanpa menggagalkan seluruh welcome. Shortcut dikirim lewat
   `onSend(prompt)`; status menunggu jawaban (`isAwaitingReply`) milik host.
-- Gambar dari URL memakai `RemoteImage` + `RemoteImageLoader` DesignKit (cache memori
-  `NSCache` bersama, unduhan URL sama digabung, gagal tidak di-cache, disk mengikuti
-  `URLCache`/header HTTP). Jangan memakai `AsyncImage` atau loader lain di package.
-  Hanya HTTP 2xx yang diterima; gambar di-downsample ke `pointSize` × skala layar dan cache
-  dibatasi biaya bitmap (`RemoteImageLimits`).- `let` untuk input, `@Binding` untuk state caller, `@State` untuk draft lokal.
+- Gambar dari URL memakai `RemoteImage` DesignKit, pembungkus tipis `KFImage` Kingfisher
+  (cache memori + disk, downsample ke `pointSize` × skala layar, validasi status HTTP,
+  batal saat view hilang). Kingfisher hanya di-import di `RemoteImage`; fitur lain memakai
+  `RemoteImage`, bukan `KFImage`/`AsyncImage` langsung.
+- `let` untuk input, `@Binding` untuk state caller, `@State` untuk draft lokal.
   Screen memiliki margin luar; komponen memiliki padding dalam/surface/shadow.
   Kartu dan bayangan memakai `.cardStyle()`/`.designShadow()` dari DesignKit; jangan
   menyusun ulang radius, garis tepi, atau shadow di setiap view.
