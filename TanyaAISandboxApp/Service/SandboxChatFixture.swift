@@ -31,7 +31,7 @@ struct SandboxChatFixture: Decodable {
     let fallback: String
 
     static func bundled() -> SandboxChatFixture? {
-        R.file.chatDummyJson.url()
+        SandboxFixtureFile.chatDummy.url
             .flatMap { try? Data(contentsOf: $0) }
             .flatMap { try? JSONDecoder().decode(SandboxChatFixture.self, from: $0) }
     }

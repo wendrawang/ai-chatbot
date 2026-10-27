@@ -21,8 +21,8 @@ struct TanyaAITermsScreen: ScreenContent {
 
     var body: some View {
         ScreenContainer(
-            title: String(resource: R.string.localizable.sandboxTermsTitle, locale: locale),
-            backLabel: String(resource: R.string.localizable.sandboxBack, locale: locale), onBack: onBack,
+            title: String(SandboxCopy.termsTitle, locale: locale),
+            backLabel: String(SandboxCopy.back, locale: locale), onBack: onBack,
             content: { content }, trailing: { EmptyView() }, footer: { footer }
         )
         .onAppear(perform: viewModel.load)
@@ -50,7 +50,7 @@ struct TanyaAITermsScreen: ScreenContent {
 
     private var footer: some View {
         HostButton(
-            title: String(resource: R.string.localizable.sandboxTermsAccept, locale: locale),
+            title: String(SandboxCopy.termsAccept, locale: locale),
             identifier: SandboxOptions.termsAcceptIdentifier, action: viewModel.accept
         )
         .disabled(!isAcceptEnabled)

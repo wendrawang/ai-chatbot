@@ -50,7 +50,7 @@ struct MessageRow: View {
                 )
                 .accessibilityIdentifier(ChatElementIdentifier.question)
             if message.isAnswerStopped {
-                Text(String(resource: R.string.localizable.chatAnswerStopped, locale: locale))
+                Text(String(ChatCopy.answerStopped, locale: locale))
                     .font(
                         Font(FontFace.openSansRegular.font(size: FigmaSize.typographySizeDisplayTiny12.scaledToArtwork))
                     )
@@ -73,7 +73,7 @@ struct MessageRow: View {
         LoadingDots(color: colors.colorsIconDark)
             .frame(maxWidth: .infinity, alignment: .leading)
             .accessibilityElement()
-            .accessibilityLabel(String(resource: R.string.localizable.chatReplying, locale: locale))
+            .accessibilityLabel(String(ChatCopy.replying, locale: locale))
             .accessibilityIdentifier(ChatElementIdentifier.replying)
     }
 }

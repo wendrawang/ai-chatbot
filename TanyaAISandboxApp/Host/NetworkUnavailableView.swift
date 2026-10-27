@@ -19,10 +19,10 @@ struct NetworkUnavailableView: View {
 
     var body: some View {
         VStack(spacing: FigmaSize.spacingLarge.scaledToArtwork) {
-            Text(String(resource: R.string.localizable.sandboxOfflineTitle, locale: locale))
+            Text(String(SandboxCopy.offlineTitle, locale: locale))
                 .foregroundColor(colors.colorsTextPrimaryDark)
             HostButton(
-                title: String(resource: R.string.localizable.sandboxOfflineRetry, locale: locale),
+                title: String(SandboxCopy.offlineRetry, locale: locale),
                 identifier: SandboxOptions.offlineRetryIdentifier, action: onRetry
             )
         }

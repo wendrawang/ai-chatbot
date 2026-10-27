@@ -9,7 +9,7 @@ DesignKit/Sources/DesignKit/
 ├── Components/ScreenContainer/ScreenContainer.swift
 ├── Extensions/View+ScrollBoundary.swift
 ├── Tokens/CustomSizes.swift              # Header: tinggi dan jumlah baris
-└── Resources/Assets.xcassets/            # back/more/send dummy; R.swift generated
+└── Resources/Assets.xcassets/            # back/more/send dummy; nama di DesignImage
 
 TanyaAI/Sources/TanyaAI/
 ├── Chat/ChatScreen.swift                 # content/menu/composer; layout dari container
@@ -121,7 +121,7 @@ Jalankan `Scripts/run_sandbox.sh --language id --long-history`, lalu buka featur
 Daftar dibuka di pesan terbaru dengan konten di belakang header; gulir ke atas sampai
 history habis dan header kembali transparan.
 Asset back/more/send masih PDF vector sementara, dengan TODO di xcassets.
-Localization dan nama asset dibaca melalui R.swift generated; lihat
+Localization dan nama asset dibaca melalui `ChatCopy`/`DesignImage`; lihat
 [pola view dan resource](VIEW_TEMPLATE.md).
 
 ## Checkpoint sebelum lanjut

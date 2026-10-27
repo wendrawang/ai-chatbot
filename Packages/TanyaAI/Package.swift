@@ -13,19 +13,12 @@ let package = Package(
     defaultLocalization: "en",
     platforms: [.iOS(.v15)],
     products: [.library(name: "TanyaAI", targets: ["TanyaAI"])],
-    dependencies: [
-        .package(path: "../DesignKit"),
-        .package(url: "https://github.com/mac-cain13/R.swift.git", from: "7.8.0")
-    ],
+    dependencies: [.package(path: "../DesignKit")],
     targets: [
         .target(
             name: "TanyaAI",
-            dependencies: [
-                .product(name: "DesignKit", package: "DesignKit"),
-                .product(name: "RswiftLibrary", package: "R.swift")
-            ],
-            resources: [.process("Resources")],
-            plugins: [.plugin(name: "RswiftGenerateInternalResources", package: "R.swift")]),
+            dependencies: [.product(name: "DesignKit", package: "DesignKit")],
+            resources: [.process("Resources")]),
         .testTarget(name: "TanyaAITests", dependencies: ["TanyaAI", "DesignKit"])
     ]
 )

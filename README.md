@@ -31,7 +31,7 @@ Tombol kembali atau swipe dari tepi kiri menutup feature dan mengembalikan layar
 - [Urutan belajar dan tree](docs/STARTING_POINT.md)
 - [Tahap header dan checkpoint migrasi berikutnya](docs/SHARED_HEADER.md)
 - [Membuka screen dari host app](docs/HOST_INTEGRATION.md)
-- [Pola view dan resource R.swift](docs/VIEW_TEMPLATE.md)
+- [Pola view dan resource](docs/VIEW_TEMPLATE.md)
 - [Aturan implementasi](AGENTS.md)
 - [Menjalankan tes (Xcode, workspace host, terminal)](docs/TESTING.md)
 - [Hasil validasi](docs/VALIDATION.md)

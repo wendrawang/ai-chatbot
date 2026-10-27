@@ -24,7 +24,7 @@ struct ConnectionBanner: View {
                 .foregroundColor(colors.colorsTextSecondary)
             if isFailed {
                 Button(action: onRetry) {
-                    Text(String(resource: R.string.localizable.chatRetry, locale: locale))
+                    Text(String(ChatCopy.retry, locale: locale))
                         .foregroundColor(colors.colorsTextBrand)
                 }
                 .buttonStyle(.plain)
@@ -42,9 +42,6 @@ struct ConnectionBanner: View {
 
 private extension ConnectionBanner {
     var message: String {
-        String(
-            resource: isFailed ? R.string.localizable.chatDisconnected : R.string.localizable.chatConnecting,
-            locale: locale
-        )
+        String(isFailed ? ChatCopy.disconnected : ChatCopy.connecting, locale: locale)
     }
 }

@@ -32,8 +32,8 @@ struct NoticeLabel: View {
 private extension NoticeLabel {
     var message: String {
         switch notice {
-        case .sendFailed: return String(resource: R.string.localizable.chatSendFailed, locale: locale)
-        case .stopFailed: return String(resource: R.string.localizable.chatStopFailed, locale: locale)
+        case .sendFailed: return String(ChatCopy.sendFailed, locale: locale)
+        case .stopFailed: return String(ChatCopy.stopFailed, locale: locale)
         }
     }
 }

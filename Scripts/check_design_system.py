@@ -15,10 +15,11 @@ ROOT = Path(__file__).resolve().parent.parent
 errors = []
 # These files own technical metadata or format/transform arithmetic, not user-facing copy.
 METADATA = {
-    'Typography/FontFace.swift', 'Extensions/HexFormat.swift',
+    'Typography/FontFace.swift', 'Extensions/HexFormat.swift', 'Extensions/String+Resource.swift',
     'Foundations/Accessibility/ComponentIdentifier.swift',
-    'Chat/ChatElementIdentifier.swift', 'Messages/MessageCell.swift',
-    'TanyaAISandboxApp/SandboxOptions.swift'
+    'Chat/ChatElementIdentifier.swift', 'Chat/ChatCopy.swift', 'Messages/MessageCell.swift',
+    'TanyaAISandboxApp/SandboxOptions.swift', 'TanyaAISandboxApp/SandboxCopy.swift',
+    'Service/SandboxFixtureFile.swift'
 }
 paths = list((ROOT / 'Packages').glob('*/Sources/**/*.swift'))
 paths += list((ROOT / 'TanyaAISandboxApp').glob('**/*.swift'))
@@ -47,7 +48,7 @@ for path in sorted(paths):
     if 'Tokens' in path.parts or any(relative.endswith(item) for item in METADATA):
         continue
     if re.search(r'"(?:\\.|[^"\\])*"', text):
-        report('Use generated R.swift for copy/assets; keep technical metadata with its owner.')
+        report('Use copy key enums (ChatCopy, SandboxCopy) and DesignImage; keep technical metadata with its owner.')
     if re.search(r'(?<![\w.$])\d+(?:\.\d+)?(?![\w.])', text):
         report('Use FigmaSize, CustomSizes, CustomTextLines or the type value (.zero) instead of literals.')
     if re.search(r'\.(?:foregroundColor|background|fill|strokeBorder)\(\s*\.(?:red|white|black|gray|blue)', text):

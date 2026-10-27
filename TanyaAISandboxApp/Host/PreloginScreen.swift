@@ -20,9 +20,9 @@ struct PreloginScreen: View {
 
     var body: some View {
         VStack(spacing: FigmaSize.spacingLarge.scaledToArtwork) {
-            Text(String(resource: R.string.localizable.sandboxPreloginTitle, locale: locale))
+            Text(String(SandboxCopy.preloginTitle, locale: locale))
             HostButton(
-                title: String(resource: R.string.localizable.sandboxLogin, locale: locale),
+                title: String(SandboxCopy.login, locale: locale),
                 identifier: SandboxOptions.loginIdentifier
             ) { appState.isLoggedIn = true }
         }

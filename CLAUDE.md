@@ -12,6 +12,8 @@ tanpa session/backend. Minimum iOS 15 (host ikut naik ke iOS 15 untuk revamp).
   [docs/CHAT_CONTRACT.md](docs/CHAT_CONTRACT.md).
 - Satu file satu tipe, tanpa tipe nested (kecuali token/`ComponentIdentifier`); class hanya bila
   framework mewajibkan (`ObservableObject`, subclass UIKit, delegate). Dijaga `check_methods.swift`.
+- Tanpa R.swift/build tool plugin (CI host tidak bisa trust plugin). Copy lewat `ChatCopy`/`SandboxCopy`,
+  gambar lewat `DesignImage`; tambah case setiap menambah key/imageset, tes menjaga kecocokannya.
 - Unit test memakai Swift Testing (`@Test`, `#expect`, `#require`); UI test tetap
   XCTest. Suite yang memakai window di sandbox masuk `HostWindowTests` (berurutan).
 - Keputusan arsitektur dan saran tahap berikutnya: [docs/REVAMP_NOTES.md](docs/REVAMP_NOTES.md).

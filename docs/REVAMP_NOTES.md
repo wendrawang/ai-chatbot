@@ -9,7 +9,7 @@ ini menjelaskan alasannya.
 | Topik | Keputusan | Alasan |
 | --- | --- | --- |
 | Minimum OS | iOS 15 untuk package, sandbox dan host | Host ikut naik ke iOS 15 pada journey revamp. |
-| R.swift | `from: "7.8.0"` | Asset/locale akan bertambah; versi longgar mencegah konflik bila host juga memakai R.swift 7.x. |
+| Resource | Enum key manual (`ChatCopy`, `DesignImage`), tanpa R.swift | Build tool plugin R.swift gagal di CI host (validasi plugin non-interaktif); tes menjaga enum tetap sama dengan resource. |
 | Ukuran | 1:1 Figma lewat `.scaledToArtwork` | Termasuk area tap 24pt; tidak ada minimum 44. Keputusan UI/UX. |
 | Theme | `@Environment(\.designColors)`; host mengisi `colors` pada `TanyaAIHost` | Tanpa singleton; `.defaultDesignColors()` untuk area bebas theme. Dibaca saat halaman dibuat. |
 | Bahasa | Host mengisi `locale` pada `TanyaAIHost` dari Localize_Swift | Host tidak memakai SwiftUI locale. Dibaca saat halaman dibuat; bahasa diganti dari Settings, bukan saat Tanya AI terbuka, jadi tidak perlu live update. |

@@ -21,7 +21,7 @@ actor SandboxTermsService {
 
     func inquiry() async throws -> SandboxTerms {
         try failIfOffline()
-        guard let url = R.file.termsDummyJson.url() else { throw URLError(.fileDoesNotExist) }
+        guard let url = SandboxFixtureFile.termsDummy.url else { throw URLError(.fileDoesNotExist) }
         return try JSONDecoder().decode(SandboxTerms.self, from: Data(contentsOf: url))
     }
 

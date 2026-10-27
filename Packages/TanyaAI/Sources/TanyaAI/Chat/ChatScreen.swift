@@ -44,8 +44,8 @@ struct ChatScreen: View {
                     topInset: CustomSizes.Header.height.scaledToArtwork + FigmaSize.spacingLarge.scaledToArtwork
                 )
                 ScreenHeader(
-                    title: String(resource: R.string.localizable.chatTitle, locale: locale),
-                    backLabel: String(resource: R.string.localizable.chatBack, locale: locale),
+                    title: String(ChatCopy.title, locale: locale),
+                    backLabel: String(ChatCopy.back, locale: locale),
                     isScrolled: isScrolled, onBack: close, trailing: { moreMenu }
                 )
             }
@@ -66,10 +66,10 @@ struct ChatScreen: View {
 
     private var moreMenu: some View {
         Menu {
-            Button(String(resource: R.string.localizable.chatNewConversation, locale: locale)) { onNewConversation?() }
+            Button(String(ChatCopy.newConversation, locale: locale)) { onNewConversation?() }
                 .disabled(onNewConversation == nil)
         } label: {
-            Image(DesignKit.R.image.moreMenu).resizable().scaledToFit()
+            Image(DesignImage.moreMenu).resizable().scaledToFit()
                 .frame(
                     width: FigmaSize.weightIconSmall.scaledToArtwork,
                     height: FigmaSize.weightIconSmall.scaledToArtwork
@@ -77,7 +77,7 @@ struct ChatScreen: View {
                 .foregroundColor(colors.colorsIconDark)
                 .contentShape(Rectangle())
         }
-        .accessibilityLabel(String(resource: R.string.localizable.chatMore, locale: locale))
+        .accessibilityLabel(String(ChatCopy.more, locale: locale))
         .accessibilityIdentifier(ChatElementIdentifier.more)
     }
 }

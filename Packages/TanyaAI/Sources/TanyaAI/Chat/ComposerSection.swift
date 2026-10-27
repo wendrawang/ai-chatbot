@@ -38,9 +38,9 @@ struct ComposerSection: View {
 
     var body: some View {
         MessageComposer(
-            text: $draft, placeholder: String(resource: R.string.localizable.chatPlaceholder, locale: locale),
-            sendLabel: String(resource: R.string.localizable.chatSend, locale: locale),
-            stopLabel: String(resource: R.string.localizable.chatStop, locale: locale), action: action,
+            text: $draft, placeholder: String(ChatCopy.placeholder, locale: locale),
+            sendLabel: String(ChatCopy.send, locale: locale),
+            stopLabel: String(ChatCopy.stop, locale: locale), action: action,
             isEnabled: isEnabled, onSend: submit, onStop: onStop
         )
         .padding(.horizontal, FigmaSize.spacingLarge.scaledToArtwork)

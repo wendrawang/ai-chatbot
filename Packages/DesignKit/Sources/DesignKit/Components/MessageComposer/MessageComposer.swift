@@ -89,7 +89,7 @@ public struct MessageComposer: View {
 
     private var sendButton: some View {
         Button(action: onSend) {
-            Image(R.image.sendArrow).resizable().scaledToFit()
+            Image(DesignImage.sendArrow).resizable().scaledToFit()
                 .padding(CustomSizes.Composer.sendIconInset.scaledToArtwork)
                 .foregroundColor(colors.colorsIconLight)
                 .frame(width: buttonSize, height: buttonSize)
