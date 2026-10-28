@@ -1,5 +1,15 @@
 # Validasi starter
 
+## Latar chat saat swipe back — 28 Oktober 2026
+
+Di host Byon (simulator iOS 17.5), swipe back setengah dari Tanya AI menampilkan halaman putih:
+latar dan isi scroll hilang, header dan composer tetap tampil. Bisect di host: konten diganti
+`Color.red` mulus; welcome dihapus masih putih; latar dihapus mulus. Penyebab: latar
+`scaledToFill` + frame tak hingga + `clipped`. Latar kini `scaledToFit` menempel di atas
+(artwork satu layar 375×812, jadi tampilan iPhone praktis sama); diverifikasi user di Byon iOS 17.5.
+Sandbox (iOS 26) tidak mereproduksi bug ini, termasuk saat bridge dibuat ulang setiap render.
+Mac ini belum punya runtime iOS 17, jadi belum ada UI test otomatis untuk kasus ini.
+
 ## Bridge host dan struktur TanyaAI — 28 Oktober 2026
 
 Model welcome TanyaAI tidak lagi `Decodable`; host men-decode inquiry init (sandbox: DTO

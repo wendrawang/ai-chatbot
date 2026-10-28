@@ -61,11 +61,13 @@ public struct ChatScreen<Content: View>: View {
         }
     }
 
-    /// Menempel di atas layar; bagian bawah yang tidak tertutup gambar memakai warna surface.
+    /// Menempel di atas layar selebar layar; bagian bawah yang tidak tertutup gambar memakai warna surface.
+    /// Sengaja `scaledToFit`, bukan `scaledToFill` + `clipped`: di iOS 17 kombinasi itu membuat latar dan isi scroll
+    /// hilang (putih) selama swipe back interaktif di host.
     private var backgroundImage: some View {
-        Image(ChatImage.chatBackground).resizable().scaledToFill()
-            .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
-            .clipped()
+        Image(ChatImage.chatBackground).resizable()
+            .scaledToFit()
+            .frame(maxHeight: .infinity, alignment: .top)
     }
 
     private var moreMenu: some View {
