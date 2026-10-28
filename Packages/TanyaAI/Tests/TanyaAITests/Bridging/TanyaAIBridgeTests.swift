@@ -70,9 +70,10 @@ struct TanyaAIBridgeTests {
         await waitUntil { !bridge.isAwaitingReply }
     }
 
-    /// 401 saat kirim sama dengan 401 saat menyambung: host diberi tahu sekali dan kirim berikutnya ditolak.
+    /// 401 saat kirim sama dengan 401 saat menyambung: host diberi tahu sekali, stream yang terbuka ditutup,
+    /// tidak menyambung ulang, dan kirim berikutnya ditolak.
     @Test
-    func unauthorizedSendExpiresTheSessionOnce() async {
+    func unauthorizedSendClosesTheOpenStreamAndExpiresOnce() async {
         let transport = FakeChatTransport()
         transport.sendResult = .failure(
             TanyaAITransportError.response(statusCode: 401, body: WireFixture.error(isRetryable: false))
@@ -83,10 +84,40 @@ struct TanyaAIBridgeTests {
         defer { task.cancel() }
         await waitUntil { bridge.connection == .live }
         #expect(!(await bridge.send("Cek Portfolio saya")))
+        await waitUntil { transport.closedStreams == 1 }
+        await task.value
         #expect(bridge.connection == .expired)
-        #expect(!bridge.isReady)
+        #expect(transport.calls.filter { $0 == "init" }.count == 1)
         #expect(!(await bridge.send("Lagi")))
         #expect(expiredCount == 1)
+    }
+
+    /// Respons kirim percakapan lama datang setelah reconnect ke percakapan lain dan kirim di sana:
+    /// pertanyaan baru tidak berubah, jadi `turn_end` jawaban barunya tetap membuka kunci.
+    @Test
+    func lateSendResponseFromThePreviousConversationIsIgnored() async {
+        let transport = FakeChatTransport()
+        transport.initResults = [
+            .success(WireFixture.initialize()), .success(WireFixture.initialize(conversationID: "lain"))
+        ]
+        transport.sendResult = .success(WireFixture.ack(seq: 10))
+        transport.isHoldingAck = true
+        let bridge = makeBridge(transport)
+        let task = Task { await bridge.run() }
+        defer { task.cancel() }
+        await waitUntil { bridge.connection == .live }
+        let lateSend = Task { await bridge.send("Pertanyaan lama") }
+        await waitUntil { transport.isAckHeld }
+        transport.drop()
+        await waitUntil { bridge.conversationID == "lain" && bridge.connection == .live }
+        #expect(!bridge.isAwaitingReply)
+        transport.sendResult = .success(WireFixture.ack(seq: 2))
+        #expect(await bridge.send("Pertanyaan baru"))
+        transport.releaseAck()
+        #expect(await lateSend.value)
+        #expect(bridge.isAwaitingReply)
+        transport.emit(WireFixture.turnEndFrame(seq: 3))
+        await waitUntil { !bridge.isAwaitingReply }
     }
 
     @Test

@@ -19,8 +19,15 @@ final class FakeChatTransport: TanyaAIChatTransport {
     var sendResult: Result<Data, Error> = .success(WireFixture.ack())
     /// Dijalankan sebelum ack dikembalikan, mis. stream lebih cepat dari respons HTTP.
     var beforeAck: (() -> Void)?
+    /// True = respons kirim berikutnya ditahan sampai `releaseAck()` (respons yang datang terlambat).
+    var isHoldingAck = false
     private(set) var calls: [String] = []
+    /// Jumlah stream yang sudah ditutup (putus, selesai, atau dibatalkan pemakai).
+    private(set) var closedStreams = 0
     private var continuation: AsyncThrowingStream<String, Error>.Continuation?
+    private var heldAck: CheckedContinuation<Void, Never>?
+
+    var isAckHeld: Bool { heldAck != nil }
 
     func initialize() async throws -> Data {
         calls.append("init")
@@ -34,13 +41,24 @@ final class FakeChatTransport: TanyaAIChatTransport {
 
     func sendMessage(conversationID: String, clientMessageID: String, text: String) async throws -> Data {
         calls.append("send:\(text)")
+        let result = sendResult
         beforeAck?()
-        return try sendResult.get()
+        if isHoldingAck {
+            isHoldingAck = false
+            await withCheckedContinuation { heldAck = $0 }
+        }
+        return try result.get()
+    }
+
+    func releaseAck() {
+        heldAck?.resume()
+        heldAck = nil
     }
 
     func events(conversationID: String, lastEventID: String?) -> AsyncThrowingStream<String, Error> {
         calls.append("events:\(lastEventID ?? "none")")
         return AsyncThrowingStream { continuation in
+            continuation.onTermination = { _ in self.closedStreams += 1 }
             // Gateway selalu membuka stream dengan komentar `: connected`.
             continuation.yield(": connected")
             guard self.scriptedStreams.isEmpty else {

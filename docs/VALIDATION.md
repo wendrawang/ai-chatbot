@@ -1,5 +1,19 @@
 # Validasi starter
 
+## Perbaikan review bridging lanjutan — 29 Oktober 2026
+
+- Sesi habis final: `expireSession()` membatalkan task sambungan, jadi stream yang sedang terbuka ikut
+  ditutup dan `run()` tidak lagi menimpa `expired` menjadi `connecting`/`live` (sebelumnya callback 401
+  bisa terpanggil dua kali setelah reconnect).
+- `ChatTurn` memegang `client_msg_id` pertanyaan yang ditunggu; ack atau penolakan pertanyaan lama
+  (mis. sebelum percakapan berganti) diabaikan sehingga tidak mengunci/membuka pertanyaan baru.
+- Error `retryable:false` saat pembukaan awal tidak lagi menyisakan spinner: `isLoadingHistory` hanya
+  true selama masih menyambung, dan `onConnectionFailed` meneruskan error ke host sekali.
+- Contoh transport Alamofire callback → async ditambahkan di `CHAT_GATEWAY.md`.
+
+Test regresi: 401 saat kirim menutup stream tanpa reconnect, respons kirim terlambat dari percakapan
+lama, 403 saat init menghentikan loading dan memanggil host sekali, ack/penolakan lama di `ChatTurn`.
+
 ## Perbaikan review bridging — 29 Oktober 2026
 
 - Frame SSE selesai di baris `data:`; `turn_end` terakhir tidak lagi tertahan bila host membuang

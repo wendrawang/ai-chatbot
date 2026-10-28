@@ -28,22 +28,34 @@ public final class TanyaAIBridge: ObservableObject {
     var conversationID: String?
     /// `id` event SSE terbesar yang sudah diterima (termasuk `turn_end`), bagian dari `Last-Event-ID`.
     var eventCursor: Int?
+    /// Loop sambungan yang sedang berjalan; dibatalkan saat sesi habis agar stream yang terbuka ikut ditutup.
+    var connectionTask: Task<Void, Never>?
     let transport: TanyaAIChatTransport
     let onSessionExpired: (() -> Void)?
+    let onConnectionFailed: ((Error) -> Void)?
     let sleep: (TimeInterval) async throws -> Void
 
     /// `onSessionExpired` dipanggil sekali saat gateway menjawab 401 (sesi OMNI habis); stream tidak dibuka lagi.
-    public convenience init(transport: TanyaAIChatTransport, onSessionExpired: (() -> Void)? = nil) {
-        self.init(transport: transport, onSessionExpired: onSessionExpired, sleep: ChatBackoff.sleep(seconds:))
+    /// `onConnectionFailed` dipanggil sekali saat error yang tidak bisa di-retry (`retryable:false`) menghentikan
+    /// sambungan; host menampilkan error sesuai polanya. Error berupa `TanyaAITransportError` dari transport.
+    public convenience init(
+        transport: TanyaAIChatTransport, onSessionExpired: (() -> Void)? = nil,
+        onConnectionFailed: ((Error) -> Void)? = nil
+    ) {
+        self.init(
+            transport: transport, onSessionExpired: onSessionExpired, onConnectionFailed: onConnectionFailed,
+            sleep: ChatBackoff.sleep(seconds:)
+        )
     }
 
     /// `sleep` disuntikkan test agar jeda reconnect instan.
     init(
         transport: TanyaAIChatTransport, onSessionExpired: (() -> Void)?,
-        sleep: @escaping (TimeInterval) async throws -> Void
+        onConnectionFailed: ((Error) -> Void)? = nil, sleep: @escaping (TimeInterval) async throws -> Void
     ) {
         self.transport = transport
         self.onSessionExpired = onSessionExpired
+        self.onConnectionFailed = onConnectionFailed
         self.sleep = sleep
     }
 
@@ -54,6 +66,9 @@ public final class TanyaAIBridge: ObservableObject {
     var lastEventID: String? {
         [messages.latestSeq, eventCursor].compactMap { $0 }.max().map(String.init)
     }
+
+    /// Loading hanya selama pembukaan pertama masih berjalan; gagal permanen atau sesi habis menghentikannya.
+    var isLoadingHistory: Bool { !isHistoryLoaded && connection == .connecting }
 
     /// Sambutan hanya untuk percakapan kosong; pesan pertama (dari stream) langsung menggantikannya.
     var isWelcomeVisible: Bool { isHistoryLoaded && messages.isEmpty }
@@ -67,16 +82,18 @@ public final class TanyaAIBridge: ObservableObject {
     /// True bila gateway menerima pesan (ack 202); false mempertahankan draft di composer.
     func send(_ text: String) async -> Bool {
         guard !isAwaitingReply, isReady, let conversationID else { return false }
-        turn.start()
+        // Penanda pertanyaan ini: respons yang datang setelah turn berganti tidak mengubah turn yang baru.
+        let clientMessageID = UUID().uuidString
+        turn.start(clientMessageID: clientMessageID)
         do {
             let data = try await transport.sendMessage(
-                conversationID: conversationID, clientMessageID: UUID().uuidString, text: text
+                conversationID: conversationID, clientMessageID: clientMessageID, text: text
             )
             let ack = try? JSONDecoder.wire.decode(WireEnvelope<WireSendAck>.self, from: data).data
-            turn.accept(questionSeq: ack.flatMap { Int($0.seq) })
+            turn.accept(questionSeq: ack.flatMap { Int($0.seq) }, for: clientMessageID)
             return true
         } catch {
-            turn.cancel()
+            turn.cancel(clientMessageID: clientMessageID)
             if case let .response(statusCode, _)? = error as? TanyaAITransportError,
                 ChatBackoff.isUnauthorized(statusCode: statusCode)
             {
@@ -86,10 +103,12 @@ public final class TanyaAIBridge: ObservableObject {
         }
     }
 
-    /// Sesi OMNI habis (401) dari jalur mana pun: berhenti menyambung dan beri tahu host sekali.
+    /// Sesi OMNI habis (401) dari jalur mana pun: tutup stream yang terbuka, berhenti menyambung, dan beri tahu
+    /// host sekali. Status ini final selama bridge hidup.
     func expireSession() {
         guard connection != .expired else { return }
         connection = .expired
+        connectionTask?.cancel()
         onSessionExpired?()
     }
 

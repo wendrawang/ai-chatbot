@@ -61,10 +61,11 @@ public struct ChatScreen<Content: View>: View {
         content
     }
 
-    /// Hanya saat pertama dibuka; menyambung ulang tidak menutupi pesan yang sudah tampil.
+    /// Hanya saat pertama dibuka; menyambung ulang tidak menutupi pesan yang sudah tampil. Gagal permanen
+    /// menghentikan loading; error ditampilkan host lewat `onConnectionFailed`/`onSessionExpired`.
     @ViewBuilder
     private var loadingIndicator: some View {
-        if !bridge.isHistoryLoaded {
+        if bridge.isLoadingHistory {
             ProgressView()
                 .progressViewStyle(.circular)
                 .tint(colors.colorsIconColored)

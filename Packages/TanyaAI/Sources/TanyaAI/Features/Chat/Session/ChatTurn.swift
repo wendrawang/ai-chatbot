@@ -8,21 +8,25 @@
 /// Satu pertanyaan per waktu. Hanya `turn_end` dengan `seq` setelah pertanyaan yang sedang ditunggu
 /// (seq dari ack kirim) yang membuka kunci, jadi `turn_end` lama hasil replay setelah reconnect tidak
 /// membuka kirim untuk pertanyaan baru. `turn_end` boleh datang sebelum ack (stream lebih cepat dari
-/// respons HTTP); ia dicatat lalu dicocokkan saat ack tiba.
+/// respons HTTP); ia dicatat lalu dicocokkan saat ack tiba. Respons kirim yang datang terlambat
+/// (pertanyaan lama, mis. sebelum percakapan berganti) dikenali lewat `client_message_id` dan diabaikan.
 struct ChatTurn: Equatable {
-    private(set) var isAwaiting = false
+    /// `client_message_id` pertanyaan yang ditunggu; nil = tidak menunggu.
+    private var clientMessageID: String?
     /// Seq pertanyaan dari ack; nil selama ack belum diterima.
     private var questionSeq: Int?
     /// Seq `turn_end` terbesar sejak pertanyaan dikirim.
     private var latestEndSeq: Int?
 
-    mutating func start() {
-        self = ChatTurn(isAwaiting: true)
+    var isAwaiting: Bool { clientMessageID != nil }
+
+    mutating func start(clientMessageID: String) {
+        self = ChatTurn(clientMessageID: clientMessageID)
     }
 
     /// Ack gateway diterima. Seq yang tidak terbaca = turn berikutnya mana pun dianggap penutupnya.
-    mutating func accept(questionSeq seq: Int?) {
-        guard isAwaiting else { return }
+    mutating func accept(questionSeq seq: Int?, for clientMessageID: String) {
+        guard self.clientMessageID == clientMessageID else { return }
         let questionSeq = seq ?? .min
         self.questionSeq = questionSeq
         if let latestEndSeq, latestEndSeq > questionSeq {
@@ -40,7 +44,13 @@ struct ChatTurn: Equatable {
         }
     }
 
-    /// Kirim ditolak atau percakapan berganti.
+    /// Kirim pertanyaan ini ditolak; penolakan pertanyaan lama tidak membuka kunci pertanyaan baru.
+    mutating func cancel(clientMessageID: String) {
+        guard self.clientMessageID == clientMessageID else { return }
+        self = ChatTurn()
+    }
+
+    /// Percakapan berganti: pertanyaan apa pun tidak lagi ditunggu.
     mutating func cancel() {
         self = ChatTurn()
     }

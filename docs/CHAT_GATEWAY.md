@@ -11,6 +11,7 @@ Pembagian kerja host ↔ TanyaAI untuk gateway ICT. Sumber kebenaran contract te
 | Mengirim request per endpoint, mengembalikan body mentah | Decode envelope, `Message`, error, frame SSE |
 | Melempar `TanyaAITransportError.response` untuk non-2xx | Retry/backoff, merge history tanpa duplikat |
 | Login ulang saat `onSessionExpired` | Pesan ditampilkan hanya dari stream; `turn_end` membuka kirim |
+| Popup/halaman error saat `onConnectionFailed` | Loading dihentikan, composer nonaktif |
 
 Welcome/shortcut tetap dari BE host (inquiry proposition) dan di-decode host; contract ICT
 di-decode TanyaAI karena khusus Tanya AI dan sama di semua host.
@@ -35,11 +36,15 @@ Typing, cancel, limits, list conversations, dan close belum dipakai.
    dari 429/503), lalu ulang dari init. History baru diambil per halaman sampai bertemu pesan terakhir
    yang sudah ada, baru sisanya ditambahkan. Jeda kembali ke 1 detik setelah stream tersambung.
 3. Berhenti: halaman ditutup (task dibatalkan), init mengembalikan `CLOSED` (history tetap tampil),
-   401 (`onSessionExpired`, sekali), atau error lain dengan `retryable:false`.
+   401 (`onSessionExpired`, sekali), atau error lain dengan `retryable:false` (`onConnectionFailed`, sekali,
+   dengan `TanyaAITransportError`). Loading awal ikut berhenti. 401 dari jalur mana pun (termasuk kirim)
+   menutup stream yang sedang terbuka dan bersifat final: tidak menyambung ulang.
 4. Kirim: ack 202 hanya mengunci composer dan memberi `seq` pertanyaan. Pertanyaan tampil saat event
    `message` miliknya datang, jawaban bot menyusul. Hanya `turn_end` dengan `id` lebih besar dari seq
    pertanyaan yang membuka kunci (replay `turn_end` lama diabaikan; `turn_end` sebelum ack dicocokkan
    saat ack tiba). Kirim gagal = draft tetap; 401 saat kirim = `onSessionExpired`, sama seperti saat sambung.
+   Respons kirim dicocokkan lewat `client_msg_id`: respons yang datang terlambat untuk pertanyaan lama
+   (mis. setelah percakapan berganti) tidak mengubah pertanyaan yang sedang ditunggu.
 
 Frame SSE selesai di baris `data:` (contract: `data` JSON satu baris dan field terakhir), jadi host
 boleh membuang baris kosong tanpa menahan event terakhir.
@@ -54,30 +59,93 @@ menggantikan sambutan.
 
 ## Contoh transport di host
 
+Protocol memakai async/await (iOS 15). Host yang service-nya masih callback cukup membungkus
+callback dengan continuation; tidak perlu mengubah service lain.
+
+Gateway ICT tidak memakai envelope `response_code` host, jadi jangan lewat `BaseService.request`
+(`responseJSON` membuang body mentah dan handler-nya memeriksa `response_code`). Buat service baru yang
+memakai `Session` Alamofire yang sama (SSL pinning, interceptor) dan `responseData`.
+
 ```swift
+import Alamofire
+import TanyaAI
+
 final class TanyaAIChatService: TanyaAIChatTransport {
-    func events(conversationID: String, lastEventID: String?) -> AsyncThrowingStream<String, Error> {
-        AsyncThrowingStream { continuation in
-            let task = Task {
-                do {
-                    var request = makeRequest(path: "/chat/conversations/\(conversationID)/events")
-                    request.setValue("text/event-stream", forHTTPHeaderField: "Accept")
-                    request.setValue(lastEventID, forHTTPHeaderField: "Last-Event-ID")
-                    let (bytes, response) = try await session.bytes(for: request)
-                    try validate(response) // non-2xx → TanyaAITransportError.response(statusCode:body:)
-                    for try await line in bytes.lines { continuation.yield(line) }
-                    continuation.finish()
-                } catch {
-                    continuation.finish(throwing: error)
+    private let session: Session        // session Alamofire host yang sudah ada
+    private let baseURL: String         // base URL chat-gateway ICT
+    private var headers: HTTPHeaders    // X-OCBCNISP-OMNI-SESSION, -CHANNEL, dst.
+
+    func initialize() async throws -> Data {
+        try await data(session.request(baseURL + "/chat/init", method: .post,
+                                       parameters: [String: String](), encoder: JSONParameterEncoder.default,
+                                       headers: headers))
+    }
+
+    // history dan sendMessage sama: buat DataRequest lalu `try await data(request)`.
+
+    /// Callback Alamofire → async. Non-2xx dilempar beserta body mentah; TanyaAI yang membaca isinya.
+    private func data(_ request: DataRequest) async throws -> Data {
+        try await withTaskCancellationHandler {
+            try await withCheckedThrowingContinuation { continuation in
+                request.responseData(emptyResponseCodes: [200, 202, 204]) { response in
+                    let body = response.data ?? Data()
+                    if let statusCode = response.response?.statusCode, !(200..<300).contains(statusCode) {
+                        continuation.resume(throwing: TanyaAITransportError.response(statusCode: statusCode, body: body))
+                    } else {
+                        continuation.resume(with: response.result.mapError { $0 as Error })
+                    }
                 }
             }
-            continuation.onTermination = { _ in task.cancel() }
+        } onCancel: {
+            request.cancel()
         }
     }
 }
 ```
 
-`bytes.lines` membuang baris kosong; parser TanyaAI menutup frame di baris `data:`. `makeRequest` menambah base URL dan header OMNI. Jangan log isi pesan.
+SSE lewat `streamRequest` Alamofire (5.2+) agar tetap memakai session yang sama. Potongan data tidak
+selalu berakhir di batas baris, jadi host menyimpan sisa baris sampai `\n` berikutnya:
+
+```swift
+func events(conversationID: String, lastEventID: String?) -> AsyncThrowingStream<String, Error> {
+    AsyncThrowingStream { continuation in
+        var headers = self.headers
+        headers.add(name: "Accept", value: "text/event-stream")
+        if let lastEventID { headers.add(name: "Last-Event-ID", value: lastEventID) }
+        let request = session.streamRequest(baseURL + "/chat/conversations/\(conversationID)/events",
+                                            headers: headers)
+        var pending = ""
+        var errorBody = Data()
+        request.responseStreamString { stream in
+            let statusCode = request.response?.statusCode ?? 200
+            switch stream.event {
+            case let .stream(result):
+                let chunk = (try? result.get()) ?? ""
+                guard (200..<300).contains(statusCode) else { errorBody += Data(chunk.utf8); return }
+                pending += chunk
+                while let newline = pending.firstIndex(of: "\n") {
+                    continuation.yield(String(pending[..<newline]))
+                    pending = String(pending[pending.index(after: newline)...])
+                }
+            case let .complete(completion):
+                if !(200..<300).contains(statusCode) {
+                    continuation.finish(throwing: TanyaAITransportError.response(statusCode: statusCode,
+                                                                                 body: errorBody))
+                } else {
+                    continuation.finish(throwing: completion.error)
+                }
+            }
+        }
+        // Wajib: TanyaAI membatalkan stream saat halaman ditutup atau sesi habis (401).
+        continuation.onTermination = { _ in request.cancel() }
+    }
+}
+```
+
+Host tanpa Alamofire bisa memakai `URLSession.bytes(for:)` lalu `for try await line in bytes.lines`
+dengan aturan yang sama (non-2xx → `TanyaAITransportError.response`, `onTermination` membatalkan task).
+`bytes.lines` membuang baris kosong; parser TanyaAI menutup frame di baris `data:`. Keepalive gateway
+menjaga stream tidak kena timeout idle. Jangan log isi pesan.
 
 ## Belum diputuskan
 

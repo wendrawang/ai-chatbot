@@ -12,21 +12,13 @@ extension TanyaAIBridge {
     /// error yang bisa di-retry = jeda backoff lalu ulang dari init. Berhenti saat task dibatalkan (halaman
     /// ditutup), percakapan ditutup, sesi habis, atau error yang tidak bisa di-retry.
     func run() async {
-        var backoff = ChatBackoff()
-        while !Task.isCancelled, connection != .expired {
-            let delay: TimeInterval
-            do {
-                guard try await connectOnce(onLive: { backoff.reset() }) else {
-                    connection = .closed
-                    return
-                }
-                delay = backoff.nextDelay()
-            } catch {
-                guard !Task.isCancelled, let retryDelay = retryDelay(after: error, backoff: &backoff) else { return }
-                delay = retryDelay
-            }
-            connection = .connecting
-            try? await sleep(delay)
+        // Task terpisah agar sesi habis (mis. 401 saat kirim) bisa menutup stream yang sedang terbuka.
+        let task = Task { await connectUntilStopped() }
+        connectionTask = task
+        await withTaskCancellationHandler {
+            await task.value
+        } onCancel: {
+            task.cancel()
         }
     }
 }
@@ -34,6 +26,29 @@ extension TanyaAIBridge {
 // MARK: - Connection
 
 private extension TanyaAIBridge {
+    func connectUntilStopped() async {
+        var backoff = ChatBackoff()
+        while !Task.isCancelled, connection != .expired {
+            let delay: TimeInterval
+            do {
+                guard try await connectOnce(onLive: { backoff.reset() }) else {
+                    if connection != .expired {
+                        connection = .closed
+                    }
+                    return
+                }
+                delay = backoff.nextDelay()
+            } catch {
+                guard !Task.isCancelled, let retryDelay = retryDelay(after: error, backoff: &backoff) else { return }
+                delay = retryDelay
+            }
+            // Sesi habis atau halaman ditutup selama stream terbuka: status final tidak ditimpa.
+            guard !Task.isCancelled, connection != .expired else { return }
+            connection = .connecting
+            try? await sleep(delay)
+        }
+    }
+
     /// Satu siklus. False = percakapan `CLOSED` (history tetap dimuat, stream tidak dibuka).
     /// True = stream berakhir normal dan perlu disambung ulang.
     func connectOnce(onLive: () -> Void) async throws -> Bool {
@@ -83,7 +98,8 @@ private extension TanyaAIBridge {
         return collected
     }
 
-    /// Nil = berhenti menyambung. 401 menyerahkan ke host; error lain yang `retryable:false` menutup percakapan.
+    /// Nil = berhenti menyambung. 401 menyerahkan ke host; error lain yang `retryable:false` menutup percakapan
+    /// dan diteruskan ke host lewat `onConnectionFailed`.
     func retryDelay(after error: Error, backoff: inout ChatBackoff) -> TimeInterval? {
         guard case let .response(statusCode, body)? = error as? TanyaAITransportError else {
             return backoff.nextDelay()
@@ -94,6 +110,7 @@ private extension TanyaAIBridge {
                 expireSession()
             } else {
                 connection = .closed
+                onConnectionFailed?(error)
             }
             return nil
         }

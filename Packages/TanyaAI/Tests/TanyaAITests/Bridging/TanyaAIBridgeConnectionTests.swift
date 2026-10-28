@@ -98,7 +98,32 @@ struct TanyaAIBridgeConnectionTests {
         )
         await bridge.run()
         #expect(bridge.connection == .expired)
+        #expect(!bridge.isLoadingHistory)
         #expect(expiredCount == 1)
+        #expect(transport.calls == ["init"])
+    }
+
+    /// Error permanen saat pembukaan awal: loading berhenti (bukan spinner selamanya) dan host diberi tahu sekali.
+    @Test
+    func permanentFailureStopsLoadingAndTellsTheHostOnce() async {
+        let transport = FakeChatTransport()
+        transport.initResults = [.failure(response(403, WireFixture.error(isRetryable: false)))]
+        var failedStatuses: [Int] = []
+        let bridge = TanyaAIBridge(
+            transport: transport, onSessionExpired: nil,
+            onConnectionFailed: { error in
+                if case let .response(statusCode, _)? = error as? TanyaAITransportError {
+                    failedStatuses.append(statusCode)
+                }
+            },
+            sleep: { _ in }
+        )
+        #expect(bridge.isLoadingHistory)
+        await bridge.run()
+        #expect(bridge.connection == .closed)
+        #expect(!bridge.isLoadingHistory)
+        #expect(!bridge.isWelcomeVisible)
+        #expect(failedStatuses == [403])
         #expect(transport.calls == ["init"])
     }
 
