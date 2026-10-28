@@ -69,9 +69,11 @@ tersedia pada history/main.
 ## Struktur TanyaAI
 
 - `Bridging/`: API publik untuk host (`TanyaAIHost`). Satu-satunya pintu masuk host.
-- `Features/<Fitur>/Models|Views`: satu fitur = satu screen/alur yang bisa dinavigasi (kini `Chat`).
-  Model data (struct biasa) di `Models`, screen di `Views`, potongan view milik screen itu
-  (welcome, composer, nanti daftar pesan) di `Views/Sections`. Section bukan fitur sendiri.
+- `Features/<Fitur>/`: satu fitur = satu screen/alur yang bisa dinavigasi (kini `Chat`). Screen di
+  root fitur (`ChatScreen.swift`); tiap bagian screen punya folder sendiri berisi view dan model
+  yang hanya dipakai bagian itu: `Welcome/` (section + `WelcomeContent/Greeting/Shortcut`),
+  `Composer/`, nanti `Messages/`. Bagian bukan fitur sendiri. Model diletakkan dekat pemakainya,
+  tanpa folder `Models/` atau `Views/` umum. Model yang dipakai beberapa bagian naik ke root fitur.
 - `Shared/Keys`: enum key resource lintas fitur (`ChatCopy`, `ChatImage`,
   `ChatElementIdentifier`); `Shared/Extensions`: `Tipe+Key.swift` (satu extension per file).
 - `Resources/`: aset dan lokalisasi saja, tanpa file Swift. Tests mencerminkan folder Sources;
@@ -120,8 +122,7 @@ tersedia pada history/main.
   `ComponentIdentifier.Composer.send`). String identifier adalah kontrak UI test.
 - Tidak ada alias untuk nilai sistem: `.clear`, bukan `CustomColors.transparent`.
 - TanyaAI dipisah per tanggung jawab (lihat "Struktur TanyaAI"). Folder baru seperti
-  `Features/Messages/` atau `Models/` di fitur yang belum punya model dibuat saat file
-  pertamanya ada, bukan lebih awal.
+  `Features/Chat/Messages/` atau `Flows/` dibuat saat file pertamanya ada, bukan lebih awal.
 - Screen standar memakai composition `ScreenContainer` dari DesignKit: header,
   area scroll, trailing action dan footer. Container memiliki satu `isScrolled`
   dan ID coordinate space lokal. Jangan membuat inheritance/BaseScreen protocol, ViewModel
@@ -145,7 +146,7 @@ tersedia pada history/main.
   tanpa handler, item menu disabled. Jangan menambah session, reset draft, intent,
   bubble atau database sebelum diminta.
 - Welcome berasal dari BE, tapi decode milik host: `WelcomeContent`/`WelcomeGreeting`/`WelcomeShortcut`
-  (folder `Features/Chat/Models/`) adalah struct biasa tanpa `Decodable`. Host memetakan model
+  (folder `Features/Chat/Welcome/`) adalah struct biasa tanpa `Decodable`. Host memetakan model
   inquiry init miliknya ke tipe ini; `iconURL` nil memakai ikon fallback. TanyaAI hanya men-decode
   hasil stream (nanti), bukan response init. Shortcut dikirim lewat `onSend(prompt)` bridge.
 - `TanyaAIBridge` (Bridging/) dipegang host selama halaman terbuka: `onSend`,

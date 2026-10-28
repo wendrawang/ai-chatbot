@@ -1,5 +1,12 @@
 # Validasi starter
 
+## Folder per bagian fitur Chat — 28 Oktober 2026
+
+`Features/Chat/Models|Views/Sections` diganti folder per bagian: `ChatScreen.swift` di root fitur,
+`Welcome/` (section + tiga model welcome), `Composer/`. Model tinggal dekat pemakainya. Hanya pindah
+file (`git mv`), tanpa perubahan kode; SPM mengikuti folder, project sandbox tidak berubah.
+`Bridging/` dan `Shared/` tetap. `Messages/`, `Flows/`, `ChatState/ChatAction` belum dibuat.
+
 ## Bayangan header saat digulir — 28 Oktober 2026
 
 Header mendapat bayangan Figma `Shadow/Default` (x 0, y 2, blur 10, `#BEC3D0` 40%) lewat

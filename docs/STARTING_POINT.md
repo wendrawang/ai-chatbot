@@ -41,8 +41,9 @@ Packages/
         ├── Bridging/TanyaAIHost.swift   # API publik: konfigurasi host + makeView()
         ├── Features/
         │   └── Chat/
-        │       ├── Models/              # WelcomeContent, WelcomeGreeting, WelcomeShortcut
-        │       └── Views/               # ChatScreen + Sections/ (ComposerSection, WelcomeSection)
+        │       ├── ChatScreen.swift     # menyusun halaman, memilih bagian yang tampil
+        │       ├── Welcome/             # WelcomeSection + WelcomeContent/Greeting/Shortcut
+        │       └── Composer/            # ComposerSection (draft lokal)
         ├── Shared/
         │   ├── Keys/                    # ChatCopy, ChatImage, ChatElementIdentifier
         │   └── Extensions/              # String+ChatCopy, Image+ChatImage

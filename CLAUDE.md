@@ -20,8 +20,9 @@ bridge host; tanpa session/stream. Minimum iOS 15 (host ikut naik ke iOS 15 untu
   sampai jawaban (event penghenti dari SSE menyusul): tombol kirim jadi `LoadingDots`, kartu nonaktif. Gambar URL lewat `RemoteImage` (cache memori bersama).
 - Ukuran welcome/kartu/titik masih estimasi screenshot (TODO di `CustomSizes`/`CustomMotion`);
   aset `chatBackground`/`welcomeOrb` placeholder (`ChatImage`), ganti file, nama tetap.
-- Folder TanyaAI: `Bridging/` (API host), `Features/<Fitur>/Models|Views` (section di
-  `Views/Sections`), `Shared/Keys|Extensions`, `Resources/`. Tests mencerminkan Sources. Detail di AGENTS.md.
+- Folder TanyaAI: `Bridging/` (API host), `Features/<Fitur>/` (screen di root, tiap bagian
+  `Welcome/`, `Composer/` berisi view + modelnya), `Shared/Keys|Extensions`, `Resources/`.
+  Tests mencerminkan Sources. Detail di AGENTS.md.
 - Unit test memakai Swift Testing (`@Test`, `#expect`, `#require`); UI test tetap
   XCTest. Suite yang memakai window di sandbox masuk `HostWindowTests` (berurutan).
 - Keputusan arsitektur dan saran tahap berikutnya: [docs/REVAMP_NOTES.md](docs/REVAMP_NOTES.md).

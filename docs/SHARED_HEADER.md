@@ -13,7 +13,7 @@ DesignKit/Sources/DesignKit/
 
 TanyaAI/Sources/TanyaAI/
 ├── Bridging/TanyaAIHost.swift                    # konfigurasi + pembuat halaman untuk host
-├── Features/Chat/Views/ChatScreen.swift          # content/menu/composer; layout dari container
+├── Features/Chat/ChatScreen.swift                # content/menu/composer; layout dari container
 ├── Shared/Keys/ChatElementIdentifier.swift       # technical identifier, bukan pemetaan copy
 └── Resources/{en,id,zh-Hans}.lproj/
 
