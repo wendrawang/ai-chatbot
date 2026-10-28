@@ -1,11 +1,18 @@
 # Validasi starter
 
+## Bubble pengguna bersudut siku — 28 Oktober 2026
+
+Bubble pesan keluar memakai `MessageBubbleShape`: tiga sudut membulat, kanan bawah siku (Figma "Beli
+valas"); iOS 15 tanpa `UnevenRoundedRectangle`, jadi path dari `UIBezierPath`. Chip tanggal dipaksa
+pola Figma `d MMM yyyy` untuk semua bahasa. Test: titik di sudut kanan bawah ada di dalam path, sudut
+lain tidak; label tanggal id/en.
+
 ## Sambutan vs history dan chip tanggal — 28 Oktober 2026
 
 Loading di tengah halaman sampai init + history pertama selesai (`isHistoryLoaded`); reconnect tidak
 menampilkan loading. Sambutan hanya bila history kosong (`isWelcomeVisible`); pesan pertama dari stream
 menggantikannya. Pesan dikelompokkan per hari kalender perangkat (`groupedByDay`), `DateChip` di atas
-setiap hari dengan format sesuai bahasa fitur (id "14 Okt 2026"). Chip memakai `colorsSurfaceSelected`
+setiap hari dengan pola Figma `d MMM yyyy`, nama bulan sesuai bahasa fitur (id "14 Okt 2026"). Chip memakai `colorsSurfaceSelected`
 agar terbaca di latar pink maupun putih (warna/padding Figma: TODO). Sandbox `--with-history` memuat
 fixture dua tanggal. Test: parse `created_at`, pemisahan hari (termasuk zona perangkat), status
 loading/sambutan, UI test history tanpa sambutan dengan dua chip.

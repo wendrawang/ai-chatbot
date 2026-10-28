@@ -7,8 +7,8 @@
 
 import SwiftUI
 
-/// Satu pesan teks. Keluar (pengguna): bubble merah rata kanan, teks putih. Masuk: tanpa background,
-/// selebar konten, rata kiri. Margin antar pesan milik daftar pemakai.
+/// Satu pesan teks. Keluar (pengguna): bubble merah rata kanan dengan sudut kanan bawah siku, teks putih.
+/// Masuk: tanpa background, selebar konten, rata kiri. Margin antar pesan milik daftar pemakai.
 @MainActor
 public struct MessageBubble: View {
     @Environment(\.designColors)
@@ -38,7 +38,7 @@ public struct MessageBubble: View {
     @ViewBuilder
     private var surface: some View {
         if isOutgoing {
-            RoundedRectangle(cornerRadius: CustomSizes.MessageBubble.cornerRadius.scaledToArtwork)
+            MessageBubbleShape(cornerRadius: CustomSizes.MessageBubble.cornerRadius.scaledToArtwork)
                 .fill(colors.colorsButtonActive)
         }
     }

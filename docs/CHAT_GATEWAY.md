@@ -43,8 +43,8 @@ Percakapan dari init berbeda dengan sebelumnya (yang lama diarsipkan) mengganti 
 
 Tampilan: sebelum history pertama selesai, loading di tengah halaman (reconnect tidak menampilkan
 loading; pesan yang sudah tampil tetap terbaca). History kosong = sambutan (greeting, shortcut, emblem);
-ada pesan = sambutan disembunyikan, chip tanggal (`created_at`, zona waktu perangkat, format mengikuti
-bahasa fitur) di atas pesan pertama setiap hari. Pesan pertama yang datang dari stream langsung
+ada pesan = sambutan disembunyikan, chip tanggal (`created_at`, zona waktu perangkat, pola Figma `d MMM yyyy`
+dengan nama bulan sesuai bahasa fitur) di atas pesan pertama setiap hari. Pesan pertama yang datang dari stream langsung
 menggantikan sambutan.
 
 ## Contoh transport di host

@@ -35,7 +35,8 @@ public enum CustomSizes {
         public static let offsetY: CGFloat = 2
     }
 
-    /// Bubble pesan nasabah (Figma "Beli USD"): sudut pil dan jarak minimum dari tepi kiri.
+    /// Bubble pesan nasabah (Figma "Beli valas"): radius tiga sudut (kanan bawah siku) dan jarak minimum
+    /// dari tepi kiri.
     /// TODO: Cocokkan dengan nilai Figma; sementara estimasi dari screenshot.
     public enum MessageBubble {
         public static let cornerRadius: CGFloat = 16

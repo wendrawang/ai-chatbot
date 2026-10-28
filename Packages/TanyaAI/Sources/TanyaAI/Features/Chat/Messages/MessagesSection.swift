@@ -25,7 +25,7 @@ struct MessagesSection: View {
         LazyVStack(spacing: FigmaSize.spacingLarge.scaledToArtwork) {
             ForEach(days) { day in
                 if let date = day.date {
-                    DateChip(text: date.formatted(dayFormat))
+                    DateChip(text: ChatDateFormat.dayLabel(for: date, locale: locale))
                         .accessibilityIdentifier(ChatElementIdentifier.date)
                 }
                 ForEach(day.messages) { message in
@@ -45,11 +45,6 @@ struct MessagesSection: View {
 // MARK: - Helpers
 
 private extension MessagesSection {
-    /// Urutan mengikuti bahasa fitur: id "14 Okt 2026", en "Oct 14, 2026", zh-Hans "2026年10月14日".
-    var dayFormat: Date.FormatStyle {
-        Date.FormatStyle.dateTime.day().month(.abbreviated).year().locale(locale)
-    }
-
     func identifier(of message: ChatMessage) -> String {
         message.author == .customer ? ChatElementIdentifier.customerMessage : ChatElementIdentifier.replyMessage
     }
