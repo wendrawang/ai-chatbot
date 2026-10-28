@@ -43,13 +43,13 @@ extension HostWindowTests {
             #expect(host.navigation?.viewControllers.count == 2)
         }
 
+        /// Transport host melapor ke blocker host saat kirim gagal tanpa internet; retry menutup blocker.
         @Test
-        func rejectedOrOfflineSendKeepsDraftAndOfflineShowsTheHostBlocker() {
-            #expect(TanyaAIUseCase(options: SandboxOptions(arguments: [])).send("Halo"))
-            #expect(!TanyaAIUseCase(options: SandboxOptions(arguments: ["--reject-send"])).send("Halo"))
+        func offlineSendShowsTheHostBlocker() async {
             let options = SandboxOptions(arguments: ["--offline"])
             let offline = TanyaAIScreenViewModel(useCase: TanyaAIUseCase(options: options))
-            #expect(!offline.useCase.send("Halo"))
+            let transport = offline.useCase.makeChatTransport()
+            _ = try? await transport.sendMessage(conversationID: "c", clientMessageID: "c-1", text: "Halo")
             #expect(offline.isNetworkUnavailable)
             offline.retry()
             #expect(!offline.isNetworkUnavailable)

@@ -8,9 +8,8 @@
 import Foundation
 import TanyaAI
 
-/// Sandbox: menerima draft tanpa backend. `--reject-send` menolak draft;
-/// `--offline` melaporkan error tidak ada internet ke view model; `--broken-icons`/`--slow-icons` membuat ikon
-/// shortcut gagal/tertahan loading.
+/// Sandbox: sambutan dari fixture dan gateway chat tiruan. `--offline` melaporkan error tidak ada internet
+/// ke view model saat kirim; `--broken-icons`/`--slow-icons` membuat ikon shortcut gagal/tertahan loading.
 final class TanyaAIUseCase {
     let callback = BaseCallback()
     private let options: SandboxOptions
@@ -19,14 +18,10 @@ final class TanyaAIUseCase {
         self.options = options
     }
 
-    /// true = draft diterima host; false = draft tetap di composer.
-    func send(_ text: String) -> Bool {
-        // TODO: Panggil service chat host setelah contract BE tersedia.
-        guard !options.isOffline else {
-            callback.onSubmissionFailed(URLError(.notConnectedToInternet))
-            return false
-        }
-        return !options.isRejectingSend
+    /// Transport chat-gateway untuk `TanyaAIBridge`. Host asli memanggil service ICT dengan header OMNI.
+    @MainActor
+    func makeChatTransport() -> TanyaAIChatTransport {
+        SandboxChatTransport(options: options) { [callback] error in callback.onSubmissionFailed(error) }
     }
 
     /// Isi halaman sambutan dari fixture. Nil pada mode `--header-demo` (area scroll berisi konten contoh)

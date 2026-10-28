@@ -30,7 +30,7 @@ final class WelcomeUITests: XCTestCase {
     }
 
     func testShortcutTurnsSendIntoLoadingUntilNewConversation() {
-        launch(locale: "en")
+        launch(locale: "en", extra: ["--hold-reply"])
         let shortcut = application.buttons["welcome.shortcut.0"]
         XCTAssertTrue(shortcut.waitForExistence(timeout: 10))
         let send = application.buttons["composer.send"]
@@ -52,7 +52,7 @@ final class WelcomeUITests: XCTestCase {
 
     /// Ikon gagal diunduh: kartu tetap tampil dengan ikon fallback FE dan tetap bisa diketuk.
     func testBrokenIconsKeepShortcutsTappable() {
-        launch(locale: "id", extra: ["--broken-icons"])
+        launch(locale: "id", extra: ["--broken-icons", "--hold-reply"])
         let shortcut = application.buttons["welcome.shortcut.1"]
         XCTAssertTrue(shortcut.waitForExistence(timeout: 10))
         XCTAssertTrue(shortcut.label.contains("Beli Valas"))
@@ -63,13 +63,31 @@ final class WelcomeUITests: XCTestCase {
 
     /// Ikon belum selesai diunduh: kotak ikon menampilkan spinner, kartu sudah bisa diketuk.
     func testLoadingIconsKeepShortcutsTappable() {
-        launch(locale: "id", extra: ["--slow-icons"])
+        launch(locale: "id", extra: ["--slow-icons", "--hold-reply"])
         let shortcut = application.buttons["welcome.shortcut.0"]
         XCTAssertTrue(shortcut.waitForExistence(timeout: 10))
         XCTAssertTrue(application.activityIndicators.firstMatch.waitForExistence(timeout: 5))
         capture("welcome-loading-icons")
         shortcut.tap()
         XCTAssertEqual(application.buttons["composer.send"].label, "Menunggu jawaban")
+    }
+
+    /// Pertanyaan tampil dari stream (bukan langsung saat dikirim), lalu jawaban bot; `turn_end` membuka kirim lagi.
+    func testQuestionAndReplyArriveFromTheStream() {
+        launch(locale: "en")
+        let shortcut = application.buttons["welcome.shortcut.0"]
+        XCTAssertTrue(shortcut.waitForExistence(timeout: 10))
+        shortcut.tap()
+        let question = application.descendants(matching: .any)["chat.message.customer"].firstMatch
+        XCTAssertTrue(question.waitForExistence(timeout: 5))
+        XCTAssertEqual(question.label, "Cek Portfolio saya")
+        let reply = application.descendants(matching: .any)["chat.message.reply"].firstMatch
+        XCTAssertTrue(reply.waitForExistence(timeout: 5))
+        XCTAssertLessThan(question.frame.maxY, reply.frame.minY)
+        let send = application.buttons["composer.send"]
+        let unlocked = expectation(for: NSPredicate(format: "label == %@", "Send message"), evaluatedWith: send)
+        wait(for: [unlocked], timeout: 5)
+        capture("chat-question-and-reply")
     }
 
     private func launch(locale: String, extra: [String] = []) {

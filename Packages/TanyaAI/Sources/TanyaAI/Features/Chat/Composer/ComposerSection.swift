@@ -19,9 +19,10 @@ struct ComposerSection: View {
     private var draft = String()
     private let isEnabled: Bool
     private let isAwaitingReply: Bool
-    private let onSend: (String) -> Bool
+    private let onSend: (String) async -> Bool
 
-    init(isEnabled: Bool, isAwaitingReply: Bool, onSend: @escaping (String) -> Bool) {
+    /// `onSend` true = pesan diterima; draft dikosongkan bila belum diubah selama menunggu jawaban gateway.
+    init(isEnabled: Bool, isAwaitingReply: Bool, onSend: @escaping (String) async -> Bool) {
         self.isEnabled = isEnabled
         self.isAwaitingReply = isAwaitingReply
         self.onSend = onSend
@@ -51,7 +52,10 @@ struct ComposerSection: View {
 
 private extension ComposerSection {
     func submit() {
-        guard onSend(draft) else { return }
-        draft = String()
+        let text = draft
+        Task {
+            guard await onSend(text), draft == text else { return }
+            draft = String()
+        }
     }
 }

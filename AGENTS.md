@@ -147,11 +147,13 @@ tersedia pada history/main.
   bubble atau database sebelum diminta.
 - Welcome berasal dari BE, tapi decode milik host: `WelcomeContent`/`WelcomeGreeting`/`WelcomeShortcut`
   (folder `Features/Chat/Welcome/`) adalah struct biasa tanpa `Decodable`. Host memetakan model
-  inquiry init miliknya ke tipe ini; `iconURL` nil memakai ikon fallback. TanyaAI hanya men-decode
-  hasil stream (nanti), bukan response init. Shortcut dikirim lewat `onSend(prompt)` bridge.
-- `TanyaAIBridge` (Bridging/) dipegang host selama halaman terbuka: `onSend`,
-  `onNewConversation`, dan nanti event SSE mentah. Status menunggu jawaban (`isAwaitingReply`)
-  milik bridge, bukan host; satu pertanyaan per waktu.
+  inquiry init miliknya ke tipe ini; `iconURL` nil memakai ikon fallback. Contract chat-gateway ICT
+  (init chat, history, SSE) di-decode TanyaAI (`Features/Chat/Session/Wire*`). Shortcut dikirim lewat bridge.
+- `TanyaAIBridge` (Bridging/) dipegang host selama halaman terbuka bersama `TanyaAIChatTransport`
+  (per endpoint, body mentah, non-2xx = `TanyaAITransportError.response`). Bridge menjalankan
+  init → history → SSE lewat `.task`, backoff 1–30 detik tanpa batas, merge history berdasarkan
+  `message_id`, dan `Last-Event-ID` = seq terbesar. Pesan hanya tampil dari stream; `isAwaitingReply`
+  dari kirim sampai `turn_end`; satu pertanyaan per waktu. Detail: `docs/CHAT_GATEWAY.md`.
 - Gambar dari URL memakai `RemoteImage` DesignKit, pembungkus tipis `KFImage` Kingfisher
   (cache memori + disk, downsample ke `pointSize` × skala layar, validasi status HTTP,
   batal saat view hilang). Kingfisher hanya di-import di `RemoteImage`; fitur lain memakai
@@ -184,10 +186,9 @@ tersedia pada history/main.
 - Draft dimiliki `ComposerSection` (`@State`), bukan `ChatScreen`, agar setiap ketikan
   tidak me-render ulang header dan daftar pesan; draft dikosongkan bila chat diterima.
   Jangan log isi pesan.
-- Jaringan milik host lewat `TanyaAIService` (init, history, SSE persistent, kirim).
-  TanyaAI hanya decode JSON kontrak (`Service/ChatPayload`) dan menampilkan. Percakapan
-  dimiliki `ChatViewModel`; pesan berupa value type agar daftar hanya me-render baris
-  yang berubah. Kontrak: `docs/CHAT_CONTRACT.md`.
+- Jaringan milik host lewat `TanyaAIChatTransport` (init, history, SSE, kirim). TanyaAI decode
+  contract dan mengatur sesi di `TanyaAIBridge`; pesan berupa value type (`ChatMessage`) ber-ID
+  stabil. Kontrak: `docs/CHAT_GATEWAY.md`.
 - Integrasi host: `TanyaAIHost` hanya konfigurasi (`locale`, `colors`, `service`) dan
   `makeView()` berupa view SwiftUI. Host menampilkannya lewat navigasinya sendiri
   (host SwiftUI: coordinator + destination dengan `@StateObject`, swipe-back bawaan). Package

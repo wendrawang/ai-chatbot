@@ -10,7 +10,7 @@ import Testing
 
 @testable import Tanya_AI_Sandbox
 
-/// Host tiruan: isi sambutan dari fixture inquiry init, dan status menunggu jawaban setelah chat diterima.
+/// Host tiruan: isi sambutan dari fixture inquiry init; bridge dibuat sekali bersama transport host.
 struct TanyaAIScreenViewModelTests {
     @Test
     func welcomeComesFromTheInitFixtureInBackendOrder() throws {
@@ -45,17 +45,7 @@ struct TanyaAIScreenViewModelTests {
         #expect(makeViewModel(arguments: ["--header-demo"]).welcome == nil)
     }
 
-    @Test
-    func acceptedSendIsForwardedToTheHostUseCase() {
-        #expect(makeViewModel().send("Cek Portfolio saya"))
-    }
-
-    @Test(arguments: ["--reject-send", "--offline"])
-    func refusedSendKeepsTheDraft(flag: String) {
-        #expect(!makeViewModel(arguments: [flag]).send("Cek Portfolio saya"))
-    }
-
-    /// Bridge memegang callback host secara weak: view model tetap dilepas walau bridge masih hidup.
+    /// Bridge memegang callback dan transport host secara weak: view model tetap dilepas walau bridge masih hidup.
     @MainActor
     @Test
     func bridgeDoesNotKeepTheViewModelAlive() {

@@ -1,5 +1,19 @@
 # Validasi starter
 
+## Bridging chat-gateway — 28 Oktober 2026
+
+Host mengimplementasikan `TanyaAIChatTransport` per endpoint (init, history, kirim, SSE) dan
+mengembalikan body mentah; TanyaAI men-decode contract 1.0.1, menjalankan init → history → SSE
+lewat `.task`, menyambung ulang dengan backoff 1–30 detik (atau `retry_after_ms`), dan menggabungkan
+history baru berdasarkan `message_id` sampai bertemu pesan terakhir yang sudah ada. Stream dibuka
+dengan `Last-Event-ID` = seq terbesar. 401 → `onSessionExpired`; `CLOSED` → history tanpa stream.
+Pesan nasabah hanya tampil dari stream; `turn_end` membuka kirim. Daftar pesan teks sementara
+(`MessagesSection` + `MessageBubble`). Sandbox memakai gateway tiruan (`--hold-reply` menahan jawaban).
+
+Test: parser SSE (dengan/tanpa baris kosong, komentar), decode event dari contoh swagger, merge,
+backoff, urutan sambung/sambung ulang/kejar history/401/CLOSED/503/percakapan berganti, kirim
+dari stream sampai `turn_end`; transport sandbox; UI test pertanyaan lalu jawaban dari stream.
+
 ## Padding composer 16 di semua sisi — 28 Oktober 2026
 
 Disamakan dengan Byon (sesuai Figma): `ComposerSection` memberi `spacingLarge` di semua sisi, bukan

@@ -82,8 +82,9 @@ public protocol TanyaAIChatService {
 }
 ```
 
-- Diperbarui 28 Oktober 2026: seam yang dipilih adalah `TanyaAIBridge` yang dipegang host;
-  host meneruskan event SSE apa adanya, TanyaAI yang men-decode.
+- Diperbarui 28 Oktober 2026: seam final adalah `TanyaAIChatTransport` per endpoint milik host
+  (body mentah, baris SSE apa adanya). TanyaAI men-decode dan mengatur init → history → SSE,
+  retry, dan merge di `TanyaAIBridge`. Lihat [chat-gateway](CHAT_GATEWAY.md).
 - `ResponseDTO` dan mapper bersifat internal di TanyaAI. Saat contract berubah,
   hanya dua file ini yang ikut berubah.
 - Implementasi dummy ada di Sandbox, bukan di package produksi.

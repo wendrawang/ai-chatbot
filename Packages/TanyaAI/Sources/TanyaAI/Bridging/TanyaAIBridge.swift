@@ -6,37 +6,102 @@
 //
 
 import Combine
+import Foundation
 
 /// Jembatan host ↔ TanyaAI yang hidup selama halaman terbuka. Host membuatnya sekali (misalnya di view model
-/// milik `@StateObject` destination) lalu memberikannya ke `TanyaAIHost`. Status menunggu jawaban milik TanyaAI.
-/// TODO: Tambah `receive(_:)` untuk event SSE mentah dari host dan event penghenti loading setelah contract ada.
+/// milik `@StateObject` destination) bersama `TanyaAIChatTransport`, lalu memberikannya ke `TanyaAIHost`.
+/// TanyaAI yang menyambung (init → history → SSE), menyambung ulang, dan menggabungkan pesan.
 @MainActor
 public final class TanyaAIBridge: ObservableObject {
-    /// Sejak chat diterima host sampai jawaban selesai; tombol kirim menjadi titik bergerak dan shortcut nonaktif.
+    /// Urut `seq` naik; pesan nasabah juga baru muncul setelah datang lewat stream, bukan saat dikirim.
+    @Published
+    private(set) var messages: [ChatMessage] = []
+    /// Sejak kirim sampai event `turn_end`; tombol kirim menjadi titik bergerak dan shortcut nonaktif.
     @Published
     private(set) var isAwaitingReply = false
-    private let onSend: (String) -> Bool
+    @Published
+    var connection = ChatConnection.connecting
+    /// Percakapan dari `/chat/init` terakhir; nil sebelum init pertama berhasil.
+    var conversationID: String?
+    let transport: TanyaAIChatTransport
+    let onSessionExpired: (() -> Void)?
+    let sleep: (TimeInterval) async throws -> Void
     private let onNewConversation: (() -> Void)?
 
-    /// `onSend` mengembalikan true bila host menerima chat; false mempertahankan draft di composer.
+    /// `onSessionExpired` dipanggil sekali saat gateway menjawab 401 (sesi OMNI habis); stream tidak dibuka lagi.
     /// Tanpa `onNewConversation`, item menu "Percakapan baru" nonaktif.
-    public init(onNewConversation: (() -> Void)? = nil, onSend: @escaping (String) -> Bool) {
-        self.onSend = onSend
+    public convenience init(
+        transport: TanyaAIChatTransport, onSessionExpired: (() -> Void)? = nil,
+        onNewConversation: (() -> Void)? = nil
+    ) {
+        self.init(
+            transport: transport, onSessionExpired: onSessionExpired, onNewConversation: onNewConversation,
+            sleep: ChatBackoff.sleep(seconds:)
+        )
+    }
+
+    /// `sleep` disuntikkan test agar jeda reconnect instan.
+    init(
+        transport: TanyaAIChatTransport, onSessionExpired: (() -> Void)?, onNewConversation: (() -> Void)?,
+        sleep: @escaping (TimeInterval) async throws -> Void
+    ) {
+        self.transport = transport
+        self.onSessionExpired = onSessionExpired
         self.onNewConversation = onNewConversation
+        self.sleep = sleep
     }
 
     var isNewConversationAvailable: Bool { onNewConversation != nil }
 
-    /// Satu pertanyaan per waktu: selama menunggu jawaban, chat baru ditolak tanpa diteruskan ke host.
-    func send(_ text: String) -> Bool {
-        guard !isAwaitingReply, onSend(text) else { return false }
-        isAwaitingReply = true
-        return true
+    /// Bisa mengirim setelah init berhasil, juga selama menyambung ulang; tidak setelah ditutup atau sesi habis.
+    var isReady: Bool {
+        conversationID != nil && connection != .closed && connection != .expired
     }
 
-    /// Percakapan baru mengakhiri penantian lokal; sesi BE (init ulang, stream) milik host.
+    /// Satu pertanyaan per waktu: selama menunggu jawaban, chat baru ditolak tanpa diteruskan ke host.
+    /// True bila gateway menerima pesan (ack 202); false mempertahankan draft di composer.
+    func send(_ text: String) async -> Bool {
+        guard !isAwaitingReply, isReady, let conversationID else { return false }
+        isAwaitingReply = true
+        do {
+            _ = try await transport.sendMessage(
+                conversationID: conversationID, clientMessageID: UUID().uuidString, text: text
+            )
+            return true
+        } catch {
+            isAwaitingReply = false
+            return false
+        }
+    }
+
+    /// TODO: Sepakati alur percakapan baru dengan BE (`X-New-Conversation` dibatasi 1 percakapan per CIF,
+    /// endpoint close belum dipakai). Sementara hanya mengakhiri penantian lokal dan memberi tahu host.
     func startNewConversation() {
         isAwaitingReply = false
         onNewConversation?()
+    }
+
+    /// Event `message` digabung ke daftar; `turn_end` membuka kunci kirim.
+    func apply(_ event: ChatEvent) {
+        switch event {
+        case .message(let message):
+            messages = messages.merging([message])
+        case .turnEnd:
+            isAwaitingReply = false
+        case .ignored:
+            break
+        }
+    }
+
+    /// History yang sudah dikejar; percakapan berbeda dari sebelumnya mengganti daftar, bukan digabung.
+    func replaceOrMerge(_ history: [ChatMessage], conversationID: String) {
+        guard self.conversationID == nil || self.conversationID == conversationID else {
+            messages = history.merging([])
+            isAwaitingReply = false
+            self.conversationID = conversationID
+            return
+        }
+        self.conversationID = conversationID
+        messages = messages.merging(history)
     }
 }
