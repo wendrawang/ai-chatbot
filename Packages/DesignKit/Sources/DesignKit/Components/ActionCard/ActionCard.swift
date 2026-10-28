@@ -91,10 +91,10 @@ private extension ActionCard {
 
     /// TODO: Cocokkan role tipografi dengan Figma; sementara estimasi dari screenshot.
     var titleFont: Font {
-        Font(FontFace.firaSansSemiBold.font(size: FigmaSize.typographySizeDisplaySmall14.scaledToArtwork))
+        FontFace.firaSansSemiBold.swiftUIFont(size: FigmaSize.typographySizeDisplaySmall14.scaledToArtwork)
     }
 
     var descriptionFont: Font {
-        Font(FontFace.openSansRegular.font(size: FigmaSize.typographySizeDisplayTiny12.scaledToArtwork))
+        FontFace.openSansRegular.swiftUIFont(size: FigmaSize.typographySizeDisplayTiny12.scaledToArtwork)
     }
 }

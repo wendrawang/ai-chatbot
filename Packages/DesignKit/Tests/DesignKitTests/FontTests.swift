@@ -6,6 +6,7 @@
 //
 
 import CoreText
+import SwiftUI
 import Testing
 import UIKit
 
@@ -31,6 +32,16 @@ struct FontTests {
         }
     }
 
+    /// Font SwiftUI langsung harus menghasilkan ukuran teks yang sama dengan jalur `UIFont`, bukan system font.
+    @MainActor
+    @Test(arguments: FontFace.allCases)
+    func swiftUIFontRendersLikeTheUIKitFont(face: FontFace) throws {
+        try FontFace.registerFonts()
+        let direct = renderedSize(face.swiftUIFont(size: 20))
+        #expect(direct == renderedSize(Font(face.font(size: 20))))
+        #expect(direct != renderedSize(.system(size: 20)))
+    }
+
     @Test
     func chineseUsesRealFallbackGlyphsRatherThanMissingGlyphBoxes() throws {
         try FontFace.registerFonts()
@@ -45,5 +56,15 @@ struct FontTests {
                 #expect(!glyphs.contains(0), "\(face.rawValue)")
             }
         }
+    }
+}
+
+// MARK: - Helpers
+
+private extension FontTests {
+    @MainActor
+    func renderedSize(_ font: Font) -> CGSize {
+        let host = UIHostingController(rootView: Text("Halo, Lara Croft 123").font(font).fixedSize())
+        return host.sizeThatFits(in: CGSize(width: CGFloat.greatestFiniteMagnitude, height: .greatestFiniteMagnitude))
     }
 }

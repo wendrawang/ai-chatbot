@@ -38,7 +38,7 @@ public struct ScreenHeader<Trailing: View>: View {
         HStack(spacing: FigmaSize.spacingMedium.scaledToArtwork) {
             backButton
             Text(title)
-                .font(Font(fontFace.font(size: FigmaSize.typographySizeDisplayNormal16.scaledToArtwork)))
+                .font(fontFace.swiftUIFont(size: FigmaSize.typographySizeDisplayNormal16.scaledToArtwork))
                 .foregroundColor(colors.colorsTextPrimaryDark)
                 .lineLimit(CustomTextLines.headerTitle)
                 .frame(maxWidth: .infinity)

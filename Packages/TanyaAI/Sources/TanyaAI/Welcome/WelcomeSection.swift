@@ -110,14 +110,14 @@ private extension WelcomeSection {
     var iconSize: CGFloat { FigmaSize.weightIconSmall.scaledToArtwork }
 
     var titleFont: Font {
-        Font(FontFace.firaSansSemiBold.font(size: FigmaSize.typographySizeHeadingSmall20.scaledToArtwork))
+        FontFace.firaSansSemiBold.swiftUIFont(size: FigmaSize.typographySizeHeadingSmall20.scaledToArtwork)
     }
 
     var sectionFont: Font {
-        Font(FontFace.firaSansSemiBold.font(size: FigmaSize.typographySizeDisplaySmall14.scaledToArtwork))
+        FontFace.firaSansSemiBold.swiftUIFont(size: FigmaSize.typographySizeDisplaySmall14.scaledToArtwork)
     }
 
     var bodyFont: Font {
-        Font(FontFace.openSansRegular.font(size: FigmaSize.typographySizeDisplaySmall14.scaledToArtwork))
+        FontFace.openSansRegular.swiftUIFont(size: FigmaSize.typographySizeDisplaySmall14.scaledToArtwork)
     }
 }

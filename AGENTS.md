@@ -68,6 +68,7 @@ tersedia pada history/main.
 ## Font, resource, copy
 
 - Font berada di `Resources/Fonts`; filename dan PostScript di `FontFace`.
+  SwiftUI memakai `face.swiftUIFont(size:)`; `font(size:)` (`UIFont`) hanya untuk UIKit/editor.
   Register sekali saat bootstrap melalui CoreText/`Bundle.module`, idempotent.
 - Nama case menyertakan family dan weight: `firaSansRegular/Medium/SemiBold/Bold`
   dan `openSansRegular/Medium/Bold`. Jangan memakai case `.regular/.medium` yang
