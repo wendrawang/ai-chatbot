@@ -15,7 +15,6 @@ enum ChatWire {
     static let commentPrefix = ":"
     /// Satu spasi setelah titik dua bukan bagian dari nilai field (aturan SSE).
     static let fieldValueSpace = " "
-    static let lineBreak = "\n"
     /// Jumlah pesan per halaman history (contract: 1...100).
     static let historyPageSize = 30
 

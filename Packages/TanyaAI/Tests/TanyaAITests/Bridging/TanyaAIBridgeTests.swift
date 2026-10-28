@@ -37,6 +37,58 @@ struct TanyaAIBridgeTests {
         #expect(transport.calls.filter { $0.hasPrefix("send") } == ["send:Cek Portfolio saya"])
     }
 
+    /// Reconnect me-replay `turn_end` pertanyaan sebelumnya setelah pertanyaan baru dikirim: tetap terkunci.
+    @Test
+    func replayedTurnEndOfAnEarlierQuestionKeepsTheNewOneWaiting() async {
+        let transport = FakeChatTransport()
+        transport.sendResult = .success(WireFixture.ack(seq: 10))
+        let bridge = makeBridge(transport)
+        let task = Task { await bridge.run() }
+        defer { task.cancel() }
+        await waitUntil { bridge.connection == .live }
+        #expect(await bridge.send("Pertanyaan kedua"))
+        transport.emit(WireFixture.turnEndFrame(seq: 6))
+        transport.emit(WireFixture.messageFrame(seq: 10, direction: "customer"))
+        await waitUntil { bridge.messages.count == 1 }
+        #expect(bridge.isAwaitingReply)
+        #expect(!(await bridge.send("Pertanyaan ketiga")))
+        transport.emit(WireFixture.turnEndFrame(seq: 12))
+        await waitUntil { !bridge.isAwaitingReply }
+    }
+
+    /// Stream lebih cepat dari respons HTTP: `turn_end` sebelum ack tetap membuka kunci setelah ack tiba.
+    @Test
+    func turnEndThatArrivesBeforeTheAckStillUnlocks() async {
+        let transport = FakeChatTransport()
+        transport.sendResult = .success(WireFixture.ack(seq: 10))
+        transport.beforeAck = { transport.emit(WireFixture.turnEndFrame(seq: 12)) }
+        let bridge = makeBridge(transport)
+        let task = Task { await bridge.run() }
+        defer { task.cancel() }
+        await waitUntil { bridge.connection == .live }
+        #expect(await bridge.send("Cek Portfolio saya"))
+        await waitUntil { !bridge.isAwaitingReply }
+    }
+
+    /// 401 saat kirim sama dengan 401 saat menyambung: host diberi tahu sekali dan kirim berikutnya ditolak.
+    @Test
+    func unauthorizedSendExpiresTheSessionOnce() async {
+        let transport = FakeChatTransport()
+        transport.sendResult = .failure(
+            TanyaAITransportError.response(statusCode: 401, body: WireFixture.error(isRetryable: false))
+        )
+        var expiredCount = 0
+        let bridge = TanyaAIBridge(transport: transport, onSessionExpired: { expiredCount += 1 }, sleep: { _ in })
+        let task = Task { await bridge.run() }
+        defer { task.cancel() }
+        await waitUntil { bridge.connection == .live }
+        #expect(!(await bridge.send("Cek Portfolio saya")))
+        #expect(bridge.connection == .expired)
+        #expect(!bridge.isReady)
+        #expect(!(await bridge.send("Lagi")))
+        #expect(expiredCount == 1)
+    }
+
     @Test
     func refusedSendKeepsTheDraftAndDoesNotWait() async {
         let transport = FakeChatTransport()

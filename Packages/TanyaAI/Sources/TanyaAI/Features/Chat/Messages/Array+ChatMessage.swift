@@ -29,15 +29,24 @@ extension Array where Element == ChatMessage {
 
     /// Kelompok per hari kalender untuk chip tanggal; urutan tetap kronologis. Pesan tanpa `created_at`
     /// ikut hari pesan sebelumnya.
+    /// O(n): pesan di-append ke buffer hari berjalan, kelompok dibentuk sekali saat hari berganti.
     func groupedByDay(calendar: Calendar = .current) -> [ChatDay] {
         var days: [ChatDay] = []
+        var current: [ChatMessage] = []
+        var currentDate: Date?
         for message in self {
             let date = message.createdAt.map(calendar.startOfDay(for:))
-            if let last = days.last, date == nil || date == last.date {
-                days[days.index(before: days.endIndex)] = ChatDay(date: last.date, messages: last.messages + [message])
-            } else {
-                days.append(ChatDay(date: date, messages: [message]))
+            if !current.isEmpty, let date, date != currentDate {
+                days.append(ChatDay(date: currentDate, messages: current))
+                current.removeAll(keepingCapacity: true)
             }
+            if current.isEmpty {
+                currentDate = date
+            }
+            current.append(message)
+        }
+        if !current.isEmpty {
+            days.append(ChatDay(date: currentDate, messages: current))
         }
         return days
     }

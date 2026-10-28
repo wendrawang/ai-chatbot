@@ -12,8 +12,8 @@ import Foundation
 enum ChatEvent: Equatable {
     /// Pesan lengkap (bukan delta), termasuk pesan nasabah sendiri dan tombstone `canceled`.
     case message(ChatMessage)
-    /// Satu-satunya event pembuka kunci: jawaban selesai, gagal, atau dibatalkan.
-    case turnEnd
+    /// Satu-satunya event pembuka kunci: jawaban selesai, gagal, atau dibatalkan. `seq` dari `id:` frame.
+    case turnEnd(seq: Int?)
     case ignored
 
     /// Frame yang gagal di-decode diabaikan agar satu pesan rusak tidak memutus stream.
@@ -23,7 +23,7 @@ enum ChatEvent: Equatable {
             let wire = try? JSONDecoder.wire.decode(WireMessage.self, from: Data(event.data.utf8))
             self = wire.flatMap(ChatMessage.init(wire:)).map(ChatEvent.message) ?? .ignored
         case ChatWire.Event.turnEnd:
-            self = .turnEnd
+            self = .turnEnd(seq: event.id.flatMap(Int.init))
         default:
             self = .ignored
         }

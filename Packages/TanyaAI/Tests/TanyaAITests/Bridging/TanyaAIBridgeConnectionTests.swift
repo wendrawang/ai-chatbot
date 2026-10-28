@@ -56,6 +56,19 @@ struct TanyaAIBridgeConnectionTests {
         #expect(delays == [1])
     }
 
+    /// Cursor ikut `id` event terakhir (termasuk `turn_end`), jadi event yang sudah diproses tidak di-replay.
+    @Test
+    func reconnectResumesAfterTheLastEventNotJustTheLastMessage() async {
+        let transport = FakeChatTransport()
+        transport.historyPages = [WireFixture.history([1]), WireFixture.history([2, 1])]
+        transport.scriptedStreams = [WireFixture.messageFrame(seq: 2) + WireFixture.turnEndFrame(seq: 3)]
+        let bridge = makeBridge(transport)
+        let task = Task { await bridge.run() }
+        defer { task.cancel() }
+        await waitUntil { transport.calls.count == 6 && bridge.connection == .live }
+        #expect(transport.calls.filter { $0.hasPrefix("events") } == ["events:1", "events:3"])
+    }
+
     /// Terlalu lama putus: halaman lebih lama diambil sampai bertemu pesan terakhir yang sudah ada.
     @Test
     func catchUpFetchesOlderPagesUntilItReachesTheKnownMessage() async {

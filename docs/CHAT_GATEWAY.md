@@ -29,15 +29,20 @@ Typing, cancel, limits, list conversations, dan close belum dipakai.
 ## Alur
 
 1. Halaman tampil (`.task` di `ChatScreen`): init → history halaman terbaru → buka SSE dengan
-   `Last-Event-ID` = `seq` terbesar di daftar. Event di antara history dan stream ikut di-replay;
+   `Last-Event-ID` = `seq` terbesar dari pesan di daftar atau `id` event yang sudah diterima. Event di antara history dan stream ikut di-replay;
    duplikatnya digabung lewat `message_id`.
 2. Stream putus atau error `retryable:true`: jeda 1, 2, 4, … maks 30 detik (atau `retry_after_ms`
    dari 429/503), lalu ulang dari init. History baru diambil per halaman sampai bertemu pesan terakhir
    yang sudah ada, baru sisanya ditambahkan. Jeda kembali ke 1 detik setelah stream tersambung.
 3. Berhenti: halaman ditutup (task dibatalkan), init mengembalikan `CLOSED` (history tetap tampil),
    401 (`onSessionExpired`, sekali), atau error lain dengan `retryable:false`.
-4. Kirim: ack 202 hanya mengunci composer. Pertanyaan tampil saat event `message` miliknya datang,
-   jawaban bot menyusul, `turn_end` membuka kunci. Kirim gagal = draft tetap di composer.
+4. Kirim: ack 202 hanya mengunci composer dan memberi `seq` pertanyaan. Pertanyaan tampil saat event
+   `message` miliknya datang, jawaban bot menyusul. Hanya `turn_end` dengan `id` lebih besar dari seq
+   pertanyaan yang membuka kunci (replay `turn_end` lama diabaikan; `turn_end` sebelum ack dicocokkan
+   saat ack tiba). Kirim gagal = draft tetap; 401 saat kirim = `onSessionExpired`, sama seperti saat sambung.
+
+Frame SSE selesai di baris `data:` (contract: `data` JSON satu baris dan field terakhir), jadi host
+boleh membuang baris kosong tanpa menahan event terakhir.
 
 Percakapan dari init berbeda dengan sebelumnya (yang lama diarsipkan) mengganti daftar.
 
@@ -72,8 +77,7 @@ final class TanyaAIChatService: TanyaAIChatTransport {
 }
 ```
 
-`bytes.lines` membuang baris kosong; parser TanyaAI tetap memisahkan frame pada baris `id:`
-berikutnya. `makeRequest` menambah base URL dan header OMNI. Jangan log isi pesan.
+`bytes.lines` membuang baris kosong; parser TanyaAI menutup frame di baris `data:`. `makeRequest` menambah base URL dan header OMNI. Jangan log isi pesan.
 
 ## Belum diputuskan
 

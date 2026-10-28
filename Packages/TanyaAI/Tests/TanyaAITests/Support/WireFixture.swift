@@ -29,8 +29,8 @@ enum WireFixture {
         return Data(#"{"success":true,"data":{"messages":[\#(messages)],"next_before":\#(next)}}"#.utf8)
     }
 
-    static func ack() -> Data {
-        Data(#"{"success":true,"data":{"message_id":"b1b2c3d4-0002","seq":"2"}}"#.utf8)
+    static func ack(seq: Int = 2) -> Data {
+        Data(#"{"success":true,"data":{"message_id":"b1b2c3d4-0002","seq":"\#(seq)"}}"#.utf8)
     }
 
     static func error(isRetryable: Bool, retryAfterMs: Int? = nil) -> Data {

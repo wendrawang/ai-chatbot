@@ -17,14 +17,15 @@ struct ServerSentEventParserTests {
         #expect(events == [ServerSentEvent(id: "1", name: "turn_end", data: "{}")])
     }
 
-    /// `URLSession.AsyncBytes.lines` membuang baris kosong; frame tetap terpisah di baris `id:` berikutnya.
+    /// `URLSession.AsyncBytes.lines` membuang baris kosong: setiap frame tetap selesai di baris `data:`,
+    /// termasuk `turn_end` terakhir walau tidak ada event sesudahnya (regresi composer terkunci).
     @Test
-    func framesWithoutBlankLinesSplitAtTheNextIdAndTheLastOneFlushes() {
+    func framesCompleteOnTheirDataLineWithoutBlankLines() {
         var parser = ServerSentEventParser()
         let lines = ["id: 1", "event: message", "data: {\"a\":1}", "id: 2", "event: turn_end", "data: {}"]
-        let events = lines.compactMap { parser.consume($0) } + [parser.flush()].compactMap { $0 }
-        #expect(events.map(\.id) == ["1", "2"])
-        #expect(events.map(\.name) == ["message", "turn_end"])
+        let completed = lines.map { parser.consume($0) }
+        #expect(completed.map { $0?.id } == [nil, nil, "1", nil, nil, "2"])
+        #expect(completed.last??.name == "turn_end")
     }
 
     @Test

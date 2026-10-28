@@ -1,5 +1,17 @@
 # Validasi starter
 
+## Perbaikan review bridging — 29 Oktober 2026
+
+- Frame SSE selesai di baris `data:`; `turn_end` terakhir tidak lagi tertahan bila host membuang
+  baris kosong (sebelumnya composer terkunci sampai event berikutnya).
+- `ChatTurn`: hanya `turn_end` dengan seq setelah ack pertanyaan yang membuka kunci; `turn_end` sebelum
+  ack dicocokkan saat ack tiba. `Last-Event-ID` = maks(seq pesan, `id` event terakhir).
+- 401 saat kirim memanggil `onSessionExpired` sekali dan menghentikan sambungan, sama dengan jalur init.
+- `groupedByDay` O(n): buffer di-append, kelompok dibentuk sekali per hari.
+
+Test regresi: parser tanpa baris kosong, replay `turn_end` lama, `turn_end` sebelum ack, 401 saat
+kirim, cursor reconnect setelah `turn_end`, 5.000 pesan satu hari.
+
 ## Menu "Percakapan baru" dihapus — 28 Oktober 2026
 
 Ikon ⋮ dan menu "Percakapan baru" dihapus karena belum ada kebutuhan (alur BE: batas 1 percakapan

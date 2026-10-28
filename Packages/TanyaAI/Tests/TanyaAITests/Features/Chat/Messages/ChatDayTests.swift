@@ -40,6 +40,19 @@ struct ChatDayTests {
         #expect(days.count == 2)
     }
 
+    /// Buffer di-append, kelompok dibentuk sekali per hari (bukan menyalin kelompok setiap pesan).
+    @Test
+    func thousandsOfSameDayMessagesStayInOneGroupInOrder() throws {
+        let calendar = try jakartaCalendar()
+        let date = Date(wire: "2026-10-14T09:00:00+07:00")
+        let messages = (1...5_000).map {
+            ChatMessage(id: "m-\($0)", seq: $0, author: .bot, text: "pesan", status: .active, createdAt: date)
+        }
+        let days = messages.groupedByDay(calendar: calendar)
+        #expect(days.count == 1)
+        #expect(days.first?.messages.map(\.seq) == Array(1...5_000))
+    }
+
     @Test
     func messageWithoutADateJoinsThePreviousDay() throws {
         let calendar = try jakartaCalendar()

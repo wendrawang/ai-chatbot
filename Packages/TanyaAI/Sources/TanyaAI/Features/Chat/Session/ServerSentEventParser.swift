@@ -7,8 +7,9 @@
 
 import Foundation
 
-/// Menyusun baris SSE menjadi frame. Frame selesai pada baris kosong, atau pada baris `id:`/`event:`
-/// berikutnya setelah `data:` karena host boleh membuang baris kosong. Komentar (`: keepalive`) diabaikan.
+/// Menyusun baris SSE menjadi frame. Contract 1.0.1: urutan `id:`, `event:`, `data:` dengan `data` JSON satu
+/// baris, jadi frame selesai tepat di baris `data:`. Tidak bergantung pada baris kosong (host boleh
+/// membuangnya), sehingga `turn_end` terakhir tidak tertahan sampai event berikutnya. Komentar diabaikan.
 struct ServerSentEventParser {
     private var eventID: String?
     private var name: String?
@@ -23,20 +24,19 @@ struct ServerSentEventParser {
         if line.hasPrefix(ChatWire.commentPrefix) {
             return nil
         }
-        let isNextFrame = data != nil && (line.hasPrefix(ChatWire.idField) || line.hasPrefix(ChatWire.eventField))
-        let completed = isNextFrame ? flush() : nil
         if let value = Self.value(of: line, field: ChatWire.idField) {
             eventID = value
         } else if let value = Self.value(of: line, field: ChatWire.eventField) {
             name = value
         } else if let value = Self.value(of: line, field: ChatWire.dataField) {
-            data = data.map { $0 + ChatWire.lineBreak + value } ?? value
+            data = value
+            return flush()
         }
-        return completed
+        return nil
     }
 
-    /// Frame yang belum ditutup baris kosong, misalnya saat stream berakhir.
-    mutating func flush() -> ServerSentEvent? {
+    /// Menutup frame yang sedang disusun; nil bila belum ada `data:`.
+    private mutating func flush() -> ServerSentEvent? {
         defer { self = Self() }
         guard let data else { return nil }
         return ServerSentEvent(id: eventID, name: name ?? ChatWire.Event.message, data: data)

@@ -22,7 +22,7 @@ struct ChatEventTests {
 
     @Test
     func turnEndUnlocksRegardlessOfItsStatus() {
-        #expect(ChatEvent(frame(WireFixture.turnEndFrame(seq: 3))) == .turnEnd)
+        #expect(ChatEvent(frame(WireFixture.turnEndFrame(seq: 3))) == .turnEnd(seq: 3))
     }
 
     @Test

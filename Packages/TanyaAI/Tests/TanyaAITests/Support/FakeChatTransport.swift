@@ -17,6 +17,8 @@ final class FakeChatTransport: TanyaAIChatTransport {
     /// Baris yang dikirim lalu stream ditutup dengan error koneksi; kosong = stream dibiarkan terbuka.
     var scriptedStreams: [[String]] = []
     var sendResult: Result<Data, Error> = .success(WireFixture.ack())
+    /// Dijalankan sebelum ack dikembalikan, mis. stream lebih cepat dari respons HTTP.
+    var beforeAck: (() -> Void)?
     private(set) var calls: [String] = []
     private var continuation: AsyncThrowingStream<String, Error>.Continuation?
 
@@ -32,6 +34,7 @@ final class FakeChatTransport: TanyaAIChatTransport {
 
     func sendMessage(conversationID: String, clientMessageID: String, text: String) async throws -> Data {
         calls.append("send:\(text)")
+        beforeAck?()
         return try sendResult.get()
     }
 

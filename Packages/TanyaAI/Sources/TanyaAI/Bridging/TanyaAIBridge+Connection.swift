@@ -13,7 +13,7 @@ extension TanyaAIBridge {
     /// ditutup), percakapan ditutup, sesi habis, atau error yang tidak bisa di-retry.
     func run() async {
         var backoff = ChatBackoff()
-        while !Task.isCancelled {
+        while !Task.isCancelled, connection != .expired {
             let delay: TimeInterval
             do {
                 guard try await connectOnce(onLive: { backoff.reset() }) else {
@@ -44,25 +44,27 @@ private extension TanyaAIBridge {
         )
         replaceOrMerge(history, conversationID: session.conversationId)
         guard session.state != .closed else { return false }
-        // Replay mulai setelah pesan terakhir di daftar: event di antara history dan stream tidak hilang,
-        // duplikatnya digabung lewat `message_id`.
-        let lines = transport.events(
-            conversationID: session.conversationId, lastEventID: messages.latestSeq.map(String.init)
-        )
+        // Replay mulai setelah pesan/event terakhir yang diterima: event di antara history dan stream tidak
+        // hilang, duplikat pesan digabung lewat `message_id`, `turn_end` yang sudah diproses tidak diulang.
+        let lines = transport.events(conversationID: session.conversationId, lastEventID: lastEventID)
         var parser = ServerSentEventParser()
         for try await line in lines {
-            if connection != .live {
+            if connection == .connecting {
                 connection = .live
                 onLive()
             }
             if let event = parser.consume(line) {
-                apply(ChatEvent(event))
+                receive(event)
             }
         }
-        if let event = parser.flush() {
-            apply(ChatEvent(event))
-        }
         return true
+    }
+
+    func receive(_ event: ServerSentEvent) {
+        if let seq = event.id.flatMap(Int.init) {
+            eventCursor = max(eventCursor ?? seq, seq)
+        }
+        apply(ChatEvent(event))
     }
 
     /// Halaman terbaru dulu, lalu halaman lebih lama sampai bertemu `latestSeq` yang sudah ada di daftar.
@@ -89,8 +91,7 @@ private extension TanyaAIBridge {
         let failure = try? JSONDecoder.wire.decode(WireError.self, from: body)
         guard failure?.isRetryable ?? ChatBackoff.isServerError(statusCode: statusCode) else {
             if ChatBackoff.isUnauthorized(statusCode: statusCode) {
-                connection = .expired
-                onSessionExpired?()
+                expireSession()
             } else {
                 connection = .closed
             }

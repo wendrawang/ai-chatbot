@@ -16,9 +16,9 @@ public final class TanyaAIBridge: ObservableObject {
     /// Urut `seq` naik; pesan nasabah juga baru muncul setelah datang lewat stream, bukan saat dikirim.
     @Published
     private(set) var messages: [ChatMessage] = []
-    /// Sejak kirim sampai event `turn_end`; tombol kirim menjadi titik bergerak dan shortcut nonaktif.
+    /// Pertanyaan yang sedang ditunggu jawabannya (lihat `ChatTurn`).
     @Published
-    private(set) var isAwaitingReply = false
+    private(set) var turn = ChatTurn()
     /// True setelah history pertama selesai; sebelum itu halaman menampilkan loading, bukan sambutan.
     @Published
     private(set) var isHistoryLoaded = false
@@ -26,6 +26,8 @@ public final class TanyaAIBridge: ObservableObject {
     var connection = ChatConnection.connecting
     /// Percakapan dari `/chat/init` terakhir; nil sebelum init pertama berhasil.
     var conversationID: String?
+    /// `id` event SSE terbesar yang sudah diterima (termasuk `turn_end`), bagian dari `Last-Event-ID`.
+    var eventCursor: Int?
     let transport: TanyaAIChatTransport
     let onSessionExpired: (() -> Void)?
     let sleep: (TimeInterval) async throws -> Void
@@ -45,6 +47,14 @@ public final class TanyaAIBridge: ObservableObject {
         self.sleep = sleep
     }
 
+    /// Sejak kirim sampai `turn_end` pertanyaan itu; tombol kirim menjadi titik bergerak dan shortcut nonaktif.
+    var isAwaitingReply: Bool { turn.isAwaiting }
+
+    /// Replay stream dimulai setelah pesan atau event terakhir yang sudah diterima.
+    var lastEventID: String? {
+        [messages.latestSeq, eventCursor].compactMap { $0 }.max().map(String.init)
+    }
+
     /// Sambutan hanya untuk percakapan kosong; pesan pertama (dari stream) langsung menggantikannya.
     var isWelcomeVisible: Bool { isHistoryLoaded && messages.isEmpty }
 
@@ -57,25 +67,39 @@ public final class TanyaAIBridge: ObservableObject {
     /// True bila gateway menerima pesan (ack 202); false mempertahankan draft di composer.
     func send(_ text: String) async -> Bool {
         guard !isAwaitingReply, isReady, let conversationID else { return false }
-        isAwaitingReply = true
+        turn.start()
         do {
-            _ = try await transport.sendMessage(
+            let data = try await transport.sendMessage(
                 conversationID: conversationID, clientMessageID: UUID().uuidString, text: text
             )
+            let ack = try? JSONDecoder.wire.decode(WireEnvelope<WireSendAck>.self, from: data).data
+            turn.accept(questionSeq: ack.flatMap { Int($0.seq) })
             return true
         } catch {
-            isAwaitingReply = false
+            turn.cancel()
+            if case let .response(statusCode, _)? = error as? TanyaAITransportError,
+                ChatBackoff.isUnauthorized(statusCode: statusCode)
+            {
+                expireSession()
+            }
             return false
         }
     }
 
-    /// Event `message` digabung ke daftar; `turn_end` membuka kunci kirim.
+    /// Sesi OMNI habis (401) dari jalur mana pun: berhenti menyambung dan beri tahu host sekali.
+    func expireSession() {
+        guard connection != .expired else { return }
+        connection = .expired
+        onSessionExpired?()
+    }
+
+    /// Event `message` digabung ke daftar; `turn_end` milik pertanyaan yang ditunggu membuka kunci kirim.
     func apply(_ event: ChatEvent) {
         switch event {
         case .message(let message):
             messages = messages.merging([message])
-        case .turnEnd:
-            isAwaitingReply = false
+        case .turnEnd(let seq):
+            turn.end(seq: seq)
         case .ignored:
             break
         }
@@ -85,7 +109,8 @@ public final class TanyaAIBridge: ObservableObject {
     func replaceOrMerge(_ history: [ChatMessage], conversationID: String) {
         guard self.conversationID == nil || self.conversationID == conversationID else {
             messages = history.merging([])
-            isAwaitingReply = false
+            turn.cancel()
+            eventCursor = nil
             self.conversationID = conversationID
             isHistoryLoaded = true
             return
