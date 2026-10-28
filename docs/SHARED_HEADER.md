@@ -12,10 +12,10 @@ DesignKit/Sources/DesignKit/
 └── Resources/Assets.xcassets/            # back/more/send dummy; nama di DesignIcon
 
 TanyaAI/Sources/TanyaAI/
-├── Chat/ChatScreen.swift                 # content/menu/composer; layout dari container
-├── Chat/ChatElementIdentifier.swift      # technical identifier, bukan pemetaan copy
-├── Resources/{en,id,zh-Hans}.lproj/
-└── Host/                                # konfigurasi + pembuat halaman untuk host
+├── Bridging/TanyaAIHost.swift                    # konfigurasi + pembuat halaman untuk host
+├── Features/Chat/Views/ChatScreen.swift          # content/menu/composer; layout dari container
+├── Shared/Keys/ChatElementIdentifier.swift       # technical identifier, bukan pemetaan copy
+└── Resources/{en,id,zh-Hans}.lproj/
 
 TanyaAISandboxApp/HeaderDemoContent.swift # fixture scroll, bukan UI produksi
 ```

@@ -38,9 +38,14 @@ Packages/
 │           └── ScreenContainer/          # header + scroll + footer otomatis
 └── TanyaAI/
     └── Sources/TanyaAI/
-        ├── Chat/ChatScreen.swift + ChatElementIdentifier.swift
-        ├── Host/                        # konfigurasi host + makeView()
-        └── Resources/en.lproj + id.lproj + zh-Hans.lproj/
+        ├── Bridging/TanyaAIHost.swift   # API publik: konfigurasi host + makeView()
+        ├── Features/
+        │   ├── Chat/Views/              # ChatScreen, ComposerSection
+        │   └── Welcome/                 # Models/ (data BE) + Views/WelcomeSection
+        ├── Shared/
+        │   ├── Keys/                    # ChatCopy, ChatImage, ChatElementIdentifier
+        │   └── Extensions/              # String+ChatCopy, Image+ChatImage
+        └── Resources/                   # Assets.xcassets + en/id/zh-Hans.lproj
 ```
 
 ## Urutan implementasi

@@ -17,7 +17,7 @@ errors = []
 METADATA = {
     'Typography/FontFace.swift', 'Extensions/Color+Hex.swift', 'Extensions/String+Resource.swift',
     'Foundations/Accessibility/ComponentIdentifier.swift',
-    'Chat/ChatElementIdentifier.swift', 'Chat/ChatCopy.swift',
+    'Shared/Keys/ChatElementIdentifier.swift', 'Shared/Keys/ChatCopy.swift',
     'TanyaAISandboxApp/SandboxOptions.swift', 'TanyaAISandboxApp/SandboxCopy.swift',
     'TanyaAISandboxApp/SandboxFixtureFile.swift'
 }

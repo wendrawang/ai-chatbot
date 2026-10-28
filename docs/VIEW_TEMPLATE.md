@@ -127,8 +127,8 @@ Tidak perlu menambahkan weak capture pada setiap closure SwiftUI secara otomatis
 | Token custom per jenis | `DesignKit/Tokens` |
 | Font file dan registrasi | `DesignKit/Typography` |
 | Identifier UI test komponen | `DesignKit/Foundations/Accessibility` |
-| Draft, menu sesi, aturan menerima submission | Screen/fitur pemilik (`TanyaAI/Chat`) |
-| API host: konfigurasi, locale/theme, pembuat halaman | `TanyaAI/Host` |
+| Draft, menu sesi, aturan menerima submission | Screen/fitur pemilik (`TanyaAI/Features/Chat`) |
+| API host: konfigurasi, locale/theme, pembuat halaman | `TanyaAI/Bridging` |
 | Navigasi, animasi push, swipe-back | Host (coordinator + destination, atau navigasi aplikasi revamp) |
 
 Komponen umum yang sudah dibutuhkan beberapa caller dibuat reusable. Potongan

@@ -65,6 +65,16 @@ tersedia pada history/main.
   Ukuran interaksi mengikuti keputusan UI/UX. Opacity dan jumlah baris tidak
   di-scale. Tidak ada `sizeInArtwork` alias.
 
+## Struktur TanyaAI
+
+- `Bridging/`: API publik untuk host (`TanyaAIHost`). Satu-satunya pintu masuk host.
+- `Features/<Fitur>/Models|Views`: per fitur (`Chat`, `Welcome`); model data BE di `Models`,
+  view SwiftUI di `Views`. Fitur baru = folder baru di `Features/`.
+- `Shared/Keys`: enum key resource lintas fitur (`ChatCopy`, `ChatImage`,
+  `ChatElementIdentifier`); `Shared/Extensions`: `Tipe+Key.swift` (satu extension per file).
+- `Resources/`: aset dan lokalisasi saja, tanpa file Swift. Tests mencerminkan folder Sources;
+  helper test di `Support/`.
+
 ## Font, resource, copy
 
 - Font berada di `Resources/Fonts`; filename dan PostScript di `FontFace`.
@@ -107,9 +117,9 @@ tersedia pada history/main.
 - Identifier UI test dikelompokkan per komponen (`ComponentIdentifier.Header.title`,
   `ComponentIdentifier.Composer.send`). String identifier adalah kontrak UI test.
 - Tidak ada alias untuk nilai sistem: `.clear`, bukan `CustomColors.transparent`.
-- TanyaAI dipisah per tanggung jawab: `Chat/` (screen dan section), `Host/` (API
-  untuk host: konfigurasi dan pembuat halaman). Folder baru seperti `Messages/` atau
-  `Service/` dibuat saat file pertamanya ada, bukan lebih awal.
+- TanyaAI dipisah per tanggung jawab (lihat "Struktur TanyaAI"). Folder baru seperti
+  `Features/Messages/` atau `Models/` di fitur yang belum punya model dibuat saat file
+  pertamanya ada, bukan lebih awal.
 - Screen standar memakai composition `ScreenContainer` dari DesignKit: header,
   area scroll, trailing action dan footer. Container memiliki satu `isScrolled`
   dan ID coordinate space lokal. Jangan membuat inheritance/BaseScreen protocol, ViewModel
@@ -132,7 +142,7 @@ tersedia pada history/main.
   tanpa handler, item menu disabled. Jangan menambah session, reset draft, intent,
   bubble atau database sebelum diminta.
 - Welcome berasal dari BE: `WelcomeContent`/`WelcomeGreeting`/`WelcomeShortcut` (folder
-  `Welcome/`) decode objek `data` inquiry init; field T&C milik host diabaikan. `iconUrl`
+  `Features/Welcome/Models/`) decode objek `data` inquiry init; field T&C milik host diabaikan. `iconUrl`
   kosong/tidak valid menjadi nil tanpa menggagalkan seluruh welcome. Shortcut dikirim lewat
   `onSend(prompt)`; status menunggu jawaban (`isAwaitingReply`) milik host.
 - Gambar dari URL memakai `RemoteImage` DesignKit, pembungkus tipis `KFImage` Kingfisher
