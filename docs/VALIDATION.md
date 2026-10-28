@@ -1,5 +1,12 @@
 # Validasi starter
 
+## Divider composer dan penyesuaian dari Byon — 28 Oktober 2026
+
+`ComposerSection` mendapat divider selebar layar di atas composer (`colorsOutlineNetral`,
+`weightOutline` 1 di-scale). Disamakan dengan penyesuaian user di Byon: jarak isi `ActionCard`
+`spacingMedium`, emblem welcome 60. Test layout: tinggi section = composer + padding vertikal +
+tepat satu garis outline (toleransi 0,5, jadi hilangnya divider terdeteksi).
+
 ## Header seukuran navigation bar host — 28 Oktober 2026
 
 `ScreenHeader` disamakan dengan `NavigationBarView` host agar konsisten antar halaman: mulai dari

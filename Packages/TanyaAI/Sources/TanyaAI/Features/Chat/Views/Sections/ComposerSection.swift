@@ -13,6 +13,8 @@ import SwiftUI
 struct ComposerSection: View {
     @Environment(\.locale)
     private var locale
+    @Environment(\.designColors)
+    private var colors
     @State
     private var draft = String()
     private let isEnabled: Bool
@@ -26,13 +28,23 @@ struct ComposerSection: View {
     }
 
     var body: some View {
-        MessageComposer(
-            text: $draft, placeholder: String(ChatCopy.placeholder, locale: locale),
-            sendLabel: String(isAwaitingReply ? ChatCopy.replying : ChatCopy.send, locale: locale),
-            isEnabled: isEnabled, isLoading: isAwaitingReply, onSend: submit
-        )
-        .padding(.horizontal, FigmaSize.spacingLarge.scaledToArtwork)
-        .padding(.vertical, FigmaSize.spacingMedium.scaledToArtwork)
+        VStack(spacing: .zero) {
+            divider
+            MessageComposer(
+                text: $draft, placeholder: String(ChatCopy.placeholder, locale: locale),
+                sendLabel: String(isAwaitingReply ? ChatCopy.replying : ChatCopy.send, locale: locale),
+                isEnabled: isEnabled, isLoading: isAwaitingReply, onSend: submit
+            )
+            .padding(.horizontal, FigmaSize.spacingLarge.scaledToArtwork)
+            .padding(.vertical, FigmaSize.spacingMedium.scaledToArtwork)
+        }
+    }
+
+    /// Garis selebar layar di atas composer (Figma), memisahkan area chat dari input.
+    private var divider: some View {
+        colors.colorsOutlineNetral
+            .frame(height: FigmaSize.weightOutline.scaledToArtwork)
+            .accessibilityHidden(true)
     }
 }
 

@@ -32,7 +32,7 @@ public struct ActionCard<Icon: View>: View {
 
     public var body: some View {
         Button(action: onTap) {
-            HStack(spacing: FigmaSize.spacingLarge.scaledToArtwork) {
+            HStack(spacing: FigmaSize.spacingMedium.scaledToArtwork) {
                 iconBox
                 texts
                 chevron
