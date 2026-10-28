@@ -40,8 +40,9 @@ Packages/
     └── Sources/TanyaAI/
         ├── Bridging/TanyaAIHost.swift   # API publik: konfigurasi host + makeView()
         ├── Features/
-        │   ├── Chat/Views/              # ChatScreen, ComposerSection
-        │   └── Welcome/                 # Models/ (data BE) + Views/WelcomeSection
+        │   └── Chat/
+        │       ├── Models/              # WelcomeContent, WelcomeGreeting, WelcomeShortcut
+        │       └── Views/               # ChatScreen + Sections/ (ComposerSection, WelcomeSection)
         ├── Shared/
         │   ├── Keys/                    # ChatCopy, ChatImage, ChatElementIdentifier
         │   └── Extensions/              # String+ChatCopy, Image+ChatImage

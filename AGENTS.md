@@ -68,8 +68,9 @@ tersedia pada history/main.
 ## Struktur TanyaAI
 
 - `Bridging/`: API publik untuk host (`TanyaAIHost`). Satu-satunya pintu masuk host.
-- `Features/<Fitur>/Models|Views`: per fitur (`Chat`, `Welcome`); model data fitur (struct
-  biasa) di `Models`, view SwiftUI di `Views`. Fitur baru = folder baru di `Features/`.
+- `Features/<Fitur>/Models|Views`: satu fitur = satu screen/alur yang bisa dinavigasi (kini `Chat`).
+  Model data (struct biasa) di `Models`, screen di `Views`, potongan view milik screen itu
+  (welcome, composer, nanti daftar pesan) di `Views/Sections`. Section bukan fitur sendiri.
 - `Shared/Keys`: enum key resource lintas fitur (`ChatCopy`, `ChatImage`,
   `ChatElementIdentifier`); `Shared/Extensions`: `Tipe+Key.swift` (satu extension per file).
 - `Resources/`: aset dan lokalisasi saja, tanpa file Swift. Tests mencerminkan folder Sources;
@@ -142,7 +143,7 @@ tersedia pada history/main.
   tanpa handler, item menu disabled. Jangan menambah session, reset draft, intent,
   bubble atau database sebelum diminta.
 - Welcome berasal dari BE, tapi decode milik host: `WelcomeContent`/`WelcomeGreeting`/`WelcomeShortcut`
-  (folder `Features/Welcome/Models/`) adalah struct biasa tanpa `Decodable`. Host memetakan model
+  (folder `Features/Chat/Models/`) adalah struct biasa tanpa `Decodable`. Host memetakan model
   inquiry init miliknya ke tipe ini; `iconURL` nil memakai ikon fallback. TanyaAI hanya men-decode
   hasil stream (nanti), bukan response init. Shortcut dikirim lewat
   `onSend(prompt)`; status menunggu jawaban (`isAwaitingReply`) milik host.
