@@ -11,7 +11,7 @@ import SwiftUI
 /// Ukuran mengikuti navigation bar host: header mulai dari tepi atas layar (caller menaruhnya tanpa
 /// safe area atas), padding atas `CustomScreenInsets` tanpa scale, ikon 24, judul Fira Sans Bold 16.
 /// Saat diam transparan, sehingga latar screen tembus sampai status bar. Saat konten digulir,
-/// latar menjadi putih dan gradient tipis di bawahnya memudarkan konten yang lewat di belakangnya.
+/// latar menjadi putih dengan bayangan Figma `Shadow/Default` sehingga header terangkat seperti kartu.
 @MainActor
 public struct ScreenHeader<Trailing: View>: View {
     @Environment(\.designColors)
@@ -53,7 +53,6 @@ public struct ScreenHeader<Trailing: View>: View {
         .padding(.top, isNotched ? CustomScreenInsets.headerTopWithNotch : CustomScreenInsets.headerTop)
         .padding(.bottom, CustomSizes.Header.bottomPadding.scaledToArtwork)
         .background(surface)
-        .overlay(alignment: .bottom) { fade }
         .accessibilityElement(children: .contain)
         .accessibilityIdentifier(isScrolled ? ComponentIdentifier.Header.scrolled : ComponentIdentifier.Header.root)
     }
@@ -85,23 +84,10 @@ public struct ScreenHeader<Trailing: View>: View {
         .accessibilityIdentifier(ComponentIdentifier.Header.back)
     }
 
+    /// Bayangan digambar di luar frame: tinggi header tetap dan sentuhan tidak tertangkap.
+    /// Bayangan dari `Color.clear` tidak terlihat, jadi saat diam header tetap transparan penuh.
     private var surface: some View {
-        isScrolled ? colors.colorsSurfacePrimary : Color.clear
-    }
-
-    /// Di luar frame header: tidak mengubah tinggi header dan tidak menangkap sentuhan.
-    @ViewBuilder
-    private var fade: some View {
-        if isScrolled {
-            LinearGradient(
-                colors: [colors.colorsSurfacePrimary, colors.colorsSurfacePrimary.opacity(.zero)],
-                startPoint: .top, endPoint: .bottom
-            )
-            .frame(height: FigmaSize.spacingLarge.scaledToArtwork)
-            .offset(y: FigmaSize.spacingLarge.scaledToArtwork)
-            .allowsHitTesting(false)
-            .accessibilityHidden(true)
-        }
+        (isScrolled ? colors.colorsSurfacePrimary : Color.clear).designShadow()
     }
 }
 

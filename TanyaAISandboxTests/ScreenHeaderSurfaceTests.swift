@@ -15,22 +15,24 @@ extension HostWindowTests {
     @MainActor
     struct ScreenHeaderSurfaceTests {
         @Test
-        func headerIsTransparentAtRestAndOpaqueWithFadeWhenScrolled() throws {
+        func headerIsTransparentAtRestAndLiftedByShadowWhenScrolled() throws {
             let height = ScreenHeader.height(isNotched: true)
-            let fade = FigmaSize.spacingLarge.scaledToArtwork
+            let reach = CustomSizes.Shadow.radius.scaledToArtwork + CustomSizes.Shadow.offsetY.scaledToArtwork
             let atRest = try render(isScrolled: false)
             let scrolled = try render(isScrolled: true)
-            // Titik di padding kiri header, jauh dari tombol back dan judul; y dihitung dari tepi atas layar.
+            // Header: padding kiri, jauh dari tombol back. Bayangan: tengah layar, jauh dari tepi yang memudar.
             let inHeader = height / 2
-            let inFade = height + fade / 2
-            let belowFade = height + fade + 4
+            let inShadow = height + CustomSizes.Shadow.offsetY.scaledToArtwork
+            let belowShadow = height + reach * 2
+            let middle = scrolled.width / 2
 
             #expect(isBackdrop(try atRest.pixel(atHeaderOffset: inHeader)), "header harus transparan saat diam")
-            #expect(isBackdrop(try atRest.pixel(atHeaderOffset: inFade)), "tidak ada fade saat diam")
+            #expect(isBackdrop(try atRest.pixel(atHeaderOffset: inShadow, column: middle)), "tanpa bayangan saat diam")
             #expect(isSurface(try scrolled.pixel(atHeaderOffset: inHeader)), "header harus putih saat digulir")
-            let fadePixel = try scrolled.pixel(atHeaderOffset: inFade)
-            #expect(!(isBackdrop(fadePixel) || isSurface(fadePixel)), "gradient harus di antara putih dan latar")
-            #expect(isBackdrop(try scrolled.pixel(atHeaderOffset: belowFade)), "fade hanya setinggi spacingLarge")
+            let shadow = try scrolled.pixel(atHeaderOffset: inShadow, column: middle)
+            #expect(!(isBackdrop(shadow) || isSurface(shadow)), "bayangan harus terlihat di bawah header: \(shadow)")
+            let below = try scrolled.pixel(atHeaderOffset: belowShadow, column: middle)
+            #expect(isBackdrop(below), "bayangan tidak menjalar: \(below)")
         }
     }
 }
@@ -42,8 +44,10 @@ private struct RenderedHeader {
     let scale: CGFloat
     let headerTop: CGFloat
 
-    func pixel(atHeaderOffset offset: CGFloat) throws -> [UInt8] {
-        let point = CGRect(x: 2 * scale, y: (headerTop + offset) * scale, width: 1, height: 1)
+    var width: CGFloat { CGFloat(image.width) / scale }
+
+    func pixel(atHeaderOffset offset: CGFloat, column: CGFloat = 2) throws -> [UInt8] {
+        let point = CGRect(x: column * scale, y: (headerTop + offset) * scale, width: 1, height: 1)
         let crop = try #require(image.cropping(to: point.integral))
         var data = [UInt8](repeating: .zero, count: 4)
         let context = try #require(

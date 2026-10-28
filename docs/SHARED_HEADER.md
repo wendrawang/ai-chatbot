@@ -33,14 +33,14 @@ TanyaAISandboxApp/HeaderDemoContent.swift # fixture scroll, bukan UI produksi
    dari caller; tidak ada copy TanyaAI di sini.
    Trailing slot untuk satu action; caller memberi label/tap target yang sesuai.
 3. Saat diam, surface transparan sehingga latar screen (warna atau gambar) tembus sampai
-   status bar. Saat `isScrolled`, surface menjadi `colorsSurfacePrimary` dan gradient
-   setinggi `spacingLarge` di bawah header memudarkan konten yang lewat di belakangnya.
-   Gradient berada di luar frame header: tinggi header tetap dan sentuhan tidak tertangkap.
+   status bar. Saat `isScrolled`, surface menjadi `colorsSurfacePrimary` dengan bayangan
+   Figma `Shadow/Default` (`designShadow`), sehingga header terangkat seperti kartu di atas
+   konten. Bayangan berada di luar frame header: tinggi header tetap dan sentuhan tidak tertangkap.
    Tidak memakai material blur, jadi tidak ada cabang khusus Reduce Transparency.
 4. Buat `ScreenContainer` untuk menyusun header sebagai overlay di atas ScrollView. Padding
    awal konten adalah tinggi header ditambah `spacingLarge`, jadi konten tidak
    tertutup saat posisi teratas. Konten dapat bergerak di belakang header dan
-   gradient ketika digulir. Container membaca safe area atas sekali (GeometryReader di root),
+   bayangannya ketika digulir. Container membaca safe area atas sekali (GeometryReader di root),
    lalu header dan ScrollView mengabaikan safe area atas seperti navigation bar host.
 5. `.onScrollBoundaryChange` memakai GeometryReader di background root konten.
    Callback memberi nilai awal, lalu `.onChange` mengamati Boolean ketika offset

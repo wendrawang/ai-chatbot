@@ -1,5 +1,12 @@
 # Validasi starter
 
+## Bayangan header saat digulir — 28 Oktober 2026
+
+Gradient fade di bawah header diganti bayangan Figma `Shadow/Default` (x 0, y 2, blur 10,
+`#BEC3D0` 40%) lewat `designShadow`, sama seperti kartu. Hanya saat `isScrolled`; saat diam header
+tetap transparan. Test piksel di window sandbox: tepat di bawah header ada bayangan, tidak ada saat
+diam, dan bayangan habis sebelum dua kali jangkauannya.
+
 ## Divider composer dan penyesuaian dari Byon — 28 Oktober 2026
 
 `ComposerSection` mendapat divider selebar layar di atas composer (`colorsOutlineNetral`,
