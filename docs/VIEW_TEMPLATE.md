@@ -64,7 +64,7 @@ Permukaan yang berulang memakai modifier DesignKit, bukan disusun ulang di setia
 
 | Kebutuhan | Pakai |
 | --- | --- |
-| Kartu (isi putih, radius, garis tepi, bayangan) | `.cardStyle()` |
+| Kartu (isi putih, radius, garis tepi, bayangan) | `.cardStyle()`; hanya bayangan: `.cardStyle(isOutlined: false)` |
 | Bayangan saja | `.designShadow()` |
 
 ```swift

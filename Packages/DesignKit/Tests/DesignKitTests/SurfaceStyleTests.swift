@@ -16,6 +16,7 @@ struct SurfaceStyleTests {
     func surfaceStylesOnlyDrawBehindContentWithoutChangingLayout() {
         let plain = size(of: Text("Kartu").padding())
         #expect(size(of: Text("Kartu").padding().cardStyle()) == plain)
+        #expect(size(of: Text("Kartu").padding().cardStyle(isOutlined: false)) == plain)
         #expect(size(of: Text("Kartu").padding().designShadow()) == plain)
     }
 }

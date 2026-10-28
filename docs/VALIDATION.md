@@ -7,6 +7,10 @@
 `spacingMedium`, emblem welcome 60. Test layout: tinggi section = composer + padding vertikal +
 tepat satu garis outline (toleransi 0,5, jadi hilangnya divider terdeteksi).
 
+`ActionCard` kini tanpa garis tepi, hanya bayangan (Figma `default_recommendation`):
+`.cardStyle(isOutlined: false)`; composer tetap ber-outline. Test piksel di window sandbox:
+tepi kartu ber-outline berwarna, tepi kartu tanpa outline tetap putih.
+
 ## Header seukuran navigation bar host — 28 Oktober 2026
 
 `ScreenHeader` disamakan dengan `NavigationBarView` host agar konsisten antar halaman: mulai dari

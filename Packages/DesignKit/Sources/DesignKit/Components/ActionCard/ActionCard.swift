@@ -39,7 +39,8 @@ public struct ActionCard<Icon: View>: View {
             }
             .padding(FigmaSize.spacingLarge.scaledToArtwork)
             .frame(maxWidth: .infinity, alignment: .leading)
-            .cardStyle()
+            // Figma `default_recommendation`: tanpa garis tepi, hanya bayangan.
+            .cardStyle(isOutlined: false)
             .contentShape(Rectangle())
         }
         .buttonStyle(.plain)
