@@ -1,5 +1,10 @@
 # Validasi starter
 
+## Padding composer 16 di semua sisi — 28 Oktober 2026
+
+Disamakan dengan Byon (sesuai Figma): `ComposerSection` memberi `spacingLarge` di semua sisi, bukan
+`spacingMedium` atas-bawah. Ketahuan dari test Byon di iPhone 13 Pro: 2 × (17 − 8) = 18.
+
 ## Folder per bagian fitur Chat — 28 Oktober 2026
 
 `Features/Chat/Models|Views/Sections` diganti folder per bagian: `ChatScreen.swift` di root fitur,

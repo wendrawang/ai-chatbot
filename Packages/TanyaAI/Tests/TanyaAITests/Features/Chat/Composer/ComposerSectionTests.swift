@@ -14,7 +14,8 @@ import UIKit
 
 @MainActor
 struct ComposerSectionTests {
-    /// Divider selebar section di atas composer: menambah tepat satu garis outline, padding composer tetap.
+    /// Divider selebar section di atas composer: menambah tepat satu garis outline. Padding composer 16 di
+    /// semua sisi (Figma); di layar selain 375 nilai di-scale, jadi selisih padding tetap terdeteksi.
     @Test
     func dividerSpansTheSectionAboveTheComposerWithoutExtraSpacing() throws {
         try FontFace.registerFonts()
@@ -26,7 +27,7 @@ struct ComposerSectionTests {
             width: width - inset * 2
         )
         let expected =
-            composer.height + FigmaSize.spacingMedium.scaledToArtwork * 2 + FigmaSize.weightOutline.scaledToArtwork
+            composer.height + inset * 2 + FigmaSize.weightOutline.scaledToArtwork
         #expect(abs(section.width - width) <= 0.5)
         #expect(abs(section.height - expected) <= 0.5)
     }

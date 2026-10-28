@@ -35,8 +35,7 @@ struct ComposerSection: View {
                 sendLabel: String(isAwaitingReply ? ChatCopy.replying : ChatCopy.send, locale: locale),
                 isEnabled: isEnabled, isLoading: isAwaitingReply, onSend: submit
             )
-            .padding(.horizontal, FigmaSize.spacingLarge.scaledToArtwork)
-            .padding(.vertical, FigmaSize.spacingMedium.scaledToArtwork)
+            .padding(FigmaSize.spacingLarge.scaledToArtwork)
         }
     }
 
