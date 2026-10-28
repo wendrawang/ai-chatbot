@@ -20,11 +20,13 @@ TanyaAI/Sources/TanyaAI/
 TanyaAISandboxApp/HeaderDemoContent.swift # fixture scroll, bukan UI produksi
 ```
 
-1. Tambahkan tinggi header ke `CustomSizes.Header` dan batas baris judul ke
-   `CustomTextLines.headerTitle`. Tinggi awal 56 pada artwork
-   375; ukuran final dapat disesuaikan setelah nilai Figma tersedia. Judul memakai
-   Fira Sans SemiBold, role `typographySizeDisplayNormal16`, hanya artwork scaling.
-   Spacing memakai `spacingMedium/Large`; generated token tetap sumber tunggal.
+1. Ukuran header sama dengan navigation bar host (keputusan 28 Oktober 2026) agar
+   konsisten saat berpindah halaman. Header mulai dari tepi atas layar: padding atas
+   `CustomScreenInsets.headerTopWithNotch` 50 atau `headerTop` 28 (tanpa scale, notch bila
+   safe area atas > 20), kiri-kanan `CustomSizes.Header.horizontalPadding` 20, bawah
+   `bottomPadding` 15, ikon `weightIconSmall` 24. Judul Fira Sans Bold
+   `typographySizeDisplayNormal16`, padding `spacingExtraLarge` 32, batas
+   `CustomTextLines.headerTitle`. Tinggi total `ScreenHeader.height(isNotched:)`.
 2. Buat `ScreenHeader`: slot kiri/kanan sama besar supaya judul tetap di tengah,
    termasuk ketika trailing kosong. Ukuran back dan trailing mengikuti token icon
    dengan `.scaledToArtwork`, tanpa batas minimum SDK. Label dan action datang
@@ -38,7 +40,8 @@ TanyaAISandboxApp/HeaderDemoContent.swift # fixture scroll, bukan UI produksi
 4. Buat `ScreenContainer` untuk menyusun header sebagai overlay di atas ScrollView. Padding
    awal konten adalah tinggi header ditambah `spacingLarge`, jadi konten tidak
    tertutup saat posisi teratas. Konten dapat bergerak di belakang header dan
-   gradient ketika digulir. Header tidak menggambar status bar palsu; safe area tetap milik iOS.
+   gradient ketika digulir. Container membaca safe area atas sekali (GeometryReader di root),
+   lalu header dan ScrollView mengabaikan safe area atas seperti navigation bar host.
 5. `.onScrollBoundaryChange` memakai GeometryReader di background root konten.
    Callback memberi nilai awal, lalu `.onChange` mengamati Boolean ketika offset
    melewati toleransi. Tidak diperlukan PreferenceKey bersama antar observer.

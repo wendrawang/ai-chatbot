@@ -30,8 +30,9 @@ tersedia pada history/main.
   | File | Isi | `.scaledToArtwork` |
   | --- | --- | --- |
   | `Generated/FigmaSize` | Spacing, ukuran icon, tipografi dari Figma. **Cek di sini dulu.** | Ya |
-  | `CustomSizes` | Dimensi point yang belum ada di Figma: `Header.height`, `Shadow`, `Composer.sendButton` | **Selalu** |
+  | `CustomSizes` | Dimensi point yang belum ada di Figma: `Header` (padding), `Shadow`, `Composer.sendButton` | **Selalu** |
   | `CustomTextLines` | Batas baris per peran: `composerInput = 1...4`, `headerTitle` | Tidak pernah |
+  | `CustomScreenInsets` | Padding atas header dari tepi layar, sama dengan navigation bar host (50/28) | Tidak pernah |
   | `CustomMotion` | Waktu animasi (detik) dan jumlah titik `LoadingDots` | Tidak pernah |
   | `CustomColors` / `CustomBasePaletteColor` | Warna semantik tambahan / hex dasarnya | — |
   | `ArtworkScale` | Referensi 375×812 dan rasio layar untuk `.scaledToArtwork` | Tidak pernah |
@@ -43,7 +44,7 @@ tersedia pada history/main.
   bila nanti dibutuhkan). Nilai yang hanya dipakai satu komponen memakai namespace
   nama komponen (`CustomSizes.Composer`) agar terhapus bersama komponennya. Tambah
   nilai baru hanya ketika ada pemakainya. `check_design_system.py` menolak
-  `CustomSizes` tanpa `.scaledToArtwork` dan baris/motion/toleransi yang di-scale.
+  `CustomSizes` tanpa `.scaledToArtwork` dan baris/motion/toleransi/inset layar yang di-scale.
   Jangan membuat alias spacing generated atau memakai spacing sebagai radius.
 - Nilai awal memakai nilai bawaan tipe: `.zero` untuk CGFloat/Int/TimeInterval,
   `String()` untuk string kosong, `[]` untuk koleksi. Tidak ada enum alias seperti
@@ -127,9 +128,10 @@ tersedia pada history/main.
   layout atau navigation container tambahan. Content tidak menambahkan ScrollView
   vertikal lagi. Footer memiliki margin sesuai komponen caller.
 - `ScreenHeader` tetap komponen standalone untuk layout dengan scroll owner lain
-  seperti List. Label/aksi back dan trailing berasal dari caller. Material hanya
-  saat scrolled, fallback opaque jika Reduce Transparency aktif. Status bar dan
-  safe area tetap milik sistem.
+  seperti List. Label/aksi back dan trailing berasal dari caller. Ukuran sama dengan
+  navigation bar host: mulai dari tepi atas layar (caller menaruhnya tanpa safe area atas,
+  `isNotched` dari `ScreenHeader.isNotched(safeAreaTop:)`), padding atas 50/28 tanpa scale,
+  kiri-kanan 20, bawah 15, ikon 24, judul Fira Sans Bold 16 dengan padding 32.
 - `.onScrollBoundaryChange(in:threshold:perform:)` reusable di DesignKit. Pasang
   pada root konten scroll setelah padding; ID sama dengan ScrollView owner.
   Callback memberi nilai awal lalu perubahan Boolean saja, tanpa state offset

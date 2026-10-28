@@ -1,5 +1,19 @@
 # Validasi starter
 
+## Header seukuran navigation bar host — 28 Oktober 2026
+
+`ScreenHeader` disamakan dengan `NavigationBarView` host agar konsisten antar halaman: mulai dari
+tepi atas layar, padding atas 50 (notch) / 28 tanpa scale (`CustomScreenInsets`), kiri-kanan 20,
+bawah 15, ikon 24, judul Fira Sans Bold 16 dengan padding 32 di lapisan sendiri. Notch dibaca dari
+safe area atas (> 20), bukan bawah seperti host, agar keyboard tidak menggeser header.
+`ScreenContainer` membaca safe area sekali lewat GeometryReader di root. Nilai selain padding atas
+memakai `.scaledToArtwork`; bila host ternyata tidak men-scale ikon/font/spacing, cukup ubah tokennya.
+
+Dibuktikan oleh test: tinggi header sama dengan padding atas + ikon + padding bawah (notch dan
+tanpa notch) pada lebar 320/375/430 dengan judul panjang; deteksi notch dari safe area atas
+(0/20 tidak, 44/47/59 ya); konten container mulai tepat di bawah header + `spacingLarge`; header
+transparan saat diam dan putih + fade saat digulir diukur dari tepi atas layar.
+
 ## Latar chat saat swipe back — 28 Oktober 2026
 
 Di host Byon (simulator iOS 17.5), swipe back setengah dari Tanya AI menampilkan halaman putih:

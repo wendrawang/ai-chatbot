@@ -31,9 +31,9 @@ extension HostWindowTests {
             #expect(abs(firstFrame.minX - FigmaSize.spacingLarge.scaledToArtwork) <= 1)
             #expect(abs(secondFrame.minX - firstFrame.minX) <= 1)
             #expect(abs(secondFrame.width - firstFrame.width) <= 1)
-            let expectedTop =
-                fixture.controller.view.safeAreaInsets.top
-                + CustomSizes.Header.height.scaledToArtwork + FigmaSize.spacingLarge.scaledToArtwork
+            // Header mulai dari tepi atas layar seperti navigation bar host, bukan dari safe area.
+            let isNotched = ScreenHeader.isNotched(safeAreaTop: fixture.controller.view.safeAreaInsets.top)
+            let expectedTop = ScreenHeader.height(isNotched: isNotched) + FigmaSize.spacingLarge.scaledToArtwork
             #expect(abs(firstFrame.minY - expectedTop) <= 1)
         }
     }

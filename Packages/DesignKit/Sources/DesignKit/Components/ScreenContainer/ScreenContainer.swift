@@ -43,9 +43,12 @@ public struct ScreenContainer<Content: View, Trailing: View, Footer: View, Backg
     }
 
     public var body: some View {
-        VStack(spacing: .zero) {
-            surface
-            footer
+        // Safe area atas dibaca sekali di root; header dan scroll sendiri mulai dari tepi atas layar.
+        GeometryReader { geometry in
+            VStack(spacing: .zero) {
+                surface(isNotched: ScreenHeader.isNotched(safeAreaTop: geometry.safeAreaInsets.top))
+                footer
+            }
         }
         .background(backdrop)
     }
@@ -59,22 +62,23 @@ public struct ScreenContainer<Content: View, Trailing: View, Footer: View, Backg
         .accessibilityHidden(true)
     }
 
-    private var surface: some View {
+    private func surface(isNotched: Bool) -> some View {
         ZStack(alignment: .top) {
             ScrollView {
                 VStack(spacing: .zero) { content }
                     .frame(maxWidth: .infinity, alignment: .leading)
                     .padding(.horizontal, FigmaSize.spacingLarge.scaledToArtwork)
-                    .padding(.top, CustomSizes.Header.height.scaledToArtwork + FigmaSize.spacingLarge.scaledToArtwork)
+                    .padding(.top, ScreenHeader.height(isNotched: isNotched) + FigmaSize.spacingLarge.scaledToArtwork)
                     .padding(.bottom, FigmaSize.spacingLarge.scaledToArtwork)
                     .onScrollBoundaryChange(in: scrollSpaceID) { isScrolled = $0 }
             }
             .coordinateSpace(name: scrollSpaceID)
             ScreenHeader(
-                title: title, backLabel: backLabel, isScrolled: isScrolled,
+                title: title, backLabel: backLabel, isScrolled: isScrolled, isNotched: isNotched,
                 onBack: onBack, trailing: { trailing }
             )
         }
+        .ignoresSafeArea(.container, edges: .top)
     }
 }
 

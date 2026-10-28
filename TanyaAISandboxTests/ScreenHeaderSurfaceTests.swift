@@ -16,11 +16,11 @@ extension HostWindowTests {
     struct ScreenHeaderSurfaceTests {
         @Test
         func headerIsTransparentAtRestAndOpaqueWithFadeWhenScrolled() throws {
-            let height = CustomSizes.Header.height.scaledToArtwork
+            let height = ScreenHeader.height(isNotched: true)
             let fade = FigmaSize.spacingLarge.scaledToArtwork
             let atRest = try render(isScrolled: false)
             let scrolled = try render(isScrolled: true)
-            // Titik di padding kiri header, jauh dari tombol back dan judul; y dihitung dari bawah safe area.
+            // Titik di padding kiri header, jauh dari tombol back dan judul; y dihitung dari tepi atas layar.
             let inHeader = height / 2
             let inFade = height + fade / 2
             let belowFade = height + fade + 4
@@ -62,17 +62,17 @@ private extension HostWindowTests.ScreenHeaderSurfaceTests {
     func render(isScrolled: Bool) throws -> RenderedHeader {
         let content = ZStack(alignment: .top) {
             Color(red: 1, green: 0, blue: 0).ignoresSafeArea()
-            ScreenHeader(title: "Judul", backLabel: "Back", isScrolled: isScrolled, onBack: {})
+            ScreenHeader(title: "Judul", backLabel: "Back", isScrolled: isScrolled, isNotched: true, onBack: {})
         }
+        .ignoresSafeArea(.container, edges: .top)
         let fixture = try HostWindowFixture(content)
         defer { fixture.close() }
         let window = try #require(fixture.controller.view.window)
         let image = UIGraphicsImageRenderer(bounds: window.bounds).image { _ in
             window.drawHierarchy(in: window.bounds, afterScreenUpdates: true)
         }
-        return RenderedHeader(
-            image: try #require(image.cgImage), scale: image.scale, headerTop: window.safeAreaInsets.top
-        )
+        #expect(ScreenHeader.isNotched(safeAreaTop: window.safeAreaInsets.top), "simulator test harus ber-notch")
+        return RenderedHeader(image: try #require(image.cgImage), scale: image.scale, headerTop: .zero)
     }
 
     func isBackdrop(_ rgba: [UInt8]) -> Bool {

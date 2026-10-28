@@ -13,8 +13,11 @@ import CoreGraphics
 /// Kelompok bersama dinamai per peran (`Header`, `Card`, `Shadow`); nilai milik satu komponen
 /// memakai nama komponennya (`Composer`) supaya ikut terhapus bersama komponen itu.
 public enum CustomSizes {
+    /// Mengikuti navigation bar host (padding bawah 15, kiri-kanan 20). Padding atas dari tepi layar
+    /// ada di `CustomScreenInsets` karena tidak di-scale.
     public enum Header {
-        public static let height: CGFloat = 56
+        public static let bottomPadding: CGFloat = 15
+        public static let horizontalPadding: CGFloat = 20
     }
 
     public enum Card {
