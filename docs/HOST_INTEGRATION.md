@@ -79,11 +79,16 @@ struct TanyaAIScreen: ScreenContent {
 
 // TanyaAIScreenViewModel.swift — konfigurasi lewat init, bukan di body coordinator.
 final class TanyaAIScreenViewModel: ScreenContentViewModel {
+    // Dibuat sekali bersama view model (@StateObject destination), dipakai ulang setiap render.
+    @MainActor
+    private(set) lazy var bridge = TanyaAIBridge(
+        onNewConversation: { [weak self] in self?.startNewConversation() },
+        onSend: { [weak self] text in self?.useCase.send(text) ?? false }
+    )
+
     @MainActor
     func makeHost() -> TanyaAIHost {
-        TanyaAIHost(locale: Locale(identifier: Localize.currentLanguage())) { [weak self] text in
-            self?.useCase.send(text) ?? false
-        }
+        TanyaAIHost(locale: Locale(identifier: Localize.currentLanguage()), welcome: welcome, bridge: bridge)
     }
 }
 ```
@@ -110,10 +115,15 @@ Untuk navigasi lain cukup ganti pemanggilnya:
 - **UIKit coordinator / `UINavigationController`:**
   `navigation.pushViewController(UIHostingController(rootView: host.makeView(onBack: pop)), animated: true)`.
 
-`onSend` mengembalikan `true` bila host menerima draft (composer dikosongkan) dan
-`false` untuk mempertahankannya. Nilai ini bukan konfirmasi request network berhasil.
-`onNewConversation` opsional; tanpa handler, item menu "Percakapan baru" disabled.
-`locale` dan `colors` dibaca saat halaman dibuat.
+`TanyaAIBridge` adalah jembatan host ↔ TanyaAI yang hidup selama halaman terbuka; jangan
+membuatnya di `body` atau di `makeHost()`. `onSend` mengembalikan `true` bila host menerima
+draft (composer dikosongkan) dan `false` untuk mempertahankannya. Nilai ini bukan konfirmasi
+request network berhasil. `onNewConversation` opsional; tanpa handler, item menu "Percakapan
+baru" disabled. `locale` dan `colors` dibaca saat halaman dibuat.
+
+Rencana stream: host membuka SSE dan meneruskan setiap event **apa adanya** ke bridge
+(`receive(_:)`, menyusul bersama contract SSE). TanyaAI yang men-decode event dan
+menghentikan loading saat event penghenti datang.
 
 ## Halaman sambutan dan menunggu jawaban
 
@@ -146,16 +156,14 @@ struct TanyaAIInitShortcut: Decodable {
 Kontrak memakai key `description` (apib awal menulis `descripton`; BE diminta memperbaiki).
 `iconURL` nil (kosong/tidak valid) menampilkan ikon fallback tanpa membatalkan kartu lain.
 
-Ketuk kartu mengirim `prompt` lewat `onSend`, sama seperti chat dari composer. Setelah
-host menerima chat, isi `isAwaitingReply: true` sampai jawaban datang: tombol kirim
-menjadi titik bergerak dan kartu nonaktif; draft tetap bisa diketik.
+Ketuk kartu mengirim `prompt` lewat `onSend` bridge, sama seperti chat dari composer.
+Status menunggu jawaban **milik TanyaAI**: setelah host menerima chat, tombol kirim menjadi
+titik bergerak dan kartu nonaktif (draft tetap bisa diketik), dan chat berikutnya ditolak
+tanpa diteruskan ke host. Sementara penantian berakhir saat "Percakapan baru"; event
+penghenti dari stream menyusul.
 
 ```swift
-TanyaAIHost(
-    locale: locale, colors: colors, isAwaitingReply: isAwaitingReply, welcome: welcome,
-    onNewConversation: { [weak self] in self?.startNewConversation() },
-    onSend: { [weak self] text in self?.send(text) ?? false }
-)
+TanyaAIHost(locale: locale, colors: colors, welcome: welcome, bridge: bridge)
 ```
 
 Ikon kartu dimuat `RemoteImage` DesignKit, pembungkus `KFImage` Kingfisher (dependency SPM
@@ -183,10 +191,12 @@ Halaman Tanya AI memakai light appearance Figma (`.environment(\.colorScheme, .l
 hanya pada subtree itu, tidak mengubah host). Pemetaan proposition ke palette tetap di host
 karena aturan bisnis tidak masuk DesignKit.
 
-## Isi folder `Host`
+## Isi folder `Bridging`
 
-- `TanyaAIHost.swift`: konfigurasi (`locale`, `colors`, `welcome`, `isAwaitingReply`,
-  `onSend`) dan `makeView()` yang memasang bahasa dan palette ke halaman baru.
+- `TanyaAIHost.swift`: konfigurasi (`locale`, `colors`, `welcome`, `bridge`) dan `makeView()`
+  yang memasang bahasa dan palette ke halaman baru.
+- `TanyaAIBridge.swift`: objek yang dipegang host (`onSend`, `onNewConversation`, nanti event
+  SSE); status menunggu jawaban di dalamnya.
 
 Overload `makeView { ContentView() }` menerima konten SwiftUI untuk area scroll; sandbox
 memakainya pada mode `--header-demo`. Konten tidak perlu mempunyai ScrollView, header,

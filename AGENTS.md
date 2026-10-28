@@ -145,8 +145,10 @@ tersedia pada history/main.
 - Welcome berasal dari BE, tapi decode milik host: `WelcomeContent`/`WelcomeGreeting`/`WelcomeShortcut`
   (folder `Features/Chat/Models/`) adalah struct biasa tanpa `Decodable`. Host memetakan model
   inquiry init miliknya ke tipe ini; `iconURL` nil memakai ikon fallback. TanyaAI hanya men-decode
-  hasil stream (nanti), bukan response init. Shortcut dikirim lewat
-  `onSend(prompt)`; status menunggu jawaban (`isAwaitingReply`) milik host.
+  hasil stream (nanti), bukan response init. Shortcut dikirim lewat `onSend(prompt)` bridge.
+- `TanyaAIBridge` (Bridging/) dipegang host selama halaman terbuka: `onSend`,
+  `onNewConversation`, dan nanti event SSE mentah. Status menunggu jawaban (`isAwaitingReply`)
+  milik bridge, bukan host; satu pertanyaan per waktu.
 - Gambar dari URL memakai `RemoteImage` DesignKit, pembungkus tipis `KFImage` Kingfisher
   (cache memori + disk, downsample ke `pointSize` × skala layar, validasi status HTTP,
   batal saat view hilang). Kingfisher hanya di-import di `RemoteImage`; fitur lain memakai

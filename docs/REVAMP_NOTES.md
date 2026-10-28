@@ -82,8 +82,8 @@ public protocol TanyaAIChatService {
 }
 ```
 
-- `TanyaAIHost(service:)` menggantikan `onSend: (String) -> Bool`. Ini perubahan
-  API, jadi lakukan sekali saat contract pertama tersedia.
+- Diperbarui 28 Oktober 2026: seam yang dipilih adalah `TanyaAIBridge` yang dipegang host;
+  host meneruskan event SSE apa adanya, TanyaAI yang men-decode.
 - `ResponseDTO` dan mapper bersifat internal di TanyaAI. Saat contract berubah,
   hanya dua file ini yang ikut berubah.
 - Implementasi dummy ada di Sandbox, bukan di package produksi.

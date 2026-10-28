@@ -93,7 +93,7 @@ Packages/
    Tombol back atau swipe dari tepi kiri kembali ke halaman asal.
    Lihat [integrasi host](HOST_INTEGRATION.md).
 
-Screen menggunakan `ChatScreen(onSend:)`. Callback mendapat draft dan mengembalikan
+Screen menerima `TanyaAIBridge(onSend:)`. Callback `onSend` mendapat draft dan mengembalikan
 Bool: true membersihkan draft, false mempertahankan teks/seleksi. Draft whitespace
 menonaktifkan action. Callback belum mengimplikasikan pesan terkirim ke backend.
 

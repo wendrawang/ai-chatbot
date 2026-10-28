@@ -114,8 +114,8 @@ isolasi nested scroll; pengukuran FPS/Instruments terpisah.
 ## Menu dan demo
 
 Titik tiga membuka menu “Percakapan baru” dalam English/Indonesia/简体中文.
-`onNewConversation` hanya mengirim aksi ke host. Tanpa handler, item disabled;
-belum ada reset draft atau flow sesi/welcome pada tahap ini.
+`onNewConversation` (di `TanyaAIBridge`) hanya mengirim aksi ke host dan mengakhiri penantian
+jawaban. Tanpa handler, item disabled; reset draft dan sesi BE milik host.
 
 Jalankan `Scripts/run_sandbox.sh --language id --header-demo`, lalu buka feature.
 Mode ini memberi paragraf dummy yang cukup panjang untuk mencapai akhir, kembali

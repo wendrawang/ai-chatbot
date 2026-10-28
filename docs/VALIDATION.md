@@ -1,5 +1,19 @@
 # Validasi starter
 
+## Bridge host dan struktur TanyaAI — 28 Oktober 2026
+
+Model welcome TanyaAI tidak lagi `Decodable`; host men-decode inquiry init (sandbox: DTO
+`TanyaAIInit*`) lalu memetakan ke `WelcomeContent`. `TanyaAIBridge` dipegang host dan memegang
+`onSend`/`onNewConversation`; status menunggu jawaban pindah dari host ke bridge. Event SSE dan
+event penghenti loading menyusul bersama contract. Folder TanyaAI: `Bridging/`,
+`Features/Chat/Models|Views(/Sections)`, `Shared/Keys|Extensions`, `Resources/`.
+
+Dibuktikan oleh test: bridge menunggu setelah chat diterima, menolak chat berikutnya tanpa
+memanggil host, berhenti menunggu dan memanggil host saat percakapan baru, menu nonaktif
+tanpa handler; bridge tidak menahan view model host; decode init di sandbox (urutan, `iconUrl`
+kosong/null/hilang, typo `descripton` ditolak); `FontFace.swiftUIFont` sama ukurannya dengan
+jalur `UIFont`. UI test welcome (loading sampai percakapan baru) tetap lulus.
+
 ## Halaman sambutan dari BE — 27 Oktober 2026
 
 Welcome mengikuti apib inquiry init: host men-decode objek `data` ke `WelcomeContent`

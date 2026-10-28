@@ -5,6 +5,7 @@
 //  Created by Wendra on 27/10/26.
 //
 
+import TanyaAI
 import Testing
 
 @testable import Tanya_AI_Sandbox
@@ -45,20 +46,28 @@ struct TanyaAIScreenViewModelTests {
     }
 
     @Test
-    func acceptedSendWaitsForReplyUntilANewConversation() {
-        let viewModel = makeViewModel()
-        #expect(!viewModel.isAwaitingReply)
-        #expect(viewModel.send("Cek Portfolio saya"))
-        #expect(viewModel.isAwaitingReply)
-        viewModel.startNewConversation()
-        #expect(!viewModel.isAwaitingReply)
+    func acceptedSendIsForwardedToTheHostUseCase() {
+        #expect(makeViewModel().send("Cek Portfolio saya"))
     }
 
     @Test(arguments: ["--reject-send", "--offline"])
-    func refusedSendDoesNotWaitForReply(flag: String) {
-        let viewModel = makeViewModel(arguments: [flag])
-        #expect(!viewModel.send("Cek Portfolio saya"))
-        #expect(!viewModel.isAwaitingReply)
+    func refusedSendKeepsTheDraft(flag: String) {
+        #expect(!makeViewModel(arguments: [flag]).send("Cek Portfolio saya"))
+    }
+
+    /// Bridge memegang callback host secara weak: view model tetap dilepas walau bridge masih hidup.
+    @MainActor
+    @Test
+    func bridgeDoesNotKeepTheViewModelAlive() {
+        weak var releasedViewModel: TanyaAIScreenViewModel?
+        var bridge: TanyaAIBridge?
+        do {
+            let viewModel = makeViewModel()
+            releasedViewModel = viewModel
+            bridge = viewModel.bridge
+        }
+        #expect(bridge != nil)
+        #expect(releasedViewModel == nil)
     }
 }
 

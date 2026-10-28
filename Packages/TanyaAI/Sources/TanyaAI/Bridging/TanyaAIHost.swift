@@ -18,26 +18,20 @@ public struct TanyaAIHost {
     /// Palette fitur dari hasil inquiry proposition; sebelum itu memakai palette default.
     public var colors: any FigmaColorProtocol
     private let isEnabled: Bool
-    private let isAwaitingReply: Bool
     private let welcome: WelcomeContent?
-    private let onNewConversation: (() -> Void)?
-    private let onSend: (String) -> Bool
+    private let bridge: TanyaAIBridge
 
-    /// `onSend` mengembalikan true bila host menerima draft; false mempertahankannya di composer.
-    /// Prompt shortcut sambutan juga dikirim lewat `onSend`. `welcome` berasal dari inquiry init BE;
-    /// `isAwaitingReply` dipegang host sejak chat diterima sampai jawaban datang (tombol kirim jadi titik bergerak).
+    /// `welcome` dipetakan host dari inquiry init BE. `bridge` dibuat sekali oleh host dan dipakai ulang
+    /// setiap render, sehingga status menunggu jawaban tidak hilang saat halaman host di-render ulang.
     public init(
         locale: Locale = .current, colors: any FigmaColorProtocol = EnvironmentValues().designColors,
-        isEnabled: Bool = true, isAwaitingReply: Bool = false, welcome: WelcomeContent? = nil,
-        onNewConversation: (() -> Void)? = nil, onSend: @escaping (String) -> Bool
+        isEnabled: Bool = true, welcome: WelcomeContent? = nil, bridge: TanyaAIBridge
     ) {
         self.locale = locale
         self.colors = colors
         self.isEnabled = isEnabled
-        self.isAwaitingReply = isAwaitingReply
         self.welcome = welcome
-        self.onNewConversation = onNewConversation
-        self.onSend = onSend
+        self.bridge = bridge
     }
 
     /// Halaman Tanya AI. Tanpa `onBack`, tombol kembali memakai `dismiss` SwiftUI (pop pada navigasi host).
@@ -49,13 +43,10 @@ public struct TanyaAIHost {
     public func makeView<Content: View>(
         onBack: (() -> Void)? = nil, @ViewBuilder content: () -> Content
     ) -> some View {
-        ChatScreen(
-            isEnabled: isEnabled, isAwaitingReply: isAwaitingReply, welcome: welcome, onBack: onBack,
-            onNewConversation: onNewConversation, onSend: onSend, content: content
-        )
-        .environment(\.locale, locale)
-        .designColors(colors)
-        // Starter mengikuti light palette Figma; dibatasi ke halaman ini, tidak mengubah host.
-        .environment(\.colorScheme, .light)
+        ChatScreen(isEnabled: isEnabled, welcome: welcome, bridge: bridge, onBack: onBack, content: content)
+            .environment(\.locale, locale)
+            .designColors(colors)
+            // Starter mengikuti light palette Figma; dibatasi ke halaman ini, tidak mengubah host.
+            .environment(\.colorScheme, .light)
     }
 }

@@ -12,9 +12,9 @@ bridge host; tanpa session/stream. Minimum iOS 15 (host ikut naik ke iOS 15 untu
 - Welcome: host men-decode inquiry init dengan model miliknya, memetakan ke `WelcomeContent`
   (struct biasa, tanpa `Decodable`) dan mengisi `TanyaAIHost(welcome:)`. Decode di TanyaAI hanya
   untuk hasil stream nanti. Sapaan, judul/deskripsi/ikon kartu dari BE; emblem, latar, judul
-  daftar dan chevron dari FE. Ketuk kartu = `onSend(prompt)`.
-- `isAwaitingReply` dipegang host sejak chat diterima sampai jawaban datang: tombol kirim
-  jadi `LoadingDots`, kartu nonaktif. Gambar URL lewat `RemoteImage` (cache memori bersama).
+  daftar dan chevron dari FE. Ketuk kartu = `onSend(prompt)` lewat bridge.
+- `TanyaAIBridge` dipegang host (dibuat sekali); `isAwaitingReply` milik bridge sejak chat diterima
+  sampai jawaban (event penghenti dari SSE menyusul): tombol kirim jadi `LoadingDots`, kartu nonaktif. Gambar URL lewat `RemoteImage` (cache memori bersama).
 - Ukuran welcome/kartu/titik masih estimasi screenshot (TODO di `CustomSizes`/`CustomMotion`);
   aset `chatBackground`/`welcomeOrb` placeholder (`ChatImage`), ganti file, nama tetap.
 - Folder TanyaAI: `Bridging/` (API host), `Features/<Fitur>/Models|Views` (section di
