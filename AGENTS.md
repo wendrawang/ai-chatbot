@@ -68,8 +68,8 @@ tersedia pada history/main.
 ## Struktur TanyaAI
 
 - `Bridging/`: API publik untuk host (`TanyaAIHost`). Satu-satunya pintu masuk host.
-- `Features/<Fitur>/Models|Views`: per fitur (`Chat`, `Welcome`); model data BE di `Models`,
-  view SwiftUI di `Views`. Fitur baru = folder baru di `Features/`.
+- `Features/<Fitur>/Models|Views`: per fitur (`Chat`, `Welcome`); model data fitur (struct
+  biasa) di `Models`, view SwiftUI di `Views`. Fitur baru = folder baru di `Features/`.
 - `Shared/Keys`: enum key resource lintas fitur (`ChatCopy`, `ChatImage`,
   `ChatElementIdentifier`); `Shared/Extensions`: `Tipe+Key.swift` (satu extension per file).
 - `Resources/`: aset dan lokalisasi saja, tanpa file Swift. Tests mencerminkan folder Sources;
@@ -141,9 +141,10 @@ tersedia pada history/main.
 - Menu/sesi adalah tanggung jawab fitur/host. `onNewConversation` hanya callback;
   tanpa handler, item menu disabled. Jangan menambah session, reset draft, intent,
   bubble atau database sebelum diminta.
-- Welcome berasal dari BE: `WelcomeContent`/`WelcomeGreeting`/`WelcomeShortcut` (folder
-  `Features/Welcome/Models/`) decode objek `data` inquiry init; field T&C milik host diabaikan. `iconUrl`
-  kosong/tidak valid menjadi nil tanpa menggagalkan seluruh welcome. Shortcut dikirim lewat
+- Welcome berasal dari BE, tapi decode milik host: `WelcomeContent`/`WelcomeGreeting`/`WelcomeShortcut`
+  (folder `Features/Welcome/Models/`) adalah struct biasa tanpa `Decodable`. Host memetakan model
+  inquiry init miliknya ke tipe ini; `iconURL` nil memakai ikon fallback. TanyaAI hanya men-decode
+  hasil stream (nanti), bukan response init. Shortcut dikirim lewat
   `onSend(prompt)`; status menunggu jawaban (`isAwaitingReply`) milik host.
 - Gambar dari URL memakai `RemoteImage` DesignKit, pembungkus tipis `KFImage` Kingfisher
   (cache memori + disk, downsample ke `pointSize` × skala layar, validasi status HTTP,

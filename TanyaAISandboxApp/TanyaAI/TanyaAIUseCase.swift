@@ -36,7 +36,8 @@ final class TanyaAIUseCase {
         guard !options.isHeaderDemo, let url = SandboxFixtureFile.tanyaAIInitDummy.url,
             let data = try? Data(contentsOf: url)
         else { return nil }
-        guard let welcome = try? JSONDecoder().decode(TanyaAIInitResponse.self, from: data).data else { return nil }
+        guard let response = try? JSONDecoder().decode(TanyaAIInitResponse.self, from: data) else { return nil }
+        let welcome = response.data.welcome
         guard let iconURL = options.iconOverrideURL else { return welcome }
         return Self.replacingIcons(of: welcome, with: iconURL)
     }

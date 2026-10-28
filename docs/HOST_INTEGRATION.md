@@ -117,13 +117,24 @@ Untuk navigasi lain cukup ganti pemanggilnya:
 
 ## Halaman sambutan dan menunggu jawaban
 
-Host memanggil inquiry init Tanya AI, lalu men-decode objek `data` langsung ke
-`WelcomeContent` (envelope `response_code` dan field T&C tetap milik host):
+Host memanggil inquiry init Tanya AI dan men-decode dengan model miliknya sendiri, lalu
+memetakan ke `WelcomeContent`. Model welcome TanyaAI tidak `Decodable`; envelope
+`response_code` dan field T&C tetap milik host. Contoh dari sandbox:
 
 ```swift
-struct TanyaAIInitResponse: Decodable {
-    let data: WelcomeContent   // isTncAgreed / tncCode dibaca host dari model lain bila perlu
+struct TanyaAIInitShortcut: Decodable {
+    let title: String
+    let description: String
+    let iconUrl: String?
+    let prompt: String
+
+    var shortcut: WelcomeShortcut {
+        WelcomeShortcut(
+            title: title, description: description, iconURL: iconUrl.flatMap(URL.init(string:)), prompt: prompt
+        )
+    }
 }
+// TanyaAIInitData.welcome = WelcomeContent(greetings: greetings.greeting, shortcuts: shortcuts.map(\.shortcut))
 ```
 
 | Bagian halaman | Sumber |
@@ -133,7 +144,7 @@ struct TanyaAIInitResponse: Decodable {
 | Emblem, latar, judul "Mulai dari sini:", chevron | FE (package) |
 
 Kontrak memakai key `description` (apib awal menulis `descripton`; BE diminta memperbaiki).
-`iconUrl` kosong atau tidak valid membuat ikon kosong tanpa membatalkan kartu lain.
+`iconURL` nil (kosong/tidak valid) menampilkan ikon fallback tanpa membatalkan kartu lain.
 
 Ketuk kartu mengirim `prompt` lewat `onSend`, sama seperti chat dari composer. Setelah
 host menerima chat, isi `isAwaitingReply: true` sampai jawaban datang: tombol kirim

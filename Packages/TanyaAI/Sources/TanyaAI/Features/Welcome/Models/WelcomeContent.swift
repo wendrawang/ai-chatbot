@@ -7,9 +7,9 @@
 
 import Foundation
 
-/// Isi halaman sambutan dari BE (inquiry init Tanya AI, objek `data`). Host men-decode objek itu
-/// langsung ke tipe ini; field lain di `data` seperti `isTncAgreed`/`tncCode` milik host dan diabaikan.
-public struct WelcomeContent: Decodable, Equatable {
+/// Isi halaman sambutan. Host men-decode response inquiry init dengan model miliknya sendiri lalu
+/// memetakannya ke tipe ini; TanyaAI tidak bergantung pada bentuk JSON init.
+public struct WelcomeContent: Equatable {
     public let greetings: WelcomeGreeting
     public let shortcuts: [WelcomeShortcut]
 

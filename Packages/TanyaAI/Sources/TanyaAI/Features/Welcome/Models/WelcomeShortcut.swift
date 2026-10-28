@@ -8,10 +8,10 @@
 import Foundation
 
 /// Satu kartu shortcut di halaman sambutan. Saat diketuk, `prompt` dikirim sebagai chat.
-public struct WelcomeShortcut: Decodable, Equatable {
+public struct WelcomeShortcut: Equatable {
     public let title: String
     public let description: String
-    /// Nil bila BE mengirim URL kosong/tidak valid; kartu tetap tampil dengan placeholder ikon.
+    /// Nil bila host tidak punya URL valid; kartu tetap tampil dengan ikon fallback.
     public let iconURL: URL?
     public let prompt: String
 
@@ -20,13 +20,5 @@ public struct WelcomeShortcut: Decodable, Equatable {
         self.description = description
         self.iconURL = iconURL
         self.prompt = prompt
-    }
-
-    public init(from decoder: Decoder) throws {
-        let container = try decoder.container(keyedBy: WelcomeShortcutKey.self)
-        title = try container.decode(String.self, forKey: .title)
-        description = try container.decode(String.self, forKey: .description)
-        iconURL = try container.decodeIfPresent(String.self, forKey: .iconUrl).flatMap(URL.init(string:))
-        prompt = try container.decode(String.self, forKey: .prompt)
     }
 }

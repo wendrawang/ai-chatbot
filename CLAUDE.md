@@ -9,8 +9,9 @@ bridge host; tanpa session/stream. Minimum iOS 15 (host ikut naik ke iOS 15 untu
   minimum touch target 44 atau hit frame tambahan; ini keputusan UI/UX.
 - Tanpa R.swift/build tool plugin (CI host tidak bisa trust plugin). Copy lewat `ChatCopy`/`SandboxCopy`,
   ikon lewat `DesignIcon`; tambah case setiap menambah key/imageset, tes menjaga kecocokannya.
-- Welcome: host men-decode objek `data` inquiry init ke `WelcomeContent` dan mengisi
-  `TanyaAIHost(welcome:)`. Sapaan, judul/deskripsi/ikon kartu dari BE; emblem, latar, judul
+- Welcome: host men-decode inquiry init dengan model miliknya, memetakan ke `WelcomeContent`
+  (struct biasa, tanpa `Decodable`) dan mengisi `TanyaAIHost(welcome:)`. Decode di TanyaAI hanya
+  untuk hasil stream nanti. Sapaan, judul/deskripsi/ikon kartu dari BE; emblem, latar, judul
   daftar dan chevron dari FE. Ketuk kartu = `onSend(prompt)`.
 - `isAwaitingReply` dipegang host sejak chat diterima sampai jawaban datang: tombol kirim
   jadi `LoadingDots`, kartu nonaktif. Gambar URL lewat `RemoteImage` (cache memori bersama).
