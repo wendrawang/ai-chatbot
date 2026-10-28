@@ -1,5 +1,70 @@
 # Validasi starter
 
+## Perbaikan review bridging lanjutan — 29 Oktober 2026
+
+- Sesi habis final: `expireSession()` membatalkan task sambungan, jadi stream yang sedang terbuka ikut
+  ditutup dan `run()` tidak lagi menimpa `expired` menjadi `connecting`/`live` (sebelumnya callback 401
+  bisa terpanggil dua kali setelah reconnect).
+- `ChatTurn` memegang `client_msg_id` pertanyaan yang ditunggu; ack atau penolakan pertanyaan lama
+  (mis. sebelum percakapan berganti) diabaikan sehingga tidak mengunci/membuka pertanyaan baru.
+- Error `retryable:false` saat pembukaan awal tidak lagi menyisakan spinner: `isLoadingHistory` hanya
+  true selama masih menyambung, dan `onConnectionFailed` meneruskan error ke host sekali.
+- Contoh transport Alamofire callback → async ditambahkan di `CHAT_GATEWAY.md`.
+
+Test regresi: 401 saat kirim menutup stream tanpa reconnect, respons kirim terlambat dari percakapan
+lama, 403 saat init menghentikan loading dan memanggil host sekali, ack/penolakan lama di `ChatTurn`.
+
+## Perbaikan review bridging — 29 Oktober 2026
+
+- Frame SSE selesai di baris `data:`; `turn_end` terakhir tidak lagi tertahan bila host membuang
+  baris kosong (sebelumnya composer terkunci sampai event berikutnya).
+- `ChatTurn`: hanya `turn_end` dengan seq setelah ack pertanyaan yang membuka kunci; `turn_end` sebelum
+  ack dicocokkan saat ack tiba. `Last-Event-ID` = maks(seq pesan, `id` event terakhir).
+- 401 saat kirim memanggil `onSessionExpired` sekali dan menghentikan sambungan, sama dengan jalur init.
+- `groupedByDay` O(n): buffer di-append, kelompok dibentuk sekali per hari.
+
+Test regresi: parser tanpa baris kosong, replay `turn_end` lama, `turn_end` sebelum ack, 401 saat
+kirim, cursor reconnect setelah `turn_end`, 5.000 pesan satu hari.
+
+## Menu "Percakapan baru" dihapus — 28 Oktober 2026
+
+Ikon ⋮ dan menu "Percakapan baru" dihapus karena belum ada kebutuhan (alur BE: batas 1 percakapan
+per CIF, close belum dipakai). `TanyaAIBridge(transport:onSessionExpired:)` tanpa `onNewConversation`;
+copy `chat.more`/`chat.newConversation` dihapus dari tiga bahasa. Slot kanan header tetap kosong agar
+judul di tengah; aset `moreMenu` disimpan. UI test sisi tombol kirim menunggu jawaban bot tiruan,
+bukan percakapan baru.
+
+## Bubble pengguna bersudut siku — 28 Oktober 2026
+
+Bubble pesan keluar memakai `MessageBubbleShape`: tiga sudut membulat, kanan bawah siku (Figma "Beli
+valas"); iOS 15 tanpa `UnevenRoundedRectangle`, jadi path dari `UIBezierPath`. Chip tanggal dipaksa
+pola Figma `d MMM yyyy` untuk semua bahasa. Test: titik di sudut kanan bawah ada di dalam path, sudut
+lain tidak; label tanggal id/en.
+
+## Sambutan vs history dan chip tanggal — 28 Oktober 2026
+
+Loading di tengah halaman sampai init + history pertama selesai (`isHistoryLoaded`); reconnect tidak
+menampilkan loading. Sambutan hanya bila history kosong (`isWelcomeVisible`); pesan pertama dari stream
+menggantikannya. Pesan dikelompokkan per hari kalender perangkat (`groupedByDay`), `DateChip` di atas
+setiap hari dengan pola Figma `d MMM yyyy`, nama bulan sesuai bahasa fitur (id "14 Okt 2026"). Chip memakai `colorsSurfaceSelected`
+agar terbaca di latar pink maupun putih (warna/padding Figma: TODO). Sandbox `--with-history` memuat
+fixture dua tanggal. Test: parse `created_at`, pemisahan hari (termasuk zona perangkat), status
+loading/sambutan, UI test history tanpa sambutan dengan dua chip.
+
+## Bridging chat-gateway — 28 Oktober 2026
+
+Host mengimplementasikan `TanyaAIChatTransport` per endpoint (init, history, kirim, SSE) dan
+mengembalikan body mentah; TanyaAI men-decode contract 1.0.1, menjalankan init → history → SSE
+lewat `.task`, menyambung ulang dengan backoff 1–30 detik (atau `retry_after_ms`), dan menggabungkan
+history baru berdasarkan `message_id` sampai bertemu pesan terakhir yang sudah ada. Stream dibuka
+dengan `Last-Event-ID` = seq terbesar. 401 → `onSessionExpired`; `CLOSED` → history tanpa stream.
+Pesan nasabah hanya tampil dari stream; `turn_end` membuka kirim. Daftar pesan teks sementara
+(`MessagesSection` + `MessageBubble`). Sandbox memakai gateway tiruan (`--hold-reply` menahan jawaban).
+
+Test: parser SSE (dengan/tanpa baris kosong, komentar), decode event dari contoh swagger, merge,
+backoff, urutan sambung/sambung ulang/kejar history/401/CLOSED/503/percakapan berganti, kirim
+dari stream sampai `turn_end`; transport sandbox; UI test pertanyaan lalu jawaban dari stream.
+
 ## Padding composer 16 di semua sisi — 28 Oktober 2026
 
 Disamakan dengan Byon (sesuai Figma): `ComposerSection` memberi `spacingLarge` di semua sisi, bukan

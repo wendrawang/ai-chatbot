@@ -116,16 +116,15 @@ saat scroll; yang dibatasi adalah callback dan state update, bukan klaim bahwa
 semua layout/renderer berhenti bekerja. Tes menghitung transisi callback dan
 isolasi nested scroll; pengukuran FPS/Instruments terpisah.
 
-## Menu dan demo
+## Slot kanan dan demo
 
-Titik tiga membuka menu “Percakapan baru” dalam English/Indonesia/简体中文.
-`onNewConversation` (di `TanyaAIBridge`) hanya mengirim aksi ke host dan mengakhiri penantian
-jawaban. Tanpa handler, item disabled; reset draft dan sesi BE milik host.
+Chat belum memakai aksi kanan (menu "Percakapan baru" dihapus sampai ada kebutuhan); slot
+kanan tetap kosong selebar tombol back sehingga judul tetap di tengah.
 
 Jalankan `Scripts/run_sandbox.sh --language id --header-demo`, lalu buka feature.
 Mode ini memberi paragraf dummy yang cukup panjang untuk mencapai akhir, kembali
 ke atas, dan melihat teks di belakang header. Tanpa flag, area chat tetap kosong.
-Asset back/more/send masih PDF vector sementara, dengan TODO di xcassets.
+Asset back/more/send masih PDF vector sementara (`moreMenu` disimpan untuk aksi kanan nanti), dengan TODO di xcassets.
 Localization dan nama asset dibaca melalui `ChatCopy`/`DesignIcon`; lihat
 [pola view dan resource](VIEW_TEMPLATE.md).
 

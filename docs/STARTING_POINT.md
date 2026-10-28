@@ -94,9 +94,9 @@ Packages/
    Tombol back atau swipe dari tepi kiri kembali ke halaman asal.
    Lihat [integrasi host](HOST_INTEGRATION.md).
 
-Screen menerima `TanyaAIBridge(onSend:)`. Callback `onSend` mendapat draft dan mengembalikan
-Bool: true membersihkan draft, false mempertahankan teks/seleksi. Draft whitespace
-menonaktifkan action. Callback belum mengimplikasikan pesan terkirim ke backend.
+Screen menerima `TanyaAIBridge(transport:)`. Kirim menunggu ack gateway: diterima membersihkan
+draft (bila belum diubah), ditolak mempertahankan teks. Draft whitespace menonaktifkan action.
+Pertanyaan dan jawaban tampil dari SSE; lihat [chat-gateway](CHAT_GATEWAY.md).
 
 Untuk membuka feature di atas `NavigationView` host existing, lihat
 [contoh integrasi host](HOST_INTEGRATION.md), termasuk bootstrap font dan bahasa.

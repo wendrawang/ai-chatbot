@@ -7,8 +7,6 @@
 
 "chat.placeholder" = "Ask about your finances and OCBC services...";
 "chat.send" = "Send message";
-"chat.more" = "Conversation options";
-"chat.newConversation" = "New conversation";
 "chat.title" = "Tanya AI";
 "chat.back" = "Back";
 "chat.replying" = "Waiting for reply";

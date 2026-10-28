@@ -9,8 +9,10 @@ import DesignKit
 import SwiftUI
 
 /// The feature owns its header; the draft lives in ComposerSection. Content is injected.
-/// `welcome` (dari BE) tampil di atas konten; shortcut yang diketuk dikirim lewat `bridge` seperti chat.
-/// Selama `bridge` menunggu jawaban, tombol kirim menjadi titik bergerak dan shortcut nonaktif.
+/// `welcome` (dari BE) hanya tampil bila history kosong; sebelum history pertama selesai, loading di tengah.
+/// Shortcut yang diketuk dikirim lewat `bridge` seperti chat.
+/// Selama halaman tampil, `bridge` tersambung ke gateway; selama menunggu jawaban, tombol kirim menjadi
+/// titik bergerak dan shortcut nonaktif.
 @MainActor
 public struct ChatScreen<Content: View>: View {
     @Environment(\.locale)
@@ -41,24 +43,38 @@ public struct ChatScreen<Content: View>: View {
         ScreenContainer(
             title: String(ChatCopy.title, locale: locale),
             backLabel: String(ChatCopy.back, locale: locale),
-            onBack: close, content: { scrollContent }, trailing: { moreMenu },
+            onBack: close, content: { scrollContent }, trailing: { EmptyView() },
             footer: { composer },
             background: { backgroundImage }
         )
+        .overlay { loadingIndicator }
+        // Dibatalkan otomatis saat halaman hilang; tampil lagi = init ulang dan mengejar history.
+        .task { await bridge.run() }
     }
 
     @ViewBuilder
     private var scrollContent: some View {
-        if let welcome {
-            WelcomeSection(content: welcome, isEnabled: isEnabled && !bridge.isAwaitingReply, onSelect: select)
+        if let welcome, bridge.isWelcomeVisible {
+            WelcomeSection(content: welcome, isEnabled: isEnabled && isSendable, onSelect: select)
         }
+        MessagesSection(messages: bridge.messages)
         content
     }
 
-    private var composer: some View {
-        ComposerSection(isEnabled: isEnabled, isAwaitingReply: bridge.isAwaitingReply) { [bridge] text in
-            bridge.send(text)
+    /// Hanya saat pertama dibuka; menyambung ulang tidak menutupi pesan yang sudah tampil. Gagal permanen
+    /// menghentikan loading; error ditampilkan host lewat `onConnectionFailed`/`onSessionExpired`.
+    @ViewBuilder
+    private var loadingIndicator: some View {
+        if bridge.isLoadingHistory {
+            ProgressView()
+                .progressViewStyle(.circular)
+                .tint(colors.colorsIconColored)
+                .accessibilityIdentifier(ChatElementIdentifier.loading)
         }
+    }
+
+    private var composer: some View {
+        ComposerSection(isEnabled: isEnabled && bridge.isReady, isAwaitingReply: bridge.isAwaitingReply, onSend: send)
     }
 
     /// Menempel di atas layar selebar layar; bagian bawah yang tidak tertutup gambar memakai warna surface.
@@ -69,34 +85,24 @@ public struct ChatScreen<Content: View>: View {
             .scaledToFit()
             .frame(maxHeight: .infinity, alignment: .top)
     }
-
-    private var moreMenu: some View {
-        Menu {
-            Button(String(ChatCopy.newConversation, locale: locale)) { bridge.startNewConversation() }
-                .disabled(!bridge.isNewConversationAvailable)
-        } label: {
-            Image(DesignIcon.moreMenu).resizable().scaledToFit()
-                .frame(
-                    width: FigmaSize.weightIconSmall.scaledToArtwork,
-                    height: FigmaSize.weightIconSmall.scaledToArtwork
-                )
-                .foregroundColor(colors.colorsIconDark)
-                .contentShape(Rectangle())
-        }
-        .accessibilityLabel(String(ChatCopy.more, locale: locale))
-        .accessibilityIdentifier(ChatElementIdentifier.more)
-    }
 }
 
 // MARK: - Actions
 
 private extension ChatScreen {
+    var isSendable: Bool { bridge.isReady && !bridge.isAwaitingReply }
+
     func close() {
         if let onBack { onBack() } else { dismiss() }
     }
 
-    /// Shortcut dikirim sebagai chat; hasil diterima/ditolak host tidak mengubah halaman sambutan.
+    /// True bila gateway menerima pesan; pertanyaan tampil setelah datang lewat stream.
+    func send(_ text: String) async -> Bool {
+        await bridge.send(text)
+    }
+
+    /// Shortcut dikirim sebagai chat; pertanyaan tampil setelah datang lewat stream.
     func select(_ shortcut: WelcomeShortcut) {
-        _ = bridge.send(shortcut.prompt)
+        Task { [bridge] in _ = await bridge.send(shortcut.prompt) }
     }
 }
