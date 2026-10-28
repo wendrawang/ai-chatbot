@@ -15,25 +15,21 @@ struct DetailScreen: ScreenContent {
     private var locale
     @Environment(\.dismiss)
     private var dismiss
-    @Environment(\.designColors)
-    private var colors
     @ObservedObject
     var viewModel: DetailScreenViewModel
     let onOpenTanyaAI: () -> Void
 
     var body: some View {
-        VStack(spacing: FigmaSize.spacingLarge.scaledToArtwork) {
-            ScreenHeader(
-                title: String(SandboxCopy.detailTitle, locale: locale),
-                backLabel: String(SandboxCopy.back, locale: locale),
-                isScrolled: false, onBack: { dismiss() }
-            )
-            HostButton(
-                title: String(SandboxCopy.open, locale: locale),
-                identifier: SandboxOptions.detailTanyaAIIdentifier, action: onOpenTanyaAI
-            )
-            Spacer()
-        }
-        .background(colors.colorsSurfacePrimary.ignoresSafeArea())
+        ScreenContainer(
+            title: String(SandboxCopy.detailTitle, locale: locale),
+            backLabel: String(SandboxCopy.back, locale: locale),
+            onBack: { dismiss() },
+            content: {
+                HostButton(
+                    title: String(SandboxCopy.open, locale: locale),
+                    identifier: SandboxOptions.detailTanyaAIIdentifier, action: onOpenTanyaAI
+                )
+            }
+        )
     }
 }

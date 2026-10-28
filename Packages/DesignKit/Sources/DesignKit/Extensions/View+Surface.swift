@@ -8,9 +8,10 @@
 import SwiftUI
 
 public extension View {
-    /// Kartu standar (isi, radius, garis tepi, bayangan). Pakai ini daripada menyusun ulang di setiap view.
-    func cardStyle() -> some View {
-        modifier(CardStyle())
+    /// Kartu standar (isi, radius, bayangan, garis tepi). Pakai ini daripada menyusun ulang di setiap view.
+    /// `isOutlined: false` untuk kartu yang hanya memakai bayangan, misalnya `ActionCard`.
+    func cardStyle(isOutlined: Bool = true) -> some View {
+        modifier(CardStyle(isOutlined: isOutlined))
     }
 
     /// Bayangan standar untuk permukaan yang mengambang.

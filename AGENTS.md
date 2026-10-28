@@ -30,19 +30,21 @@ tersedia pada history/main.
   | File | Isi | `.scaledToArtwork` |
   | --- | --- | --- |
   | `Generated/FigmaSize` | Spacing, ukuran icon, tipografi dari Figma. **Cek di sini dulu.** | Ya |
-  | `CustomSizes` | Dimensi point yang belum ada di Figma: `Header.height`, `Shadow`, `Composer.sendButton` | **Selalu** |
+  | `CustomSizes` | Dimensi point yang belum ada di Figma: `Header` (padding), `Shadow`, `Composer.sendButton` | **Selalu** |
   | `CustomTextLines` | Batas baris per peran: `composerInput = 1...4`, `headerTitle` | Tidak pernah |
+  | `CustomScreenInsets` | Padding atas header dari tepi layar, sama dengan navigation bar host (50/28) | Tidak pernah |
+  | `CustomMotion` | Waktu animasi (detik) dan jumlah titik `LoadingDots` | Tidak pernah |
   | `CustomColors` / `CustomBasePaletteColor` | Warna semantik tambahan / hex dasarnya | — |
   | `ArtworkScale` | Referensi 375×812 dan rasio layar untuk `.scaledToArtwork` | Tidak pernah |
   | `LayoutTolerance` | Toleransi pembulatan layout (bukan token desain) | Tidak pernah |
 
-  Nilai waktu/animasi custom nanti masuk `CustomMotion` (tidak di-scale), dibuat saat
-  ada animasi pertama yang memakainya.
+  Nilai waktu/animasi custom masuk `CustomMotion` (tidak di-scale). Animasi menghormati
+  Reduce Motion (`LoadingDots` diam).
   Kelompok bersama dinamai per peran (`Header`, `Shadow`, `CustomTextLines.address`
   bila nanti dibutuhkan). Nilai yang hanya dipakai satu komponen memakai namespace
   nama komponen (`CustomSizes.Composer`) agar terhapus bersama komponennya. Tambah
   nilai baru hanya ketika ada pemakainya. `check_design_system.py` menolak
-  `CustomSizes` tanpa `.scaledToArtwork` dan baris/motion/toleransi yang di-scale.
+  `CustomSizes` tanpa `.scaledToArtwork` dan baris/motion/toleransi/inset layar yang di-scale.
   Jangan membuat alias spacing generated atau memakai spacing sebagai radius.
 - Nilai awal memakai nilai bawaan tipe: `.zero` untuk CGFloat/Int/TimeInterval,
   `String()` untuk string kosong, `[]` untuk koleksi. Tidak ada enum alias seperti
@@ -64,9 +66,23 @@ tersedia pada history/main.
   Ukuran interaksi mengikuti keputusan UI/UX. Opacity dan jumlah baris tidak
   di-scale. Tidak ada `sizeInArtwork` alias.
 
+## Struktur TanyaAI
+
+- `Bridging/`: API publik untuk host (`TanyaAIHost`). Satu-satunya pintu masuk host.
+- `Features/<Fitur>/`: satu fitur = satu screen/alur yang bisa dinavigasi (kini `Chat`). Screen di
+  root fitur (`ChatScreen.swift`); tiap bagian screen punya folder sendiri berisi view dan model
+  yang hanya dipakai bagian itu: `Welcome/` (section + `WelcomeContent/Greeting/Shortcut`),
+  `Composer/`, nanti `Messages/`. Bagian bukan fitur sendiri. Model diletakkan dekat pemakainya,
+  tanpa folder `Models/` atau `Views/` umum. Model yang dipakai beberapa bagian naik ke root fitur.
+- `Shared/Keys`: enum key resource lintas fitur (`ChatCopy`, `ChatImage`,
+  `ChatElementIdentifier`); `Shared/Extensions`: `Tipe+Key.swift` (satu extension per file).
+- `Resources/`: aset dan lokalisasi saja, tanpa file Swift. Tests mencerminkan folder Sources;
+  helper test di `Support/`.
+
 ## Font, resource, copy
 
 - Font berada di `Resources/Fonts`; filename dan PostScript di `FontFace`.
+  SwiftUI memakai `face.swiftUIFont(size:)`; `font(size:)` (`UIFont`) hanya untuk UIKit/editor.
   Register sekali saat bootstrap melalui CoreText/`Bundle.module`, idempotent.
 - Nama case menyertakan family dan weight: `firaSansRegular/Medium/SemiBold/Bold`
   dan `openSansRegular/Medium/Bold`. Jangan memakai case `.regular/.medium` yang
@@ -105,18 +121,18 @@ tersedia pada history/main.
 - Identifier UI test dikelompokkan per komponen (`ComponentIdentifier.Header.title`,
   `ComponentIdentifier.Composer.send`). String identifier adalah kontrak UI test.
 - Tidak ada alias untuk nilai sistem: `.clear`, bukan `CustomColors.transparent`.
-- TanyaAI dipisah per tanggung jawab: `Chat/` (screen dan section), `Host/` (API
-  untuk host: konfigurasi dan pembuat halaman). Folder baru seperti `Messages/` atau
-  `Service/` dibuat saat file pertamanya ada, bukan lebih awal.
+- TanyaAI dipisah per tanggung jawab (lihat "Struktur TanyaAI"). Folder baru seperti
+  `Features/Chat/Messages/` atau `Flows/` dibuat saat file pertamanya ada, bukan lebih awal.
 - Screen standar memakai composition `ScreenContainer` dari DesignKit: header,
   area scroll, trailing action dan footer. Container memiliki satu `isScrolled`
   dan ID coordinate space lokal. Jangan membuat inheritance/BaseScreen protocol, ViewModel
   layout atau navigation container tambahan. Content tidak menambahkan ScrollView
   vertikal lagi. Footer memiliki margin sesuai komponen caller.
 - `ScreenHeader` tetap komponen standalone untuk layout dengan scroll owner lain
-  seperti List. Label/aksi back dan trailing berasal dari caller. Material hanya
-  saat scrolled, fallback opaque jika Reduce Transparency aktif. Status bar dan
-  safe area tetap milik sistem.
+  seperti List. Label/aksi back dan trailing berasal dari caller. Ukuran sama dengan
+  navigation bar host: mulai dari tepi atas layar (caller menaruhnya tanpa safe area atas,
+  `isNotched` dari `ScreenHeader.isNotched(safeAreaTop:)`), padding atas 50/28 tanpa scale,
+  kiri-kanan 20, bawah 15, ikon 24, judul Fira Sans Bold 16 dengan padding 32.
 - `.onScrollBoundaryChange(in:threshold:perform:)` reusable di DesignKit. Pasang
   pada root konten scroll setelah padding; ID sama dengan ScrollView owner.
   Callback memberi nilai awal lalu perubahan Boolean saja, tanpa state offset
@@ -127,8 +143,20 @@ tersedia pada history/main.
   baru di body atau memakai satu ID global untuk beberapa area scroll. Tambahkan
   konsep/property wrapper lain hanya ketika ada kebutuhan yang jelas.
 - Menu/sesi adalah tanggung jawab fitur/host. `onNewConversation` hanya callback;
-  tanpa handler, item menu disabled. Jangan menambah session, welcome, reset draft,
-  intent, bubble atau database pada tahap header.
+  tanpa handler, item menu disabled. Jangan menambah session, reset draft, intent,
+  bubble atau database sebelum diminta.
+- Welcome berasal dari BE, tapi decode milik host: `WelcomeContent`/`WelcomeGreeting`/`WelcomeShortcut`
+  (folder `Features/Chat/Welcome/`) adalah struct biasa tanpa `Decodable`. Host memetakan model
+  inquiry init miliknya ke tipe ini; `iconURL` nil memakai ikon fallback. TanyaAI hanya men-decode
+  hasil stream (nanti), bukan response init. Shortcut dikirim lewat `onSend(prompt)` bridge.
+- `TanyaAIBridge` (Bridging/) dipegang host selama halaman terbuka: `onSend`,
+  `onNewConversation`, dan nanti event SSE mentah. Status menunggu jawaban (`isAwaitingReply`)
+  milik bridge, bukan host; satu pertanyaan per waktu.
+- Gambar dari URL memakai `RemoteImage` DesignKit, pembungkus tipis `KFImage` Kingfisher
+  (cache memori + disk, downsample ke `pointSize` × skala layar, validasi status HTTP,
+  batal saat view hilang). Kingfisher hanya di-import di `RemoteImage`; fitur lain memakai
+  `RemoteImage`, bukan `KFImage`/`AsyncImage` langsung. Versi Kingfisher dikunci `exact`
+  di `Package.swift` DesignKit; naik versi hanya lewat PR yang mengubah baris tersebut.
 - `let` untuk input, `@Binding` untuk state caller, `@State` untuk draft lokal.
   Screen memiliki margin luar; komponen memiliki padding dalam/surface/shadow.
   Kartu dan bayangan memakai `.cardStyle()`/`.designShadow()` dari DesignKit; jangan

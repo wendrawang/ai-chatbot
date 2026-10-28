@@ -1,5 +1,100 @@
 # Validasi starter
 
+## Padding composer 16 di semua sisi — 28 Oktober 2026
+
+Disamakan dengan Byon (sesuai Figma): `ComposerSection` memberi `spacingLarge` di semua sisi, bukan
+`spacingMedium` atas-bawah. Ketahuan dari test Byon di iPhone 13 Pro: 2 × (17 − 8) = 18.
+
+## Folder per bagian fitur Chat — 28 Oktober 2026
+
+`Features/Chat/Models|Views/Sections` diganti folder per bagian: `ChatScreen.swift` di root fitur,
+`Welcome/` (section + tiga model welcome), `Composer/`. Model tinggal dekat pemakainya. Hanya pindah
+file (`git mv`), tanpa perubahan kode; SPM mengikuti folder, project sandbox tidak berubah.
+`Bridging/` dan `Shared/` tetap. `Messages/`, `Flows/`, `ChatState/ChatAction` belum dibuat.
+
+## Bayangan header saat digulir — 28 Oktober 2026
+
+Header mendapat bayangan Figma `Shadow/Default` (x 0, y 2, blur 10, `#BEC3D0` 40%) lewat
+`designShadow`, sama seperti kartu, dan gradient fade tetap ada. Fade dipasang sebagai background di
+belakang surface; sebagai overlay, gradient putih menutupi bayangan. Hanya saat `isScrolled`; saat
+diam header tetap transparan. Test piksel di window sandbox: fade di antara putih dan latar; di atas
+latar putih, tepat di bawah header tetap ada bayangan saat digulir dan tidak ada saat diam.
+
+## Divider composer dan penyesuaian dari Byon — 28 Oktober 2026
+
+`ComposerSection` mendapat divider selebar layar di atas composer (`colorsOutlineNetral`,
+`weightOutline` 1 di-scale). Disamakan dengan penyesuaian user di Byon: jarak isi `ActionCard`
+`spacingMedium`, emblem welcome 60. Test layout: tinggi section = composer + padding vertikal +
+tepat satu garis outline (toleransi 0,5, jadi hilangnya divider terdeteksi).
+
+`ActionCard` kini tanpa garis tepi, hanya bayangan (Figma `default_recommendation`):
+`.cardStyle(isOutlined: false)`; composer tetap ber-outline. Test piksel di window sandbox:
+tepi kartu ber-outline berwarna, tepi kartu tanpa outline tetap putih.
+
+## Header seukuran navigation bar host — 28 Oktober 2026
+
+`ScreenHeader` disamakan dengan `NavigationBarView` host agar konsisten antar halaman: mulai dari
+tepi atas layar, padding atas 50 (notch) / 28 tanpa scale (`CustomScreenInsets`), kiri-kanan 20,
+bawah 15, ikon 24, judul Fira Sans Bold 16 dengan padding 32 di lapisan sendiri. Notch dibaca dari
+safe area atas (> 20), bukan bawah seperti host, agar keyboard tidak menggeser header.
+`ScreenContainer` membaca safe area sekali lewat GeometryReader di root. Nilai selain padding atas
+memakai `.scaledToArtwork`; bila host ternyata tidak men-scale ikon/font/spacing, cukup ubah tokennya.
+
+Dibuktikan oleh test: tinggi header sama dengan padding atas + ikon + padding bawah (notch dan
+tanpa notch) pada lebar 320/375/430 dengan judul panjang; deteksi notch dari safe area atas
+(0/20 tidak, 44/47/59 ya); konten container mulai tepat di bawah header + `spacingLarge`; header
+transparan saat diam dan putih + fade saat digulir diukur dari tepi atas layar.
+
+## Latar chat saat swipe back — 28 Oktober 2026
+
+Di host Byon (simulator iOS 17.5), swipe back setengah dari Tanya AI menampilkan halaman putih:
+latar dan isi scroll hilang, header dan composer tetap tampil. Bisect di host: konten diganti
+`Color.red` mulus; welcome dihapus masih putih; latar dihapus mulus. Penyebab: latar
+`scaledToFill` + frame tak hingga + `clipped`. Latar kini `scaledToFit` menempel di atas
+(artwork satu layar 375×812, jadi tampilan iPhone praktis sama); diverifikasi user di Byon iOS 17.5.
+Sandbox (iOS 26) tidak mereproduksi bug ini, termasuk saat bridge dibuat ulang setiap render.
+Mac ini belum punya runtime iOS 17, jadi belum ada UI test otomatis untuk kasus ini.
+
+## Bridge host dan struktur TanyaAI — 28 Oktober 2026
+
+Model welcome TanyaAI tidak lagi `Decodable`; host men-decode inquiry init (sandbox: DTO
+`TanyaAIInit*`) lalu memetakan ke `WelcomeContent`. `TanyaAIBridge` dipegang host dan memegang
+`onSend`/`onNewConversation`; status menunggu jawaban pindah dari host ke bridge. Event SSE dan
+event penghenti loading menyusul bersama contract. Folder TanyaAI: `Bridging/`,
+`Features/Chat/Models|Views(/Sections)`, `Shared/Keys|Extensions`, `Resources/`.
+
+Dibuktikan oleh test: bridge menunggu setelah chat diterima, menolak chat berikutnya tanpa
+memanggil host, berhenti menunggu dan memanggil host saat percakapan baru, menu nonaktif
+tanpa handler; bridge tidak menahan view model host; decode init di sandbox (urutan, `iconUrl`
+kosong/null/hilang, typo `descripton` ditolak); `FontFace.swiftUIFont` sama ukurannya dengan
+jalur `UIFont`. UI test welcome (loading sampai percakapan baru) tetap lulus.
+
+## Halaman sambutan dari BE — 27 Oktober 2026
+
+Welcome mengikuti apib inquiry init: host men-decode objek `data` ke `WelcomeContent`
+(sapaan + shortcut, urutan BE). Kartu memakai `ActionCard` DesignKit dengan ikon dari
+`iconUrl` lewat `RemoteImage`; emblem, latar, judul daftar dan chevron dari FE. Ketuk kartu
+mengirim `prompt` lewat `onSend`; selama `isAwaitingReply` tombol kirim menjadi
+`LoadingDots` dan kartu nonaktif. Ukuran/tipografi masih estimasi screenshot (TODO).
+
+Dibuktikan oleh test: decode contoh BE (field T&C diabaikan), `iconUrl` kosong/null/tidak
+ada tetap memberi kartu, key `descripton` ditolak (BE diminta memperbaiki); setiap `ChatImage`
+termuat dari bundle package; view model sandbox membaca fixture, menunggu jawaban setelah
+chat diterima sampai percakapan baru, dan tidak menunggu bila ditolak/offline. UI test:
+sapaan dan tiga kartu berurutan (id), ketuk kartu mengubah label kirim menjadi "Waiting for
+reply" dan menonaktifkan kirim serta kartu walau draft diisi, lalu percakapan baru
+memulihkannya. Tes ketuk tepi tombol kirim kini memulai percakapan baru di antara kiriman.
+
+Ikon dari URL: `RemoteImage` kini pembungkus `KFImage` Kingfisher 8.14 (keputusan user:
+pakai library teruji, menggantikan loader buatan sendiri). Cache memori + disk, downsample
+(`DownsamplingImageProcessor`), validasi status HTTP (200..<400) dan batal saat view hilang
+ditangani Kingfisher. Test: unduhan gagal menampilkan placeholder lalu fallback; URL nil
+langsung fallback. UI test `--slow-icons`: spinner tampil di kotak ikon dan kartu sudah bisa
+diketuk; `--broken-icons`: ikon fallback tampil dan kartu tetap bisa diketuk.
+
+Line-height teks welcome/kartu sengaja mengikuti bawaan font (keputusan user): tidak ada
+kompensasi `lineSpacing` di luar composer.
+
 ## Tanpa R.swift — 27 Oktober 2026
 
 CI host (fastlane gym, Xcode 26) gagal di `Validate plug-in "RswiftGenerate…Resources"`:

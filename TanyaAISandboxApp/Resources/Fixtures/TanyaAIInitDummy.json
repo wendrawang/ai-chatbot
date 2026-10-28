@@ -1,0 +1,33 @@
+{
+    "response_code": "00000",
+    "responseDescription": "SUCCESS",
+    "responseTitle": "SUKSES",
+    "data": {
+        "isTncAgreed": true,
+        "tncCode": "TANYA_AI",
+        "shortcuts": [
+            {
+                "title": "Cek Portfolio",
+                "description": "Pantau aset & performa investasimu",
+                "iconUrl": "https://byonimage.blob.core.windows.net/dashboard/emoneyIcon.png",
+                "prompt": "Cek Portfolio saya"
+            },
+            {
+                "title": "Beli Valas",
+                "description": "Cek kurs dan beli mata uang asing",
+                "iconUrl": "https://byonimage.blob.core.windows.net/dashboard/emoneyIcon.png",
+                "prompt": "Saya mau beli valas"
+            },
+            {
+                "title": "Ajukan Surat Referensi",
+                "description": "Siapkan surat untuk kebutuhan visa",
+                "iconUrl": "https://byonimage.blob.core.windows.net/dashboard/emoneyIcon.png",
+                "prompt": "Ajukan bank reference letter"
+            }
+        ],
+        "greetings": {
+            "title": "Hi, Lara Croft!",
+            "description": "Temukan insight finansial untuk bantu ambil langkah lebih cerdas hari ini"
+        }
+    }
+}

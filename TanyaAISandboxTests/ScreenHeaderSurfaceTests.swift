@@ -16,21 +16,35 @@ extension HostWindowTests {
     struct ScreenHeaderSurfaceTests {
         @Test
         func headerIsTransparentAtRestAndOpaqueWithFadeWhenScrolled() throws {
-            let height = CustomSizes.Header.height.scaledToArtwork
+            let height = ScreenHeader.height(isNotched: true)
             let fade = FigmaSize.spacingLarge.scaledToArtwork
+            let reach = CustomSizes.Shadow.radius.scaledToArtwork + CustomSizes.Shadow.offsetY.scaledToArtwork
             let atRest = try render(isScrolled: false)
             let scrolled = try render(isScrolled: true)
-            // Titik di padding kiri header, jauh dari tombol back dan judul; y dihitung dari bawah safe area.
+            // Titik di padding kiri header, jauh dari tombol back dan judul; y dihitung dari tepi atas layar.
             let inHeader = height / 2
             let inFade = height + fade / 2
-            let belowFade = height + fade + 4
+            let beyond = height + max(fade, reach * 2) + 4
 
             #expect(isBackdrop(try atRest.pixel(atHeaderOffset: inHeader)), "header harus transparan saat diam")
             #expect(isBackdrop(try atRest.pixel(atHeaderOffset: inFade)), "tidak ada fade saat diam")
             #expect(isSurface(try scrolled.pixel(atHeaderOffset: inHeader)), "header harus putih saat digulir")
             let fadePixel = try scrolled.pixel(atHeaderOffset: inFade)
             #expect(!(isBackdrop(fadePixel) || isSurface(fadePixel)), "gradient harus di antara putih dan latar")
-            #expect(isBackdrop(try scrolled.pixel(atHeaderOffset: belowFade)), "fade hanya setinggi spacingLarge")
+            #expect(isBackdrop(try scrolled.pixel(atHeaderOffset: beyond)), "fade dan bayangan tidak menjalar")
+        }
+
+        /// Di atas latar putih fade tidak terlihat, jadi yang menggelapkan tepi bawah header hanya bayangan.
+        @Test
+        func shadowStaysVisibleOverTheFadeWhenScrolled() throws {
+            let inShadow = ScreenHeader.height(isNotched: true) + CustomSizes.Shadow.offsetY.scaledToArtwork
+            let atRest = try render(isScrolled: false, backdrop: .white)
+            let scrolled = try render(isScrolled: true, backdrop: .white)
+            let middle = scrolled.width / 2
+            let resting = try atRest.pixel(atHeaderOffset: inShadow, column: middle)
+            let shadow = try scrolled.pixel(atHeaderOffset: inShadow, column: middle)
+            #expect(isSurface(resting), "tanpa bayangan saat diam: \(resting)")
+            #expect(shadow[1] < 250, "bayangan harus tergambar di atas gradient: \(shadow)")
         }
     }
 }
@@ -42,8 +56,10 @@ private struct RenderedHeader {
     let scale: CGFloat
     let headerTop: CGFloat
 
-    func pixel(atHeaderOffset offset: CGFloat) throws -> [UInt8] {
-        let point = CGRect(x: 2 * scale, y: (headerTop + offset) * scale, width: 1, height: 1)
+    var width: CGFloat { CGFloat(image.width) / scale }
+
+    func pixel(atHeaderOffset offset: CGFloat, column: CGFloat = 2) throws -> [UInt8] {
+        let point = CGRect(x: column * scale, y: (headerTop + offset) * scale, width: 1, height: 1)
         let crop = try #require(image.cropping(to: point.integral))
         var data = [UInt8](repeating: .zero, count: 4)
         let context = try #require(
@@ -58,21 +74,21 @@ private struct RenderedHeader {
 }
 
 private extension HostWindowTests.ScreenHeaderSurfaceTests {
-    /// Header di atas latar merah, seperti header di atas gambar latar chat.
-    func render(isScrolled: Bool) throws -> RenderedHeader {
+    /// Header di atas latar (default merah), seperti header di atas gambar latar chat.
+    func render(isScrolled: Bool, backdrop: Color = Color(red: 1, green: 0, blue: 0)) throws -> RenderedHeader {
         let content = ZStack(alignment: .top) {
-            Color(red: 1, green: 0, blue: 0).ignoresSafeArea()
-            ScreenHeader(title: "Judul", backLabel: "Back", isScrolled: isScrolled, onBack: {})
+            backdrop.ignoresSafeArea()
+            ScreenHeader(title: "Judul", backLabel: "Back", isScrolled: isScrolled, isNotched: true, onBack: {})
         }
+        .ignoresSafeArea(.container, edges: .top)
         let fixture = try HostWindowFixture(content)
         defer { fixture.close() }
         let window = try #require(fixture.controller.view.window)
         let image = UIGraphicsImageRenderer(bounds: window.bounds).image { _ in
             window.drawHierarchy(in: window.bounds, afterScreenUpdates: true)
         }
-        return RenderedHeader(
-            image: try #require(image.cgImage), scale: image.scale, headerTop: window.safeAreaInsets.top
-        )
+        #expect(ScreenHeader.isNotched(safeAreaTop: window.safeAreaInsets.top), "simulator test harus ber-notch")
+        return RenderedHeader(image: try #require(image.cgImage), scale: image.scale, headerTop: .zero)
     }
 
     func isBackdrop(_ rgba: [UInt8]) -> Bool {

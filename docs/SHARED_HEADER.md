@@ -12,33 +12,38 @@ DesignKit/Sources/DesignKit/
 └── Resources/Assets.xcassets/            # back/more/send dummy; nama di DesignIcon
 
 TanyaAI/Sources/TanyaAI/
-├── Chat/ChatScreen.swift                 # content/menu/composer; layout dari container
-├── Chat/ChatElementIdentifier.swift      # technical identifier, bukan pemetaan copy
-├── Resources/{en,id,zh-Hans}.lproj/
-└── Host/                                # konfigurasi + pembuat halaman untuk host
+├── Bridging/TanyaAIHost.swift                    # konfigurasi + pembuat halaman untuk host
+├── Features/Chat/ChatScreen.swift                # content/menu/composer; layout dari container
+├── Shared/Keys/ChatElementIdentifier.swift       # technical identifier, bukan pemetaan copy
+└── Resources/{en,id,zh-Hans}.lproj/
 
 TanyaAISandboxApp/HeaderDemoContent.swift # fixture scroll, bukan UI produksi
 ```
 
-1. Tambahkan tinggi header ke `CustomSizes.Header` dan batas baris judul ke
-   `CustomTextLines.headerTitle`. Tinggi awal 56 pada artwork
-   375; ukuran final dapat disesuaikan setelah nilai Figma tersedia. Judul memakai
-   Fira Sans SemiBold, role `typographySizeDisplayNormal16`, hanya artwork scaling.
-   Spacing memakai `spacingMedium/Large`; generated token tetap sumber tunggal.
+1. Ukuran header sama dengan navigation bar host (keputusan 28 Oktober 2026) agar
+   konsisten saat berpindah halaman. Header mulai dari tepi atas layar: padding atas
+   `CustomScreenInsets.headerTopWithNotch` 50 atau `headerTop` 28 (tanpa scale, notch bila
+   safe area atas > 20), kiri-kanan `CustomSizes.Header.horizontalPadding` 20, bawah
+   `bottomPadding` 15, ikon `weightIconSmall` 24. Judul Fira Sans Bold
+   `typographySizeDisplayNormal16`, padding `spacingExtraLarge` 32, batas
+   `CustomTextLines.headerTitle`. Tinggi total `ScreenHeader.height(isNotched:)`.
 2. Buat `ScreenHeader`: slot kiri/kanan sama besar supaya judul tetap di tengah,
    termasuk ketika trailing kosong. Ukuran back dan trailing mengikuti token icon
    dengan `.scaledToArtwork`, tanpa batas minimum SDK. Label dan action datang
    dari caller; tidak ada copy TanyaAI di sini.
    Trailing slot untuk satu action; caller memberi label/tap target yang sesuai.
 3. Saat diam, surface transparan sehingga latar screen (warna atau gambar) tembus sampai
-   status bar. Saat `isScrolled`, surface menjadi `colorsSurfacePrimary` dan gradient
-   setinggi `spacingLarge` di bawah header memudarkan konten yang lewat di belakangnya.
-   Gradient berada di luar frame header: tinggi header tetap dan sentuhan tidak tertangkap.
+   status bar. Saat `isScrolled`, surface menjadi `colorsSurfacePrimary` dengan bayangan
+   Figma `Shadow/Default` (`designShadow`), sehingga header terangkat seperti kartu, dan gradient
+   setinggi `spacingLarge` di bawahnya memudarkan konten yang lewat. Gradient berada di belakang
+   surface agar bayangan tetap terlihat. Bayangan dan gradient berada di luar frame header: tinggi
+   header tetap dan sentuhan tidak tertangkap.
    Tidak memakai material blur, jadi tidak ada cabang khusus Reduce Transparency.
 4. Buat `ScreenContainer` untuk menyusun header sebagai overlay di atas ScrollView. Padding
    awal konten adalah tinggi header ditambah `spacingLarge`, jadi konten tidak
    tertutup saat posisi teratas. Konten dapat bergerak di belakang header dan
-   gradient ketika digulir. Header tidak menggambar status bar palsu; safe area tetap milik iOS.
+   bayangan/gradient ketika digulir. Container membaca safe area atas sekali (GeometryReader di root),
+   lalu header dan ScrollView mengabaikan safe area atas seperti navigation bar host.
 5. `.onScrollBoundaryChange` memakai GeometryReader di background root konten.
    Callback memberi nilai awal, lalu `.onChange` mengamati Boolean ketika offset
    melewati toleransi. Tidak diperlukan PreferenceKey bersama antar observer.
@@ -114,8 +119,8 @@ isolasi nested scroll; pengukuran FPS/Instruments terpisah.
 ## Menu dan demo
 
 Titik tiga membuka menu “Percakapan baru” dalam English/Indonesia/简体中文.
-`onNewConversation` hanya mengirim aksi ke host. Tanpa handler, item disabled;
-belum ada reset draft atau flow sesi/welcome pada tahap ini.
+`onNewConversation` (di `TanyaAIBridge`) hanya mengirim aksi ke host dan mengakhiri penantian
+jawaban. Tanpa handler, item disabled; reset draft dan sesi BE milik host.
 
 Jalankan `Scripts/run_sandbox.sh --language id --header-demo`, lalu buka feature.
 Mode ini memberi paragraf dummy yang cukup panjang untuk mencapai akhir, kembali

@@ -18,7 +18,7 @@ import UIKit
 struct TanyaAIHostTests {
     @Test
     func pageAndInjectedContentReleaseAfterPopWhileHostStaysOwned() async {
-        let host = TanyaAIHost { _ in true }
+        let host = TanyaAIHost(bridge: TanyaAIBridge { _ in true })
         let navigation = UINavigationController(rootViewController: UIViewController())
         let window = makeWindow(root: navigation)
         defer { window.isHidden = true }
@@ -38,7 +38,8 @@ struct TanyaAIHostTests {
 
     @Test
     func localeAndPaletteApplyWhenPageIsCreatedAndChangesWaitForNextPage() {
-        var host = TanyaAIHost(locale: Locale(identifier: "id"), colors: PremierColorConstants()) { _ in true }
+        var host = TanyaAIHost(
+            locale: Locale(identifier: "id"), colors: PremierColorConstants(), bridge: TanyaAIBridge { _ in true })
         let openedProbe = EnvironmentProbe()
         let openedWindow = makeWindow(
             root: UIHostingController(rootView: host.makeView { EnvironmentReader(probe: openedProbe) }))

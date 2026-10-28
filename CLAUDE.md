@@ -2,13 +2,27 @@
 
 Ikuti [AGENTS.md](AGENTS.md) untuk aturan token (CustomSizes, CustomTextLines,
 CustomColors), nilai awal, theme environment, fonts, localization dan style. Scope aktif:
-screen kosong, shared header, composer maksimal empat baris, dan bridge host;
-tanpa session/backend. Minimum iOS 15 (host ikut naik ke iOS 15 untuk revamp).
+shared header, composer maksimal empat baris, halaman sambutan (welcome) dari BE, dan
+bridge host; tanpa session/stream. Minimum iOS 15 (host ikut naik ke iOS 15 untuk revamp).
 
 - Ukuran dan area tap 1:1 Figma lewat `.scaledToArtwork`. Jangan menambahkan
   minimum touch target 44 atau hit frame tambahan; ini keputusan UI/UX.
+- Header = ukuran navigation bar host: dari tepi layar, padding atas 50/28 tanpa scale
+  (`CustomScreenInsets`), kiri-kanan 20, bawah 15, ikon 24, judul Fira Sans Bold 16.
+  Saat digulir putih + `designShadow` (Figma Shadow/Default) + gradient fade di belakangnya.
 - Tanpa R.swift/build tool plugin (CI host tidak bisa trust plugin). Copy lewat `ChatCopy`/`SandboxCopy`,
   ikon lewat `DesignIcon`; tambah case setiap menambah key/imageset, tes menjaga kecocokannya.
+- Welcome: host men-decode inquiry init dengan model miliknya, memetakan ke `WelcomeContent`
+  (struct biasa, tanpa `Decodable`) dan mengisi `TanyaAIHost(welcome:)`. Decode di TanyaAI hanya
+  untuk hasil stream nanti. Sapaan, judul/deskripsi/ikon kartu dari BE; emblem, latar, judul
+  daftar dan chevron dari FE. Ketuk kartu = `onSend(prompt)` lewat bridge.
+- `TanyaAIBridge` dipegang host (dibuat sekali); `isAwaitingReply` milik bridge sejak chat diterima
+  sampai jawaban (event penghenti dari SSE menyusul): tombol kirim jadi `LoadingDots`, kartu nonaktif. Gambar URL lewat `RemoteImage` (cache memori bersama).
+- Ukuran welcome/kartu/titik masih estimasi screenshot (TODO di `CustomSizes`/`CustomMotion`);
+  aset `chatBackground`/`welcomeOrb` placeholder (`ChatImage`), ganti file, nama tetap.
+- Folder TanyaAI: `Bridging/` (API host), `Features/<Fitur>/` (screen di root, tiap bagian
+  `Welcome/`, `Composer/` berisi view + modelnya), `Shared/Keys|Extensions`, `Resources/`.
+  Tests mencerminkan Sources. Detail di AGENTS.md.
 - Unit test memakai Swift Testing (`@Test`, `#expect`, `#require`); UI test tetap
   XCTest. Suite yang memakai window di sandbox masuk `HostWindowTests` (berurutan).
 - Keputusan arsitektur dan saran tahap berikutnya: [docs/REVAMP_NOTES.md](docs/REVAMP_NOTES.md).

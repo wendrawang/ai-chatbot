@@ -7,11 +7,13 @@
 
 import SwiftUI
 
-/// Permukaan kartu standar: isi `colorsSurfacePrimary`, sudut membulat, garis tepi tipis, dan bayangan.
+/// Permukaan kartu standar: isi `colorsSurfacePrimary`, sudut membulat, bayangan, dan garis tepi tipis
+/// bila `isOutlined`. Tanpa garis tepi, kartu hanya terangkat oleh bayangan (seperti CardView Android).
 /// Hanya latar; padding isi tetap milik komponen pemakai.
 struct CardStyle: ViewModifier {
     @Environment(\.designColors)
     private var colors
+    let isOutlined: Bool
 
     func body(content: Content) -> some View {
         content.background(surface)
@@ -23,6 +25,10 @@ struct CardStyle: ViewModifier {
             shape
             .fill(colors.colorsSurfacePrimary)
             .designShadow()
-            .overlay(shape.strokeBorder(CustomColors.Stroke.color, lineWidth: FigmaSize.weightOutline.scaledToArtwork))
+            .overlay(shape.strokeBorder(outline, lineWidth: FigmaSize.weightOutline.scaledToArtwork))
+    }
+
+    private var outline: Color {
+        isOutlined ? CustomColors.Stroke.color : .clear
     }
 }

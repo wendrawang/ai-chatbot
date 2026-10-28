@@ -64,7 +64,7 @@ Permukaan yang berulang memakai modifier DesignKit, bukan disusun ulang di setia
 
 | Kebutuhan | Pakai |
 | --- | --- |
-| Kartu (isi putih, radius, garis tepi, bayangan) | `.cardStyle()` |
+| Kartu (isi putih, radius, garis tepi, bayangan) | `.cardStyle()`; hanya bayangan: `.cardStyle(isOutlined: false)` |
 | Bayangan saja | `.designShadow()` |
 
 ```swift
@@ -83,7 +83,7 @@ fitur yang memang perlu dimiliki, bukan karena ada sebuah view.
 
 ## Screen berikutnya
 
-Pakai composition `ScreenContainer` agar header, boundary/fade, scroll dan footer
+Pakai composition `ScreenContainer` agar header, boundary/fade/bayangan, scroll dan footer
 konsisten. Isi `content`, `trailing`, dan `footer`; tidak perlu extend BaseScreen,
 protocol layout atau BaseViewModel. Content tidak membungkus ScrollView vertikal
 lagi. Lihat pemakaian lengkap pada `ChatScreen.swift` dan
@@ -127,8 +127,8 @@ Tidak perlu menambahkan weak capture pada setiap closure SwiftUI secara otomatis
 | Token custom per jenis | `DesignKit/Tokens` |
 | Font file dan registrasi | `DesignKit/Typography` |
 | Identifier UI test komponen | `DesignKit/Foundations/Accessibility` |
-| Draft, menu sesi, aturan menerima submission | Screen/fitur pemilik (`TanyaAI/Chat`) |
-| API host: konfigurasi, locale/theme, pembuat halaman | `TanyaAI/Host` |
+| Draft, menu sesi, aturan menerima submission | Screen/fitur pemilik (`TanyaAI/Features/Chat`) |
+| API host: konfigurasi, locale/theme, pembuat halaman | `TanyaAI/Bridging` |
 | Navigasi, animasi push, swipe-back | Host (coordinator + destination, atau navigasi aplikasi revamp) |
 
 Komponen umum yang sudah dibutuhkan beberapa caller dibuat reusable. Potongan
@@ -241,8 +241,9 @@ file dan nama PostScript berbeda; ketujuh font existing tetap dipertahankan.
 | File | Isi | `.scaledToArtwork` |
 | --- | --- | --- |
 | `Generated/FigmaSize` | Spacing, ukuran icon, tipografi dari Figma. **Cek di sini dulu.** | Ya |
-| `CustomSizes` | Dimensi point yang belum ada di Figma: `Header.height`, `Shadow`, `Composer.sendButton` | **Selalu** |
+| `CustomSizes` | Dimensi point yang belum ada di Figma: `Header` (padding), `Shadow`, `Composer.sendButton` | **Selalu** |
 | `CustomTextLines` | Batas baris per peran: `composerInput = 1...4`, `headerTitle` | Tidak pernah |
+| `CustomScreenInsets` | Padding atas header dari tepi layar, sama dengan navigation bar host (50/28) | Tidak pernah |
 | `CustomColors` / `CustomBasePaletteColor` | Warna semantik tambahan / hex dasarnya | — |
 | `ArtworkScale` | Referensi 375×812 dan rasio layar untuk `.scaledToArtwork` | Tidak pernah |
 | `LayoutTolerance` | Toleransi pembulatan layout (bukan token desain) | Tidak pernah |

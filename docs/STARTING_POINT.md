@@ -2,7 +2,8 @@
 
 Tuliskan implementasi per bagian, lalu jalankan checkpoint sebelum lanjut.
 Target ini sengaja tidak mempunyai session SDK, ViewModel, backend, bubble,
-welcome, rich text, table, transaction, ThemeManager, atau CopyCatalog.
+rich text, table, transaction, ThemeManager, atau CopyCatalog. Halaman sambutan
+ditambahkan kemudian; lihat [integrasi host](HOST_INTEGRATION.md#halaman-sambutan-dan-menunggu-jawaban).
 
 ## Tree
 
@@ -37,9 +38,16 @@ Packages/
 │           └── ScreenContainer/          # header + scroll + footer otomatis
 └── TanyaAI/
     └── Sources/TanyaAI/
-        ├── Chat/ChatScreen.swift + ChatElementIdentifier.swift
-        ├── Host/                        # konfigurasi host + makeView()
-        └── Resources/en.lproj + id.lproj + zh-Hans.lproj/
+        ├── Bridging/TanyaAIHost.swift   # API publik: konfigurasi host + makeView()
+        ├── Features/
+        │   └── Chat/
+        │       ├── ChatScreen.swift     # menyusun halaman, memilih bagian yang tampil
+        │       ├── Welcome/             # WelcomeSection + WelcomeContent/Greeting/Shortcut
+        │       └── Composer/            # ComposerSection (draft lokal)
+        ├── Shared/
+        │   ├── Keys/                    # ChatCopy, ChatImage, ChatElementIdentifier
+        │   └── Extensions/              # String+ChatCopy, Image+ChatImage
+        └── Resources/                   # Assets.xcassets + en/id/zh-Hans.lproj
 ```
 
 ## Urutan implementasi
@@ -86,7 +94,7 @@ Packages/
    Tombol back atau swipe dari tepi kiri kembali ke halaman asal.
    Lihat [integrasi host](HOST_INTEGRATION.md).
 
-Screen menggunakan `ChatScreen(onSend:)`. Callback mendapat draft dan mengembalikan
+Screen menerima `TanyaAIBridge(onSend:)`. Callback `onSend` mendapat draft dan mengembalikan
 Bool: true membersihkan draft, false mempertahankan teks/seleksi. Draft whitespace
 menonaktifkan action. Callback belum mengimplikasikan pesan terkirim ke backend.
 

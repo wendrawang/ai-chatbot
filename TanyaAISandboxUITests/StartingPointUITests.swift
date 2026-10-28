@@ -75,6 +75,9 @@ final class StartingPointUITests: XCTestCase {
             send.coordinate(withNormalizedOffset: CGVector(dx: horizontal, dy: vertical)).tap()
             XCTAssertEqual(input.value as? String, "")
             XCTAssertFalse(send.isEnabled)
+            // Chat diterima = menunggu jawaban; percakapan baru membuka kirim untuk sisi berikutnya.
+            application.buttons["chat.more"].tap()
+            application.buttons["New conversation"].tap()
         }
     }
 
