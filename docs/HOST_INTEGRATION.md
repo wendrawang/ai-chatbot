@@ -83,8 +83,7 @@ final class TanyaAIScreenViewModel: ScreenContentViewModel {
     @MainActor
     private(set) lazy var bridge = TanyaAIBridge(
         transport: TanyaAIChatService(),  // implementasi `TanyaAIChatTransport` milik host
-        onSessionExpired: { [weak self] in self?.showSessionExpired() },
-        onNewConversation: { [weak self] in self?.startNewConversation() }
+        onSessionExpired: { [weak self] in self?.showSessionExpired() }
     )
 
     @MainActor
@@ -120,8 +119,7 @@ Untuk navigasi lain cukup ganti pemanggilnya:
 membuatnya di `body` atau di `makeHost()`. Host hanya mengimplementasikan transport per endpoint
 (body mentah); TanyaAI yang menyambung init → history → SSE selama halaman tampil, menyambung
 ulang, men-decode, dan menggabungkan pesan. Lihat [chat-gateway](CHAT_GATEWAY.md).
-`onSessionExpired` dipanggil sekali saat 401. `onNewConversation` opsional; tanpa handler, item
-menu "Percakapan baru" disabled. `locale` dan `colors` dibaca saat halaman dibuat.
+`onSessionExpired` dipanggil sekali saat 401. `locale` dan `colors` dibaca saat halaman dibuat.
 
 ## Halaman sambutan dan menunggu jawaban
 
@@ -157,8 +155,7 @@ Kontrak memakai key `description` (apib awal menulis `descripton`; BE diminta me
 Ketuk kartu mengirim `prompt` lewat bridge, sama seperti chat dari composer.
 Status menunggu jawaban **milik TanyaAI**: setelah host menerima chat, tombol kirim menjadi
 titik bergerak dan kartu nonaktif (draft tetap bisa diketik), dan chat berikutnya ditolak
-tanpa diteruskan ke host. Sementara penantian berakhir saat "Percakapan baru"; event
-penghenti dari stream menyusul.
+tanpa diteruskan ke host. Penantian berakhir saat event `turn_end` datang dari stream.
 
 ```swift
 TanyaAIHost(locale: locale, colors: colors, welcome: welcome, bridge: bridge)
@@ -206,4 +203,4 @@ halaman detail, kembali dengan tombol back atau swipe dari tepi kiri. `--offline
 membuat kiriman memunculkan blocker host di atas Tanya AI; tombol "Coba lagi"
 menutupnya dan draft tetap ada. Welcome sandbox dibaca dari
 `Resources/Fixtures/TanyaAIInitDummy.json`; setelah chat/shortcut diterima, sandbox
-menunggu jawaban sampai "Percakapan baru" dipilih (belum ada stream).
+menjawab lewat gateway tiruan setelah 1 detik (`--hold-reply` menahan jawaban).

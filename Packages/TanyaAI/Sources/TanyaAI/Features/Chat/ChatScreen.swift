@@ -43,7 +43,7 @@ public struct ChatScreen<Content: View>: View {
         ScreenContainer(
             title: String(ChatCopy.title, locale: locale),
             backLabel: String(ChatCopy.back, locale: locale),
-            onBack: close, content: { scrollContent }, trailing: { moreMenu },
+            onBack: close, content: { scrollContent }, trailing: { EmptyView() },
             footer: { composer },
             background: { backgroundImage }
         )
@@ -83,23 +83,6 @@ public struct ChatScreen<Content: View>: View {
         Image(ChatImage.chatBackground).resizable()
             .scaledToFit()
             .frame(maxHeight: .infinity, alignment: .top)
-    }
-
-    private var moreMenu: some View {
-        Menu {
-            Button(String(ChatCopy.newConversation, locale: locale)) { bridge.startNewConversation() }
-                .disabled(!bridge.isNewConversationAvailable)
-        } label: {
-            Image(DesignIcon.moreMenu).resizable().scaledToFit()
-                .frame(
-                    width: FigmaSize.weightIconSmall.scaledToArtwork,
-                    height: FigmaSize.weightIconSmall.scaledToArtwork
-                )
-                .foregroundColor(colors.colorsIconDark)
-                .contentShape(Rectangle())
-        }
-        .accessibilityLabel(String(ChatCopy.more, locale: locale))
-        .accessibilityIdentifier(ChatElementIdentifier.more)
     }
 }
 

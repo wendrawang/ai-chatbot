@@ -81,7 +81,7 @@ struct TanyaAIBridgeConnectionTests {
         transport.initResults = [.failure(response(401, WireFixture.error(isRetryable: false)))]
         var expiredCount = 0
         let bridge = TanyaAIBridge(
-            transport: transport, onSessionExpired: { expiredCount += 1 }, onNewConversation: nil, sleep: { _ in }
+            transport: transport, onSessionExpired: { expiredCount += 1 }, sleep: { _ in }
         )
         await bridge.run()
         #expect(bridge.connection == .expired)
@@ -140,7 +140,7 @@ private extension TanyaAIBridgeConnectionTests {
     func makeBridge(
         _ transport: FakeChatTransport, sleep: @escaping (TimeInterval) -> Void = { _ in }
     ) -> TanyaAIBridge {
-        TanyaAIBridge(transport: transport, onSessionExpired: nil, onNewConversation: nil, sleep: { sleep($0) })
+        TanyaAIBridge(transport: transport, onSessionExpired: nil, sleep: { sleep($0) })
     }
 
     func response(_ statusCode: Int, _ body: Data) -> TanyaAITransportError {

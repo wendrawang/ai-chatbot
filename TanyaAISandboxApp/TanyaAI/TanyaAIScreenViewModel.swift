@@ -18,19 +18,13 @@ final class TanyaAIScreenViewModel: ScreenContentViewModel {
     @MainActor
     private(set) lazy var bridge = TanyaAIBridge(
         transport: useCase.makeChatTransport(),
-        onSessionExpired: { [weak self] in self?.didReceiveError(URLError(.userAuthenticationRequired)) },
-        onNewConversation: { [weak self] in self?.startNewConversation() }
+        onSessionExpired: { [weak self] in self?.didReceiveError(URLError(.userAuthenticationRequired)) }
     )
 
     init(useCase: TanyaAIUseCase = TanyaAIUseCase()) {
         self.useCase = useCase
         super.init()
         useCase.callback.onSubmissionFailed = { [weak self] error in self?.didReceiveError(error) }
-        welcome = useCase.loadWelcome()
-    }
-
-    /// TODO: Init ulang sesi dan stream milik host; sandbox hanya memuat ulang sambutan.
-    func startNewConversation() {
         welcome = useCase.loadWelcome()
     }
 

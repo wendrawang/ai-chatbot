@@ -29,8 +29,8 @@ final class WelcomeUITests: XCTestCase {
         capture("welcome-id")
     }
 
-    /// Pertanyaan pertama dari stream menggantikan sambutan; percakapan baru mengembalikannya.
-    func testShortcutTurnsSendIntoLoadingUntilNewConversation() {
+    /// Pertanyaan pertama dari stream menggantikan sambutan; kirim tetap terkunci selama menunggu jawaban.
+    func testShortcutTurnsSendIntoLoadingWhileAwaitingReply() {
         launch(locale: "en", extra: ["--hold-reply"])
         let shortcut = application.buttons["welcome.shortcut.0"]
         XCTAssertTrue(shortcut.waitForExistence(timeout: 10))
@@ -46,11 +46,6 @@ final class WelcomeUITests: XCTestCase {
         input.typeText("Next question")
         XCTAssertFalse(send.isEnabled, "satu pertanyaan per waktu: kirim tetap nonaktif selama menunggu")
         capture("welcome-awaiting-reply")
-        startNewConversation()
-        XCTAssertEqual(send.label, "Send message")
-        XCTAssertTrue(send.isEnabled)
-        XCTAssertTrue(shortcut.waitForExistence(timeout: 5))
-        XCTAssertTrue(shortcut.isEnabled)
     }
 
     /// History tidak kosong: tanpa sambutan, chip tanggal di atas pesan pertama setiap hari.
@@ -113,13 +108,6 @@ final class WelcomeUITests: XCTestCase {
         let open = application.buttons["sandbox.open"]
         XCTAssertTrue(open.waitForExistence(timeout: 10))
         open.tap()
-    }
-
-    private func startNewConversation() {
-        application.buttons["chat.more"].tap()
-        let item = application.buttons["New conversation"]
-        XCTAssertTrue(item.waitForExistence(timeout: 5))
-        item.tap()
     }
 
     private func capture(_ name: String) {

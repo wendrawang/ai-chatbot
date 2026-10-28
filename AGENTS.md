@@ -142,9 +142,9 @@ tersedia pada history/main.
   State mempertahankan nilai ID selama view yang sama hidup. Jangan membuat ID
   baru di body atau memakai satu ID global untuk beberapa area scroll. Tambahkan
   konsep/property wrapper lain hanya ketika ada kebutuhan yang jelas.
-- Menu/sesi adalah tanggung jawab fitur/host. `onNewConversation` hanya callback;
-  tanpa handler, item menu disabled. Jangan menambah session, reset draft, intent,
-  bubble atau database sebelum diminta.
+- Header chat belum punya aksi kanan; menu "Percakapan baru" dihapus (28 Oktober 2026) sampai ada
+  kebutuhan dan alur BE (batas 1 percakapan per CIF, close). Jangan menambah intent atau database
+  sebelum diminta.
 - Welcome berasal dari BE, tapi decode milik host: `WelcomeContent`/`WelcomeGreeting`/`WelcomeShortcut`
   (folder `Features/Chat/Welcome/`) adalah struct biasa tanpa `Decodable`. Host memetakan model
   inquiry init miliknya ke tipe ini; `iconURL` nil memakai ikon fallback. Contract chat-gateway ICT

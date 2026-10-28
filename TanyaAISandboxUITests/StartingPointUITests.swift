@@ -72,12 +72,12 @@ final class StartingPointUITests: XCTestCase {
         let send = application.buttons["composer.send"]
         for (horizontal, vertical) in [(0.05, 0.5), (0.95, 0.5), (0.5, 0.05), (0.5, 0.95)] {
             input.typeText("Tap edge")
+            // Chat diterima = menunggu jawaban; jawaban bot tiruan (`turn_end`) membuka kirim untuk sisi berikutnya.
+            let unlocked = expectation(for: NSPredicate(format: "isEnabled == true"), evaluatedWith: send)
+            wait(for: [unlocked], timeout: 5)
             send.coordinate(withNormalizedOffset: CGVector(dx: horizontal, dy: vertical)).tap()
             XCTAssertEqual(input.value as? String, "")
             XCTAssertFalse(send.isEnabled)
-            // Chat diterima = menunggu jawaban; percakapan baru membuka kirim untuk sisi berikutnya.
-            application.buttons["chat.more"].tap()
-            application.buttons["New conversation"].tap()
         }
     }
 

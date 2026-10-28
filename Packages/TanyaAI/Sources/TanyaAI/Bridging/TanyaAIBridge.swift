@@ -29,32 +29,21 @@ public final class TanyaAIBridge: ObservableObject {
     let transport: TanyaAIChatTransport
     let onSessionExpired: (() -> Void)?
     let sleep: (TimeInterval) async throws -> Void
-    private let onNewConversation: (() -> Void)?
 
     /// `onSessionExpired` dipanggil sekali saat gateway menjawab 401 (sesi OMNI habis); stream tidak dibuka lagi.
-    /// Tanpa `onNewConversation`, item menu "Percakapan baru" nonaktif.
-    public convenience init(
-        transport: TanyaAIChatTransport, onSessionExpired: (() -> Void)? = nil,
-        onNewConversation: (() -> Void)? = nil
-    ) {
-        self.init(
-            transport: transport, onSessionExpired: onSessionExpired, onNewConversation: onNewConversation,
-            sleep: ChatBackoff.sleep(seconds:)
-        )
+    public convenience init(transport: TanyaAIChatTransport, onSessionExpired: (() -> Void)? = nil) {
+        self.init(transport: transport, onSessionExpired: onSessionExpired, sleep: ChatBackoff.sleep(seconds:))
     }
 
     /// `sleep` disuntikkan test agar jeda reconnect instan.
     init(
-        transport: TanyaAIChatTransport, onSessionExpired: (() -> Void)?, onNewConversation: (() -> Void)?,
+        transport: TanyaAIChatTransport, onSessionExpired: (() -> Void)?,
         sleep: @escaping (TimeInterval) async throws -> Void
     ) {
         self.transport = transport
         self.onSessionExpired = onSessionExpired
-        self.onNewConversation = onNewConversation
         self.sleep = sleep
     }
-
-    var isNewConversationAvailable: Bool { onNewConversation != nil }
 
     /// Sambutan hanya untuk percakapan kosong; pesan pertama (dari stream) langsung menggantikannya.
     var isWelcomeVisible: Bool { isHistoryLoaded && messages.isEmpty }
@@ -78,15 +67,6 @@ public final class TanyaAIBridge: ObservableObject {
             isAwaitingReply = false
             return false
         }
-    }
-
-    /// TODO: Sepakati alur percakapan baru dengan BE (`X-New-Conversation` dibatasi 1 percakapan per CIF,
-    /// endpoint close belum dipakai). Sementara hanya mengosongkan tampilan lokal (kembali ke sambutan),
-    /// mengakhiri penantian, dan memberi tahu host; percakapan di gateway tetap yang lama.
-    func startNewConversation() {
-        messages = []
-        isAwaitingReply = false
-        onNewConversation?()
     }
 
     /// Event `message` digabung ke daftar; `turn_end` membuka kunci kirim.

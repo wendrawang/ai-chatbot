@@ -56,43 +56,18 @@ struct TanyaAIBridgeTests {
         #expect(transport.calls.isEmpty)
     }
 
-    /// Pesan pertama dari stream menggantikan sambutan; percakapan baru (lokal) mengembalikannya.
+    /// Pesan pertama dari stream (mis. pertanyaan dari shortcut) langsung menggantikan sambutan.
     @Test
-    func firstStreamedMessageHidesTheWelcomeAndNewConversationBringsItBack() async {
+    func firstStreamedMessageHidesTheWelcome() async {
         let transport = FakeChatTransport()
-        let bridge = TanyaAIBridge(transport: transport, onSessionExpired: nil, onNewConversation: {}, sleep: { _ in })
+        let bridge = makeBridge(transport)
         let task = Task { await bridge.run() }
         defer { task.cancel() }
         await waitUntil { bridge.connection == .live }
         #expect(bridge.isWelcomeVisible)
         transport.emit(WireFixture.messageFrame(seq: 1))
         await waitUntil { !bridge.isWelcomeVisible }
-        bridge.startNewConversation()
-        #expect(bridge.messages.isEmpty)
-        #expect(bridge.isWelcomeVisible)
-    }
-
-    @Test
-    func newConversationEndsWaitingAndTellsTheHost() async {
-        var newConversationCount = 0
-        let transport = FakeChatTransport()
-        let bridge = TanyaAIBridge(
-            transport: transport, onSessionExpired: nil, onNewConversation: { newConversationCount += 1 },
-            sleep: { _ in }
-        )
-        let task = Task { await bridge.run() }
-        defer { task.cancel() }
-        await waitUntil { bridge.isReady }
-        #expect(bridge.isNewConversationAvailable)
-        _ = await bridge.send("Cek Portfolio saya")
-        bridge.startNewConversation()
-        #expect(!bridge.isAwaitingReply)
-        #expect(newConversationCount == 1)
-    }
-
-    @Test
-    func newConversationIsUnavailableWithoutAHostHandler() {
-        #expect(!makeBridge(FakeChatTransport()).isNewConversationAvailable)
+        #expect(bridge.messages.count == 1)
     }
 
     /// Halaman ditutup = task dibatalkan; stream ikut berakhir dan bridge tidak menyambung ulang.
@@ -112,6 +87,6 @@ struct TanyaAIBridgeTests {
 
 extension TanyaAIBridgeTests {
     func makeBridge(_ transport: FakeChatTransport) -> TanyaAIBridge {
-        TanyaAIBridge(transport: transport, onSessionExpired: nil, onNewConversation: nil, sleep: { _ in })
+        TanyaAIBridge(transport: transport, onSessionExpired: nil, sleep: { _ in })
     }
 }

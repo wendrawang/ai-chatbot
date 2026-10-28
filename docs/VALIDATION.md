@@ -1,5 +1,13 @@
 # Validasi starter
 
+## Menu "Percakapan baru" dihapus — 28 Oktober 2026
+
+Ikon ⋮ dan menu "Percakapan baru" dihapus karena belum ada kebutuhan (alur BE: batas 1 percakapan
+per CIF, close belum dipakai). `TanyaAIBridge(transport:onSessionExpired:)` tanpa `onNewConversation`;
+copy `chat.more`/`chat.newConversation` dihapus dari tiga bahasa. Slot kanan header tetap kosong agar
+judul di tengah; aset `moreMenu` disimpan. UI test sisi tombol kirim menunggu jawaban bot tiruan,
+bukan percakapan baru.
+
 ## Bubble pengguna bersudut siku — 28 Oktober 2026
 
 Bubble pesan keluar memakai `MessageBubbleShape`: tiga sudut membulat, kanan bawah siku (Figma "Beli

@@ -77,7 +77,7 @@ berikutnya. `makeRequest` menambah base URL dan header OMNI. Jangan log isi pesa
 
 ## Belum diputuskan
 
-- Percakapan baru: `X-New-Conversation: true` dibatasi 1 percakapan per CIF (409), endpoint
-  close belum dipakai. Menu "Percakapan baru" sementara hanya memanggil host.
+- Percakapan baru: belum ada (menu ⋮ dihapus 28 Oktober 2026 karena belum ada kebutuhan).
+  Bila dibutuhkan: `X-New-Conversation: true` dibatasi 1 percakapan per CIF (409), jadi perlu close.
 - Paging history lebih lama saat scroll ke atas, tampilan pesan `canceled`, payload non-teks,
   typing indicator, dan tombol stop (`cancel`).
