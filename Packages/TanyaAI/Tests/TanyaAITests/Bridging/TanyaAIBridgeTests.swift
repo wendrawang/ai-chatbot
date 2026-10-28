@@ -56,6 +56,22 @@ struct TanyaAIBridgeTests {
         #expect(transport.calls.isEmpty)
     }
 
+    /// Pesan pertama dari stream menggantikan sambutan; percakapan baru (lokal) mengembalikannya.
+    @Test
+    func firstStreamedMessageHidesTheWelcomeAndNewConversationBringsItBack() async {
+        let transport = FakeChatTransport()
+        let bridge = TanyaAIBridge(transport: transport, onSessionExpired: nil, onNewConversation: {}, sleep: { _ in })
+        let task = Task { await bridge.run() }
+        defer { task.cancel() }
+        await waitUntil { bridge.connection == .live }
+        #expect(bridge.isWelcomeVisible)
+        transport.emit(WireFixture.messageFrame(seq: 1))
+        await waitUntil { !bridge.isWelcomeVisible }
+        bridge.startNewConversation()
+        #expect(bridge.messages.isEmpty)
+        #expect(bridge.isWelcomeVisible)
+    }
+
     @Test
     func newConversationEndsWaitingAndTellsTheHost() async {
         var newConversationCount = 0

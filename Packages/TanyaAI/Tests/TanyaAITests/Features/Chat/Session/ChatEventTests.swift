@@ -14,7 +14,9 @@ struct ChatEventTests {
     @Test
     func messageFrameDecodesTheFullMessageObject() {
         let event = ChatEvent(frame(WireFixture.messageFrame(seq: 2, direction: "bot")))
-        let expected = ChatMessage(id: "m-2", seq: 2, author: .bot, text: "pesan 2", status: .active)
+        let expected = ChatMessage(
+            id: "m-2", seq: 2, author: .bot, text: "pesan 2", status: .active, createdAt: WireFixture.createdAt
+        )
         #expect(event == .message(expected))
     }
 
@@ -26,8 +28,10 @@ struct ChatEventTests {
     @Test
     func canceledTombstoneKeepsItsStatus() {
         let event = ChatEvent(frame(WireFixture.messageFrame(seq: 1, status: "canceled")))
-        #expect(
-            event == .message(ChatMessage(id: "m-1", seq: 1, author: .customer, text: "pesan 1", status: .canceled)))
+        let expected = ChatMessage(
+            id: "m-1", seq: 1, author: .customer, text: "pesan 1", status: .canceled, createdAt: WireFixture.createdAt
+        )
+        #expect(event == .message(expected))
     }
 
     @Test

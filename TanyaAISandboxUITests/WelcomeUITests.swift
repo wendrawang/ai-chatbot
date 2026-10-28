@@ -29,6 +29,7 @@ final class WelcomeUITests: XCTestCase {
         capture("welcome-id")
     }
 
+    /// Pertanyaan pertama dari stream menggantikan sambutan; percakapan baru mengembalikannya.
     func testShortcutTurnsSendIntoLoadingUntilNewConversation() {
         launch(locale: "en", extra: ["--hold-reply"])
         let shortcut = application.buttons["welcome.shortcut.0"]
@@ -38,7 +39,8 @@ final class WelcomeUITests: XCTestCase {
         shortcut.tap()
         XCTAssertEqual(send.label, "Waiting for reply")
         XCTAssertFalse(send.isEnabled)
-        XCTAssertFalse(shortcut.isEnabled)
+        XCTAssertTrue(application.descendants(matching: .any)["chat.message.customer"].waitForExistence(timeout: 5))
+        XCTAssertFalse(application.otherElements["chat.welcome"].exists)
         let input = application.textViews["composer.input"]
         input.tap()
         input.typeText("Next question")
@@ -47,7 +49,22 @@ final class WelcomeUITests: XCTestCase {
         startNewConversation()
         XCTAssertEqual(send.label, "Send message")
         XCTAssertTrue(send.isEnabled)
+        XCTAssertTrue(shortcut.waitForExistence(timeout: 5))
         XCTAssertTrue(shortcut.isEnabled)
+    }
+
+    /// History tidak kosong: tanpa sambutan, chip tanggal di atas pesan pertama setiap hari.
+    func testHistoryReplacesTheWelcomeWithDatedMessages() {
+        launch(locale: "id", extra: ["--with-history"])
+        let dates = application.descendants(matching: .any).matching(identifier: "chat.date")
+        XCTAssertTrue(dates.firstMatch.waitForExistence(timeout: 10))
+        XCTAssertFalse(application.buttons["welcome.shortcut.0"].exists)
+        XCTAssertFalse(application.descendants(matching: .any)["chat.loading"].exists)
+        XCTAssertEqual(dates.count, 2)
+        XCTAssertEqual(dates.element(boundBy: 0).label, "14 Okt 2026")
+        let first = application.descendants(matching: .any)["chat.message.customer"].firstMatch
+        XCTAssertLessThan(dates.element(boundBy: 0).frame.maxY, first.frame.minY)
+        capture("chat-history-dates")
     }
 
     /// Ikon gagal diunduh: kartu tetap tampil dengan ikon fallback FE dan tetap bisa diketuk.

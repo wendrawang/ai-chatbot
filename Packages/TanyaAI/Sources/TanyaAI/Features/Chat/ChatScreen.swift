@@ -9,7 +9,8 @@ import DesignKit
 import SwiftUI
 
 /// The feature owns its header; the draft lives in ComposerSection. Content is injected.
-/// `welcome` (dari BE) tampil di atas daftar pesan; shortcut yang diketuk dikirim lewat `bridge` seperti chat.
+/// `welcome` (dari BE) hanya tampil bila history kosong; sebelum history pertama selesai, loading di tengah.
+/// Shortcut yang diketuk dikirim lewat `bridge` seperti chat.
 /// Selama halaman tampil, `bridge` tersambung ke gateway; selama menunggu jawaban, tombol kirim menjadi
 /// titik bergerak dan shortcut nonaktif.
 @MainActor
@@ -46,17 +47,29 @@ public struct ChatScreen<Content: View>: View {
             footer: { composer },
             background: { backgroundImage }
         )
+        .overlay { loadingIndicator }
         // Dibatalkan otomatis saat halaman hilang; tampil lagi = init ulang dan mengejar history.
         .task { await bridge.run() }
     }
 
     @ViewBuilder
     private var scrollContent: some View {
-        if let welcome {
+        if let welcome, bridge.isWelcomeVisible {
             WelcomeSection(content: welcome, isEnabled: isEnabled && isSendable, onSelect: select)
         }
         MessagesSection(messages: bridge.messages)
         content
+    }
+
+    /// Hanya saat pertama dibuka; menyambung ulang tidak menutupi pesan yang sudah tampil.
+    @ViewBuilder
+    private var loadingIndicator: some View {
+        if !bridge.isHistoryLoaded {
+            ProgressView()
+                .progressViewStyle(.circular)
+                .tint(colors.colorsIconColored)
+                .accessibilityIdentifier(ChatElementIdentifier.loading)
+        }
     }
 
     private var composer: some View {

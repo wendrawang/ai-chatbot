@@ -23,7 +23,14 @@ struct SandboxGatewayFrames {
     /// Data dummy: jawaban bot mengulang pertanyaan.
     static func reply(to question: String) -> String { "Jawaban contoh untuk: \(question)" }
 
-    private var seq = 0
+    /// `seq` terbesar di `TanyaAIHistoryDummy.json`; pesan baru melanjutkan setelahnya.
+    static let historyLatestSeq = 4
+
+    private var seq: Int
+
+    init(seq: Int = 0) {
+        self.seq = seq
+    }
 
     mutating func ack() -> Data {
         Data(#"{"success":true,"data":{"message_id":"ack","seq":"\#(seq + 1)"}}"#.utf8)

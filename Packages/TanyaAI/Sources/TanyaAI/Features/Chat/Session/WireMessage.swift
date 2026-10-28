@@ -13,9 +13,11 @@ struct WireMessage: Decodable {
     let direction: ChatAuthor
     let payload: String?
     let status: ChatMessageStatus
+    /// ISO 8601 dengan zona waktu, mis. `2026-10-23T15:00:00+07:00`.
+    let createdAt: String?
 
     private enum CodingKeys: CodingKey {
-        case messageId, seq, direction, payload, status
+        case messageId, seq, direction, payload, status, createdAt
     }
 
     init(from decoder: Decoder) throws {
@@ -25,5 +27,6 @@ struct WireMessage: Decodable {
         direction = try container.decode(ChatAuthor.self, forKey: .direction)
         payload = try? container.decodeIfPresent(String.self, forKey: .payload)
         status = try container.decode(ChatMessageStatus.self, forKey: .status)
+        createdAt = try? container.decodeIfPresent(String.self, forKey: .createdAt)
     }
 }

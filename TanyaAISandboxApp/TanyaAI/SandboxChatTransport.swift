@@ -10,25 +10,31 @@ import TanyaAI
 
 /// Gateway tiruan di memori, pengganti service chat ICT milik host. Pertanyaan diterima (ack), lalu
 /// pertanyaan dan jawaban bot dikirim lewat stream yang terbuka, diakhiri `turn_end`.
-/// `--offline` gagal kirim tanpa internet (blocker host), `--reject-send` menolak kirim, `--hold-reply` tidak menjawab.
+/// `--offline` gagal kirim tanpa internet (blocker host), `--reject-send` menolak kirim, `--hold-reply` tidak menjawab,
+/// `--with-history` memuat history fixture.
 @MainActor
 final class SandboxChatTransport: TanyaAIChatTransport {
     private let options: SandboxOptions
     private let onSubmissionFailed: (Error) -> Void
-    private var frames = SandboxGatewayFrames()
+    private var frames: SandboxGatewayFrames
     private var continuation: AsyncThrowingStream<String, Error>.Continuation?
 
     init(options: SandboxOptions, onSubmissionFailed: @escaping (Error) -> Void) {
         self.options = options
         self.onSubmissionFailed = onSubmissionFailed
+        frames = SandboxGatewayFrames(seq: options.isShowingHistory ? SandboxGatewayFrames.historyLatestSeq : .zero)
     }
 
     func initialize() async throws -> Data {
         SandboxGatewayFrames.initialize
     }
 
+    /// `--with-history`: fixture dua tanggal; selain itu percakapan kosong (sambutan tampil).
     func history(conversationID: String, before: String?, limit: Int) async throws -> Data {
-        SandboxGatewayFrames.emptyHistory
+        guard options.isShowingHistory, let url = SandboxFixtureFile.tanyaAIHistoryDummy.url else {
+            return SandboxGatewayFrames.emptyHistory
+        }
+        return try Data(contentsOf: url)
     }
 
     func sendMessage(conversationID: String, clientMessageID: String, text: String) async throws -> Data {

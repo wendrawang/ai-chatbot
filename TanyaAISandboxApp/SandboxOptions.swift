@@ -30,6 +30,7 @@ struct SandboxOptions {
     private static let languageFlag = "--language"
     private static let rejectFlag = "--reject-send"
     private static let holdReplyFlag = "--hold-reply"
+    private static let historyFlag = "--with-history"
     private static let headerDemoFlag = "--header-demo"
     private static let offlineFlag = "--offline"
     private static let brokenIconsFlag = "--broken-icons"
@@ -44,6 +45,8 @@ struct SandboxOptions {
     let isRejectingSend: Bool
     /// `--hold-reply`: bot tidak pernah menjawab, jadi composer tetap menunggu (untuk UI test status loading).
     let isHoldingReply: Bool
+    /// `--with-history`: gateway tiruan mengembalikan history fixture, jadi sambutan tidak tampil.
+    let isShowingHistory: Bool
     let isHeaderDemo: Bool
     let isOffline: Bool
     /// Pengganti semua `iconUrl` shortcut: `--broken-icons` (gagal, cek fallback) atau
@@ -53,6 +56,7 @@ struct SandboxOptions {
     init(arguments: [String]) {
         isRejectingSend = arguments.contains(Self.rejectFlag)
         isHoldingReply = arguments.contains(Self.holdReplyFlag)
+        isShowingHistory = arguments.contains(Self.historyFlag)
         isHeaderDemo = arguments.contains(Self.headerDemoFlag)
         isOffline = arguments.contains(Self.offlineFlag)
         if arguments.contains(Self.brokenIconsFlag) {

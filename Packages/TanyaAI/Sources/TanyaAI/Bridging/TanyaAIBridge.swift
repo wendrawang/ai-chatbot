@@ -19,6 +19,9 @@ public final class TanyaAIBridge: ObservableObject {
     /// Sejak kirim sampai event `turn_end`; tombol kirim menjadi titik bergerak dan shortcut nonaktif.
     @Published
     private(set) var isAwaitingReply = false
+    /// True setelah history pertama selesai; sebelum itu halaman menampilkan loading, bukan sambutan.
+    @Published
+    private(set) var isHistoryLoaded = false
     @Published
     var connection = ChatConnection.connecting
     /// Percakapan dari `/chat/init` terakhir; nil sebelum init pertama berhasil.
@@ -53,6 +56,9 @@ public final class TanyaAIBridge: ObservableObject {
 
     var isNewConversationAvailable: Bool { onNewConversation != nil }
 
+    /// Sambutan hanya untuk percakapan kosong; pesan pertama (dari stream) langsung menggantikannya.
+    var isWelcomeVisible: Bool { isHistoryLoaded && messages.isEmpty }
+
     /// Bisa mengirim setelah init berhasil, juga selama menyambung ulang; tidak setelah ditutup atau sesi habis.
     var isReady: Bool {
         conversationID != nil && connection != .closed && connection != .expired
@@ -75,8 +81,10 @@ public final class TanyaAIBridge: ObservableObject {
     }
 
     /// TODO: Sepakati alur percakapan baru dengan BE (`X-New-Conversation` dibatasi 1 percakapan per CIF,
-    /// endpoint close belum dipakai). Sementara hanya mengakhiri penantian lokal dan memberi tahu host.
+    /// endpoint close belum dipakai). Sementara hanya mengosongkan tampilan lokal (kembali ke sambutan),
+    /// mengakhiri penantian, dan memberi tahu host; percakapan di gateway tetap yang lama.
     func startNewConversation() {
+        messages = []
         isAwaitingReply = false
         onNewConversation?()
     }
@@ -99,9 +107,11 @@ public final class TanyaAIBridge: ObservableObject {
             messages = history.merging([])
             isAwaitingReply = false
             self.conversationID = conversationID
+            isHistoryLoaded = true
             return
         }
         self.conversationID = conversationID
         messages = messages.merging(history)
+        isHistoryLoaded = true
     }
 }

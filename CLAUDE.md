@@ -18,6 +18,7 @@ bridge host ke chat-gateway (init → history → SSE, retry, merge), daftar pes
   daftar dan chevron dari FE. Ketuk kartu = kirim `prompt` lewat bridge.
 - `TanyaAIBridge` dipegang host (dibuat sekali) dengan `TanyaAIChatTransport` per endpoint (body mentah).
   Bridge yang menyambung, retry, decode, dan merge (`docs/CHAT_GATEWAY.md`); pesan tampil hanya dari SSE.
+  Loading hanya saat history pertama; sambutan hanya bila history kosong, selain itu chip tanggal per hari.
   `isAwaitingReply` sejak kirim sampai `turn_end`: tombol kirim jadi `LoadingDots`, kartu nonaktif. Gambar URL lewat `RemoteImage` (cache memori bersama).
 - Ukuran welcome/kartu/titik masih estimasi screenshot (TODO di `CustomSizes`/`CustomMotion`);
   aset `chatBackground`/`welcomeOrb` placeholder (`ChatImage`), ganti file, nama tetap.

@@ -26,6 +26,20 @@ struct TanyaAIBridgeConnectionTests {
         #expect(bridge.messages.map(\.seq) == [1, 2])
     }
 
+    /// Loading sampai history pertama selesai; sambutan hanya untuk percakapan kosong.
+    @Test(arguments: [[Int](), [2, 1]])
+    func welcomeShowsOnlyAfterAnEmptyHistoryLoads(seqs: [Int]) async {
+        let transport = FakeChatTransport()
+        transport.historyPages = [WireFixture.history(seqs)]
+        let bridge = makeBridge(transport)
+        #expect(!bridge.isHistoryLoaded)
+        #expect(!bridge.isWelcomeVisible)
+        let task = Task { await bridge.run() }
+        defer { task.cancel() }
+        await waitUntil { bridge.isHistoryLoaded }
+        #expect(bridge.isWelcomeVisible == seqs.isEmpty)
+    }
+
     /// Putus → init + history lagi; yang sudah ada tidak ditumpuk, sisanya ditambahkan, stream lanjut dari seq terbaru.
     @Test
     func reconnectMergesTheNewHistoryWithoutDuplicates() async {

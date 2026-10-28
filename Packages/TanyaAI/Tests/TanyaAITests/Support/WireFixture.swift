@@ -10,6 +10,9 @@ import Foundation
 /// Body dan baris SSE berbentuk contoh di swagger chat-gateway 1.0.1.
 enum WireFixture {
     static let conversationID = "30000000-0000-4000-8000-000000000001"
+    static let createdAtText = "2026-10-23T15:00:00+07:00"
+    /// 23 Oktober 2026 08:00 UTC.
+    static let createdAt = Date(timeIntervalSince1970: 1_792_742_400)
 
     static func initialize(conversationID: String = conversationID, state: String = "BOT_ACTIVE") -> Data {
         Data(

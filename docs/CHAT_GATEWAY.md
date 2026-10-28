@@ -41,6 +41,12 @@ Typing, cancel, limits, list conversations, dan close belum dipakai.
 
 Percakapan dari init berbeda dengan sebelumnya (yang lama diarsipkan) mengganti daftar.
 
+Tampilan: sebelum history pertama selesai, loading di tengah halaman (reconnect tidak menampilkan
+loading; pesan yang sudah tampil tetap terbaca). History kosong = sambutan (greeting, shortcut, emblem);
+ada pesan = sambutan disembunyikan, chip tanggal (`created_at`, zona waktu perangkat, format mengikuti
+bahasa fitur) di atas pesan pertama setiap hari. Pesan pertama yang datang dari stream langsung
+menggantikan sambutan.
+
 ## Contoh transport di host
 
 ```swift
