@@ -15,24 +15,36 @@ extension HostWindowTests {
     @MainActor
     struct ScreenHeaderSurfaceTests {
         @Test
-        func headerIsTransparentAtRestAndLiftedByShadowWhenScrolled() throws {
+        func headerIsTransparentAtRestAndOpaqueWithFadeWhenScrolled() throws {
             let height = ScreenHeader.height(isNotched: true)
+            let fade = FigmaSize.spacingLarge.scaledToArtwork
             let reach = CustomSizes.Shadow.radius.scaledToArtwork + CustomSizes.Shadow.offsetY.scaledToArtwork
             let atRest = try render(isScrolled: false)
             let scrolled = try render(isScrolled: true)
-            // Header: padding kiri, jauh dari tombol back. Bayangan: tengah layar, jauh dari tepi yang memudar.
+            // Titik di padding kiri header, jauh dari tombol back dan judul; y dihitung dari tepi atas layar.
             let inHeader = height / 2
-            let inShadow = height + CustomSizes.Shadow.offsetY.scaledToArtwork
-            let belowShadow = height + reach * 2
-            let middle = scrolled.width / 2
+            let inFade = height + fade / 2
+            let beyond = height + max(fade, reach * 2) + 4
 
             #expect(isBackdrop(try atRest.pixel(atHeaderOffset: inHeader)), "header harus transparan saat diam")
-            #expect(isBackdrop(try atRest.pixel(atHeaderOffset: inShadow, column: middle)), "tanpa bayangan saat diam")
+            #expect(isBackdrop(try atRest.pixel(atHeaderOffset: inFade)), "tidak ada fade saat diam")
             #expect(isSurface(try scrolled.pixel(atHeaderOffset: inHeader)), "header harus putih saat digulir")
+            let fadePixel = try scrolled.pixel(atHeaderOffset: inFade)
+            #expect(!(isBackdrop(fadePixel) || isSurface(fadePixel)), "gradient harus di antara putih dan latar")
+            #expect(isBackdrop(try scrolled.pixel(atHeaderOffset: beyond)), "fade dan bayangan tidak menjalar")
+        }
+
+        /// Di atas latar putih fade tidak terlihat, jadi yang menggelapkan tepi bawah header hanya bayangan.
+        @Test
+        func shadowStaysVisibleOverTheFadeWhenScrolled() throws {
+            let inShadow = ScreenHeader.height(isNotched: true) + CustomSizes.Shadow.offsetY.scaledToArtwork
+            let atRest = try render(isScrolled: false, backdrop: .white)
+            let scrolled = try render(isScrolled: true, backdrop: .white)
+            let middle = scrolled.width / 2
+            let resting = try atRest.pixel(atHeaderOffset: inShadow, column: middle)
             let shadow = try scrolled.pixel(atHeaderOffset: inShadow, column: middle)
-            #expect(!(isBackdrop(shadow) || isSurface(shadow)), "bayangan harus terlihat di bawah header: \(shadow)")
-            let below = try scrolled.pixel(atHeaderOffset: belowShadow, column: middle)
-            #expect(isBackdrop(below), "bayangan tidak menjalar: \(below)")
+            #expect(isSurface(resting), "tanpa bayangan saat diam: \(resting)")
+            #expect(shadow[1] < 250, "bayangan harus tergambar di atas gradient: \(shadow)")
         }
     }
 }
@@ -62,10 +74,10 @@ private struct RenderedHeader {
 }
 
 private extension HostWindowTests.ScreenHeaderSurfaceTests {
-    /// Header di atas latar merah, seperti header di atas gambar latar chat.
-    func render(isScrolled: Bool) throws -> RenderedHeader {
+    /// Header di atas latar (default merah), seperti header di atas gambar latar chat.
+    func render(isScrolled: Bool, backdrop: Color = Color(red: 1, green: 0, blue: 0)) throws -> RenderedHeader {
         let content = ZStack(alignment: .top) {
-            Color(red: 1, green: 0, blue: 0).ignoresSafeArea()
+            backdrop.ignoresSafeArea()
             ScreenHeader(title: "Judul", backLabel: "Back", isScrolled: isScrolled, isNotched: true, onBack: {})
         }
         .ignoresSafeArea(.container, edges: .top)

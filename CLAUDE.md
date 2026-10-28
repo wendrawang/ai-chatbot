@@ -9,7 +9,7 @@ bridge host; tanpa session/stream. Minimum iOS 15 (host ikut naik ke iOS 15 untu
   minimum touch target 44 atau hit frame tambahan; ini keputusan UI/UX.
 - Header = ukuran navigation bar host: dari tepi layar, padding atas 50/28 tanpa scale
   (`CustomScreenInsets`), kiri-kanan 20, bawah 15, ikon 24, judul Fira Sans Bold 16.
-  Saat digulir putih + `designShadow` (Figma Shadow/Default), bukan gradient fade.
+  Saat digulir putih + `designShadow` (Figma Shadow/Default) + gradient fade di belakangnya.
 - Tanpa R.swift/build tool plugin (CI host tidak bisa trust plugin). Copy lewat `ChatCopy`/`SandboxCopy`,
   ikon lewat `DesignIcon`; tambah case setiap menambah key/imageset, tes menjaga kecocokannya.
 - Welcome: host men-decode inquiry init dengan model miliknya, memetakan ke `WelcomeContent`

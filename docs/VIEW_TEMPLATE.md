@@ -83,7 +83,7 @@ fitur yang memang perlu dimiliki, bukan karena ada sebuah view.
 
 ## Screen berikutnya
 
-Pakai composition `ScreenContainer` agar header, boundary/bayangan, scroll dan footer
+Pakai composition `ScreenContainer` agar header, boundary/fade/bayangan, scroll dan footer
 konsisten. Isi `content`, `trailing`, dan `footer`; tidak perlu extend BaseScreen,
 protocol layout atau BaseViewModel. Content tidak membungkus ScrollView vertikal
 lagi. Lihat pemakaian lengkap pada `ChatScreen.swift` dan

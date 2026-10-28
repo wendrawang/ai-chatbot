@@ -2,10 +2,11 @@
 
 ## Bayangan header saat digulir — 28 Oktober 2026
 
-Gradient fade di bawah header diganti bayangan Figma `Shadow/Default` (x 0, y 2, blur 10,
-`#BEC3D0` 40%) lewat `designShadow`, sama seperti kartu. Hanya saat `isScrolled`; saat diam header
-tetap transparan. Test piksel di window sandbox: tepat di bawah header ada bayangan, tidak ada saat
-diam, dan bayangan habis sebelum dua kali jangkauannya.
+Header mendapat bayangan Figma `Shadow/Default` (x 0, y 2, blur 10, `#BEC3D0` 40%) lewat
+`designShadow`, sama seperti kartu, dan gradient fade tetap ada. Fade dipasang sebagai background di
+belakang surface; sebagai overlay, gradient putih menutupi bayangan. Hanya saat `isScrolled`; saat
+diam header tetap transparan. Test piksel di window sandbox: fade di antara putih dan latar; di atas
+latar putih, tepat di bawah header tetap ada bayangan saat digulir dan tidak ada saat diam.
 
 ## Divider composer dan penyesuaian dari Byon — 28 Oktober 2026
 
