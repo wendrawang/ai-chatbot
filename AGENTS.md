@@ -137,7 +137,8 @@ tersedia pada history/main.
 - Gambar dari URL memakai `RemoteImage` DesignKit, pembungkus tipis `KFImage` Kingfisher
   (cache memori + disk, downsample ke `pointSize` × skala layar, validasi status HTTP,
   batal saat view hilang). Kingfisher hanya di-import di `RemoteImage`; fitur lain memakai
-  `RemoteImage`, bukan `KFImage`/`AsyncImage` langsung.
+  `RemoteImage`, bukan `KFImage`/`AsyncImage` langsung. Versi Kingfisher dikunci `exact`
+  di `Package.swift` DesignKit; naik versi hanya lewat PR yang mengubah baris tersebut.
 - `let` untuk input, `@Binding` untuk state caller, `@State` untuk draft lokal.
   Screen memiliki margin luar; komponen memiliki padding dalam/surface/shadow.
   Kartu dan bayangan memakai `.cardStyle()`/`.designShadow()` dari DesignKit; jangan

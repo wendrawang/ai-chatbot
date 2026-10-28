@@ -14,7 +14,8 @@ let package = Package(
     platforms: [.iOS(.v15)],
     products: [.library(name: "DesignKit", targets: ["DesignKit"])],
     // Kingfisher hanya dipakai `RemoteImage`; 8.14 butuh Xcode 26 (swift-tools 6.2).
-    dependencies: [.package(url: "https://github.com/onevcat/Kingfisher.git", .upToNextMajor(from: "8.14.0"))],
+    // Versi dikunci `exact` agar semua anggota tim sama; naik versi hanya lewat perubahan baris ini.
+    dependencies: [.package(url: "https://github.com/onevcat/Kingfisher.git", exact: "8.14.0")],
     targets: [
         .target(
             name: "DesignKit",

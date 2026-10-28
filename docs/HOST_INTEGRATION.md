@@ -148,7 +148,7 @@ TanyaAIHost(
 ```
 
 Ikon kartu dimuat `RemoteImage` DesignKit, pembungkus `KFImage` Kingfisher (dependency SPM
-DesignKit, Kingfisher 8.14+, butuh Xcode 26). Cache memori + disk memakai `ImageCache.default`
+DesignKit, dikunci tepat 8.14.0, butuh Xcode 26). Cache memori + disk memakai `ImageCache.default`
 Kingfisher (bawaan: disk kedaluwarsa 7 hari); host bisa mengatur batasnya di bootstrap bila
 perlu. Status HTTP di luar 200..<400 dianggap gagal. Gambar di-downsample ke ukuran tampil ×
 skala layar, dan unduhan dibatalkan saat view hilang.
