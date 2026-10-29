@@ -69,6 +69,19 @@ struct TanyaAIBridgeConnectionTests {
         #expect(transport.calls.filter { $0.hasPrefix("events") } == ["events:1", "events:3"])
     }
 
+    /// `id:` typing tidak memajukan cursor: pesan dengan seq itu tetap di-replay setelah putus.
+    @Test
+    func typingIdDoesNotMoveTheReplayCursor() async {
+        let transport = FakeChatTransport()
+        transport.historyPages = [WireFixture.history([1]), WireFixture.history([1])]
+        transport.scriptedStreams = [WireFixture.messageFrame(seq: 2) + WireFixture.typingFrame(seq: 3)]
+        let bridge = makeBridge(transport)
+        let task = Task { await bridge.run() }
+        defer { task.cancel() }
+        await waitUntil { transport.calls.count == 6 && bridge.connection == .live }
+        #expect(transport.calls.filter { $0.hasPrefix("events") } == ["events:1", "events:2"])
+    }
+
     /// Terlalu lama putus: halaman lebih lama diambil sampai bertemu pesan terakhir yang sudah ada.
     @Test
     func catchUpFetchesOlderPagesUntilItReachesTheKnownMessage() async {

@@ -7,7 +7,7 @@ Pembagian kerja host ↔ TanyaAI untuk gateway ICT. Sumber kebenaran contract te
 
 | Host (`TanyaAIChatTransport`) | TanyaAI (`TanyaAIBridge`) |
 | --- | --- |
-| Base URL, header `X-OCBCNISP-OMNI-SESSION` dan `-CHANNEL`, SSL pinning, log | Urutan init → history → SSE dan menyambung ulang |
+| Base URL, header `X-OCBCNISP-OMNI-SESSION` dan `X-OCBCNISP-OMNI-CHANNEL`, SSL pinning, log | Urutan init → history → SSE dan menyambung ulang |
 | Mengirim request per endpoint, mengembalikan body mentah | Decode envelope, `Message`, error, frame SSE |
 | Melempar `TanyaAITransportError.response` untuk non-2xx | Retry/backoff, merge history tanpa duplikat |
 | Login ulang saat `onSessionExpired` | Pesan ditampilkan hanya dari stream; `turn_end` membuka kirim |
@@ -30,7 +30,8 @@ Typing, cancel, limits, list conversations, dan close belum dipakai.
 ## Alur
 
 1. Halaman tampil (`.task` di `ChatScreen`): init → history halaman terbaru → buka SSE dengan
-   `Last-Event-ID` = `seq` terbesar dari pesan di daftar atau `id` event yang sudah diterima. Event di antara history dan stream ikut di-replay;
+   `Last-Event-ID` = `seq` terbesar dari pesan di daftar atau `id` event tersimpan yang sudah diterima
+   (`id` typing diabaikan karena typing tidak tersimpan di outbox). Event di antara history dan stream ikut di-replay;
    duplikatnya digabung lewat `message_id`.
 2. Stream putus atau error `retryable:true`: jeda 1, 2, 4, … maks 30 detik (atau `retry_after_ms`
    dari 429/503), lalu ulang dari init. History baru diambil per halaman sampai bertemu pesan terakhir
@@ -72,7 +73,7 @@ import TanyaAI
 final class TanyaAIChatService: TanyaAIChatTransport {
     private let session: Session        // session Alamofire host yang sudah ada
     private let baseURL: String         // base URL chat-gateway ICT
-    private var headers: HTTPHeaders    // X-OCBCNISP-OMNI-SESSION, -CHANNEL, dst.
+    private var headers: HTTPHeaders    // X-OCBCNISP-OMNI-SESSION, X-OCBCNISP-OMNI-CHANNEL, dst.
 
     func initialize() async throws -> Data {
         try await data(session.request(baseURL + "/chat/init", method: .post,

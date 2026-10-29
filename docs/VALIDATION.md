@@ -19,11 +19,11 @@ lama, 403 saat init menghentikan loading dan memanggil host sekali, ack/penolaka
 - Frame SSE selesai di baris `data:`; `turn_end` terakhir tidak lagi tertahan bila host membuang
   baris kosong (sebelumnya composer terkunci sampai event berikutnya).
 - `ChatTurn`: hanya `turn_end` dengan seq setelah ack pertanyaan yang membuka kunci; `turn_end` sebelum
-  ack dicocokkan saat ack tiba. `Last-Event-ID` = maks(seq pesan, `id` event terakhir).
+  ack dicocokkan saat ack tiba. `Last-Event-ID` = maks(seq pesan, `id` event terakhir selain typing).
 - 401 saat kirim memanggil `onSessionExpired` sekali dan menghentikan sambungan, sama dengan jalur init.
 
 Test regresi: parser tanpa baris kosong, replay `turn_end` lama, `turn_end` sebelum ack, 401 saat
-kirim, cursor reconnect setelah `turn_end`.
+kirim, cursor reconnect setelah `turn_end`, `id` typing tidak memajukan cursor.
 
 ## Menu "Percakapan baru" dihapus — 28 Oktober 2026
 

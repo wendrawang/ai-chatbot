@@ -63,4 +63,8 @@ enum WireFixture {
     static func turnEndFrame(seq: Int) -> [String] {
         ["id: \(seq)", "event: turn_end", #"data: {"status":"completed","active_turn_id":"100001"}"#, ""]
     }
+
+    static func typingFrame(seq: Int) -> [String] {
+        ["id: \(seq)", "event: typing", #"data: {"direction":"agent","typing":true,"ttl_s":10}"#, ""]
+    }
 }

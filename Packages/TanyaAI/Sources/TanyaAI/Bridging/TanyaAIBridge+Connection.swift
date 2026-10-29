@@ -75,8 +75,10 @@ private extension TanyaAIBridge {
         return true
     }
 
+    /// Cursor replay hanya dari event yang tersimpan di outbox. `id:` typing bisa saja berada di depan seq
+    /// tersimpan terakhir; bila dipakai sebagai `Last-Event-ID`, server melewati pesan dengan seq tersebut.
     func receive(_ event: ServerSentEvent) {
-        if let seq = event.id.flatMap(Int.init) {
+        if event.name != ChatWire.Event.typing, let seq = event.id.flatMap(Int.init) {
             eventCursor = max(eventCursor ?? seq, seq)
         }
         apply(ChatEvent(event))

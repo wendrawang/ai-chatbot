@@ -22,5 +22,7 @@ enum ChatWire {
         /// Nama default event SSE bila baris `event:` tidak ada.
         static let message = "message"
         static let turnEnd = "turn_end"
+        /// Ephemeral (tanpa baris outbox): `id:`-nya bukan posisi replay.
+        static let typing = "typing"
     }
 }
