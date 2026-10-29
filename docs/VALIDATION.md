@@ -519,12 +519,3 @@ margin diterapkan satu kali pada keseluruhan konten, bukan berulang per child.
 Callback count ini membatasi update state; GeometryReader tetap mengevaluasi
 geometri saat layout scroll berubah. Tidak ada klaim hasil FPS atau profiling
 Instruments berdasarkan tes callback tersebut.
-
-## Gagal kirim diteruskan ke host — 29 Oktober 2026
-
-- `onSendFailed(error)` dipanggil setiap `POST /chat/messages` gagal selain 401 (401 tetap
-  `onSessionExpired`). Error `TanyaAITransportError` diteruskan apa adanya; host membaca `error_code`.
-- Draft tetap di composer, kunci kirim dilepas, stream tidak terpengaruh.
-- `id:` event `typing` tidak memajukan cursor replay (typing tidak tersimpan di outbox).
-
-Test regresi: 409/429/400 saat kirim memanggil `onSendFailed` sekali dan stream tetap live; 401 tidak.

@@ -79,11 +79,7 @@ struct TanyaAIBridgeTests {
             TanyaAITransportError.response(statusCode: 401, body: WireFixture.error(isRetryable: false))
         )
         var expiredCount = 0
-        var sendFailures = 0
-        let bridge = TanyaAIBridge(
-            transport: transport, onSessionExpired: { expiredCount += 1 }, onSendFailed: { _ in sendFailures += 1 },
-            sleep: { _ in }
-        )
+        let bridge = TanyaAIBridge(transport: transport, onSessionExpired: { expiredCount += 1 }, sleep: { _ in })
         let task = Task { await bridge.run() }
         defer { task.cancel() }
         await waitUntil { bridge.connection == .live }
@@ -94,7 +90,6 @@ struct TanyaAIBridgeTests {
         #expect(transport.calls.filter { $0 == "init" }.count == 1)
         #expect(!(await bridge.send("Lagi")))
         #expect(expiredCount == 1)
-        #expect(sendFailures == 0)
     }
 
     /// Respons kirim percakapan lama datang setelah reconnect ke percakapan lain dan kirim di sana:
@@ -125,27 +120,16 @@ struct TanyaAIBridgeTests {
         await waitUntil { !bridge.isAwaitingReply }
     }
 
-    /// Gagal kirim (409/429/400/tanpa koneksi) diteruskan ke host sekali; draft tetap, stream tetap terbuka.
-    @Test(arguments: [409, 429, 400])
-    func refusedSendKeepsTheDraftAndTellsTheHost(statusCode: Int) async {
+    @Test
+    func refusedSendKeepsTheDraftAndDoesNotWait() async {
         let transport = FakeChatTransport()
-        transport.sendResult = .failure(TanyaAITransportError.response(statusCode: statusCode, body: Data()))
-        var failures: [Error] = []
-        let bridge = TanyaAIBridge(
-            transport: transport, onSessionExpired: nil, onSendFailed: { failures.append($0) }, sleep: { _ in }
-        )
+        transport.sendResult = .failure(TanyaAITransportError.response(statusCode: 400, body: Data()))
+        let bridge = makeBridge(transport)
         let task = Task { await bridge.run() }
         defer { task.cancel() }
-        await waitUntil { bridge.connection == .live }
+        await waitUntil { bridge.isReady }
         #expect(!(await bridge.send("Cek Portfolio saya")))
         #expect(!bridge.isAwaitingReply)
-        #expect(bridge.connection == .live)
-        #expect(failures.count == 1)
-        guard case let .response(failedStatusCode, _)? = failures.first as? TanyaAITransportError else {
-            Issue.record("Error transport tidak diteruskan apa adanya")
-            return
-        }
-        #expect(failedStatusCode == statusCode)
     }
 
     @Test

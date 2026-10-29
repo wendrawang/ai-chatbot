@@ -12,7 +12,6 @@ Pembagian kerja host ↔ TanyaAI untuk gateway ICT. Sumber kebenaran contract te
 | Melempar `TanyaAITransportError.response` untuk non-2xx | Retry/backoff, merge history tanpa duplikat |
 | Login ulang saat `onSessionExpired` | Pesan ditampilkan hanya dari stream; `turn_end` membuka kirim |
 | Popup/halaman error saat `onConnectionFailed` | Loading dihentikan, composer nonaktif |
-| Toast/popup saat `onSendFailed` (409 `turn_locked`, 429, 400, 404/410, tanpa koneksi) | Draft tetap, kirim terbuka lagi |
 
 Welcome/shortcut tetap dari BE host (inquiry proposition) dan di-decode host; contract ICT
 di-decode TanyaAI karena khusus Tanya AI dan sama di semua host.

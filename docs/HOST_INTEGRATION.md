@@ -84,8 +84,7 @@ final class TanyaAIScreenViewModel: ScreenContentViewModel {
     private(set) lazy var bridge = TanyaAIBridge(
         transport: TanyaAIChatService(),  // implementasi `TanyaAIChatTransport` milik host
         onSessionExpired: { [weak self] in self?.showSessionExpired() },
-        onConnectionFailed: { [weak self] error in self?.showError(error) },
-        onSendFailed: { [weak self] error in self?.showSendError(error) }
+        onConnectionFailed: { [weak self] error in self?.showError(error) }
     )
 
     @MainActor
@@ -122,8 +121,7 @@ membuatnya di `body` atau di `makeHost()`. Host hanya mengimplementasikan transp
 (body mentah); TanyaAI yang menyambung init → history → SSE selama halaman tampil, menyambung
 ulang, men-decode, dan menggabungkan pesan. Lihat [chat-gateway](CHAT_GATEWAY.md).
 `onSessionExpired` dipanggil sekali saat 401; `onConnectionFailed` sekali saat error `retryable:false`
-menghentikan sambungan (loading berhenti, host menampilkan error). `onSendFailed` setiap kirim pesan gagal
-selain 401 (draft tetap, stream tidak terpengaruh, host menampilkan toast/popup). `locale` dan `colors` dibaca saat halaman dibuat.
+menghentikan sambungan (loading berhenti, host menampilkan error). `locale` dan `colors` dibaca saat halaman dibuat.
 
 ## Halaman sambutan dan menunggu jawaban
 

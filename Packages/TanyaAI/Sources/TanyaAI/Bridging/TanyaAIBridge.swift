@@ -33,34 +33,29 @@ public final class TanyaAIBridge: ObservableObject {
     let transport: TanyaAIChatTransport
     let onSessionExpired: (() -> Void)?
     let onConnectionFailed: ((Error) -> Void)?
-    let onSendFailed: ((Error) -> Void)?
     let sleep: (TimeInterval) async throws -> Void
 
     /// `onSessionExpired` dipanggil sekali saat gateway menjawab 401 (sesi OMNI habis); stream tidak dibuka lagi.
     /// `onConnectionFailed` dipanggil sekali saat error yang tidak bisa di-retry (`retryable:false`) menghentikan
     /// sambungan; host menampilkan error sesuai polanya. Error berupa `TanyaAITransportError` dari transport.
-    /// `onSendFailed` dipanggil setiap kirim pesan gagal selain 401 (mis. 409 `turn_locked`, 429, tanpa koneksi);
-    /// draft tetap di composer, stream tidak terpengaruh, dan host yang menampilkan pesan error-nya.
     public convenience init(
         transport: TanyaAIChatTransport, onSessionExpired: (() -> Void)? = nil,
-        onConnectionFailed: ((Error) -> Void)? = nil, onSendFailed: ((Error) -> Void)? = nil
+        onConnectionFailed: ((Error) -> Void)? = nil
     ) {
         self.init(
             transport: transport, onSessionExpired: onSessionExpired, onConnectionFailed: onConnectionFailed,
-            onSendFailed: onSendFailed, sleep: ChatBackoff.sleep(seconds:)
+            sleep: ChatBackoff.sleep(seconds:)
         )
     }
 
     /// `sleep` disuntikkan test agar jeda reconnect instan.
     init(
         transport: TanyaAIChatTransport, onSessionExpired: (() -> Void)?,
-        onConnectionFailed: ((Error) -> Void)? = nil, onSendFailed: ((Error) -> Void)? = nil,
-        sleep: @escaping (TimeInterval) async throws -> Void
+        onConnectionFailed: ((Error) -> Void)? = nil, sleep: @escaping (TimeInterval) async throws -> Void
     ) {
         self.transport = transport
         self.onSessionExpired = onSessionExpired
         self.onConnectionFailed = onConnectionFailed
-        self.onSendFailed = onSendFailed
         self.sleep = sleep
     }
 
@@ -103,8 +98,6 @@ public final class TanyaAIBridge: ObservableObject {
                 ChatBackoff.isUnauthorized(statusCode: statusCode)
             {
                 expireSession()
-            } else {
-                onSendFailed?(error)
             }
             return false
         }
