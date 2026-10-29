@@ -19,7 +19,8 @@ final class TanyaAIScreenViewModel: ScreenContentViewModel {
     private(set) lazy var bridge = TanyaAIBridge(
         transport: useCase.makeChatTransport(),
         onSessionExpired: { [weak self] in self?.didReceiveError(URLError(.userAuthenticationRequired)) },
-        onConnectionFailed: { [weak self] error in self?.didReceiveError(error) }
+        onConnectionFailed: { [weak self] error in self?.didReceiveError(error) },
+        onSendFailed: { [weak self] error in self?.didReceiveError(error) }
     )
 
     init(useCase: TanyaAIUseCase = TanyaAIUseCase()) {
