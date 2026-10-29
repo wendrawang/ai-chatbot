@@ -121,7 +121,8 @@ membuatnya di `body` atau di `makeHost()`. Host hanya mengimplementasikan transp
 (body mentah); TanyaAI yang menyambung init → history → SSE selama halaman tampil, menyambung
 ulang, men-decode, dan menggabungkan pesan. Lihat [chat-gateway](CHAT_GATEWAY.md).
 `onSessionExpired` dipanggil sekali saat 401; `onConnectionFailed` sekali saat error `retryable:false`
-menghentikan sambungan (loading berhenti, host menampilkan error). `locale` dan `colors` dibaca saat halaman dibuat.
+menghentikan sambungan atau saat kirim menemukan percakapan sudah hilang (404/410); host menampilkan
+error lalu menutup halaman. Gagal kirim lain ditangani TanyaAI. `locale` dan `colors` dibaca saat halaman dibuat.
 
 ## Halaman sambutan dan menunggu jawaban
 

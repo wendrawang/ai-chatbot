@@ -10,6 +10,9 @@
 - Error `retryable:false` saat pembukaan awal tidak lagi menyisakan spinner: `isLoadingHistory` hanya
   true selama masih menyambung, dan `onConnectionFailed` meneruskan error ke host sekali.
 - Contoh transport Alamofire callback → async ditambahkan di `CHAT_GATEWAY.md`.
+- Kirim 404/410 (percakapan hilang) memakai jalur gagal permanen yang sama dengan sambungan:
+  stream ditutup, tidak menyambung ulang, `onConnectionFailed` tetap sekali. Gagal kirim lain menunggu
+  snackbar TanyaAI (bukan callback host).
 
 Test regresi: 401 saat kirim menutup stream tanpa reconnect, respons kirim terlambat dari percakapan
 lama, 403 saat init menghentikan loading dan memanggil host sekali, ack/penolakan lama di `ChatTurn`.

@@ -120,6 +120,28 @@ struct TanyaAIBridgeTests {
         await waitUntil { !bridge.isAwaitingReply }
     }
 
+    /// Percakapan hilang saat kirim (404/410): sama dengan gagal permanen saat menyambung, host diberi tahu
+    /// sekali, stream ditutup, dan tidak menyambung ulang.
+    @Test(arguments: [404, 410])
+    func sendToAGoneConversationStopsTheConnectionOnce(statusCode: Int) async {
+        let transport = FakeChatTransport()
+        let gone = TanyaAITransportError.response(statusCode: statusCode, body: WireFixture.error(isRetryable: false))
+        transport.sendResult = .failure(gone)
+        var failures = 0
+        let bridge = TanyaAIBridge(
+            transport: transport, onSessionExpired: nil, onConnectionFailed: { _ in failures += 1 }, sleep: { _ in }
+        )
+        let task = Task { await bridge.run() }
+        defer { task.cancel() }
+        await waitUntil { bridge.connection == .live }
+        #expect(!(await bridge.send("Cek Portfolio saya")))
+        await waitUntil { transport.closedStreams == 1 }
+        await task.value
+        #expect(bridge.connection == .closed)
+        #expect(transport.calls.filter { $0 == "init" }.count == 1)
+        #expect(failures == 1)
+    }
+
     @Test
     func refusedSendKeepsTheDraftAndDoesNotWait() async {
         let transport = FakeChatTransport()
@@ -130,6 +152,7 @@ struct TanyaAIBridgeTests {
         await waitUntil { bridge.isReady }
         #expect(!(await bridge.send("Cek Portfolio saya")))
         #expect(!bridge.isAwaitingReply)
+        #expect(bridge.isReady)
     }
 
     @Test

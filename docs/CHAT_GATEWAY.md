@@ -43,7 +43,9 @@ Typing, cancel, limits, list conversations, dan close belum dipakai.
 4. Kirim: ack 202 hanya mengunci composer dan memberi `seq` pertanyaan. Pertanyaan tampil saat event
    `message` miliknya datang, jawaban bot menyusul. Hanya `turn_end` dengan `id` lebih besar dari seq
    pertanyaan yang membuka kunci (replay `turn_end` lama diabaikan; `turn_end` sebelum ack dicocokkan
-   saat ack tiba). Kirim gagal = draft tetap; 401 saat kirim = `onSessionExpired`, sama seperti saat sambung.
+   saat ack tiba). Kirim gagal = draft tetap; 401 saat kirim = `onSessionExpired` dan 404/410 (percakapan
+   hilang) = `onConnectionFailed`, sama seperti saat sambung. Gagal kirim lain belum ditampilkan (TODO
+   snackbar TanyaAI di PR tampilan, bukan callback host).
    Respons kirim dicocokkan lewat `client_msg_id`: respons yang datang terlambat untuk pertanyaan lama
    (mis. setelah percakapan berganti) tidak mengubah pertanyaan yang sedang ditunggu.
 

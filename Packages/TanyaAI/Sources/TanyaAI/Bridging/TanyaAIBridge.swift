@@ -94,13 +94,30 @@ public final class TanyaAIBridge: ObservableObject {
             return true
         } catch {
             turn.cancel(clientMessageID: clientMessageID)
-            if case let .response(statusCode, _)? = error as? TanyaAITransportError,
-                ChatBackoff.isUnauthorized(statusCode: statusCode)
-            {
-                expireSession()
-            }
+            didFailToSend(error)
             return false
         }
+    }
+
+    /// 401 = sesi habis; 404/410 = percakapan hilang, sama dengan gagal permanen saat menyambung.
+    /// TODO: Gagal kirim lain (tanpa koneksi, 409 `turn_locked`, 429, 400) ditampilkan sebagai snackbar
+    /// di atas composer pada PR tampilan; sementara draft tetap dan kirim terbuka lagi.
+    func didFailToSend(_ error: Error) {
+        guard case let .response(statusCode, _)? = error as? TanyaAITransportError else { return }
+        if ChatBackoff.isUnauthorized(statusCode: statusCode) {
+            expireSession()
+        } else if ChatBackoff.isConversationGone(statusCode: statusCode) {
+            failConnection(error)
+        }
+    }
+
+    /// Gagal permanen dari jalur mana pun: tutup stream yang terbuka, berhenti menyambung, dan beri tahu host
+    /// sekali walau stream juga gagal dengan error yang sama.
+    func failConnection(_ error: Error) {
+        guard connection != .closed, connection != .expired else { return }
+        connection = .closed
+        connectionTask?.cancel()
+        onConnectionFailed?(error)
     }
 
     /// Sesi OMNI habis (401) dari jalur mana pun: tutup stream yang terbuka, berhenti menyambung, dan beri tahu

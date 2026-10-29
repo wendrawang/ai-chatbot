@@ -16,6 +16,8 @@ struct ChatBackoff {
     private static let millisecondsPerSecond: Double = 1_000
     private static let nanosecondsPerSecond: Double = 1_000_000_000
     private static let unauthorizedStatus = 401
+    /// 404 `conversation_not_found` dan 410 `conversation_closed`.
+    private static let conversationGoneStatuses: Set<Int> = [404, 410]
     private static let serverErrorStatus = 500
 
     private var failures = 0
@@ -28,6 +30,11 @@ struct ChatBackoff {
     /// Sesi OMNI habis: berhenti dan serahkan ke host (login ulang), bukan di-retry.
     static func isUnauthorized(statusCode: Int) -> Bool {
         statusCode == unauthorizedStatus
+    }
+
+    /// Percakapan tidak ada lagi atau sudah ditutup/diarsipkan: halaman tidak bisa lanjut.
+    static func isConversationGone(statusCode: Int) -> Bool {
+        conversationGoneStatuses.contains(statusCode)
     }
 
     /// Dipakai bila body bukan error envelope: hanya error server yang di-retry.

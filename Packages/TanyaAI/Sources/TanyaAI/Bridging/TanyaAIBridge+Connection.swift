@@ -111,8 +111,7 @@ private extension TanyaAIBridge {
             if ChatBackoff.isUnauthorized(statusCode: statusCode) {
                 expireSession()
             } else {
-                connection = .closed
-                onConnectionFailed?(error)
+                failConnection(error)
             }
             return nil
         }
