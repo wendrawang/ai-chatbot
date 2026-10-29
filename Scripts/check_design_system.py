@@ -18,8 +18,11 @@ METADATA = {
     'Typography/FontFace.swift', 'Extensions/Color+Hex.swift', 'Extensions/String+Resource.swift',
     'Foundations/Accessibility/ComponentIdentifier.swift',
     'Shared/Keys/ChatElementIdentifier.swift', 'Shared/Keys/ChatCopy.swift',
+    'Features/Chat/Session/ChatWire.swift', 'Features/Chat/Session/ChatBackoff.swift',
+    'Features/Chat/Session/ConversationState.swift', 'Features/Chat/Session/WireError.swift',
     'TanyaAISandboxApp/SandboxOptions.swift', 'TanyaAISandboxApp/SandboxCopy.swift',
-    'TanyaAISandboxApp/SandboxFixtureFile.swift'
+    'TanyaAISandboxApp/SandboxFixtureFile.swift', 'TanyaAISandboxApp/TanyaAI/SandboxGatewayFrames.swift',
+    'TanyaAISandboxApp/TanyaAI/SandboxWireMessage.swift'
 }
 paths = list((ROOT / 'Packages').glob('*/Sources/**/*.swift'))
 paths += list((ROOT / 'TanyaAISandboxApp').glob('**/*.swift'))
