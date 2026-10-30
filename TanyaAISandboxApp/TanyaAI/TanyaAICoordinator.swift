@@ -13,10 +13,12 @@ struct TanyaAICoordinator: View {
     static let named = String(describing: TanyaAICoordinator.self)
     @Binding
     var selectionCoordinatorName: String?
+    /// Hasil inquiry init dari output UseCase induk; nilai, bukan binding, karena dibaca sekali saat dibuka.
+    let initData: TanyaAIInitData?
 
     var body: some View {
         NavigationLink(tag: Self.named, selection: $selectionCoordinatorName) {
-            TanyaAIDestination(onBack: close)
+            TanyaAIDestination(initData: initData, onBack: close)
         } label: {
             EmptyView()
         }

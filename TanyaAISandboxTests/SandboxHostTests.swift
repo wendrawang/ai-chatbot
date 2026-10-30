@@ -48,8 +48,7 @@ extension HostWindowTests {
         func offlineSendShowsTheHostBlocker() async {
             let options = SandboxOptions(arguments: ["--offline"])
             let offline = TanyaAIScreenViewModel(useCase: TanyaAIUseCase(options: options))
-            let transport = offline.useCase.makeChatTransport()
-            _ = try? await transport.sendMessage(conversationID: "c", clientMessageID: "c-1", text: "Halo")
+            _ = try? await offline.useCase.sendMessage(conversationID: "c", clientMessageID: "c-1", text: "Halo")
             #expect(offline.isNetworkUnavailable)
             offline.retry()
             #expect(!offline.isNetworkUnavailable)
@@ -127,7 +126,7 @@ private struct HarnessMain: View {
         NavigationView {
             ZStack {
                 if probe.destination == TanyaAICoordinator.named {
-                    TanyaAICoordinator(selectionCoordinatorName: $probe.destination)
+                    TanyaAICoordinator(selectionCoordinatorName: $probe.destination, initData: nil)
                 }
                 Screen { MainScreen(viewModel: viewModel, onOpenDetail: {}, onOpenTanyaAI: {}) }
                 Text(String(probe.tick))

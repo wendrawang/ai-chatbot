@@ -8,4 +8,10 @@
 import Foundation
 
 /// Tiruan view model main. Belum ada data; cukup state blocker dari base.
-final class MainScreenViewModel: ScreenContentViewModel {}
+final class MainScreenViewModel: ScreenContentViewModel {
+    let entryUseCase = TanyaAIEntryUseCase()
+
+    func openTanyaAI() {
+        entryUseCase.inquire()
+    }
+}

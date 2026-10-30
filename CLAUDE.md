@@ -27,6 +27,8 @@ bridge host ke chat-gateway (init → history → SSE, retry, merge); daftar pes
   Tests mencerminkan Sources. Detail di AGENTS.md.
 - Unit test memakai Swift Testing (`@Test`, `#expect`, `#require`); UI test tetap
   XCTest. Suite yang memakai window di sandbox masuk `HostWindowTests` (berurutan).
+- Sandbox meniru host Byon: coordinator menulis Input UseCase, UseCase mengolah ke Repository, view model
+  membaca Repository; Output/callback UseCase induk membuka halaman. `TanyaAIUseCase` = `TanyaAIChatTransport`.
 - Keputusan arsitektur dan saran tahap berikutnya: [docs/REVAMP_NOTES.md](docs/REVAMP_NOTES.md).
 
 Panduan implementasi dan urutan belajar: [docs/STARTING_POINT.md](docs/STARTING_POINT.md).

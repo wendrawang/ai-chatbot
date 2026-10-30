@@ -19,11 +19,17 @@ struct DetailDestination: View {
     var body: some View {
         ZStack {
             if destinationCoordinatorName == TanyaAICoordinator.named {
-                TanyaAICoordinator(selectionCoordinatorName: $destinationCoordinatorName)
+                TanyaAICoordinator(
+                    selectionCoordinatorName: $destinationCoordinatorName,
+                    initData: viewModel.entryUseCase.output.initData
+                )
             }
             Screen {
-                DetailScreen(viewModel: viewModel) { destinationCoordinatorName = TanyaAICoordinator.named }
+                DetailScreen(viewModel: viewModel, onOpenTanyaAI: viewModel.openTanyaAI)
             }
+        }
+        .onAppear {
+            viewModel.entryUseCase.callback.onStartTanyaAI = { destinationCoordinatorName = TanyaAICoordinator.named }
         }
     }
 }
