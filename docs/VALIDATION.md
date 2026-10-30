@@ -522,3 +522,17 @@ margin diterapkan satu kali pada keseluruhan konten, bukan berulang per child.
 Callback count ini membatasi update state; GeometryReader tetap mengevaluasi
 geometri saat layout scroll berubah. Tidak ada klaim hasil FPS atau profiling
 Instruments berdasarkan tes callback tersebut.
+
+## Fase composer dan stop — 30 Oktober 2026
+
+Keputusan user: titik bergerak tampil sampai bubble pertanyaan nasabah datang dari stream (bukan sampai
+`turn_end`) dan draft dikunci selama itu; setelahnya tombol menjadi stop (ikon dummy `DesignIcon.stop`,
+TODO aset Figma dari user) yang memanggil `POST .../cancel`, sementara draft boleh diketik tetapi baru bisa
+dikirim setelah stop atau `turn_end`. `ChatTurnPhase` (`idle`, `sending`, `awaitingReply`, `canceling`)
+dihitung di `ChatTurn`; pertanyaan dicocokkan lewat `client_msg_id` atau seq ack, termasuk bila datang lewat
+history setelah reconnect. Kunci draft memakai `shouldChangeTextIn` tanpa melepas first responder, jadi
+keyboard tidak turun-naik selama jeda singkat itu. Sandbox menunda kemunculan pertanyaan 0,6 detik
+(`SandboxOptions.echoDelay`) agar fase titik bergerak terlihat. Test: `ChatTurnTests`, `TanyaAIBridgeTurnTests`
+(cancel true/false/gagal/401, stop sebelum pertanyaan tampil, pertanyaan dari history), `ComposerActionTests`
+(hanya `.loading` yang mengunci draft), `TanyaAIUseCaseChatTests` (tombstone + `turn_end` canceled), dan
+`WelcomeUITests` (titik bergerak → stop → kirim draft berikutnya).
