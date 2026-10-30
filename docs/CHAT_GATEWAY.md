@@ -63,6 +63,9 @@ Daftar pesan (bubble, chip tanggal per hari) menyusul di PR tampilan pesan.
 
 Protocol memakai async/await (iOS 15). Host yang service-nya masih callback cukup membungkus
 callback dengan continuation; tidak perlu mengubah service lain.
+Pola sandbox (dan Byon): UseCase halaman yang conform `TanyaAIChatTransport` lalu memanggil service
+callback, lihat [TanyaAIUseCase+Chat](../TanyaAISandboxApp/TanyaAI/TanyaAIUseCase+Chat.swift). Contoh di
+bawah menaruh conformance langsung di service; keduanya sama untuk TanyaAI.
 
 Gateway ICT tidak memakai envelope `response_code` host, jadi jangan lewat `BaseService.request`
 (`responseJSON` membuang body mentah dan handler-nya memeriksa `response_code`). Buat service baru yang

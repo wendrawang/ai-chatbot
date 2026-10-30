@@ -31,72 +31,78 @@ tujuan (`TanyaAIDestination`), sehingga dibuat sekali saat halaman di-push, dile
 di-pop, dan tidak ikut dibuat ulang ketika halaman induk render ulang. Halaman dibungkus
 base `Screen` host, jadi blocker per halaman dan blocker root tetap tampil di atasnya.
 
+Data mengikuti matriks Input/Output/Repository host: coordinator menulis Input, UseCase mengolah
+Input ke Repository, view model hanya membaca Repository. UseCase halaman Tanya AI sekaligus menjadi
+`TanyaAIChatTransport` (hit API lewat service callback yang dibungkus continuation).
+
 ```
+UseCase induk: inquiry → output.greeting/shortcuts → callback onStartTanyaAI
 Coordinator induk (createNavigationLinks / switch rute)
-└── TanyaAICoordinator          ← hanya NavigationLink, tidak membuat view model
-    └── TanyaAIDestination      ← @StateObject TanyaAIScreenViewModel
-        └── Screen { TanyaAIScreen }   ← host.makeView(onBack:)
+└── TanyaAICoordinator(greeting:shortcuts:)      ← hanya NavigationLink; nilai dari output induk, bukan binding
+    └── TanyaAIDestination(greeting:shortcuts:)  ← @StateObject: UseCase dibuat, input ditulis, lalu view model
+        └── Screen { TanyaAIScreen }   ← viewModel.host.makeView(onBack:)
 ```
 
 ```swift
-// TanyaAICoordinator.swift
-struct TanyaAICoordinator: View {
-    static let named = String(describing: TanyaAICoordinator.self)
-    @Binding var selectionCoordinatorName: String?
-
-    var body: some View {
-        NavigationLink(tag: Self.named, selection: $selectionCoordinatorName) {
-            TanyaAIDestination(onBack: close)
-        } label: { EmptyView() }
-        .hidden()
-    }
-
-    private func close() {
-        guard selectionCoordinatorName == Self.named else { return }
-        selectionCoordinatorName = nil
-    }
+// TanyaAIDestination.swift — autoclosure StateObject dijalankan sekali per halaman.
+init(greeting: TanyaAIInitGreeting, shortcuts: [TanyaAIInitShortcut], onBack: @escaping () -> Void) {
+    _viewModel = StateObject(wrappedValue: {
+        let useCase = TanyaAIUseCase()
+        useCase.input.greeting = greeting
+        useCase.input.shortcuts = shortcuts
+        return TanyaAIScreenViewModel(useCase: useCase)
+    }())
+    self.onBack = onBack
 }
 
-// TanyaAIDestination.swift
-struct TanyaAIDestination: View {
-    @StateObject private var viewModel = TanyaAIScreenViewModel()
-    let onBack: () -> Void
+// TanyaAIScreenViewModel.swift — bridge dan host dibuat sekali, bukan setiap render.
+@MainActor
+private(set) lazy var bridge = TanyaAIBridge(
+    transport: useCase,   // extension TanyaAIUseCase: TanyaAIChatTransport
+    onSessionExpired: { [weak self] in self?.handleSessionExpired() },
+    onConnectionFailed: { [weak self] error in self?.didReceiveError(error) }
+)
+@MainActor
+private(set) lazy var host = TanyaAIHost(
+    locale: Locale(identifier: Localize.currentLanguage()),
+    welcome: useCase.repository.welcome,
+    bridge: bridge
+)
 
-    var body: some View {
-        Screen { TanyaAIScreen(viewModel: viewModel, onBack: onBack) }
-    }
+init(useCase: TanyaAIUseCase) {
+    self.useCase = useCase
+    super.init()
+    useCase.loadWelcome()   // Input → Repository; sekali, sebelum `host` (lazy) dibaca di render pertama
 }
 
-// TanyaAIScreen.swift
-struct TanyaAIScreen: ScreenContent {
-    @ObservedObject var viewModel: TanyaAIScreenViewModel
-    let onBack: () -> Void
-
-    var body: some View {
-        viewModel.makeHost().makeView(onBack: onBack)
+// TanyaAIUseCase.swift — Input/Output non-optional dengan default; nil hanya di Repository.
+func loadWelcome() {
+    guard !input.greeting.title.isEmpty else {
+        repository.welcome = nil   // nil = tanpa sambutan, bukan sambutan berisi teks kosong
+        return
     }
-}
-
-// TanyaAIScreenViewModel.swift — konfigurasi lewat init, bukan di body coordinator.
-final class TanyaAIScreenViewModel: ScreenContentViewModel {
-    // Dibuat sekali bersama view model (@StateObject destination), dipakai ulang setiap render.
-    @MainActor
-    private(set) lazy var bridge = TanyaAIBridge(
-        transport: TanyaAIChatService(),  // implementasi `TanyaAIChatTransport` milik host
-        onSessionExpired: { [weak self] in self?.showSessionExpired() },
-        onConnectionFailed: { [weak self] error in self?.showError(error) }
+    repository.welcome = WelcomeContent(
+        greetings: input.greeting.greeting, shortcuts: input.shortcuts.map(\.shortcut)
     )
-
-    @MainActor
-    func makeHost() -> TanyaAIHost {
-        TanyaAIHost(locale: Locale(identifier: Localize.currentLanguage()), welcome: welcome, bridge: bridge)
-    }
 }
 ```
 
-Di coordinator induk, daftarkan `TanyaAICoordinator(selectionCoordinatorName: $destinationCoordinatorName)`
+Input, Output, dan Repository memakai `struct`: `private(set) var repository` benar-benar mencegah view
+model mengubah isinya, dan nilai yang dioper antarhalaman tidak saling berbagi referensi. Jangan memanggil
+`loadWelcome()` di `.onAppear`/`.task`: `host` sudah dibuat dengan `welcome` nil pada render pertama.
+
+Jangan membuat view model atau UseCase sebagai `let`/`@State` di coordinator: struct coordinator dibuat
+ulang setiap render induk, sehingga nilai awalnya ikut dibuat ulang. Tanpa `flushData`: umur UseCase
+terikat ke `@StateObject` destination. Kode lengkap yang bisa dijalankan ada di sandbox:
+[TanyaAIEntryUseCase](../TanyaAISandboxApp/TanyaAI/TanyaAIEntryUseCase.swift) (inquiry induk),
+[TanyaAIDestination](../TanyaAISandboxApp/TanyaAI/TanyaAIDestination.swift),
+[TanyaAIUseCase](../TanyaAISandboxApp/TanyaAI/TanyaAIUseCase.swift),
+[TanyaAIUseCase+Chat](../TanyaAISandboxApp/TanyaAI/TanyaAIUseCase+Chat.swift) (sama dengan kode Byon), dan
+[TanyaAIChatService](../TanyaAISandboxApp/TanyaAI/TanyaAIChatService.swift) (tiruan service Alamofire).
+
+Di coordinator induk, daftarkan `TanyaAICoordinator(selectionCoordinatorName: $destinationCoordinatorName, greeting:, shortcuts:)`
 bersama link lain (pada host dengan registry lazy, tambahkan entri di dictionary link),
-lalu buka dengan `destinationCoordinatorName = TanyaAICoordinator.named`. Contoh lengkap:
+lalu buka dari callback UseCase induk setelah inquiry: `destinationCoordinatorName = TanyaAICoordinator.named`. Contoh lengkap:
 [MainCoordinator](../TanyaAISandboxApp/Main/MainCoordinator.swift),
 [DetailDestination](../TanyaAISandboxApp/Detail/DetailDestination.swift), dan folder
 [TanyaAI sandbox](../TanyaAISandboxApp/TanyaAI).
@@ -117,7 +123,7 @@ Untuk navigasi lain cukup ganti pemanggilnya:
   `navigation.pushViewController(UIHostingController(rootView: host.makeView(onBack: pop)), animated: true)`.
 
 `TanyaAIBridge` adalah jembatan host ↔ TanyaAI yang hidup selama halaman terbuka; jangan
-membuatnya di `body` atau di `makeHost()`. Host hanya mengimplementasikan transport per endpoint
+membuatnya di `body`. Host hanya mengimplementasikan transport per endpoint
 (body mentah); TanyaAI yang menyambung init → history → SSE selama halaman tampil, menyambung
 ulang, men-decode, dan menggabungkan pesan. Lihat [chat-gateway](CHAT_GATEWAY.md).
 `onSessionExpired` dipanggil sekali saat 401; `onConnectionFailed` sekali saat error `retryable:false`
@@ -143,7 +149,7 @@ struct TanyaAIInitShortcut: Decodable {
         )
     }
 }
-// TanyaAIInitData.welcome = WelcomeContent(greetings: greetings.greeting, shortcuts: shortcuts.map(\.shortcut))
+// TanyaAIUseCase.loadWelcome: WelcomeContent(greetings: greeting.greeting, shortcuts: shortcuts.map(\.shortcut))
 ```
 
 | Bagian halaman | Sumber |

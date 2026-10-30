@@ -8,40 +8,34 @@
 import Foundation
 import TanyaAI
 
-/// Sandbox: sambutan dari fixture dan gateway chat tiruan. `--offline` melaporkan error tidak ada internet
-/// ke view model saat kirim; `--broken-icons`/`--slow-icons` membuat ikon shortcut gagal/tertahan loading.
+/// Meniru UseCase Byon: coordinator menulis `input`, UseCase mengolahnya ke `repository`, ViewModel membaca
+/// `repository`. Tanpa output karena belum ada halaman berikutnya. UseCase juga menjadi transport chat
+/// (`TanyaAIUseCase+Chat`).
 final class TanyaAIUseCase {
-    let callback = BaseCallback()
+    let callback: BaseCallback
+    var input = TanyaAIInput()
+    private(set) var repository = TanyaAIRepository()
+    let chatService: TanyaAIChatService
     private let options: SandboxOptions
 
     init(options: SandboxOptions = .current) {
+        let callback = BaseCallback()
+        self.callback = callback
         self.options = options
+        chatService = TanyaAIChatService(options: options) { callback.onSubmissionFailed($0) }
     }
 
-    /// Transport chat-gateway untuk `TanyaAIBridge`. Host asli memanggil service ICT dengan header OMNI.
-    @MainActor
-    func makeChatTransport() -> TanyaAIChatTransport {
-        SandboxChatTransport(options: options) { [callback] error in callback.onSubmissionFailed(error) }
-    }
-
-    /// Isi halaman sambutan dari fixture. Nil pada mode `--header-demo` (area scroll berisi konten contoh)
-    /// atau bila fixture rusak, sehingga halaman tetap terbuka tanpa sambutan.
-    func loadWelcome() -> WelcomeContent? {
-        // TODO: Panggil inquiry init Tanya AI milik host setelah API tersedia.
-        guard !options.isHeaderDemo, let url = SandboxFixtureFile.tanyaAIInitDummy.url,
-            let data = try? Data(contentsOf: url)
-        else { return nil }
-        guard let response = try? JSONDecoder().decode(TanyaAIInitResponse.self, from: data) else { return nil }
-        let welcome = response.data.welcome
-        guard let iconURL = options.iconOverrideURL else { return welcome }
-        return Self.replacingIcons(of: welcome, with: iconURL)
-    }
-
-    /// `--broken-icons`/`--slow-icons`: isi tetap dari fixture, hanya URL ikon yang diganti.
-    private static func replacingIcons(of welcome: WelcomeContent, with iconURL: URL) -> WelcomeContent {
-        let shortcuts = welcome.shortcuts.map {
-            WelcomeShortcut(title: $0.title, description: $0.description, iconURL: iconURL, prompt: $0.prompt)
+    /// Dipanggil sekali dari init view model, sebelum `host` dibuat. Input dari halaman sebelumnya dipetakan
+    /// ke model TanyaAI; sapaan kosong = tanpa sambutan. Sandbox: `--header-demo` mengosongkan sambutan,
+    /// `--broken-icons`/`--slow-icons` mengganti URL ikon.
+    func loadWelcome() {
+        guard !options.isHeaderDemo, !input.greeting.title.isEmpty else {
+            repository.welcome = nil
+            return
         }
-        return WelcomeContent(greetings: welcome.greetings, shortcuts: shortcuts)
+        let shortcuts =
+            options.iconOverrideURL.map { iconURL in input.shortcuts.map { $0.replacingIcon(with: iconURL) } }
+            ?? input.shortcuts
+        repository.welcome = WelcomeContent(greetings: input.greeting.greeting, shortcuts: shortcuts.map(\.shortcut))
     }
 }
