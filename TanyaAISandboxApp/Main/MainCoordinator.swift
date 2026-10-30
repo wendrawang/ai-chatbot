@@ -23,12 +23,15 @@ struct MainCoordinator: View {
                     MainScreen(
                         viewModel: viewModel,
                         onOpenDetail: { destinationCoordinatorName = DetailCoordinator.named },
-                        onOpenTanyaAI: { destinationCoordinatorName = TanyaAICoordinator.named }
+                        onOpenTanyaAI: viewModel.openTanyaAI
                     )
                 }
             }
         }
         .navigationViewStyle(.stack)
+        .onAppear {
+            viewModel.entryUseCase.callback.onStartTanyaAI = { destinationCoordinatorName = TanyaAICoordinator.named }
+        }
     }
 
     @ViewBuilder
@@ -37,7 +40,11 @@ struct MainCoordinator: View {
         case DetailCoordinator.named?:
             DetailCoordinator(selectionCoordinatorName: $destinationCoordinatorName)
         case TanyaAICoordinator.named?:
-            TanyaAICoordinator(selectionCoordinatorName: $destinationCoordinatorName)
+            TanyaAICoordinator(
+                selectionCoordinatorName: $destinationCoordinatorName,
+                greeting: viewModel.entryUseCase.output.greeting,
+                shortcuts: viewModel.entryUseCase.output.shortcuts
+            )
         default:
             EmptyView()
         }

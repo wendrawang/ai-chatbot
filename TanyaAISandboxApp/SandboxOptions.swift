@@ -7,7 +7,7 @@
 
 import Foundation
 
-/// Developer-only launch metadata. The host callback accepts drafts without contacting a backend.
+/// Developer-only launch metadata. Gateway tiruan (`SandboxChatTransport`) menjawab tanpa backend.
 struct SandboxOptions {
     static let fontFailure = "Font registration failed: "
     static let openIdentifier = "sandbox.open"
@@ -21,12 +21,16 @@ struct SandboxOptions {
     static let demoStartIdentifier = "sandbox.demo.start"
     static let demoEndIdentifier = "sandbox.demo.end"
     static let demoParagraphCount = 12
+    /// Jeda jawaban bot tiruan setelah pertanyaan muncul di stream.
+    static let replyDelay: TimeInterval = 1
     /// File yang tidak ada: unduhan ikon pasti gagal tanpa bergantung pada jaringan.
     static let brokenIconURL = URL(fileURLWithPath: "/sandbox/missing-icon.png")
     /// Alamat TEST-NET (RFC 5737) yang tidak pernah menjawab: ikon tertahan di state loading sampai timeout.
     static let slowIconURL = URL(string: "https://192.0.2.1/icon.png")
     private static let languageFlag = "--language"
     private static let rejectFlag = "--reject-send"
+    private static let holdReplyFlag = "--hold-reply"
+    private static let historyFlag = "--with-history"
     private static let headerDemoFlag = "--header-demo"
     private static let offlineFlag = "--offline"
     private static let brokenIconsFlag = "--broken-icons"
@@ -39,6 +43,10 @@ struct SandboxOptions {
 
     let locale: Locale?
     let isRejectingSend: Bool
+    /// `--hold-reply`: bot tidak pernah menjawab, jadi composer tetap menunggu (untuk UI test status loading).
+    let isHoldingReply: Bool
+    /// `--with-history`: gateway tiruan mengembalikan history fixture, jadi sambutan tidak tampil.
+    let isShowingHistory: Bool
     let isHeaderDemo: Bool
     let isOffline: Bool
     /// Pengganti semua `iconUrl` shortcut: `--broken-icons` (gagal, cek fallback) atau
@@ -47,6 +55,8 @@ struct SandboxOptions {
 
     init(arguments: [String]) {
         isRejectingSend = arguments.contains(Self.rejectFlag)
+        isHoldingReply = arguments.contains(Self.holdReplyFlag)
+        isShowingHistory = arguments.contains(Self.historyFlag)
         isHeaderDemo = arguments.contains(Self.headerDemoFlag)
         isOffline = arguments.contains(Self.offlineFlag)
         if arguments.contains(Self.brokenIconsFlag) {

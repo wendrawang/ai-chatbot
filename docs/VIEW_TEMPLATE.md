@@ -101,12 +101,11 @@ Callback sederhana ditulis langsung pada pemiliknya:
 
 ```swift
 private let onBack: () -> Void
-private let onSend: (String) -> Bool
+private let onSend: (String) async -> Bool
 ```
 
-Nama menyatakan aksi. Kontrak hasil wajib jelas: pada starter, `onSend` mengembalikan
-`true` ketika host menerima submission sehingga draft boleh dibersihkan; `false`
-mempertahankan draft. Ini bukan status sukses pengiriman ke backend.
+Nama menyatakan aksi. Kontrak hasil wajib jelas: `onSend` mengembalikan `true` setelah gateway
+menerima pesan (ack) sehingga draft boleh dibersihkan; `false` mempertahankan draft.
 
 Tidak perlu satu file `TypeAliases.swift` untuk `Action`, `VoidCallback`, dan
 alias callback lain yang sudah mudah dibaca. Gunakan typealias ketika signature

@@ -69,6 +69,7 @@ struct TanyaAIInitResponseTests {
 
 private extension TanyaAIInitResponseTests {
     func decode(_ json: String) throws -> WelcomeContent {
-        try JSONDecoder().decode(TanyaAIInitResponse.self, from: Data(json.utf8)).data.welcome
+        let initData = try JSONDecoder().decode(TanyaAIInitResponse.self, from: Data(json.utf8)).data
+        return WelcomeContent(greetings: initData.greetings.greeting, shortcuts: initData.shortcuts.map(\.shortcut))
     }
 }

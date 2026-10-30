@@ -8,4 +8,10 @@
 import Foundation
 
 /// Tiruan view model halaman detail.
-final class DetailScreenViewModel: ScreenContentViewModel {}
+final class DetailScreenViewModel: ScreenContentViewModel {
+    let entryUseCase = TanyaAIEntryUseCase()
+
+    func openTanyaAI() {
+        entryUseCase.inquire()
+    }
+}

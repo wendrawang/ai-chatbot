@@ -42,25 +42,6 @@ final class HeaderUITests: XCTestCase {
         XCTAssertTrue(application.buttons["sandbox.open"].waitForExistence(timeout: 5))
     }
 
-    /// Sandbox memasang handler percakapan baru (keluar dari menunggu jawaban), jadi item aktif.
-    func testOptionsAreLocalizedAndNewConversationUsesTheHostHandler() {
-        for (locale, label, item) in [
-            ("en", "Conversation options", "New conversation"),
-            ("id", "Opsi percakapan", "Percakapan baru"),
-            ("zh-Hans", "对话选项", "新对话")
-        ] {
-            launch(locale: locale)
-            XCTAssertTrue(application.buttons["chat.more"].waitForExistence(timeout: 10))
-            assertActionsAndTitle()
-            XCTAssertEqual(application.buttons["chat.more"].label, label)
-            application.buttons["chat.more"].tap()
-            let action = application.buttons[item]
-            XCTAssertTrue(action.waitForExistence(timeout: 5))
-            XCTAssertTrue(action.isEnabled)
-            application.terminate()
-        }
-    }
-
     func testHeaderStaysFixedWithKeyboardAndLargeSystemText() {
         launch(
             locale: "zh-Hans",
@@ -86,16 +67,15 @@ final class HeaderUITests: XCTestCase {
 
     private func assertActionsAndTitle() {
         let back = application.buttons["header.back"].frame
-        let more = application.buttons["chat.more"].frame
         let title = application.staticTexts["header.title"].frame
         let actionSize = (24 * application.frame.width / 375).rounded()
         XCTAssertEqual(back.width, actionSize, accuracy: 1)
         XCTAssertEqual(back.height, actionSize, accuracy: 1)
-        XCTAssertEqual(more.width, actionSize, accuracy: 1)
-        XCTAssertEqual(more.height, actionSize, accuracy: 1)
         XCTAssertEqual(title.midX, application.frame.midX, accuracy: 1)
         XCTAssertGreaterThanOrEqual(title.minX, back.maxX)
-        XCTAssertLessThanOrEqual(title.maxX, more.minX)
+        // Slot kanan kosong tetap selebar slot back agar judul tetap di tengah.
+        XCTAssertLessThanOrEqual(title.maxX, application.frame.width - back.maxX + 1)
+        XCTAssertFalse(application.buttons["chat.more"].exists)
     }
 
     /// Scroll konten demo. `scrollViews.firstMatch` bisa menunjuk bar saran keyboard.

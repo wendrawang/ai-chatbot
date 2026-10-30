@@ -7,10 +7,10 @@
 
 import TanyaAI
 
-/// `data.greetings` inquiry init: sapaan di bawah emblem.
+/// `data.greetings` inquiry init: sapaan di bawah emblem. Default kosong = belum ada data (tanpa sambutan).
 struct TanyaAIInitGreeting: Decodable {
-    let title: String
-    let description: String
+    var title = String()
+    var description = String()
 
     var greeting: WelcomeGreeting {
         WelcomeGreeting(title: title, description: description)
