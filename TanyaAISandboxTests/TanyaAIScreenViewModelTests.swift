@@ -17,9 +17,10 @@ struct TanyaAIScreenViewModelTests {
         let entry = TanyaAIEntryUseCase()
         entry.inquire()
         let useCase = TanyaAIUseCase(options: SandboxOptions(arguments: []))
-        useCase.input.initData = entry.output.initData
+        useCase.input.greeting = entry.output.greeting
+        useCase.input.shortcuts = entry.output.shortcuts
         _ = TanyaAIScreenViewModel(useCase: useCase)
-        #expect(useCase.repository.initData?.greetings.title == "Hi, Lara Croft!")
+        #expect(useCase.repository.welcome?.greetings.title == "Hi, Lara Croft!")
     }
 
     /// Bridge memegang callback secara weak: view model tetap dilepas walau bridge masih hidup.

@@ -6,6 +6,7 @@
 //
 
 import Foundation
+import TanyaAI
 
 /// Meniru UseCase Byon: coordinator menulis `input`, UseCase mengolahnya ke `repository`, ViewModel membaca
 /// `repository`. Tanpa output karena belum ada halaman berikutnya. UseCase juga menjadi transport chat
@@ -24,13 +25,17 @@ final class TanyaAIUseCase {
         chatService = TanyaAIChatService(options: options) { callback.onSubmissionFailed($0) }
     }
 
-    /// Input dari halaman sebelumnya diolah lalu disimpan untuk ditampilkan. Sandbox: `--header-demo`
-    /// mengosongkan sambutan, `--broken-icons`/`--slow-icons` mengganti URL ikon.
+    /// Dipanggil sekali dari init view model, sebelum `host` dibuat. Input dari halaman sebelumnya dipetakan
+    /// ke model TanyaAI; sapaan kosong = tanpa sambutan. Sandbox: `--header-demo` mengosongkan sambutan,
+    /// `--broken-icons`/`--slow-icons` mengganti URL ikon.
     func loadWelcome() {
-        guard !options.isHeaderDemo, let initData = input.initData else {
-            repository.initData = nil
+        guard !options.isHeaderDemo, !input.greeting.title.isEmpty else {
+            repository.welcome = nil
             return
         }
-        repository.initData = options.iconOverrideURL.map(initData.replacingIcons(with:)) ?? initData
+        let shortcuts =
+            options.iconOverrideURL.map { iconURL in input.shortcuts.map { $0.replacingIcon(with: iconURL) } }
+            ?? input.shortcuts
+        repository.welcome = WelcomeContent(greetings: input.greeting.greeting, shortcuts: shortcuts.map(\.shortcut))
     }
 }

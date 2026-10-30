@@ -21,7 +21,8 @@ struct DetailDestination: View {
             if destinationCoordinatorName == TanyaAICoordinator.named {
                 TanyaAICoordinator(
                     selectionCoordinatorName: $destinationCoordinatorName,
-                    initData: viewModel.entryUseCase.output.initData
+                    greeting: viewModel.entryUseCase.output.greeting,
+                    shortcuts: viewModel.entryUseCase.output.shortcuts
                 )
             }
             Screen {

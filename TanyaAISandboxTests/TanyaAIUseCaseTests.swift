@@ -15,7 +15,7 @@ import Testing
 struct TanyaAIUseCaseTests {
     @Test
     func welcomeComesFromTheInputInBackendOrder() throws {
-        let welcome = try #require(loadWelcome().repository.initData?.welcome)
+        let welcome = try #require(loadWelcome().repository.welcome)
         #expect(welcome.greetings.title == "Hi, Lara Croft!")
         #expect(
             welcome.shortcuts.map(\.prompt) == [
@@ -27,7 +27,7 @@ struct TanyaAIUseCaseTests {
 
     @Test
     func brokenIconsModeKeepsEveryShortcutButPointsIconsAtAMissingFile() throws {
-        let welcome = try #require(loadWelcome(arguments: ["--broken-icons"]).repository.initData?.welcome)
+        let welcome = try #require(loadWelcome(arguments: ["--broken-icons"]).repository.welcome)
         #expect(welcome.shortcuts.count == 3)
         #expect(welcome.shortcuts.allSatisfy { $0.iconURL == SandboxOptions.brokenIconURL })
         #expect(welcome.shortcuts.first?.prompt == "Cek Portfolio saya")
@@ -35,21 +35,32 @@ struct TanyaAIUseCaseTests {
 
     @Test
     func slowIconsModePointsIconsAtAnAddressThatNeverAnswers() throws {
-        let welcome = try #require(loadWelcome(arguments: ["--slow-icons"]).repository.initData?.welcome)
+        let welcome = try #require(loadWelcome(arguments: ["--slow-icons"]).repository.welcome)
         #expect(welcome.shortcuts.allSatisfy { $0.iconURL == SandboxOptions.slowIconURL })
-        #expect(loadWelcome().repository.initData?.welcome.shortcuts.first?.iconURL != SandboxOptions.slowIconURL)
+        #expect(loadWelcome().repository.welcome?.shortcuts.first?.iconURL != SandboxOptions.slowIconURL)
     }
 
     @Test
     func headerDemoShowsItsSampleContentInsteadOfTheWelcome() {
-        #expect(loadWelcome(arguments: ["--header-demo"]).repository.initData == nil)
+        #expect(loadWelcome(arguments: ["--header-demo"]).repository.welcome == nil)
     }
 
     @Test
     func missingInputOpensThePageWithoutAWelcome() {
         let useCase = TanyaAIUseCase(options: SandboxOptions(arguments: []))
         useCase.loadWelcome()
-        #expect(useCase.repository.initData == nil)
+        #expect(useCase.repository.welcome == nil)
+    }
+
+    /// Sapaan kosong tidak dikirim sebagai sambutan berisi teks kosong walau shortcut ada.
+    @Test
+    func emptyGreetingOpensThePageWithoutAWelcome() {
+        let useCase = TanyaAIUseCase(options: SandboxOptions(arguments: []))
+        useCase.input.shortcuts = [
+            TanyaAIInitShortcut(title: "Portfolio", description: "Cek", iconUrl: nil, prompt: "Cek Portfolio saya")
+        ]
+        useCase.loadWelcome()
+        #expect(useCase.repository.welcome == nil)
     }
 }
 
@@ -60,7 +71,8 @@ private extension TanyaAIUseCaseTests {
         let entry = TanyaAIEntryUseCase()
         entry.inquire()
         let useCase = TanyaAIUseCase(options: SandboxOptions(arguments: arguments))
-        useCase.input.initData = entry.output.initData
+        useCase.input.greeting = entry.output.greeting
+        useCase.input.shortcuts = entry.output.shortcuts
         useCase.loadWelcome()
         return useCase
     }

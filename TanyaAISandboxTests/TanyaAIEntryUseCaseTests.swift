@@ -15,7 +15,7 @@ struct TanyaAIEntryUseCaseTests {
     func inquiryFillsTheOutputBeforeStartingTanyaAI() {
         let useCase = TanyaAIEntryUseCase()
         var greetingAtStart: String?
-        useCase.callback.onStartTanyaAI = { greetingAtStart = useCase.output.initData?.greetings.title }
+        useCase.callback.onStartTanyaAI = { greetingAtStart = useCase.output.greeting.title }
         useCase.inquire()
         #expect(greetingAtStart == "Hi, Lara Croft!")
     }
@@ -30,6 +30,6 @@ struct TanyaAIEntryUseCaseTests {
         main.openTanyaAI()
         detail.openTanyaAI()
         #expect(starts == 2)
-        #expect(detail.entryUseCase.output.initData != nil)
+        #expect(detail.entryUseCase.output.shortcuts.count == 3)
     }
 }

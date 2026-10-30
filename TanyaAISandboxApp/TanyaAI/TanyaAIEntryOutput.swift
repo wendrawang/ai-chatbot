@@ -7,5 +7,6 @@
 
 /// Data untuk halaman Tanya AI; ditulis `TanyaAIEntryUseCase`, dibaca coordinator lalu dioper ke `TanyaAICoordinator`.
 struct TanyaAIEntryOutput {
-    var initData: TanyaAIInitData?
+    var greeting = TanyaAIInitGreeting()
+    var shortcuts: [TanyaAIInitShortcut] = []
 }

@@ -15,11 +15,12 @@ struct TanyaAIDestination: View {
     private var viewModel: TanyaAIScreenViewModel
     let onBack: () -> Void
 
-    init(initData: TanyaAIInitData?, onBack: @escaping () -> Void) {
+    init(greeting: TanyaAIInitGreeting, shortcuts: [TanyaAIInitShortcut], onBack: @escaping () -> Void) {
         _viewModel = StateObject(
             wrappedValue: {
                 let useCase = TanyaAIUseCase()
-                useCase.input.initData = initData
+                useCase.input.greeting = greeting
+                useCase.input.shortcuts = shortcuts
                 return TanyaAIScreenViewModel(useCase: useCase)
             }())
         self.onBack = onBack

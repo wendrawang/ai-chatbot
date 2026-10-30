@@ -36,19 +36,20 @@ Input ke Repository, view model hanya membaca Repository. UseCase halaman Tanya 
 `TanyaAIChatTransport` (hit API lewat service callback yang dibungkus continuation).
 
 ```
-UseCase induk: inquiry → output.initData → callback onStartTanyaAI
+UseCase induk: inquiry → output.greeting/shortcuts → callback onStartTanyaAI
 Coordinator induk (createNavigationLinks / switch rute)
-└── TanyaAICoordinator(initData:)      ← hanya NavigationLink; initData = output induk (nilai, bukan binding)
-    └── TanyaAIDestination(initData:)  ← @StateObject: UseCase dibuat, input ditulis, lalu view model
+└── TanyaAICoordinator(greeting:shortcuts:)      ← hanya NavigationLink; nilai dari output induk, bukan binding
+    └── TanyaAIDestination(greeting:shortcuts:)  ← @StateObject: UseCase dibuat, input ditulis, lalu view model
         └── Screen { TanyaAIScreen }   ← viewModel.host.makeView(onBack:)
 ```
 
 ```swift
 // TanyaAIDestination.swift — autoclosure StateObject dijalankan sekali per halaman.
-init(initData: TanyaAIInitData?, onBack: @escaping () -> Void) {
+init(greeting: TanyaAIInitGreeting, shortcuts: [TanyaAIInitShortcut], onBack: @escaping () -> Void) {
     _viewModel = StateObject(wrappedValue: {
         let useCase = TanyaAIUseCase()
-        useCase.input.initData = initData
+        useCase.input.greeting = greeting
+        useCase.input.shortcuts = shortcuts
         return TanyaAIScreenViewModel(useCase: useCase)
     }())
     self.onBack = onBack
@@ -64,16 +65,31 @@ private(set) lazy var bridge = TanyaAIBridge(
 @MainActor
 private(set) lazy var host = TanyaAIHost(
     locale: Locale(identifier: Localize.currentLanguage()),
-    welcome: useCase.repository.initData.flatMap(WelcomeContent.init),
+    welcome: useCase.repository.welcome,
     bridge: bridge
 )
 
 init(useCase: TanyaAIUseCase) {
     self.useCase = useCase
     super.init()
-    useCase.loadWelcome()   // Input → Repository
+    useCase.loadWelcome()   // Input → Repository; sekali, sebelum `host` (lazy) dibaca di render pertama
+}
+
+// TanyaAIUseCase.swift — Input/Output non-optional dengan default; nil hanya di Repository.
+func loadWelcome() {
+    guard !input.greeting.title.isEmpty else {
+        repository.welcome = nil   // nil = tanpa sambutan, bukan sambutan berisi teks kosong
+        return
+    }
+    repository.welcome = WelcomeContent(
+        greetings: input.greeting.greeting, shortcuts: input.shortcuts.map(\.shortcut)
+    )
 }
 ```
+
+Input, Output, dan Repository memakai `struct`: `private(set) var repository` benar-benar mencegah view
+model mengubah isinya, dan nilai yang dioper antarhalaman tidak saling berbagi referensi. Jangan memanggil
+`loadWelcome()` di `.onAppear`/`.task`: `host` sudah dibuat dengan `welcome` nil pada render pertama.
 
 Jangan membuat view model atau UseCase sebagai `let`/`@State` di coordinator: struct coordinator dibuat
 ulang setiap render induk, sehingga nilai awalnya ikut dibuat ulang. Tanpa `flushData`: umur UseCase
@@ -84,7 +100,7 @@ terikat ke `@StateObject` destination. Kode lengkap yang bisa dijalankan ada di 
 [TanyaAIUseCase+Chat](../TanyaAISandboxApp/TanyaAI/TanyaAIUseCase+Chat.swift) (sama dengan kode Byon), dan
 [TanyaAIChatService](../TanyaAISandboxApp/TanyaAI/TanyaAIChatService.swift) (tiruan service Alamofire).
 
-Di coordinator induk, daftarkan `TanyaAICoordinator(selectionCoordinatorName: $destinationCoordinatorName, initData:)`
+Di coordinator induk, daftarkan `TanyaAICoordinator(selectionCoordinatorName: $destinationCoordinatorName, greeting:, shortcuts:)`
 bersama link lain (pada host dengan registry lazy, tambahkan entri di dictionary link),
 lalu buka dari callback UseCase induk setelah inquiry: `destinationCoordinatorName = TanyaAICoordinator.named`. Contoh lengkap:
 [MainCoordinator](../TanyaAISandboxApp/Main/MainCoordinator.swift),
@@ -133,7 +149,7 @@ struct TanyaAIInitShortcut: Decodable {
         )
     }
 }
-// TanyaAIInitData.welcome = WelcomeContent(greetings: greetings.greeting, shortcuts: shortcuts.map(\.shortcut))
+// TanyaAIUseCase.loadWelcome: WelcomeContent(greetings: greeting.greeting, shortcuts: shortcuts.map(\.shortcut))
 ```
 
 | Bagian halaman | Sumber |

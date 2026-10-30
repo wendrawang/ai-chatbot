@@ -21,4 +21,9 @@ struct TanyaAIInitShortcut: Decodable {
             title: title, description: description, iconURL: iconUrl.flatMap(URL.init(string:)), prompt: prompt
         )
     }
+
+    /// Sandbox: isi tetap dari BE, hanya URL ikon yang diganti.
+    func replacingIcon(with iconURL: URL) -> TanyaAIInitShortcut {
+        TanyaAIInitShortcut(title: title, description: description, iconUrl: iconURL.absoluteString, prompt: prompt)
+    }
 }

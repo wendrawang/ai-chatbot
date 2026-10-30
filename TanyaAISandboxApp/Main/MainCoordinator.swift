@@ -42,7 +42,8 @@ struct MainCoordinator: View {
         case TanyaAICoordinator.named?:
             TanyaAICoordinator(
                 selectionCoordinatorName: $destinationCoordinatorName,
-                initData: viewModel.entryUseCase.output.initData
+                greeting: viewModel.entryUseCase.output.greeting,
+                shortcuts: viewModel.entryUseCase.output.shortcuts
             )
         default:
             EmptyView()

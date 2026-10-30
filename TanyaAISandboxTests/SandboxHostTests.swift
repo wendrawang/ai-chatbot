@@ -126,7 +126,7 @@ private struct HarnessMain: View {
         NavigationView {
             ZStack {
                 if probe.destination == TanyaAICoordinator.named {
-                    TanyaAICoordinator(selectionCoordinatorName: $probe.destination, initData: nil)
+                    TanyaAICoordinator(selectionCoordinatorName: $probe.destination, greeting: .init(), shortcuts: [])
                 }
                 Screen { MainScreen(viewModel: viewModel, onOpenDetail: {}, onOpenTanyaAI: {}) }
                 Text(String(probe.tick))

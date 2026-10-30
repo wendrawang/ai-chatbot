@@ -24,7 +24,7 @@ final class TanyaAIScreenViewModel: ScreenContentViewModel {
     private(set) lazy var host = TanyaAIHost(
         // Sandbox: bahasa dari launch option; host memakai Localize_Swift.
         locale: SandboxOptions.current.locale ?? .current,
-        welcome: useCase.repository.initData?.welcome,
+        welcome: useCase.repository.welcome,
         bridge: bridge
     )
 
