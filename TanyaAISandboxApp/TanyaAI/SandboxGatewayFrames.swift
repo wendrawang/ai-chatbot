@@ -23,6 +23,8 @@ struct SandboxGatewayFrames {
     /// Respons cancel: turn yang berjalan dihentikan / tidak ada turn aktif.
     static let canceled = Data(#"{"success":true,"data":{"canceled":true}}"#.utf8)
     static let nothingToCancel = Data(#"{"success":true,"data":{"canceled":false}}"#.utf8)
+    /// Sandbox belum punya antrean agen, jadi keluar antrean selalu no-op.
+    static let notInAgentQueue = Data(#"{"success":true,"data":{"left":false}}"#.utf8)
     static let canceledStatus = "canceled"
     static let completedStatus = "completed"
     /// Data dummy: jawaban bot mengulang pertanyaan.

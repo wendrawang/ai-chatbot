@@ -755,3 +755,12 @@ tetap memakai `CGFloat.scrollProgress`, yang diuji di `ScrollProgressTests` Desi
 memeriksa chip selebar teks ditambah padding. `testHistoryHidesTheWelcomeAndShowsADateChipPerDay` memeriksa chip
 di tengah layar dan gagal saat baris berhenti memusatkan isinya. Peran judul tidak teruji otomatis: SwiftUI tidak
 membuat elemen aksesibilitas di unit test tanpa VoiceOver, dan XCUITest tidak membaca trait.
+
+## Live agent: state dan keluar antrean — 10 November 2026
+
+Init dan event `state` mengisi `conversationState`. `TanyaAIBridgeLiveAgentTests` memeriksa kirim tanpa
+kunci selama `AGENT_QUEUED`/`AGENT_ACTIVE`, kunci kembali setelah state kembali ke bot, turn serah terima tetap
+ditutup `turn_end`, kartu `system` urut `seq` tanpa dobel saat replay, kartu dibuang saat percakapan berganti,
+dan `leave-agent` (`left:true`, `left:false`, 409, body rusak, 401, di luar antrean). Saat kunci selalu dipasang,
+`agentStatesFromInitDoNotLockSending` dan `stateEventsSwitchTheTurnLock` gagal; tanpa kembali ke bot setelah
+`left:true`, `leavingTheQueueReturnsToTheAssistant` gagal. Belum ada tampilan; sandbox menjawab `left:false`.

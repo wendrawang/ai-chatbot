@@ -77,6 +77,12 @@ struct TanyaAIUseCaseChatTests {
         #expect(try await useCase.cancelTurn(conversationID: "c") == SandboxGatewayFrames.nothingToCancel)
     }
 
+    /// Sandbox belum punya antrean agen: keluar antrean dijawab no-op lewat callback service.
+    @Test
+    func leavingTheAgentQueueIsANoOpInTheSandbox() async throws {
+        #expect(try await makeUseCase().leaveAgent(conversationID: "c") == SandboxGatewayFrames.notInAgentQueue)
+    }
+
     /// Stream ditutup (halaman ditutup → `onTermination` → `cancel()`): baris berikutnya tidak dikirim lagi.
     @Test
     func cancelledStreamNoLongerReceivesLines() async throws {

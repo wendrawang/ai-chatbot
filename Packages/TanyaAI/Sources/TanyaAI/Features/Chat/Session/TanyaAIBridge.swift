@@ -33,6 +33,12 @@ public final class TanyaAIBridge: ObservableObject {
     private(set) var isHistoryLoaded = false
     @Published
     var connection = ChatConnection.connecting
+    /// State dari init terakhir, diperbarui event `state`. `unknown` sebelum init pertama.
+    @Published var conversationState = ConversationState.unknown
+    /// Kartu status live agent yang diterima selama halaman terbuka, urut `seq`.
+    @Published private(set) var liveAgentNotices: [LiveAgentNotice] = []
+    /// Permintaan keluar antrean sedang diproses; tombol batal tidak dikirim dua kali.
+    @Published var isLeavingAgentQueue = false
     /// Percakapan dari `/v1/chat/init` terakhir; nil sebelum init pertama berhasil.
     var conversationID: String?
     /// `id` event SSE terbesar yang sudah diterima (termasuk `turn_end`), bagian dari `Last-Event-ID`.
@@ -151,6 +157,12 @@ extension TanyaAIBridge {
             updateLatestIncomingMessage()
         case .turnEnd(let seq):
             turn.end(seq: seq)
+        case .state(let state):
+            conversationState = state
+        case .notice(let notice):
+            // Replay setelah reconnect bisa mengulang event yang sama; `seq` menjadi kuncinya.
+            let others = liveAgentNotices.filter { $0.seq != notice.seq }
+            liveAgentNotices = (others + [notice]).sorted { $0.seq < $1.seq }
         case .ignored:
             break
         }
@@ -161,6 +173,7 @@ extension TanyaAIBridge {
         guard self.conversationID == nil || self.conversationID == conversationID else {
             messages = history.merging([])
             localQuestions = []
+            liveAgentNotices = []
             turn.cancel()
             eventCursor = nil
             self.conversationID = conversationID

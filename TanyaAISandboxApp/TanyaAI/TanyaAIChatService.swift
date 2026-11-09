@@ -97,6 +97,13 @@ final class TanyaAIChatService {
         }
     }
 
+    /// Keluar antrean agen. Sandbox belum mensimulasikan live agent, jadi selalu `left:false`.
+    func leaveAgent(
+        conversationID: String, onSuccess: @escaping (Data) -> Void, onFailed: @escaping (Error) -> Void
+    ) {
+        DispatchQueue.main.async { onSuccess(SandboxGatewayFrames.notInAgentQueue) }
+    }
+
     /// Stream SSE tiruan: `onLine` per baris lengkap. Kembalian dipakai pemanggil untuk menutup stream,
     /// sama seperti `DataStreamRequest.cancel()` di Byon.
     func events(

@@ -38,7 +38,8 @@ bridge host ke chat-gateway (init → history → SSE, retry, merge), dan daftar
   `Gateway` decode/protokol, `Keys` accessor fitur. Welcome tetap bagian Chat.
   DesignKit: `Components/<Fungsi>`, `Foundations`, `Extensions`, `Tokens`, `Resources`.
   Kelompok beberapa file memakai Models/Views/Controllers/Extensions sesuai peran di dalam pemiliknya.
-  Tests mencerminkan Sources. Intent belum diputuskan; rancangan di dokumen dikonfirmasi saat flow pertama dimulai.
+  Tests mencerminkan Sources. Intent di `Chat/Intents/<Nama>`; `LiveAgent` digerakkan event gateway.
+  Pola intent berbentuk flow host (form/PIN) dikonfirmasi saat flow pertama dimulai.
 - Unit test memakai Swift Testing (`@Test`, `#expect`, `#require`); UI test tetap
   XCTest. Suite yang memakai window di sandbox masuk `HostWindowTests` (berurutan).
 - Sandbox meniru host Byon: coordinator menulis Input UseCase, UseCase mengolah ke Repository, view model

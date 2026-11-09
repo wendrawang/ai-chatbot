@@ -33,6 +33,10 @@ enum WireFixture {
         Data(#"{"success":true,"data":{"canceled":\#(isCanceled)}}"#.utf8)
     }
 
+    static func leave(isLeft: Bool) -> Data {
+        Data(#"{"success":true,"data":{"left":\#(isLeft)}}"#.utf8)
+    }
+
     static func ack(seq: Int = 2) -> Data {
         Data(#"{"success":true,"data":{"message_id":"b1b2c3d4-0002","seq":"\#(seq)"}}"#.utf8)
     }
@@ -75,6 +79,18 @@ enum WireFixture {
 
     static func turnEndFrame(seq: Int, status: String = "completed") -> [String] {
         ["id: \(seq)", "event: turn_end", #"data: {"status":"\#(status)","active_turn_id":"100001"}"#, ""]
+    }
+
+    /// Frame `state` contract §5; nama agen hanya ada saat menuju `AGENT_ACTIVE`.
+    static func stateFrame(seq: Int, state: String, previous: String = "ASSISTANT_ACTIVE") -> [String] {
+        let agent = state == "AGENT_ACTIVE" ? #"{"name":"Durenk"}"# : "null"
+        let data = #"{"from":"\#(previous)","to":"\#(state)","agent":\#(agent)}"#
+        return ["id: \(seq)", "event: state", "data: \(data)", ""]
+    }
+
+    /// Frame `system` contract §7.6.
+    static func systemFrame(seq: Int, type: String) -> [String] {
+        ["id: \(seq)", "event: system", #"data: {"type":"\#(type)","data":null}"#, ""]
     }
 
     static func typingFrame(seq: Int) -> [String] {

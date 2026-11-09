@@ -24,9 +24,10 @@ di-decode TanyaAI karena khusus Tanya AI dan sama di semua host.
 | `history(conversationID:before:limit:)` | `GET /v1/chat/conversations/{id}/messages?limit=&before=` |
 | `sendMessage(conversationID:clientMessageID:text:)` | `POST /v1/chat/messages`, body `{conversation_id, client_msg_id, type:"text", payload}` → 202 |
 | `cancelTurn(conversationID:)` | `POST /v1/chat/conversations/{id}/cancel`, tanpa body → 200 `{canceled}` |
+| `leaveAgent(conversationID:)` | `POST /v1/chat/conversations/{id}/leave-agent`, tanpa body → 200 `{left}`, 409 bila agen sudah bergabung |
 | `events(conversationID:lastEventID:)` | `GET /v1/chat/conversations/{id}/events`, `Accept: text/event-stream`, `Last-Event-ID` bila ada |
 
-Typing, limits, list conversations, close, leave-agent, dan `success-id` belum dipakai.
+Typing, limits, list conversations, close, dan `success-id` belum dipakai.
 
 ## Nilai contract yang dipakai iOS
 
@@ -42,13 +43,30 @@ Typing, limits, list conversations, close, leave-agent, dan `success-id` belum d
 pertanyaan lewat `send`, sama seperti shortcut. Saran dari jawaban lama tidak tampil lagi, dan hilang selama
 menunggu jawaban. Gagal kirim membuka kunci, jadi saran bisa diketuk lagi.
 
+## Live agent
+
+State percakapan diambil dari init lalu diperbarui event `state`. Selama `AGENT_QUEUED`/`AGENT_ACTIVE`
+kirim tidak memakai turn lock karena `turn_end` tidak datang (contract §7.5): nasabah boleh kirim beberapa
+pesan dan tombol tidak menjadi stop. Turn bot yang menyerahkan ke agen tetap ditutup `turn_end`-nya sendiri.
+
+Event `system` yang menjadi kartu: `agent_connecting` (antre), `agent_ended`, `agent_idle_timeout`,
+`queue_canceled`, `queue_timeout`, dan `agent_unavailable`. `agent_joined` tidak menjadi kartu (agen menyapa
+lewat bubble, kartu antre hilang karena state berpindah) dan `back_to_assistant` selalu bersama kartu selesai.
+Copy kartu milik aplikasi; server hanya mengirim token.
+
+History hanya berisi `Message`, jadi kartu hanya ada selama halaman terbuka. Saat dibuka lagi, kartu yang
+`seq`-nya setelah pesan terakhir masih ikut replay SSE (cursor = seq pesan terakhir) selama outbox belum
+dipangkas; kartu sebelum pesan terakhir tidak kembali. Pesan agen tetap ada di history (`direction: agent`).
+
+"Batalkan proses ini" hanya selama `AGENT_QUEUED`: `left:true` langsung kembali ke bot, kartu batal datang dari
+stream. `left:false` atau 409 (agen sudah bergabung) menunggu event `state`.
+
 ## Selisih dengan contract 1.5.0 yang belum dikerjakan
 
-- `AGENT_*` tanpa turn lock dan `turn_end`: setelah kirim, tombol tertahan di stop sampai ditekan.
 - Reconnect selalu lewat init, jadi percakapan yang ditutup admin atau perangkat lain terbuka lagi.
 - Pesan `agent` tampil sebagai bubble polos, bukan Markdown.
 - 401 langsung ke `onSessionExpired`, sedangkan contract menyarankan init ulang.
-- CTA `action` dan `success-id`, serta event `typing`, `system`, `state` belum tampil.
+- CTA `action` dan `success-id`, serta event `typing` belum tampil. Kartu live agent dan bubble agen menyusul.
 
 ## Alur
 
