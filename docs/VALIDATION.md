@@ -748,14 +748,6 @@ Tinggi baris diukur pada kedua jalur sel, tetapi jalur iOS 15 berjalan di runtim
 itu kini memakai `ScreenScaffold`. Catatan lama di dokumen ini yang menyebut keduanya adalah riwayat. Header chat
 tetap memakai `CGFloat.scrollProgress`, yang diuji di `ScrollProgressTests` DesignKit dan `HeaderUITests`.
 
-## DateChip menjadi TextChip — 9 November 2026
-
-`DateChip` diganti nama menjadi `TextChip` karena komponennya hanya chip teks; format tanggal milik
-`ChatDateFormat`. Peran judul VoiceOver dan posisi tengah pindah ke `ChatListRow`. `TextChipTests` kini
-memeriksa chip selebar teks ditambah padding. `testHistoryHidesTheWelcomeAndShowsADateChipPerDay` memeriksa chip
-di tengah layar dan gagal saat baris berhenti memusatkan isinya. Peran judul tidak teruji otomatis: SwiftUI tidak
-membuat elemen aksesibilitas di unit test tanpa VoiceOver, dan XCUITest tidak membaca trait.
-
 ## Live agent: state dan keluar antrean — 10 November 2026
 
 Init dan event `state` mengisi `conversationState`. `TanyaAIBridgeLiveAgentTests` memeriksa kirim tanpa
