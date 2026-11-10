@@ -48,6 +48,9 @@ menunggu jawaban. Gagal kirim membuka kunci, jadi saran bisa diketuk lagi.
 State percakapan diambil dari init lalu diperbarui event `state`. Selama `AGENT_QUEUED`/`AGENT_ACTIVE`
 kirim tidak memakai turn lock karena `turn_end` tidak datang (contract §7.5): nasabah boleh kirim beberapa
 pesan dan tombol tidak menjadi stop. Turn bot yang menyerahkan ke agen tetap ditutup `turn_end`-nya sendiri.
+Pesan bot di turn itu ("Baik, kami akan menghubungkan...") adalah `Message` assistant biasa dengan
+`intent: "handover-to-agent"` dan `source: ""`; teksnya dari bot dan ikut history. Aplikasi tidak membaca
+intent ini: antre/agen ditentukan event `state` dan `system`. Antre lewat init `mode:"agent"` tidak punya pesan ini.
 
 Event `system` yang menjadi kartu: `agent_connecting` (antre), `agent_ended`, `agent_idle_timeout`,
 `queue_canceled`, `queue_timeout`, dan `agent_unavailable`. `agent_joined` tidak menjadi kartu (agen menyapa
