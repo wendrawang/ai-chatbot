@@ -18,6 +18,7 @@
 "liveAgent.sender" = "Live Agent OCBC Nyala";
 "liveAgent.typing" = "Agen sedang mengetik...";
 "liveAgent.leaveQueue" = "Batalkan proses ini";
+"liveAgent.attachment" = "Lampirkan PDF atau gambar";
 "liveAgent.connecting.title" = "Menghubungkan ke Agent";
 "liveAgent.connecting.message" = "Saat ini Anda berada dalam antrian.\n\nMohon kesediaannya untuk menunggu. Customer Assistant Tanya OCBC NISP akan segera melayani Anda.";
 "liveAgent.ended.title" = "Percakapan dengan Agent Selesai";

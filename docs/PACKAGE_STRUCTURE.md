@@ -119,6 +119,7 @@ TanyaAI/Features/Chat/Intents/LiveAgent/
 ```
 
 Komponen visualnya generik di DesignKit: `NoticeCard`, `SenderMessageCard`, dan `FilledLinkButton`.
+Tombol lampiran adalah parameter `attachment` milik `MessageComposer`.
 
 Intent berbentuk flow host, misalnya surat referensi, masih **rancangan, belum keputusan**. Struktur dan
 pembagian state di bawah dikonfirmasi ulang saat Figma dan contract flow tersebut tersedia:

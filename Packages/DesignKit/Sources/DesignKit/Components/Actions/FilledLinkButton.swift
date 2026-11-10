@@ -8,7 +8,7 @@
 import SwiftUI
 
 /// Tombol selebar wadah dengan latar gelap dan label bergaris bawah, untuk aksi pembatalan di bawah kartu.
-/// Copy dan aksi dari pemakai. TODO: Konfirmasi token warna latar dengan Figma.
+/// Copy dan aksi dari pemakai.
 @MainActor
 public struct FilledLinkButton: View {
     @Environment(\.designColors) private var colors
@@ -34,7 +34,7 @@ public struct FilledLinkButton: View {
                 .frame(maxWidth: .infinity)
                 .background(
                     RoundedRectangle(cornerRadius: CustomSizes.Card.cornerRadius.scaledToArtwork)
-                        .fill(isEnabled ? colors.colorsIconDark : colors.colorsIconDisabled)
+                        .fill(isEnabled ? CustomColors.Button.muted : colors.colorsIconDisabled)
                 )
                 .contentShape(Rectangle())
         }

@@ -70,6 +70,11 @@ dan label statis "Live Agent OCBC Nyala", teks polos). Kartu antre di posisi eve
 dibuka lagi saat masih antre tanpa event yang ikut replay. Kartu selesai dari history ditaruh setelah pesan agen
 terakhir sebuah sesi (sesi berakhir saat bot menjawab lagi, atau di akhir bila agen tidak sedang melayani), kecuali
 stream sudah memberi kartu penutup untuk sesi itu. Waktu antre habis dan agen tidak tersedia memakai kartu yang sama.
+Tombol batal berwarna #567180 (`CustomColors.Button.muted`).
+
+Selama `AGENT_ACTIVE` composer menampilkan tombol lampiran (PDF/gambar) di luar kartu sebelah kiri, sejajar
+dengan tombol kirim. Contract v1.5.0 belum punya endpoint upload, jadi ketukannya belum melakukan apa pun. Bila
+endpoint sudah ada: picker di paket, upload lewat method baru `TanyaAIChatTransport` seperti `leaveAgent`.
 
 Event `typing` dari agen menampilkan "Agen sedang mengetik..." miring di bawah pesan terakhir. Indikator hilang saat
 `typing:false`, pesan agen datang, state kembali ke bot, atau `ttl_s` habis tanpa kabar baru. Kartu baru dan

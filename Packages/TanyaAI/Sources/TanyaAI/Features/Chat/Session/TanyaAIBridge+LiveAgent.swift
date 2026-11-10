@@ -42,11 +42,14 @@ extension TanyaAIBridge {
         return notices.sorted { $0.seq < $1.seq }
     }
 
-    /// Pemicu ikut ke bawah bila pembaca di ujung daftar: pesan masuk terbaru, kartu live agent terbaru dari stream,
+    /// Pemicu ikut ke bawah bila pembaca di ujung daftar: pesan masuk terbaru, kartu live agent terbaru yang tampil,
     /// atau indikator mengetik. Hanya perubahannya yang dipakai, bukan isinya; nil selama belum ada apa pun.
+    /// Kartu antre (dan tombol batalnya) baru tampil saat event `state` tiba setelah event `system`-nya, jadi yang
+    /// dipakai kartu yang tampil, bukan kartu terakhir dari stream.
     var latestIncomingContentID: String? {
         let typing = isAgentTyping ? isAgentTyping.description : nil
-        let parts = [latestIncomingMessageID, liveAgentNotices.last.map { String($0.seq) }, typing].compactMap { $0 }
+        let notice = visibleLiveAgentNotices.last.map { $0.kind.rawValue + String($0.seq) }
+        let parts = [latestIncomingMessageID, notice, typing].compactMap { $0 }
         return parts.isEmpty ? nil : parts.joined()
     }
 }

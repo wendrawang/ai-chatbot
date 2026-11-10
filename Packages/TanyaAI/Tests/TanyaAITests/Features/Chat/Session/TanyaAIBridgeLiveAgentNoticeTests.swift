@@ -28,6 +28,20 @@ struct TanyaAIBridgeLiveAgentNoticeTests {
         #expect(bridge.visibleLiveAgentNotices.isEmpty)
     }
 
+    /// Kartu antre baru tampil setelah event `state`; pemicu ikut ke bawah harus berubah saat itu, bukan hanya saat
+    /// event `system`-nya, agar tombol batal di bawah kartu tidak tertutup composer.
+    @Test
+    func followTriggerChangesWhenTheQueueCardAppears() async {
+        let (transport, bridge) = await connectedBridge()
+        defer { bridge.connectionTask?.cancel() }
+        transport.emit(WireFixture.systemFrame(seq: 3, type: "agent_connecting"))
+        await waitUntil { bridge.eventCursor == 3 }
+        let beforeState = bridge.latestIncomingContentID
+        transport.emit(WireFixture.stateFrame(seq: 4, state: "AGENT_QUEUED"))
+        await waitUntil { bridge.conversationState == .agentQueued }
+        #expect(bridge.latestIncomingContentID != beforeState)
+    }
+
     /// Dibuka lagi saat masih antre tetapi event antre tidak ikut replay: kartu antre di akhir daftar.
     @Test
     func queuedConversationWithoutItsEventStillShowsTheCard() async {

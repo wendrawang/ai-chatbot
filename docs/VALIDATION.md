@@ -775,3 +775,12 @@ saat agen masih melayani, tanpa filter kartu dari stream, indikator tanpa batas 
 daftar. `LiveAgentUITests` (`--live-agent`, iPhone 17 Pro iOS 26.5) menjalankan alur antre → agen mengetik →
 pesan agen → kirim tanpa stop → kartu selesai, dan batal antre → kartu batal tanpa agen. Kartu selesai sempat
 tertutup keyboard karena hanya pesan yang menggeser daftar; kini kartu dan indikator mengetik ikut memicunya.
+
+## Live agent: tombol lampiran dan tombol batal — 10 November 2026
+
+`LiveAgentUITests` memeriksa tombol lampiran hanya tampil selama agen melayani, di kiri luar kartu composer,
+dengan ukuran dan titik tengah vertikal sama dengan tombol kirim; mutasi tanpa padding vertikal gagal. Tombol batal
+antre sempat terpotong composer karena kartu antre baru tampil saat event `state` tiba setelah event `system`,
+sementara pemicu ikut ke bawah hanya berubah oleh event `system`. Kini pemicunya kartu yang tampil;
+`followTriggerChangesWhenTheQueueCardAppears` dan UI test (tombol batal di atas garis composer) gagal pada mutasi
+pemicu lama. `MessageComposerTests` memeriksa tombol lampiran tidak menambah tinggi composer.

@@ -18,6 +18,7 @@
 "liveAgent.sender" = "Live Agent OCBC Nyala";
 "liveAgent.typing" = "客服正在输入...";
 "liveAgent.leaveQueue" = "取消此请求";
+"liveAgent.attachment" = "附加 PDF 或图片";
 "liveAgent.connecting.title" = "正在连接客服";
 "liveAgent.connecting.message" = "您目前正在排队。\n\n请稍候，Tanya OCBC NISP 客服将尽快为您服务。";
 "liveAgent.ended.title" = "客服对话已结束";
