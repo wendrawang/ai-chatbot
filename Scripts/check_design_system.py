@@ -22,7 +22,7 @@ METADATA = {
     'Features/Chat/Gateway/ChatWire.swift', 'Features/Chat/Session/ChatBackoff.swift',
     'Features/Chat/Gateway/Models/ConversationState.swift', 'Features/Chat/Gateway/Models/WireError.swift',
     'Features/Chat/Gateway/Models/WireCancel.swift', 'Features/Chat/Gateway/Models/WireLeaveAgent.swift',
-    'Features/Chat/Gateway/Models/WireStateChange.swift',
+    'Features/Chat/Gateway/Models/WireStateChange.swift', 'Features/Chat/Gateway/Models/WireTyping.swift',
     'Features/Chat/Intents/LiveAgent/Models/LiveAgentNoticeKind.swift',
     'Features/Chat/ConversationList/Formatting/ChatDateFormat.swift',
     'Features/Chat/ConversationList/Models/ChatDayIdentifier.swift',

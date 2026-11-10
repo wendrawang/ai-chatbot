@@ -7,7 +7,7 @@
 
 import Foundation
 
-/// Event SSE yang dipakai aplikasi. `typing` belum punya tampilan sehingga diabaikan.
+/// Event SSE yang dipakai aplikasi. `typing` dari nasabah sendiri (perangkat lain) diabaikan.
 enum ChatEvent: Equatable {
     /// Pesan lengkap (bukan delta), termasuk pesan nasabah sendiri dan tombstone `canceled`.
     case message(ChatMessage)
@@ -17,6 +17,8 @@ enum ChatEvent: Equatable {
     case state(ConversationState)
     /// Notifikasi live agent yang menjadi kartu status.
     case notice(LiveAgentNotice)
+    /// Agen sedang mengetik; indikator hilang sendiri setelah `lifetime` detik tanpa kabar baru.
+    case agentTyping(isTyping: Bool, lifetime: TimeInterval)
     case ignored
 
     /// Frame yang gagal di-decode diabaikan agar satu pesan rusak tidak memutus stream.
@@ -33,6 +35,8 @@ enum ChatEvent: Equatable {
             self = wire.map { .state($0.nextState) } ?? .ignored
         case ChatWire.Event.system:
             self = Self.notice(from: data, seq: event.id.flatMap(Int.init)) ?? .ignored
+        case ChatWire.Event.typing:
+            self = Self.agentTyping(from: data) ?? .ignored
         default:
             self = .ignored
         }
@@ -48,5 +52,12 @@ private extension ChatEvent {
             let kind = LiveAgentNoticeKind(rawValue: wire.type)
         else { return nil }
         return .notice(LiveAgentNotice(kind: kind, seq: seq))
+    }
+
+    static func agentTyping(from data: Data) -> ChatEvent? {
+        guard let wire = try? JSONDecoder.wire.decode(WireTyping.self, from: data), wire.direction == .agent else {
+            return nil
+        }
+        return .agentTyping(isTyping: wire.isTyping, lifetime: wire.lifetimeSeconds ?? ChatWire.typingLifetime)
     }
 }

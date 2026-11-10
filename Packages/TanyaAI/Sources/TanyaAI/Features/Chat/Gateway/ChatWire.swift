@@ -5,6 +5,8 @@
 //  Created by Wendra on 28/10/26.
 //
 
+import Foundation
+
 /// Metadata teknis contract chat-gateway 1.5.0: prefix baris SSE, nama event, dan batas paging.
 /// Bukan copy untuk pengguna.
 enum ChatWire {
@@ -17,6 +19,8 @@ enum ChatWire {
     static let fieldValueSpace = " "
     /// Jumlah pesan per halaman history (contract: 1...100).
     static let historyPageSize = 30
+    /// Batas tampil indikator mengetik bila `ttl_s` tidak ada (contoh contract: 10).
+    static let typingLifetime: TimeInterval = 10
 
     enum Event {
         /// Nama default event SSE bila baris `event:` tidak ada.

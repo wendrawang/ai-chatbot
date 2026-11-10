@@ -29,6 +29,11 @@ enum WireFixture {
         return Data(#"{"success":true,"data":{"messages":[\#(messages)],"next_before":\#(next)}}"#.utf8)
     }
 
+    /// Halaman history dari objek `Message` utuh (`message(seq:)`), terbaru dulu.
+    static func history(messages: [String]) -> Data {
+        Data(#"{"success":true,"data":{"messages":[\#(messages.joined(separator: ","))],"next_before":null}}"#.utf8)
+    }
+
     static func cancel(isCanceled: Bool) -> Data {
         Data(#"{"success":true,"data":{"canceled":\#(isCanceled)}}"#.utf8)
     }
@@ -93,7 +98,7 @@ enum WireFixture {
         ["id: \(seq)", "event: system", #"data: {"type":"\#(type)","data":null}"#, ""]
     }
 
-    static func typingFrame(seq: Int) -> [String] {
-        ["id: \(seq)", "event: typing", #"data: {"direction":"agent","typing":true,"ttl_s":10}"#, ""]
+    static func typingFrame(seq: Int, isTyping: Bool = true, lifetime: Int = 10) -> [String] {
+        ["id: \(seq)", "event: typing", #"data: {"direction":"agent","typing":\#(isTyping),"ttl_s":\#(lifetime)}"#, ""]
     }
 }

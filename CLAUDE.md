@@ -24,6 +24,9 @@ bridge host ke chat-gateway (init → history → SSE, retry, merge), dan daftar
   hint tanpa retry. Loading hanya saat history pertama; sambutan hanya bila history kosong. Chip tanggal
   (`TextChip`, `d MMM yyyy`, zona perangkat) di atas pertanyaan pertama tiap hari; bubble lokal memakai waktu kirim.
   Saran lanjutan = `SuggestionChip` di bawah jawaban terakhir, diketuk = terkirim seperti shortcut.
+  Live agent: kartu status (frame 62/64) dari event `system`, kartu antre + tombol batal hanya selama antre, pesan
+  agen dengan avatar dan label statis (frame 68), "Agen sedang mengetik..." miring. History tanpa event `system`:
+  kartu selesai diturunkan dari pesan agen; kartu batal/tidak tersedia hanya selama halaman terbuka.
   Jawaban bot = `MarkdownContent` (parser Apple: CommonMark + GFM, tanpa HTML; gambar lewat `RemoteImage`), link ke host lewat
   `makeView(onOpenLink:)`.
   `isAwaitingReply` sejak kirim sampai `turn_end` (kartu nonaktif). Tanpa titik bergerak: tombol langsung stop

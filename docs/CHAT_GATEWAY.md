@@ -61,12 +61,26 @@ dipangkas; kartu sebelum pesan terakhir tidak kembali. Pesan agen tetap ada di h
 "Batalkan proses ini" hanya selama `AGENT_QUEUED`: `left:true` langsung kembali ke bot, kartu batal datang dari
 stream. `left:false` atau 409 (agen sudah bergabung) menunggu event `state`.
 
+Tampilan: kartu status mengikuti Figma frame 62/64 (`NoticeCard` DesignKit: bayangan tanpa garis tepi, ikon headset), tombol batal
+`FilledLinkButton` tepat di bawah kartu antre, dan pesan agen mengikuti frame 68 (`SenderMessageCard`: kartu berbayangan, avatar
+dan label statis "Live Agent OCBC Nyala", teks polos). Kartu antre di posisi event-nya, atau di akhir daftar bila
+dibuka lagi saat masih antre tanpa event yang ikut replay. Kartu selesai dari history ditaruh setelah pesan agen
+terakhir sebuah sesi (sesi berakhir saat bot menjawab lagi, atau di akhir bila agen tidak sedang melayani), kecuali
+stream sudah memberi kartu penutup untuk sesi itu. Waktu antre habis dan agen tidak tersedia memakai kartu yang sama.
+
+Event `typing` dari agen menampilkan "Agen sedang mengetik..." miring di bawah pesan terakhir. Indikator hilang saat
+`typing:false`, pesan agen datang, state kembali ke bot, atau `ttl_s` habis tanpa kabar baru. Kartu baru dan
+indikator mengetik ikut menggeser daftar ke bawah bila pembaca sedang di ujung daftar, sama seperti pesan masuk.
+
+Sandbox `--live-agent`: pertanyaan pertama dijawab bot dengan serah terima ke agen, antre 3 detik, agen bergabung,
+mengetik lalu menyapa, menjawab pertanyaan berikutnya, lalu menutup percakapan.
+
 ## Selisih dengan contract 1.5.0 yang belum dikerjakan
 
 - Reconnect selalu lewat init, jadi percakapan yang ditutup admin atau perangkat lain terbuka lagi.
 - Pesan `agent` tampil sebagai bubble polos, bukan Markdown.
 - 401 langsung ke `onSessionExpired`, sedangkan contract menyarankan init ulang.
-- CTA `action` dan `success-id`, serta event `typing` belum tampil. Kartu live agent dan bubble agen menyusul.
+- CTA `action` dan `success-id` belum tampil. Copy kartu live agent selain kartu antre masih placeholder.
 
 ## Alur
 

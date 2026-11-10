@@ -763,4 +763,15 @@ kunci selama `AGENT_QUEUED`/`AGENT_ACTIVE`, kunci kembali setelah state kembali 
 ditutup `turn_end`, kartu `system` urut `seq` tanpa dobel saat replay, kartu dibuang saat percakapan berganti,
 dan `leave-agent` (`left:true`, `left:false`, 409, body rusak, 401, di luar antrean). Saat kunci selalu dipasang,
 `agentStatesFromInitDoNotLockSending` dan `stateEventsSwitchTheTurnLock` gagal; tanpa kembali ke bot setelah
-`left:true`, `leavingTheQueueReturnsToTheAssistant` gagal. Belum ada tampilan; sandbox menjawab `left:false`.
+`left:true`, `leavingTheQueueReturnsToTheAssistant` gagal.
+
+## Live agent: tampilan dan indikator mengetik — 10 November 2026
+
+`TanyaAIBridgeLiveAgentNoticeTests` memeriksa kartu antre hanya selama antre (juga di akhir daftar bila event-nya
+tidak ikut replay), kartu selesai dari history, tanpa kartu saat agen masih melayani, kartu dari stream
+menggantikan kartu dari history, serta indikator mengetik yang hilang oleh `typing:false`, pesan agen, atau
+`ttl_s`. `ArrayLiveAgentNoticeTests` memeriksa posisi kartu dan batas sesi agen. Mutasi yang gagal: kartu selesai
+saat agen masih melayani, tanpa filter kartu dari stream, indikator tanpa batas waktu, dan kartu selalu di awal
+daftar. `LiveAgentUITests` (`--live-agent`, iPhone 17 Pro iOS 26.5) menjalankan alur antre → agen mengetik →
+pesan agen → kirim tanpa stop → kartu selesai, dan batal antre → kartu batal tanpa agen. Kartu selesai sempat
+tertutup keyboard karena hanya pesan yang menggeser daftar; kini kartu dan indikator mengetik ikut memicunya.

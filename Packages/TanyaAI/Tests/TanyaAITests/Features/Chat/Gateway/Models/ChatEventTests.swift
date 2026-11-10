@@ -104,6 +104,15 @@ struct ChatEventTests {
         #expect(event == .notice(LiveAgentNotice(kind: kind, seq: 6)))
     }
 
+    /// `ttl_s` dibaca lewat decoder snake_case; tanpa `ttl_s` dipakai 10 detik seperti contoh contract.
+    @Test
+    func agentTypingKeepsItsLifetime() {
+        let typing = ServerSentEvent(id: "8", name: "typing", data: #"{"direction":"agent","typing":true,"ttl_s":4}"#)
+        #expect(ChatEvent(typing) == .agentTyping(isTyping: true, lifetime: 4))
+        let stopped = ServerSentEvent(id: "9", name: "typing", data: #"{"direction":"agent","typing":false}"#)
+        #expect(ChatEvent(stopped) == .agentTyping(isTyping: false, lifetime: ChatWire.typingLifetime))
+    }
+
     @Test
     func objectPayloadHasNoTextAndUnknownValuesDoNotFailTheFrame() {
         let data = #"{"message_id":"m-9","seq":"9","direction":"system","payload":{"k":1},"status":"new"}"#
@@ -115,7 +124,7 @@ struct ChatEventTests {
         ServerSentEvent(id: "4", name: "message", data: "{rusak"),
         ServerSentEvent(
             id: "4", name: "message", data: #"{"message_id":"m","seq":"x","direction":"assistant","status":"active"}"#),
-        ServerSentEvent(id: "5", name: "typing", data: #"{"direction":"agent","typing":true,"ttl_s":10}"#),
+        ServerSentEvent(id: "5", name: "typing", data: #"{"direction":"user","typing":true,"ttl_s":10}"#),
         ServerSentEvent(id: "6", name: "system", data: #"{"type":"agent_joined","data":{"agent":{"name":"A"}}}"#),
         ServerSentEvent(id: nil, name: "system", data: #"{"type":"queue_timeout","data":null}"#),
         ServerSentEvent(id: "7", name: "state", data: #"{"from":"ASSISTANT_ACTIVE"}"#)

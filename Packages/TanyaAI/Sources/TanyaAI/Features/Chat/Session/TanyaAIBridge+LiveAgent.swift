@@ -25,3 +25,47 @@ extension TanyaAIBridge {
         }
     }
 }
+
+// MARK: - Notices
+
+extension TanyaAIBridge {
+    /// Kartu yang tampil di daftar. Kartu antre hanya selama `AGENT_QUEUED`: yang terbaru dari stream, atau di akhir
+    /// daftar bila event-nya tidak ikut replay. Kartu selesai dari history ditambahkan untuk sesi agen yang tidak
+    /// punya kartu penutup dari stream.
+    var visibleLiveAgentNotices: [LiveAgentNotice] {
+        var notices = liveAgentNotices.filter { $0.kind != .connecting }
+        notices += messages.endedAgentSessions(isOngoing: conversationState == .agentActive, closedBy: notices)
+        if conversationState == .agentQueued {
+            let latest = liveAgentNotices.last { $0.kind == .connecting }
+            notices.append(latest ?? LiveAgentNotice(kind: .connecting, seq: .max))
+        }
+        return notices.sorted { $0.seq < $1.seq }
+    }
+
+    /// Pemicu ikut ke bawah bila pembaca di ujung daftar: pesan masuk terbaru, kartu live agent terbaru dari stream,
+    /// atau indikator mengetik. Hanya perubahannya yang dipakai, bukan isinya; nil selama belum ada apa pun.
+    var latestIncomingContentID: String? {
+        let typing = isAgentTyping ? isAgentTyping.description : nil
+        let parts = [latestIncomingMessageID, liveAgentNotices.last.map { String($0.seq) }, typing].compactMap { $0 }
+        return parts.isEmpty ? nil : parts.joined()
+    }
+}
+
+// MARK: - Typing
+
+extension TanyaAIBridge {
+    /// Event `typing` tidak tersimpan, jadi indikator dihapus sendiri setelah `lifetime` bila kabar berikutnya
+    /// (mis. `typing:false`) hilang. Event baru mengganti penghapus yang lama.
+    func showAgentTyping(_ isTyping: Bool, lifetime: TimeInterval = .zero) {
+        agentTypingExpiry?.cancel()
+        agentTypingExpiry = nil
+        if isAgentTyping != isTyping {
+            isAgentTyping = isTyping
+        }
+        guard isTyping else { return }
+        agentTypingExpiry = Task { [weak self, sleep] in
+            guard (try? await sleep(lifetime)) != nil, !Task.isCancelled else { return }
+            self?.isAgentTyping = false
+        }
+    }
+}
