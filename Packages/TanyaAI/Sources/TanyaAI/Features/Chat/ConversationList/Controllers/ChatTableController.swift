@@ -25,21 +25,22 @@ final class ChatTableController: UIViewController {
     var state = ChatTableState()
     /// Ruang kosong di bawah konten supaya pertanyaan bisa parkir walau jawabannya masih pendek.
     var trailingInset = CGFloat.zero
-    /// True sejak pertanyaan parkir: ruang kosong di bawah terus mengikuti tinggi jawaban.
-    var isParked = false
-    /// True sampai nasabah menggeser: posisi pertanyaan dijaga walau layout berubah.
-    var isHoldingParking = false
+    /// Siapa yang menentukan posisi: nasabah, pertanyaan yang parkir, atau animasi ke pesan terbaru.
+    var scrollMode = ChatScrollMode.free
+    /// True selama animasi scroll terprogram berjalan; posisi akhirnya belum ada, jadi belum boleh dikoreksi.
     var isScrollAnimating = false
-    /// True selama animasi menuju pesan terbaru belum sampai ke ujung yang sudah terukur.
-    var isFollowingLatest = false
+    /// True setelah history selesai dimuat dan table punya ukuran; sebelum itu tidak ada posisi yang diatur.
     var isOpened = false
+    /// True bila ujung konten tidak lebih dari 48 di bawah layar; pesan masuk hanya diikuti dari posisi ini.
     var isNearBottom = true
     /// Nilai `isNearBottom` yang terakhir dikirim ke halaman.
     var isNearBottomReported = true
-    var isVisibilityPending = false
+    /// Satu putaran saja: tinggi table berubah saat nasabah di ujung daftar, jadi ujungnya dikejar lagi.
     var isStickingToBottom = false
+    /// Tiga penanda di bawah mencegah kerja yang sama dijadwalkan dua kali ke putaran berikutnya.
     var isAdjustmentPending = false
     var isProgressPending = false
+    var isVisibilityPending = false
     var latestProgress = CGFloat.zero
     var trackedHeight = CGFloat.zero
     /// Tinggi terukur per baris. Tanpa ini table memperkirakan ulang baris di luar layar, sehingga posisi scroll

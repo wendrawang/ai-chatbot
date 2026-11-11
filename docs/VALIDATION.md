@@ -807,3 +807,11 @@ naik lagi, dan tombol ke pesan terbaru sempat muncul. Kini posisi yang dipulihka
 langsung di posisi akhirnya. `ChatTableShrinkTests`: baris terakhir hilang tidak menyisakan ruang kosong, ikut ke bawah
 di update yang sama tidak melaporkan ujung daftar tersembunyi (keduanya gagal sebelum perbaikan), dan pembaca yang
 sedang di atas tetap di barisnya.
+
+## Mode posisi daftar jadi satu enum — 11 November 2026
+
+`isParked`, `isHoldingParking`, dan `isFollowingLatest` di `ChatTableController` diganti `scrollMode`
+(`ChatScrollMode`: `free`, `holdingQuestion`, `releasedQuestion`, `followingLatest`). Tiga Bool itu punya 8 kombinasi
+padahal hanya 4 yang sah; kini kombinasi lain tidak bisa ditulis. Perilaku tidak berubah: test `ChatTable*` dan UI
+test scroll/live agent lulus; hanya dua pemeriksaan yang dulu membaca flag lama yang disesuaikan.
+`ChatScrollModeTests` memeriksa transisi saat nasabah menggeser dan kapan ruang kosong parkir masih disediakan.

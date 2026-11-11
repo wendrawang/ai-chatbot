@@ -39,14 +39,13 @@ extension ChatTableController: UITableViewDelegate {
 
     /// Menggeser membatalkan parkir: posisi kini milik nasabah.
     func scrollViewWillBeginDragging(_ scrollView: UIScrollView) {
-        isHoldingParking = false
+        scrollMode = scrollMode.afterDrag
         isScrollAnimating = false
-        isFollowingLatest = false
     }
 
     func scrollViewDidEndScrollingAnimation(_ scrollView: UIScrollView) {
         isScrollAnimating = false
-        guard isFollowingLatest else {
+        guard scrollMode == .followingLatest else {
             maintainParking()
             recordSettledPosition()
             return
@@ -76,7 +75,7 @@ extension ChatTableController: UITableViewDelegate {
     /// Konten juga bisa memendek dari bawah, mis. kartu antre hilang saat agen bergabung: posisi lama dibatasi di
     /// ujung konten. Animasi yang mulai dari luar konten melewati targetnya, jadi daftar turun dulu lalu naik lagi.
     func restoreReadingPosition() {
-        guard !isUserScrolling, !isScrollAnimating, !isHoldingParking, let anchorItemID,
+        guard !isUserScrolling, !isScrollAnimating, scrollMode != .holdingQuestion, let anchorItemID,
             let row = state.items.firstIndex(where: { $0.id == anchorItemID })
         else { return }
         let rowTop = tableView.rectForRow(at: IndexPath(row: row, section: .zero)).minY
