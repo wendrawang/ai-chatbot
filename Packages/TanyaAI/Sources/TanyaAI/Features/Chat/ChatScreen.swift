@@ -111,7 +111,6 @@ public struct ChatScreen<Content: View>: View {
             phase: bridge.turnPhase,
             onSend: send,
             onStop: stop,
-            onAttach: attachAction,
             onTyping: typingChanged
         )
     }
@@ -208,13 +207,6 @@ private extension ChatScreen {
     /// "Batalkan proses ini" di bawah kartu antre.
     func leaveAgentQueue() {
         Task { [bridge] in await bridge.leaveAgentQueue() }
-    }
-
-    /// Lampiran (PDF/gambar) hanya saat dilayani agen; nil = tombol tidak tampil.
-    /// TODO: Picker dan upload lewat transport setelah endpoint upload ada di contract gateway.
-    var attachAction: (() -> Void)? {
-        guard bridge.conversationState == .agentActive else { return nil }
-        return {}
     }
 
     /// Shortcut dikirim sebagai chat; bubble pertanyaan langsung tampil.

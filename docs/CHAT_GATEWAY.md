@@ -93,9 +93,11 @@ maupun stream), percakapan berganti, atau sesi berakhir, status dilupakan tanpa 
 mengetik ikut dihapus. Gagal diabaikan kecuali 401 yang mengakhiri sesi. Balasan ke agen memakai `sendMessage`
 yang sama dengan bot; bedanya tidak ada turn lock dan `turn_end`.
 
-Selama `AGENT_ACTIVE` composer menampilkan tombol lampiran (PDF/gambar) di luar kartu sebelah kiri, sejajar
-dengan tombol kirim. Contract v1.5.0 belum punya endpoint upload, jadi ketukannya belum melakukan apa pun. Bila
-endpoint sudah ada: picker di paket, upload lewat method baru `TanyaAIChatTransport` seperti `leaveAgent`.
+Desain `AGENT_ACTIVE` punya tombol lampiran (PDF/gambar) di luar kartu composer sebelah kiri, sejajar dengan
+tombol kirim. Contract v1.5.0 belum punya endpoint upload, jadi tombolnya belum ditampilkan: `ChatScreen` tidak
+mengisi `onAttach` milik `ComposerSection`. Komponennya sudah siap (`MessageComposer(attachment:)`). Bila endpoint
+sudah ada: picker di paket, upload lewat method baru `TanyaAIChatTransport` seperti `leaveAgent`, lalu `ChatScreen`
+mengisi `onAttach` hanya selama `AGENT_ACTIVE`.
 
 Event `typing` dari agen menampilkan "Agen sedang mengetik..." miring di bawah pesan terakhir. Indikator hilang saat
 `typing:false`, pesan agen datang, state kembali ke bot, atau `ttl_s` habis tanpa kabar baru. Kartu baru dan
