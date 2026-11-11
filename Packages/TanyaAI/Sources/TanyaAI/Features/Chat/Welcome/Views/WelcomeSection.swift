@@ -14,17 +14,17 @@ import SwiftUI
 /// TODO: Cocokkan jarak dan role tipografi dengan Figma; sementara estimasi dari screenshot.
 @MainActor
 struct WelcomeSection: View {
-    @Environment(\.locale)
-    private var locale
-    @Environment(\.designColors)
-    private var colors
+    @Environment(\.locale) private var locale
+    @Environment(\.designColors) private var colors
     private let content: WelcomeContent
     private let isEnabled: Bool
     private let onSelect: (WelcomeShortcut) -> Void
     private let onOpenLink: (String) -> Void
 
     init(
-        content: WelcomeContent, isEnabled: Bool, onSelect: @escaping (WelcomeShortcut) -> Void,
+        content: WelcomeContent,
+        isEnabled: Bool,
+        onSelect: @escaping (WelcomeShortcut) -> Void,
         onOpenLink: @escaping (String) -> Void
     ) {
         self.content = content
@@ -68,11 +68,15 @@ struct WelcomeSection: View {
             shortcutsTitle
             ForEach(Array(content.shortcuts.enumerated()), id: \.offset) { index, shortcut in
                 ActionCard(
-                    title: shortcut.title, description: shortcut.description, isEnabled: isEnabled,
+                    title: shortcut.title,
+                    description: shortcut.description,
+                    isEnabled: isEnabled,
                     onTap: { onSelect(shortcut) },
                     icon: {
                         RemoteImage(
-                            url: shortcut.iconURL, pointSize: iconSize, placeholder: { loadingIcon },
+                            url: shortcut.iconURL,
+                            pointSize: iconSize,
+                            placeholder: { loadingIcon },
                             fallback: { fallbackIcon }
                         )
                     }
@@ -87,7 +91,8 @@ struct WelcomeSection: View {
     private var terms: some View {
         if content.isTermsVisible {
             MarkdownContent(
-                document: MarkdownDocument(String(ChatCopy.welcomeTerms, locale: locale)), role: .caption,
+                document: MarkdownDocument(String(ChatCopy.welcomeTerms, locale: locale)),
+                role: .caption,
                 onOpenLink: onOpenLink
             )
         }

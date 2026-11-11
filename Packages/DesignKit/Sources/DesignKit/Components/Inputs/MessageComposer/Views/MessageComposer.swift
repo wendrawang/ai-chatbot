@@ -7,14 +7,12 @@
 
 import SwiftUI
 
-/// Inner spacing and appearance belong here; the screen owns outer margins.
+/// Jarak dalam dan tampilan milik komponen ini; margin luar milik screen.
 @MainActor
 public struct MessageComposer: View {
-    @Environment(\.designColors)
-    private var colors
-    @Binding
-    private var text: String
-    // Figma typography follows artwork scaling only, independent of the user's text size setting.
+    @Environment(\.designColors) private var colors
+    @Binding private var text: String
+    // Tipografi Figma hanya mengikuti skala artwork, tidak mengikuti pengaturan ukuran teks pengguna.
     private let fontSize = FigmaSize.typographySizeDisplaySmall14.scaledToArtwork
     private let placeholder: String
     private let actionLabel: String
@@ -28,9 +26,15 @@ public struct MessageComposer: View {
     /// `actionLabel` = label aksesibilitas tombol sesuai `action`. `isEnabled` false hanya mengunci tombol;
     /// draft selalu bisa diketik. `attachment` nil = tanpa tombol lampiran.
     public init(
-        text: Binding<String>, placeholder: String, actionLabel: String,
-        isEnabled: Bool = true, action: MessageComposerAction = .send, fontFace: FontFace = .firaSansRegular,
-        attachment: MessageComposerAttachment? = nil, onSend: @escaping () -> Void, onStop: @escaping () -> Void = {}
+        text: Binding<String>,
+        placeholder: String,
+        actionLabel: String,
+        isEnabled: Bool = true,
+        action: MessageComposerAction = .send,
+        fontFace: FontFace = .firaSansRegular,
+        attachment: MessageComposerAttachment? = nil,
+        onSend: @escaping () -> Void,
+        onStop: @escaping () -> Void = {}
     ) {
         self._text = text
         self.placeholder = placeholder
@@ -72,8 +76,11 @@ public struct MessageComposer: View {
     private var field: some View {
         ZStack(alignment: .leading) {
             GrowingTextInput(
-                text: $text, font: inputFont, textColor: UIColor(colors.colorsTextPrimaryDark),
-                lineSpacing: lineSpacing, accessibilityLabel: placeholder
+                text: $text,
+                font: inputFont,
+                textColor: UIColor(colors.colorsTextPrimaryDark),
+                lineSpacing: lineSpacing,
+                accessibilityLabel: placeholder
             )
             .fixedSize(horizontal: false, vertical: true)
             .frame(maxWidth: .infinity)
@@ -134,7 +141,7 @@ public struct MessageComposer: View {
 private extension MessageComposer {
     var inputFont: UIFont { fontFace.font(size: fontSize) }
 
-    /// Equal single-line rows center the field/button; a taller field keeps the button at its bottom.
+    /// Tinggi baris yang sama membuat field dan tombol sejajar tengah; field yang lebih tinggi menahan tombol di bawah.
     var singleLineRowHeight: CGFloat {
         max(CustomSizes.Composer.sendButton.scaledToArtwork, ceil(inputFont.lineHeight + lineSpacing))
     }
@@ -157,9 +164,8 @@ private extension MessageComposer {
 
     func tapAction() {
         if action == .stop {
-            onStop()
-        } else {
-            onSend()
+            return onStop()
         }
+        onSend()
     }
 }

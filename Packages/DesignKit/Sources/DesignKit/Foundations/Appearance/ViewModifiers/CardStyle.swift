@@ -11,8 +11,7 @@ import SwiftUI
 /// Bayangan bila `isElevated`; tanpa garis tepi, kartu hanya terangkat oleh bayangan (seperti CardView Android).
 /// Hanya latar; padding isi tetap milik komponen pemakai.
 struct CardStyle: ViewModifier {
-    @Environment(\.designColors)
-    private var colors
+    @Environment(\.designColors) private var colors
     let isOutlined: Bool
     let isElevated: Bool
     let cornerRadius: CGFloat

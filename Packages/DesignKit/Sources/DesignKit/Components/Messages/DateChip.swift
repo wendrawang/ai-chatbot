@@ -11,8 +11,7 @@ import SwiftUI
 /// Permukaan kartu tanpa bayangan. TODO: Konfirmasi warna teks dengan Figma; sementara dari screenshot.
 @MainActor
 public struct DateChip: View {
-    @Environment(\.designColors)
-    private var colors
+    @Environment(\.designColors) private var colors
     private let text: String
     private let fontFace: FontFace
 

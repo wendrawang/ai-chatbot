@@ -7,7 +7,7 @@
 
 import UIKit
 
-/// Resource filenames and PostScript names are separate font metadata.
+/// Nama file resource dan nama PostScript adalah metadata font yang terpisah.
 public enum FontFace: String, CaseIterable {
     case firaSansRegular = "FiraSans-Regular.ttf"
     case firaSansMedium = "FiraSans-Medium.ttf"
@@ -39,10 +39,12 @@ public enum FontFace: String, CaseIterable {
         UIFont(name: postScriptName, size: size) ?? UIFont.systemFont(ofSize: size)
     }
 
-    /// Call during bootstrap before presenting components; registration is process-scoped and idempotent.
+    /// Panggil saat bootstrap sebelum komponen tampil; berlaku untuk seluruh proses dan aman dipanggil berulang.
     public static func registerFonts() throws {
         _ = try FontLoader.register(
-            fileNames: allCases.map(\.rawValue), bundle: .module, subdirectory: directoryName
+            fileNames: allCases.map(\.rawValue),
+            bundle: .module,
+            subdirectory: directoryName
         )
     }
 }

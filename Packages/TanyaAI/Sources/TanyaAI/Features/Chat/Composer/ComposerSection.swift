@@ -11,12 +11,9 @@ import SwiftUI
 /// Draft hidup di sini agar setiap ketikan hanya me-render composer, bukan seluruh screen/daftar pesan.
 @MainActor
 struct ComposerSection: View {
-    @Environment(\.locale)
-    private var locale
-    @Environment(\.designColors)
-    private var colors
-    @State
-    private var draft = String()
+    @Environment(\.locale) private var locale
+    @Environment(\.designColors) private var colors
+    @State private var draft = String()
     private let isEnabled: Bool
     private let phase: ChatTurnPhase
     private let onSend: (String) -> Bool
@@ -29,8 +26,12 @@ struct ComposerSection: View {
     /// `onAttach` nil = tombol lampiran tidak tampil. `onTyping` dipanggil setiap draft berubah: true = draft berisi,
     /// false = kosong atau composer hilang; draft sendiri tetap lokal.
     init(
-        isEnabled: Bool, phase: ChatTurnPhase, onSend: @escaping (String) -> Bool,
-        onStop: @escaping () -> Void, onAttach: (() -> Void)? = nil, onTyping: ((Bool) -> Void)? = nil
+        isEnabled: Bool,
+        phase: ChatTurnPhase,
+        onSend: @escaping (String) -> Bool,
+        onStop: @escaping () -> Void,
+        onAttach: (() -> Void)? = nil,
+        onTyping: ((Bool) -> Void)? = nil
     ) {
         self.isEnabled = isEnabled
         self.phase = phase
@@ -44,9 +45,14 @@ struct ComposerSection: View {
         VStack(spacing: .zero) {
             divider
             MessageComposer(
-                text: $draft, placeholder: String(ChatCopy.placeholder, locale: locale),
+                text: $draft,
+                placeholder: String(ChatCopy.placeholder, locale: locale),
                 actionLabel: String(actionCopy, locale: locale),
-                isEnabled: isEnabled, action: action, attachment: attachment, onSend: submit, onStop: onStop
+                isEnabled: isEnabled,
+                action: action,
+                attachment: attachment,
+                onSend: submit,
+                onStop: onStop
             )
             .padding(FigmaSize.spacingLarge.scaledToArtwork)
         }

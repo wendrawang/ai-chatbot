@@ -39,11 +39,14 @@ struct TanyaAIHostTests {
     @Test
     func localeAndPaletteApplyWhenPageIsCreatedAndChangesWaitForNextPage() {
         var host = TanyaAIHost(
-            locale: Locale(identifier: "id"), colors: PremierColorConstants(),
-            bridge: TanyaAIBridge(transport: FakeChatTransport()))
+            locale: Locale(identifier: "id"),
+            colors: PremierColorConstants(),
+            bridge: TanyaAIBridge(transport: FakeChatTransport())
+        )
         let openedProbe = EnvironmentProbe()
         let openedWindow = makeWindow(
-            root: UIHostingController(rootView: host.makeView { EnvironmentReader(probe: openedProbe) }))
+            root: UIHostingController(rootView: host.makeView { EnvironmentReader(probe: openedProbe) })
+        )
         defer { openedWindow.isHidden = true }
         #expect(openedProbe.colors is PremierColorConstants)
         #expect(openedProbe.locale?.identifier == "id")
@@ -51,7 +54,8 @@ struct TanyaAIHostTests {
         host.colors = PrivateColorConstants()
         let nextProbe = EnvironmentProbe()
         let nextWindow = makeWindow(
-            root: UIHostingController(rootView: host.makeView { EnvironmentReader(probe: nextProbe) }))
+            root: UIHostingController(rootView: host.makeView { EnvironmentReader(probe: nextProbe) })
+        )
         defer { nextWindow.isHidden = true }
         #expect(nextProbe.colors is PrivateColorConstants)
         #expect(nextProbe.locale?.identifier == "zh-Hans")
@@ -75,10 +79,8 @@ private final class EnvironmentProbe {
 }
 
 private struct EnvironmentReader: View {
-    @Environment(\.designColors)
-    private var colors
-    @Environment(\.locale)
-    private var locale
+    @Environment(\.designColors) private var colors
+    @Environment(\.locale) private var locale
     let probe: EnvironmentProbe
 
     var body: some View {

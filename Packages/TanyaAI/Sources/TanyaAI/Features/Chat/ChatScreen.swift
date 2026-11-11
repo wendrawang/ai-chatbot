@@ -8,21 +8,17 @@
 import DesignKit
 import SwiftUI
 
-/// The feature owns its header; the draft lives in ComposerSection. Content is injected.
+/// Fitur memiliki header-nya sendiri; draft hidup di `ComposerSection`; konten tambahan disisipkan pemakai.
 /// `welcome` (dari BE) hanya tampil bila history kosong; sebelum history pertama selesai, loading di tengah.
 /// Shortcut yang diketuk dikirim lewat `bridge` seperti chat.
 /// Selama halaman tampil, `bridge` tersambung ke gateway. Setelah kirim, bubble pertanyaan langsung tampil dan
 /// tombol menjadi stop sampai jawaban selesai; shortcut nonaktif selama menunggu.
 @MainActor
 public struct ChatScreen<Content: View>: View {
-    @Environment(\.locale)
-    private var locale
-    @Environment(\.dismiss)
-    private var dismiss
-    @Environment(\.designColors)
-    private var colors
-    @ObservedObject
-    private var bridge: TanyaAIBridge
+    @Environment(\.locale) private var locale
+    @Environment(\.dismiss) private var dismiss
+    @Environment(\.designColors) private var colors
+    @ObservedObject private var bridge: TanyaAIBridge
     @State private var scrollProgress = CGFloat.zero
     @State private var isLatestVisible = true
     @State private var latestJumpID: UUID?
@@ -33,8 +29,11 @@ public struct ChatScreen<Content: View>: View {
     private let content: Content
 
     public init(
-        isEnabled: Bool = true, welcome: WelcomeContent? = nil, bridge: TanyaAIBridge,
-        onBack: (() -> Void)? = nil, onOpenLink: @escaping (String) -> Void = { _ in },
+        isEnabled: Bool = true,
+        welcome: WelcomeContent? = nil,
+        bridge: TanyaAIBridge,
+        onBack: (() -> Void)? = nil,
+        onOpenLink: @escaping (String) -> Void = { _ in },
         @ViewBuilder content: () -> Content
     ) {
         _bridge = ObservedObject(wrappedValue: bridge)
@@ -49,8 +48,10 @@ public struct ChatScreen<Content: View>: View {
         ScreenScaffold(
             title: String(ChatCopy.title, locale: locale),
             backLabel: String(ChatCopy.back, locale: locale),
-            scrollProgress: scrollProgress, onBack: close,
-            content: { conversation(headerHeight: $0) }, trailing: { EmptyView() },
+            scrollProgress: scrollProgress,
+            onBack: close,
+            content: { conversation(headerHeight: $0) },
+            trailing: { EmptyView() },
             footer: { composer },
             background: { backgroundImage }
         )
@@ -61,8 +62,11 @@ public struct ChatScreen<Content: View>: View {
 
     private func conversation(headerHeight: CGFloat) -> some View {
         ChatTable(
-            state: tableState, headerHeight: headerHeight, actions: rowActions,
-            onScrollProgress: { scrollProgress = $0 }, onLatestVisibilityChange: { isLatestVisible = $0 },
+            state: tableState,
+            headerHeight: headerHeight,
+            actions: rowActions,
+            onScrollProgress: { scrollProgress = $0 },
+            onLatestVisibilityChange: { isLatestVisible = $0 },
             row: listRow
         )
         .overlay(alignment: .bottom) { latestButton }
@@ -103,8 +107,12 @@ public struct ChatScreen<Content: View>: View {
 
     private var composer: some View {
         ComposerSection(
-            isEnabled: isEnabled && bridge.isReady, phase: bridge.turnPhase, onSend: send, onStop: stop,
-            onAttach: attachAction, onTyping: typingChanged
+            isEnabled: isEnabled && bridge.isReady,
+            phase: bridge.turnPhase,
+            onSend: send,
+            onStop: stop,
+            onAttach: attachAction,
+            onTyping: typingChanged
         )
     }
 
@@ -125,15 +133,19 @@ private extension ChatScreen {
 
     var rowActions: ChatRowActions {
         ChatRowActions(
-            onOpenLink: onOpenLink, onSelectShortcut: select, onSelectFollowUp: selectFollowUp,
+            onOpenLink: onOpenLink,
+            onSelectShortcut: select,
+            onSelectFollowUp: selectFollowUp,
             onLeaveAgentQueue: leaveAgentQueue
         )
     }
 
     var tableState: ChatTableState {
         ChatTableState(
-            items: listItems, sentQuestionID: bridge.latestSentQuestionID,
-            incomingMessageID: bridge.latestIncomingContentID, latestJumpID: latestJumpID,
+            items: listItems,
+            sentQuestionID: bridge.latestSentQuestionID,
+            incomingMessageID: bridge.latestIncomingContentID,
+            latestJumpID: latestJumpID,
             historyPhase: bridge.historyPhase,
             rowInputs: ChatRowInputs(welcome: welcome, locale: locale, colors: colors)
         )
@@ -162,7 +174,10 @@ private extension ChatScreen {
 
 private extension ChatScreen {
     func close() {
-        if let onBack { onBack() } else { dismiss() }
+        if let onBack {
+            return onBack()
+        }
+        dismiss()
     }
 
     /// True bila bubble pertanyaan tampil; false = ditolak dan draft tetap.

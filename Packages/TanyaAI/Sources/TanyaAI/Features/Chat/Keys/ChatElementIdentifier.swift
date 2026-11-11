@@ -5,7 +5,7 @@
 //  Created by Wendra on 17/10/26.
 //
 
-/// Technical identifiers are separate from localized user-facing strings.
+/// Identifier teknis untuk UI test, terpisah dari copy yang dilokalkan.
 enum ChatElementIdentifier {
     static let welcome = "chat.welcome"
     static let loading = "chat.loading"

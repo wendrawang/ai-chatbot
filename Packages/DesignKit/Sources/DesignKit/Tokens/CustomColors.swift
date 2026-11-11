@@ -7,7 +7,7 @@
 
 import SwiftUI
 
-/// Semantic uses of additional colors. Generated colors remain the source for existing roles.
+/// Pemakaian semantik warna tambahan. Peran yang sudah punya warna hasil generate tetap memakai warna itu.
 public enum CustomColors {
     public enum Stroke {
         public static let color = CustomBasePaletteColor.royalPastelBlue

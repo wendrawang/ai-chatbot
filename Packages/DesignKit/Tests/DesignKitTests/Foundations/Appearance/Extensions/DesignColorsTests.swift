@@ -55,8 +55,7 @@ private final class PaletteProbe {
 }
 
 private struct PaletteReader: View {
-    @Environment(\.designColors)
-    private var colors
+    @Environment(\.designColors) private var colors
     let probe: PaletteProbe
 
     var body: some View {

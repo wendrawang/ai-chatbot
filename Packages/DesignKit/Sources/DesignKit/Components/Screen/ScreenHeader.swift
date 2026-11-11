@@ -7,7 +7,7 @@
 
 import SwiftUI
 
-/// A centered title with equal action slots. The caller owns scroll state and navigation.
+/// Judul di tengah dengan slot aksi kiri dan kanan yang sama lebar. State scroll dan navigasi milik pemakai.
 /// Ukuran mengikuti navigation bar host: header mulai dari tepi atas layar (caller menaruhnya tanpa
 /// safe area atas), padding atas `CustomScreenInsets` tanpa scale, ikon 24, judul Fira Sans Bold 16.
 /// Saat diam transparan, sehingga latar screen tembus sampai status bar. Selama konten digulir, latar putih,
@@ -15,8 +15,7 @@ import SwiftUI
 /// sehingga header terangkat seperti kartu tanpa berganti mendadak.
 @MainActor
 public struct ScreenHeader<Trailing: View>: View {
-    @Environment(\.designColors)
-    private var colors
+    @Environment(\.designColors) private var colors
     private let title: String
     private let backLabel: String
     private let scrollProgress: CGFloat
@@ -28,8 +27,12 @@ public struct ScreenHeader<Trailing: View>: View {
     /// `scrollProgress` 0 (transparan, di posisi teratas) sampai 1 (solid penuh). `isNotched` dari
     /// `ScreenHeader.isNotched(safeAreaTop:)`; menentukan padding atas dari tepi layar.
     public init(
-        title: String, backLabel: String, scrollProgress: CGFloat, isNotched: Bool,
-        fontFace: FontFace = .firaSansBold, onBack: @escaping () -> Void,
+        title: String,
+        backLabel: String,
+        scrollProgress: CGFloat,
+        isNotched: Bool,
+        fontFace: FontFace = .firaSansBold,
+        onBack: @escaping () -> Void,
         @ViewBuilder trailing: () -> Trailing
     ) {
         self.title = title
@@ -100,7 +103,8 @@ public struct ScreenHeader<Trailing: View>: View {
         if isScrolled {
             LinearGradient(
                 colors: [colors.colorsSurfacePrimary, colors.colorsSurfacePrimary.opacity(.zero)],
-                startPoint: .top, endPoint: .bottom
+                startPoint: .top,
+                endPoint: .bottom
             )
             .frame(height: FigmaSize.spacingLarge.scaledToArtwork)
             .offset(y: FigmaSize.spacingLarge.scaledToArtwork)
@@ -122,12 +126,21 @@ private extension ScreenHeader {
 
 extension ScreenHeader where Trailing == EmptyView {
     public init(
-        title: String, backLabel: String, scrollProgress: CGFloat, isNotched: Bool,
-        fontFace: FontFace = .firaSansBold, onBack: @escaping () -> Void
+        title: String,
+        backLabel: String,
+        scrollProgress: CGFloat,
+        isNotched: Bool,
+        fontFace: FontFace = .firaSansBold,
+        onBack: @escaping () -> Void
     ) {
         self.init(
-            title: title, backLabel: backLabel, scrollProgress: scrollProgress, isNotched: isNotched,
-            fontFace: fontFace, onBack: onBack, trailing: { EmptyView() }
+            title: title,
+            backLabel: backLabel,
+            scrollProgress: scrollProgress,
+            isNotched: isNotched,
+            fontFace: fontFace,
+            onBack: onBack,
+            trailing: { EmptyView() }
         )
     }
 

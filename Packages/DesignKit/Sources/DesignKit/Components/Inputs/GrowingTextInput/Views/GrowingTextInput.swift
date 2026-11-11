@@ -8,19 +8,21 @@
 import SwiftUI
 import UIKit
 
-/// The UIKit bridge owns measurement and selection; the caller owns the draft and font.
+/// Jembatan UIKit mengurus pengukuran dan seleksi; draft dan font milik pemakai.
 @MainActor
 public struct GrowingTextInput: UIViewRepresentable {
-    @Binding
-    private var text: String
+    @Binding private var text: String
     private let font: UIFont
     private let textColor: UIColor
     private let lineSpacing: CGFloat
     private let accessibilityLabel: String
 
     public init(
-        text: Binding<String>, font: UIFont, textColor: UIColor,
-        lineSpacing: CGFloat = .zero, accessibilityLabel: String
+        text: Binding<String>,
+        font: UIFont,
+        textColor: UIColor,
+        lineSpacing: CGFloat = .zero,
+        accessibilityLabel: String
     ) {
         self._text = text
         self.font = font
@@ -89,7 +91,8 @@ private extension GrowingTextInput {
         editor.typingAttributes = attributes
         let selection = editor.selectedRange
         editor.textStorage.addAttributes(
-            attributes, range: NSRange(location: .zero, length: editor.textStorage.length)
+            attributes,
+            range: NSRange(location: .zero, length: editor.textStorage.length)
         )
         editor.selectedRange = selection
     }

@@ -11,8 +11,7 @@ import SwiftUI
 /// rata dengan teks item, bukan penanda.
 @MainActor
 struct MarkdownListView: View {
-    @Environment(\.designColors)
-    private var colors
+    @Environment(\.designColors) private var colors
     let list: MarkdownList
     let style: MarkdownTextStyle
 

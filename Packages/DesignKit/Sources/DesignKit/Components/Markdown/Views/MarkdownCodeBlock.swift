@@ -10,8 +10,7 @@ import SwiftUI
 /// Code block monospace berlatar; baris panjang di-scroll horizontal, tidak dipatahkan.
 @MainActor
 struct MarkdownCodeBlock: View {
-    @Environment(\.designColors)
-    private var colors
+    @Environment(\.designColors) private var colors
     let code: String
     let style: MarkdownTextStyle
 

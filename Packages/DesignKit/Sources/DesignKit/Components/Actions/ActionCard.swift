@@ -11,8 +11,7 @@ import SwiftUI
 /// Ikon disuplai caller (gambar lokal atau `RemoteImage`); copy juga dari caller.
 @MainActor
 public struct ActionCard<Icon: View>: View {
-    @Environment(\.designColors)
-    private var colors
+    @Environment(\.designColors) private var colors
     private let title: String
     private let description: String
     private let isEnabled: Bool
@@ -20,7 +19,10 @@ public struct ActionCard<Icon: View>: View {
     private let icon: Icon
 
     public init(
-        title: String, description: String, isEnabled: Bool = true, onTap: @escaping () -> Void,
+        title: String,
+        description: String,
+        isEnabled: Bool = true,
+        onTap: @escaping () -> Void,
         @ViewBuilder icon: () -> Icon
     ) {
         self.title = title

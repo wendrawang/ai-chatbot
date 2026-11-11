@@ -14,15 +14,16 @@ import SwiftUI
 /// `pointSize` adalah sisi terpanjang ukuran tampil; gambar di-downsample ke ukuran itu × skala layar.
 @MainActor
 public struct RemoteImage<Placeholder: View, Fallback: View>: View {
-    @Environment(\.displayScale)
-    private var displayScale
+    @Environment(\.displayScale) private var displayScale
     private let url: URL?
     private let pointSize: CGFloat
     private let placeholder: Placeholder
     private let fallback: Fallback
 
     public init(
-        url: URL?, pointSize: CGFloat, @ViewBuilder placeholder: () -> Placeholder,
+        url: URL?,
+        pointSize: CGFloat,
+        @ViewBuilder placeholder: () -> Placeholder,
         @ViewBuilder fallback: () -> Fallback
     ) {
         self.url = url

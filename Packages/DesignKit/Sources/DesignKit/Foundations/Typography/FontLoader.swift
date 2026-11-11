@@ -8,7 +8,7 @@
 import CoreText
 import Foundation
 
-/// Registers process-scoped fonts once. Call during app setup, before creating themes.
+/// Mendaftarkan font sekali untuk seluruh proses. Panggil saat aplikasi disiapkan, sebelum komponen tampil.
 public enum FontLoader {
     private static let lock = NSLock()
     private static var registered: [URL: [String]] = [:]
@@ -19,7 +19,7 @@ public enum FontLoader {
         case registration(URL)
     }
 
-    /// Returns the actual PostScript names, which may differ from the file name.
+    /// Mengembalikan nama PostScript yang sebenarnya; bisa berbeda dari nama file.
     public static func register(url: URL) throws -> [String] {
         lock.lock()
         defer { lock.unlock() }
@@ -57,7 +57,9 @@ public enum FontLoader {
         try fileNames.flatMap { fileName in
             guard
                 let resource = bundle.url(
-                    forResource: fileName, withExtension: nil, subdirectory: subdirectory
+                    forResource: fileName,
+                    withExtension: nil,
+                    subdirectory: subdirectory
                 )
             else {
                 throw Failure.missingResource(fileName)

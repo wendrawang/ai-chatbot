@@ -12,8 +12,7 @@ import SwiftUI
 /// `failureNote` (hanya pesan keluar): bubble abu-abu dengan catatan merah miring di bawahnya.
 @MainActor
 public struct MessageBubble: View {
-    @Environment(\.designColors)
-    private var colors
+    @Environment(\.designColors) private var colors
     private let text: String
     private let isOutgoing: Bool
     private let failureNote: String?

@@ -59,7 +59,8 @@ private extension TanyaAIBridge {
         let session = try JSONDecoder.wire.decode(WireEnvelope<WireInit>.self, from: await transport.initialize()).data
         let isSameConversation = conversationID == nil || conversationID == session.conversationId
         let history = try await catchUpHistory(
-            conversationID: session.conversationId, latestSeq: isSameConversation ? messages.latestSeq : nil
+            conversationID: session.conversationId,
+            latestSeq: isSameConversation ? messages.latestSeq : nil
         )
         replaceOrMerge(history, conversationID: session.conversationId)
         conversationState = session.state
@@ -96,7 +97,9 @@ private extension TanyaAIBridge {
         var before: String?
         repeat {
             let data = try await transport.history(
-                conversationID: conversationID, before: before, limit: ChatWire.historyPageSize
+                conversationID: conversationID,
+                before: before,
+                limit: ChatWire.historyPageSize
             )
             let page = try await ChatHistoryPage.decoded(from: data)
             collected += page.messages
@@ -113,13 +116,16 @@ private extension TanyaAIBridge {
         }
         let failure = try? JSONDecoder.wire.decode(WireError.self, from: body)
         guard failure?.isRetryable ?? ChatBackoff.isServerError(statusCode: statusCode) else {
-            if ChatBackoff.isUnauthorized(statusCode: statusCode) {
-                expireSession()
-            } else {
-                failConnection(error)
-            }
+            stopConnecting(after: error, statusCode: statusCode)
             return nil
         }
         return backoff.nextDelay(retryAfterMilliseconds: failure?.data?.retryAfterMs)
+    }
+
+    func stopConnecting(after error: Error, statusCode: Int) {
+        if ChatBackoff.isUnauthorized(statusCode: statusCode) {
+            return expireSession()
+        }
+        failConnection(error)
     }
 }
