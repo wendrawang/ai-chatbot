@@ -6,7 +6,7 @@
   },
   "maximumBlankLines": 1,
   "respectsExistingLineBreaks": true,
-  "lineBreakBeforeEachArgument": false,
+  "lineBreakBeforeEachArgument": true,
   "lineBreakBetweenDeclarationAttributes": false,
   "multiElementCollectionTrailingCommas": false,
   "rules": {
