@@ -73,12 +73,14 @@ extension ChatTableController: UITableViewDelegate {
 
     /// Tinggi baris di atas layar bisa berubah tanpa scroll, mis. saat VoiceOver membaca daftar dan baris yang belum
     /// tampil ikut terukur. Table tidak mengoreksi itu sendiri, jadi posisi dijaga lewat baris, bukan angka offset.
+    /// Konten juga bisa memendek dari bawah, mis. kartu antre hilang saat agen bergabung: posisi lama dibatasi di
+    /// ujung konten. Animasi yang mulai dari luar konten melewati targetnya, jadi daftar turun dulu lalu naik lagi.
     func restoreReadingPosition() {
         guard !isUserScrolling, !isScrollAnimating, !isHoldingParking, let anchorItemID,
             let row = state.items.firstIndex(where: { $0.id == anchorItemID })
         else { return }
         let rowTop = tableView.rectForRow(at: IndexPath(row: row, section: .zero)).minY
-        scroll(to: rowTop - anchorDistance, isAnimated: false)
+        scroll(to: min(rowTop - anchorDistance, bottomOffset + trailingInset), isAnimated: false)
     }
 
     /// Scroll bisa terjadi di tengah update SwiftUI, jadi nilainya dikirim pada putaran berikutnya.

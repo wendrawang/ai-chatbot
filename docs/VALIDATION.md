@@ -797,3 +797,13 @@ history tidak pernah melaporkan tersembunyi, jawaban pendek di bawah pertanyaan 
 dan jawaban yang melewati layar memunculkannya. Mutasi tanpa aksi lompat dan tanpa laporan gagal.
 `FloatingIconButtonTests` memeriksa sisi 36. `ChatScrollUITests.testArrowReturnsToTheLatestMessage` memeriksa tombol
 tidak ada saat dibuka, muncul di tengah di atas composer setelah digulir, dan hilang setelah diketuk.
+
+## Daftar tidak turun dulu saat konten memendek — 11 November 2026
+
+Saat agen bergabung kartu antre hilang, jadi konten memendek dari bawah. `restoreReadingPosition()` mengembalikan
+posisi lama yang kini di luar ujung konten, lalu animasi ikut ke bawah mulai dari sana dan berhenti melewati targetnya
+(log simulator: target 6636, animasi berhenti di 6425, baru dikoreksi animasi kedua). Hasilnya daftar turun dulu lalu
+naik lagi, dan tombol ke pesan terbaru sempat muncul. Kini posisi yang dipulihkan dibatasi di ujung konten, jadi daftar
+langsung di posisi akhirnya. `ChatTableShrinkTests`: baris terakhir hilang tidak menyisakan ruang kosong, ikut ke bawah
+di update yang sama tidak melaporkan ujung daftar tersembunyi (keduanya gagal sebelum perbaikan), dan pembaca yang
+sedang di atas tetap di barisnya.
