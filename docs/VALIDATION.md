@@ -866,8 +866,7 @@ iPhone 17 Pro dan iPhone SE (3rd generation), iOS 26.5.
 Batas tinggi: sheet tetap setinggi isinya. Bawaannya paling tinggi sampai tepat di bawah status bar (tidak pernah
 layar penuh); `maxHeight: .screenFraction(x)` membatasinya di x bagian dari tinggi layar penuh, tidak pernah melewati
 batas bawaan. Isi yang lebih panjang membuat sheet berhenti di batas dan isinya di-scroll; geser untuk menutup lalu
-hanya dari grabber, diukur di koordinat layar karena grabber ikut bergeser bersama sheet. Tinggi alami isi dibaca
-setelah dirender, jadi isi yang sangat panjang bisa tampil satu frame tanpa batas sebelum menjadi scroll. Seperti
+hanya dari grabber, diukur di koordinat layar karena grabber ikut bergeser bersama sheet. Seperti
 scroll view bawaan, isi boleh lewat di bawah home indicator saat digeser, tetapi di ujung scroll baris terakhir
 berhenti di atas safe area. `BottomSheetMaxHeightTests` (batas bawaan, perhitungan dari tinggi layar, tidak melewati
 status bar, tidak negatif). UI test sandbox: `--sheet-long` tanpa batas berhenti di bawah status bar dan di-scroll;
@@ -882,4 +881,14 @@ saja. `ScrollBounceDisablerTests`: dari dua scroll view di layar yang sama, hany
 memantul. Di aplikasi (log sementara, `--sheet-long`): scroll view yang diubah adalah area isi sheet, `bounces` false
 dan indikator mati. Bila suatu saat SwiftUI tidak lagi memakai `UIScrollView`, penanda tidak menemukan apa-apa dan
 scroll kembali memantul; tidak ada efek lain.
+
+Sheet naik dulu lalu turun saat isinya panjang (laporan dari Byon, frame per frame): tinggi alami isi baru terbaca
+setelah frame pertama, jadi frame pertama setinggi isi (log sandbox: 1155 pt) lalu turun ke batas (524 pt), dan
+pergantian ke scroll ikut teranimasi sehingga isi lama dan baru tampak dobel. Kini sheet disembunyikan sampai tinggi isi
+terbaca, lalu tinggi dan visibilitasnya berubah tanpa animasi sementara sheet tetap meluncur masuk. Log sandbox per
+frame sesudahnya: frame tersembunyi 1155 pt, frame pertama yang tampil langsung 524 pt (batas 60%) atau 812 pt (tanpa
+batas); isi pendek 323 pt sejak awal. Mencoba membatasi isi di frame pertama dengan `frame(maxHeight:)` tidak bisa
+diandalkan (di aplikasi benar, di unit test tidak), jadi tidak dipakai. Belum ada test otomatis untuk frame pertama:
+XCUITest tidak bisa mengambil gambar per frame dan opacity SwiftUI tidak terbaca dari unit test; delapan UI test sheet
+tetap lulus.
 

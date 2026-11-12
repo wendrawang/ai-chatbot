@@ -17,8 +17,8 @@ struct BottomSheet<Content: View>: View {
     @Environment(\.designColors) private var colors
     @Environment(\.accessibilityReduceMotion) private var isReducingMotion
     @GestureState private var dragDistance = CGFloat.zero
-    /// Tinggi alami isi, untuk tahu kapan isi melewati `maxHeight` dan perlu di-scroll.
-    @State private var contentHeight = CGFloat.zero
+    /// Tinggi alami isi, untuk tahu kapan isi melewati `maxHeight` dan perlu di-scroll; nil sebelum terbaca.
+    @State private var contentHeight: CGFloat?
     private let closeLabel: String
     private let bottomInset: CGFloat
     private let maxHeight: CGFloat
@@ -50,6 +50,11 @@ struct BottomSheet<Content: View>: View {
         .padding(.bottom, bottomInset)
         .frame(height: isScrolling ? maxHeight : nil, alignment: .top)
         .background(surface)
+        // Tinggi isi baru terbaca setelah frame pertama. Sampai itu sheet disembunyikan, supaya tidak tampak naik
+        // setinggi isi lalu turun ke batas; tinggi dan visibilitasnya berubah tanpa animasi, sementara sheet tetap
+        // meluncur masuk lewat transisi presenter.
+        .opacity(contentHeight == nil ? .zero : CustomColors.opaque)
+        .transaction { $0.animation = nil }
         .offset(y: dragDistance)
         .animation(releaseAnimation, value: dragDistance == .zero)
         // Isi yang di-scroll memakai geserannya sendiri; di sana hanya grabber yang menutup sheet.
@@ -126,8 +131,11 @@ private extension BottomSheet {
             + FigmaSize.spacingLarge.scaledToArtwork
     }
 
-    /// Isi lebih panjang dari ruang di bawah `maxHeight`: sheet berhenti di sana dan isinya di-scroll.
-    var isScrolling: Bool { contentHeight > maxHeight - handleArea - bottomInset }
+    /// Ruang isi di bawah `maxHeight`, setelah grabber dan safe area bawah.
+    var maxContentHeight: CGFloat { max(.zero, maxHeight - handleArea - bottomInset) }
+
+    /// Isi lebih panjang dari ruang isi: sheet berhenti di `maxHeight` dan isinya di-scroll.
+    var isScrolling: Bool { (contentHeight ?? .zero) > maxContentHeight }
 
     /// Sheet kembali ke tempatnya bila geseran dilepas sebelum jarak tutup.
     var releaseAnimation: Animation? {

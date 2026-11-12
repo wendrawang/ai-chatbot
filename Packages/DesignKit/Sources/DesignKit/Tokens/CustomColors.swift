@@ -9,6 +9,9 @@ import SwiftUI
 
 /// Semantic uses of additional colors. Generated colors remain the source for existing roles.
 public enum CustomColors {
+    /// Opacity penuh, untuk view yang tampil lagi setelah disembunyikan dengan opacity `.zero`.
+    public static let opaque: Double = 1
+
     public enum Stroke {
         public static let color = CustomBasePaletteColor.royalPastelBlue
         /// Figma N400 Gray - Primary, untuk chip yang bisa diketuk.
