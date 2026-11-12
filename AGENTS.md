@@ -37,7 +37,7 @@ tersedia pada history/main.
   | `ArtworkScale` | Referensi 375×812 dan rasio layar untuk `.scaledToArtwork` | Tidak pernah |
   | `LayoutTolerance` | Toleransi pembulatan layout (bukan token desain) | Tidak pernah |
 
-  Nilai waktu/animasi custom masuk `CustomMotion` (tidak di-scale; dibuat lagi saat ada animasi).
+  Nilai waktu/animasi custom masuk `CustomMotion` (detik, tidak di-scale), misalnya `sheetSlide`.
   Animasi menghormati Reduce Motion.
   Kelompok bersama dinamai per peran (`Header`, `Shadow`, `CustomTextLines.address`
   bila nanti dibutuhkan). Nilai yang hanya dipakai satu komponen memakai namespace
@@ -140,6 +140,13 @@ tersedia pada history/main.
 - Tidak ada alias untuk nilai sistem: `.clear`, bukan `CustomColors.transparent`.
 - TanyaAI dipisah per tanggung jawab (lihat "Struktur TanyaAI"). Folder intent baru dibuat saat file
   pertamanya ada, bukan lebih awal.
+- Bottom sheet memakai `.bottomSheet(isPresented:closeLabel:content:)` dari DesignKit
+  (`Components/Screen/BottomSheet`), dipasang di root halaman supaya latar gelap menutupi header dan composer. Wadah
+  hanya memberi latar gelap, permukaan bersudut atas membulat, grabber, dan cara menutup (ketuk di luar, geser ke
+  bawah). Tinggi mengikuti isi; judul, padding, dan scroll milik isi (daftar pilihan, keypad PIN, dan lainnya). Ini
+  overlay di dalam halaman, bukan presentasi modal, jadi jalan di iOS 15 dan tidak menyentuh navigasi host. Jangan
+  memakai `.sheet` atau membuat wadah sheet lain per fitur. Isi yang memanggil service (mis. PIN) meneruskan
+  hasilnya ke host lewat callback; service tetap di host.
 - Screen standar memakai composition `ScreenScaffold` dari DesignKit: header, trailing action, footer, dan
   latar. Scroll milik konten, yang melaporkan `scrollProgress`; `ChatScreen` memakai ini dengan `ChatTable`.
   Aturan table ada di `docs/REVAMP_NOTES.md`. Jangan membuat inheritance/BaseScreen protocol, ViewModel layout

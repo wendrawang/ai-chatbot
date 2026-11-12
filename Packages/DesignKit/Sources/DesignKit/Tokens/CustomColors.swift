@@ -27,4 +27,10 @@ public enum CustomColors {
         public static let strongOpacity: Double = 0.8
         public static let strong = CustomBasePaletteColor.glossySilver.opacity(strongOpacity)
     }
+
+    /// Latar gelap di belakang bottom sheet; warnanya `colorsSurfaceOverlay24` dari palette.
+    /// TODO: Konfirmasi opacity dengan Figma; sementara estimasi dari foto.
+    public enum Scrim {
+        public static let opacity: Double = 0.6
+    }
 }

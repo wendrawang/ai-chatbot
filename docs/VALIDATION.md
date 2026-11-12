@@ -836,3 +836,23 @@ regresi PR itu. `ChatTableBurstTests`: dua dari tiga test gagal sebelum perbaika
 Yang tidak berubah: tiap state hasil replay tetap sempat tampil sekilas (mis. kartu antre satu-dua frame), karena
 datanya memang tiba bertahap. Itu hanya terjadi bila history tertinggal dari stream; penyebabnya perlu dicek di
 respons history gateway atau transport host.
+
+## Wadah bottom sheet — 12 November 2026
+
+`.bottomSheet(isPresented:closeLabel:content:)` di DesignKit: latar gelap menutupi seluruh halaman termasuk header,
+sheet naik dari bawah dengan sudut atas membulat dan grabber, tinggi mengikuti isi. Overlay SwiftUI, bukan `.sheet`,
+karena iOS 15 belum punya tinggi sheet custom. Belum ada pemicu di chat; dicoba lewat sandbox `--sheet-demo`.
+
+| Nilai | Sumber |
+| --- | --- |
+| Radius sudut atas 20, grabber 40×4, jarak grabber 8 atas dan 16 bawah | Perkiraan dari foto Figma |
+| Latar gelap `colorsSurfaceOverlay24` 60% | Token palette; opacity perkiraan dari foto |
+| Durasi 0,25 detik, geser 80 untuk menutup | Belum ada di desain |
+
+`BottomSheetTests`: tinggi sheet = grabber + isi + safe area bawah. `BottomSheetPresenterTests`: isi hanya dibangun
+selama sheet tampil. `BottomSheetUITests` (iPhone 17 Pro, iOS 26.5): sheet menempel di bawah setinggi isinya dan
+isinya berhenti sebelum home indicator; ketukan di posisi tombol kembali menutup sheet tanpa keluar dari halaman;
+geseran pendek yang ditahan mengembalikan sheet dan geseran panjang menutupnya; memilih baris menutupnya.
+Tidak diuji: keyboard yang ditutup saat sheet tampil (simulator tidak menampilkan keyboard layar), VoiceOver di
+perangkat, dan tampilan di iOS 15.
+

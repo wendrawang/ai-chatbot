@@ -17,6 +17,7 @@ struct TanyaAIScreen: ScreenContent {
     var viewModel: TanyaAIScreenViewModel
     @State
     private var openedLink: String?
+    @State private var isSheetPresented = false
     let onBack: () -> Void
 
     var body: some View {
@@ -26,6 +27,10 @@ struct TanyaAIScreen: ScreenContent {
                 actions: { _ in Button(String(SandboxCopy.linkClose, locale: locale)) {} },
                 message: { Text($0) }
             )
+            // Sandbox: wadah bottom sheet dipasang di root halaman, jadi header Tanya AI ikut tertutup latar gelap.
+            .bottomSheet(isPresented: $isSheetPresented, closeLabel: String(SandboxCopy.sheetClose, locale: locale)) {
+                SheetDemoList(onSelect: closeSheet)
+            }
     }
 
     @ViewBuilder
@@ -34,6 +39,8 @@ struct TanyaAIScreen: ScreenContent {
         // Sandbox: mode --header-demo mengisi area scroll dengan konten contoh.
         if SandboxOptions.current.isHeaderDemo {
             host.makeView(onBack: onBack, onOpenLink: openLink) { HeaderDemoContent() }
+        } else if SandboxOptions.current.isSheetDemo {
+            host.makeView(onBack: onBack, onOpenLink: openLink) { SheetDemoContent(onOpen: openSheet) }
         } else {
             host.makeView(onBack: onBack, onOpenLink: openLink)
         }
@@ -45,5 +52,13 @@ struct TanyaAIScreen: ScreenContent {
 
     private func openLink(_ link: String) {
         openedLink = link
+    }
+
+    private func openSheet() {
+        isSheetPresented = true
+    }
+
+    private func closeSheet() {
+        isSheetPresented = false
     }
 }
