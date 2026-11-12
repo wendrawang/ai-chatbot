@@ -31,10 +31,11 @@ final class ChatTableController: UIViewController {
     var isScrollAnimating = false
     /// True setelah history selesai dimuat dan table punya ukuran; sebelum itu tidak ada posisi yang diatur.
     var isOpened = false
-    /// True bila ujung konten tidak lebih dari 48 di bawah layar; pesan masuk hanya diikuti dari posisi ini.
+    /// True bila ujung konten tidak lebih dari 48 di bawah layar. Pesan masuk diikuti dari posisi ini, atau selagi
+    /// animasi ke pesan terbaru masih berjalan (`isLatestInReach`).
     var isNearBottom = true
-    /// Nilai `isNearBottom` yang terakhir dikirim ke halaman.
-    var isNearBottomReported = true
+    /// Nilai `isLatestInReach` yang terakhir dikirim ke halaman.
+    var isLatestInReachReported = true
     /// Satu putaran saja: tinggi table berubah saat nasabah di ujung daftar, jadi ujungnya dikejar lagi.
     var isStickingToBottom = false
     /// Tiga penanda di bawah mencegah kerja yang sama dijadwalkan dua kali ke putaran berikutnya.
@@ -85,7 +86,8 @@ final class ChatTableController: UIViewController {
         loadViewIfNeeded()
         guard newState != state else { return }
         let previous = state
-        let isReaderAtBottom = isNearBottom
+        // Selama animasi ke pesan terbaru berjalan, pembaca tetap dihitung di ujung daftar walau ujungnya belum tampak.
+        let isReaderAtBottom = isLatestInReach
         state = newState
         applyItems(replacing: previous)
         openIfNeeded()

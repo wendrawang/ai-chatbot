@@ -815,3 +815,24 @@ sedang di atas tetap di barisnya.
 padahal hanya 4 yang sah; kini kombinasi lain tidak bisa ditulis. Perilaku tidak berubah: test `ChatTable*` dan UI
 test scroll/live agent lulus; hanya dua pemeriksaan yang dulu membaca flag lama yang disesuaikan.
 `ChatScrollModeTests` memeriksa transisi saat nasabah menggeser dan kapan ruang kosong parkir masih disediakan.
+
+## Pesan beruntun saat halaman dibuka — 12 November 2026
+
+Rekaman Byon: history berakhir di pesan serah terima, lalu stream langsung mengulang satu sesi agen (antre, agen
+bergabung, sapaan, dua pesan nasabah, selesai) dalam kurang dari 0,1 detik. Daftar bergerak naik turun sekitar satu
+detik dan tombol ke pesan terbaru berkedip. Direproduksi di simulator dengan gateway tiruan sementara dan log posisi:
+
+| | Sebelum | Sesudah |
+| --- | --- | --- |
+| Sampai di ujung daftar setelah event pertama | ±0,95 detik, tiga animasi berantai | ±0,05 detik, tanpa animasi lanjutan |
+| Ujung daftar dilaporkan tersembunyi (tombol muncul) | ya, selama animasi | tidak |
+
+Sebabnya: pesan yang tiba selagi animasi ikut ke bawah berjalan tidak diikuti (ujung daftar belum tampak, jadi
+pembaca dianggap sedang membaca ke atas), lalu sisa jaraknya dikejar animasi demi animasi. Kini selama animasi itu
+pembaca tetap dihitung di ujung, pesan berikutnya langsung ditaruh di ujung tanpa animasi baru, dan tombol tidak
+dilaporkan selama daftar sendiri sedang menuju ujung. Kode sebelum PR #60 bergerak sama di skenario ini, jadi bukan
+regresi PR itu. `ChatTableBurstTests`: dua dari tiga test gagal sebelum perbaikan.
+
+Yang tidak berubah: tiap state hasil replay tetap sempat tampil sekilas (mis. kartu antre satu-dua frame), karena
+datanya memang tiba bertahap. Itu hanya terjadi bila history tertinggal dari stream; penyebabnya perlu dicek di
+respons history gateway atau transport host.
