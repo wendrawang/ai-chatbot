@@ -815,3 +815,24 @@ sedang di atas tetap di barisnya.
 padahal hanya 4 yang sah; kini kombinasi lain tidak bisa ditulis. Perilaku tidak berubah: test `ChatTable*` dan UI
 test scroll/live agent lulus; hanya dua pemeriksaan yang dulu membaca flag lama yang disesuaikan.
 `ChatScrollModeTests` memeriksa transisi saat nasabah menggeser dan kapan ruang kosong parkir masih disediakan.
+
+## Perapian package setelah review — 12 November 2026
+
+Review seluruh `DesignKit` dan `TanyaAI` menemukan aturan yang tidak dijaga script. Yang diubah:
+
+- Formatter: `lineBreakBeforeEachArgument` menjadi `true`. Sebelumnya `swift-format` sendiri yang menyusun parameter
+  campuran; kini yang tidak muat satu baris dipecah satu per baris. File lama ikut rapi saat disentuh.
+- Satu tipe per file: `CodingKeys` menjadi enum key di `Gateway/Decoding`, `GrowingTextInputCoordinator`,
+  `FontLoaderFailure`, dan `ChatWireEvent` menjadi tipe tingkat atas; helper test dipecah ke `Support`, probe memakai
+  closure. `Scripts/check_methods.swift` kini menolak tipe bersarang dan dua tipe dalam satu file di `Packages/`
+  (dicoba dengan file contoh: keduanya ditolak). Sandbox belum ikut dijaga.
+- `if … else` di luar `@ViewBuilder` (8 tempat) menjadi early return, atribut variabel sebaris (31 baris), dan komentar
+  Inggris lama diterjemahkan.
+- Tombol lampiran tidak ditampilkan sampai endpoint upload ada: aksinya closure kosong, jadi tombolnya mati.
+  `LiveAgentUITests` memeriksa tombol tidak ada selama dilayani agen.
+- Status mengetik nasabah di `TanyaAIBridge` (empat `Bool` dan satu `Bool?`) menjadi `ChatUserTyping`. Perilaku tidak
+  berubah: `TanyaAIBridgeUserTypingTests` lulus dengan dua pembacaan flag disesuaikan; `ChatUserTypingTests`
+  memeriksa transisinya.
+- `DateChip` menjadi `TextChip` selebar isinya; posisi tengah dan peran header dipasang `ChatListRow`.
+  `WelcomeUITests` memeriksa chip tetap di tengah.
+- Enam suite yang memakai window diberi `.serialized` sesuai aturan.
