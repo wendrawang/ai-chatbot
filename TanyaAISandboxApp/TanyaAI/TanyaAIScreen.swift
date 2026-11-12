@@ -5,6 +5,7 @@
 //  Created by Wendra on 20/10/26.
 //
 
+import DesignKit
 import SwiftUI
 
 /// Konten halaman Tanya AI di host: view SwiftUI dari package, tanpa pembungkus UIKit. Link dari jawaban bot
@@ -28,8 +29,12 @@ struct TanyaAIScreen: ScreenContent {
                 message: { Text($0) }
             )
             // Sandbox: wadah bottom sheet dipasang di root halaman, jadi header Tanya AI ikut tertutup latar gelap.
-            .bottomSheet(isPresented: $isSheetPresented, closeLabel: String(SandboxCopy.sheetClose, locale: locale)) {
-                SheetDemoList(onSelect: closeSheet)
+            .bottomSheet(
+                isPresented: $isSheetPresented,
+                closeLabel: String(SandboxCopy.sheetClose, locale: locale),
+                maxHeight: sheetMaxHeight
+            ) {
+                SheetDemoList(count: sheetOptionCount, onSelect: closeSheet)
             }
             // Latar gelap hanya menahan sentuhan di dalam halaman; swipe-back milik navigasi host, jadi host yang
             // menahannya selama sheet terbuka. Dibuka lagi saat halaman hilang supaya tidak tertinggal mati.
@@ -48,6 +53,17 @@ struct TanyaAIScreen: ScreenContent {
         } else {
             host.makeView(onBack: onBack, onOpenLink: openLink)
         }
+    }
+
+    /// `--sheet-max`: batas tinggi dari tinggi layar; tanpa flag, batas bawaan tepat di bawah status bar.
+    private var sheetMaxHeight: BottomSheetMaxHeight {
+        guard SandboxOptions.current.isSheetMaxSet else { return .belowStatusBar }
+        return .screenFraction(SandboxOptions.sheetMaxFraction)
+    }
+
+    /// `--sheet-long`: baris lebih panjang dari layar, supaya scroll di dalam sheet bisa dicoba.
+    private var sheetOptionCount: Int {
+        SandboxOptions.current.isSheetLong ? SandboxOptions.sheetLongOptionCount : SandboxOptions.sheetOptionCount
     }
 
     private var isLinkPresented: Binding<Bool> {

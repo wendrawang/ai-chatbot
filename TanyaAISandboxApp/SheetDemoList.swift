@@ -9,16 +9,18 @@ import DesignKit
 import SwiftUI
 
 /// Sandbox saja: isi contoh bottom sheet (`--sheet-demo`), yaitu judul dan beberapa baris pilihan. Judul dan padding
-/// milik isi; wadah sheet hanya memberi permukaan, grabber, dan cara menutup. Memilih baris menutup sheet.
+/// milik isi; wadah sheet hanya memberi permukaan, grabber, cara menutup, dan scroll bila tingginya tetap. Memilih
+/// baris menutup sheet.
 struct SheetDemoList: View {
     @Environment(\.locale) private var locale
     @Environment(\.designColors) private var colors
+    let count: Int
     let onSelect: () -> Void
 
     var body: some View {
         VStack(alignment: .leading, spacing: .zero) {
             title
-            ForEach(Int.zero..<SandboxOptions.sheetOptionCount, id: \.self) { _ in
+            ForEach(Int.zero..<count, id: \.self) { _ in
                 option
             }
         }

@@ -18,15 +18,18 @@ struct BottomSheetPresenter<SheetContent: View>: ViewModifier {
     @Environment(\.accessibilityReduceMotion) private var isReducingMotion
     @Binding private var isPresented: Bool
     private let closeLabel: String
+    private let maxHeight: BottomSheetMaxHeight
     private let sheetContent: () -> SheetContent
 
     init(
         isPresented: Binding<Bool>,
         closeLabel: String,
+        maxHeight: BottomSheetMaxHeight,
         @ViewBuilder content: @escaping () -> SheetContent
     ) {
         self._isPresented = isPresented
         self.closeLabel = closeLabel
+        self.maxHeight = maxHeight
         self.sheetContent = content
     }
 
@@ -57,17 +60,18 @@ struct BottomSheetPresenter<SheetContent: View>: ViewModifier {
             .accessibilityHidden(true)
     }
 
-    /// Sheet paling tinggi setinggi area aman, jadi latar gelap tetap terlihat di atasnya.
+    /// Sheet paling tinggi sampai batasnya; batas bawaan tepat di bawah status bar, jadi tidak pernah layar penuh.
     @ViewBuilder
     private func sheet(in geometry: GeometryProxy) -> some View {
         if isPresented {
             BottomSheet(
                 closeLabel: closeLabel,
                 bottomInset: geometry.safeAreaInsets.bottom,
+                maxHeight: sheetMaxHeight(in: geometry),
                 onClose: close,
                 content: sheetContent
             )
-            .frame(maxHeight: geometry.size.height, alignment: .bottom)
+            .frame(maxHeight: sheetMaxHeight(in: geometry), alignment: .bottom)
             .transition(.move(edge: .bottom))
         }
     }
@@ -78,6 +82,14 @@ struct BottomSheetPresenter<SheetContent: View>: ViewModifier {
 private extension BottomSheetPresenter {
     var slideAnimation: Animation? {
         isReducingMotion ? nil : .easeOut(duration: CustomMotion.sheetSlide)
+    }
+
+    /// Geometri ini belum mengabaikan safe area: dari tepi bawah layar sampai tepat di bawah status bar = area aman
+    /// ditambah safe area bawah, dan tinggi layar = area aman ditambah safe area atas dan bawah.
+    func sheetMaxHeight(in geometry: GeometryProxy) -> CGFloat {
+        let insets = geometry.safeAreaInsets
+        let limit = geometry.size.height + insets.bottom
+        return maxHeight.resolved(screenHeight: limit + insets.top, limit: limit)
     }
 }
 

@@ -68,6 +68,56 @@ final class BottomSheetUITests: XCTestCase {
         waitUntilGone(sheet)
     }
 
+    /// `--sheet-max --sheet-long`: batas 60% layar dan 20 baris yang lebih panjang dari itu. Sheet berhenti di batas,
+    /// isinya di-scroll tanpa menutup sheet dan tanpa mengubah tinggi. Seperti scroll view bawaan, isi boleh lewat di
+    /// bawah home indicator saat digeser, tetapi di ujung scroll baris terakhir berhenti di atas safe area (patokan:
+    /// tepi bawah kartu composer). Geser grabber ke bawah tetap menutup.
+    func testAMaxHeightStopsLongContentThereAndScrolls() {
+        launchDemo(extra: ["--sheet-max", "--sheet-long"])
+        let composer = application.otherElements["composer"].frame
+        let sheet = openSheet()
+        let screen = application.frame
+        XCTAssertEqual(screen.maxY - sheet.frame.minY, screen.height * 0.6, accuracy: 1)
+        let last = application.buttons.matching(identifier: "sandbox.sheet.option").element(boundBy: 19)
+        XCTAssertFalse(last.isHittable, "baris terakhir di luar sheet sebelum di-scroll")
+        scrollToTheEnd(of: sheet, until: last)
+        XCTAssertTrue(sheet.exists, "scroll tidak menutup sheet")
+        XCTAssertEqual(screen.maxY - sheet.frame.minY, screen.height * 0.6, accuracy: 1, "tinggi tidak berubah")
+        XCTAssertEqual(last.frame.maxY, composer.maxY, accuracy: 1, "baris terakhir berhenti di atas safe area")
+        dragHandleDown()
+        waitUntilGone(sheet)
+    }
+
+    /// `--sheet-max` dengan 4 baris: batas tidak membesarkan sheet, jadi tetap setinggi isinya.
+    func testAMaxHeightKeepsShortContentSmall() {
+        launchDemo(extra: ["--sheet-max"])
+        let composer = application.otherElements["composer"].frame
+        let sheet = openSheet()
+        let screen = application.frame
+        let options = application.buttons.matching(identifier: "sandbox.sheet.option")
+        XCTAssertEqual(options.count, 4)
+        XCTAssertLessThan(screen.maxY - sheet.frame.minY, screen.height * 0.6, "lebih kecil dari batas")
+        XCTAssertEqual(options.element(boundBy: 3).frame.maxY, composer.maxY, accuracy: 1)
+    }
+
+    /// `--sheet-long` tanpa batas: 20 baris lebih panjang dari layar. Sheet berhenti tepat di bawah status bar (tidak
+    /// layar penuh, masih di dalam area header), isinya di-scroll, dan grabber tetap menutup.
+    func testLongContentWithoutAMaxStopsBelowTheStatusBarAndScrolls() {
+        launchDemo(extra: ["--sheet-long"])
+        let composer = application.otherElements["composer"].frame
+        let back = application.buttons["header.back"].frame
+        let sheet = openSheet()
+        XCTAssertGreaterThan(sheet.frame.minY, application.frame.minY, "tidak layar penuh")
+        XCTAssertLessThanOrEqual(sheet.frame.minY, back.maxY, "naik sampai area header, di bawah status bar")
+        let last = application.buttons.matching(identifier: "sandbox.sheet.option").element(boundBy: 19)
+        XCTAssertFalse(last.isHittable)
+        scrollToTheEnd(of: sheet, until: last)
+        XCTAssertTrue(sheet.exists, "scroll tidak menutup sheet")
+        XCTAssertEqual(last.frame.maxY, composer.maxY, accuracy: 1, "baris terakhir berhenti di atas safe area")
+        dragHandleDown()
+        waitUntilGone(sheet)
+    }
+
     /// Selama sheet terbuka, swipe dari tepi kiri tidak keluar dari halaman; setelah ditutup, swipe-back jalan lagi.
     func testSwipeBackIsHeldWhileTheSheetIsOpen() {
         launchDemo()
@@ -85,8 +135,8 @@ final class BottomSheetUITests: XCTestCase {
 // MARK: - Helpers
 
 private extension BottomSheetUITests {
-    func launchDemo() {
-        application.launchArguments = ["--language", "en", "--sheet-demo", "--with-history"]
+    func launchDemo(extra: [String] = []) {
+        application.launchArguments = ["--language", "en", "--sheet-demo", "--with-history"] + extra
         application.launch()
         let entry = application.buttons["sandbox.open"]
         XCTAssertTrue(entry.waitForExistence(timeout: 10))
@@ -101,6 +151,23 @@ private extension BottomSheetUITests {
         let sheet = application.descendants(matching: .any)["sheet"]
         XCTAssertTrue(sheet.waitForExistence(timeout: 5))
         return sheet
+    }
+
+    /// Digeser dari tengah isi sheet, bukan dari baris tertentu yang ikut keluar layar setelah geseran pertama. Satu
+    /// geseran lagi setelah `row` terlihat memastikan scroll sudah di ujung.
+    func scrollToTheEnd(of sheet: XCUIElement, until row: XCUIElement) {
+        let lower = sheet.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.85))
+        let upper = sheet.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.25))
+        for _ in 0..<6 where !row.isHittable {
+            lower.press(forDuration: 0.05, thenDragTo: upper)
+        }
+        lower.press(forDuration: 0.05, thenDragTo: upper)
+        XCTAssertTrue(row.isHittable, "isi bisa di-scroll sampai baris terakhir")
+    }
+
+    func dragHandleDown() {
+        let handle = application.buttons["sheet.handle"].coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.5))
+        handle.press(forDuration: 0.1, thenDragTo: handle.withOffset(CGVector(dx: 0, dy: 300)))
     }
 
     /// Sama dengan `StartingPointUITests`: geseran cepat dari tepi kiri sampai hampir ke kanan.

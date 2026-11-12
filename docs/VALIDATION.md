@@ -863,3 +863,14 @@ tanpa perbaikan ini. Pemeriksaan jarak bawah dulu mengandaikan home indicator (g
 dibandingkan dengan tepi bawah kartu composer, yang juga berhenti 16 di atas safe area. Kelima UI test lulus di
 iPhone 17 Pro dan iPhone SE (3rd generation), iOS 26.5.
 
+Batas tinggi: sheet tetap setinggi isinya. Bawaannya paling tinggi sampai tepat di bawah status bar (tidak pernah
+layar penuh); `maxHeight: .screenFraction(x)` membatasinya di x bagian dari tinggi layar penuh, tidak pernah melewati
+batas bawaan. Isi yang lebih panjang membuat sheet berhenti di batas dan isinya di-scroll; geser untuk menutup lalu
+hanya dari grabber, diukur di koordinat layar karena grabber ikut bergeser bersama sheet. Tinggi alami isi dibaca
+setelah dirender, jadi isi yang sangat panjang bisa tampil satu frame tanpa batas sebelum menjadi scroll. Seperti
+scroll view bawaan, isi boleh lewat di bawah home indicator saat digeser, tetapi di ujung scroll baris terakhir
+berhenti di atas safe area. `BottomSheetMaxHeightTests` (batas bawaan, perhitungan dari tinggi layar, tidak melewati
+status bar, tidak negatif). UI test sandbox: `--sheet-long` tanpa batas berhenti di bawah status bar dan di-scroll;
+`--sheet-max --sheet-long` berhenti di 60% layar dan di-scroll tanpa mengubah tinggi; `--sheet-max` dengan 4 baris
+tetap setinggi isi. Unit test ukuran untuk isi yang melewati batas dicoba lewat `UIHostingController.sizeThatFits` di
+window, tetapi hasilnya ikut menghitung safe area window test, jadi perilaku ini diuji lewat UI test di aplikasi.
