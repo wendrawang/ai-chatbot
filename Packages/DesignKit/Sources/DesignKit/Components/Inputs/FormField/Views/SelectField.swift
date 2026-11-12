@@ -13,6 +13,7 @@ import SwiftUI
 @MainActor
 public struct SelectField: View {
     @Environment(\.designColors) private var colors
+    @Environment(\.isEnabled) private var isEnvironmentEnabled
     private let label: String?
     private let value: String?
     private let placeholder: String
@@ -65,7 +66,7 @@ public struct SelectField: View {
     private var chevron: some View {
         Image(DesignIcon.chevronDown).resizable().scaledToFit()
             .frame(width: FigmaSize.weightIconSmall.scaledToArtwork, height: FigmaSize.weightIconSmall.scaledToArtwork)
-            .foregroundColor(isEnabled ? colors.colorsIconDark : colors.colorsIconDisabled)
+            .foregroundColor(isEnabled && isEnvironmentEnabled ? colors.colorsIconDark : colors.colorsIconDisabled)
             .accessibilityHidden(true)
     }
 }

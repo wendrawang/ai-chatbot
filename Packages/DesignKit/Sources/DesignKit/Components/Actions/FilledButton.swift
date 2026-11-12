@@ -13,6 +13,7 @@ import SwiftUI
 @MainActor
 public struct FilledButton: View {
     @Environment(\.designColors) private var colors
+    @Environment(\.isEnabled) private var isEnvironmentEnabled
     private let title: String
     private let variant: FilledButtonVariant
     private let isEnabled: Bool
@@ -41,7 +42,7 @@ public struct FilledButton: View {
                 .frame(maxWidth: .infinity)
                 .background(
                     RoundedRectangle(cornerRadius: CustomSizes.Card.cornerRadius.scaledToArtwork)
-                        .fill(isEnabled ? CustomColors.Button.muted : disabledColor)
+                        .fill(isInteractive ? CustomColors.Button.muted : disabledColor)
                 )
                 .contentShape(Rectangle())
         }
@@ -53,6 +54,11 @@ public struct FilledButton: View {
 // MARK: - Helpers
 
 private extension FilledButton {
+    /// Parameter sendiri digabung dengan `.disabled` dari parent, supaya warnanya ikut nonaktif.
+    var isInteractive: Bool {
+        isEnabled && isEnvironmentEnabled
+    }
+
     var fontSize: CGFloat {
         switch variant {
         case .regular:

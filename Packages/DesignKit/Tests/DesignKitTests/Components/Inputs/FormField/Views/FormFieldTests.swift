@@ -12,7 +12,7 @@ import UIKit
 @testable import DesignKit
 
 /// Field pilihan dan field teks sama tinggi, isi atau placeholder tidak mengubah tinggi, dan pesan error menambah
-/// tinggi di bawah kotak.
+/// tinggi di bawah kotak. `.disabled` dari parent tampil sama dengan `isEnabled: false`.
 @MainActor
 struct FormFieldTests {
     private let width: CGFloat = 375
@@ -49,6 +49,19 @@ struct FormFieldTests {
         let labelled = size(of: SelectField(label: "Format", value: nil, placeholder: "Pilih") {})
         let bare = size(of: SelectField(value: nil, placeholder: "Pilih") {})
         #expect(bare.height < labelled.height)
+    }
+
+    @Test
+    func aDisabledParentGreysTheFieldLikeItsOwnFlag() throws {
+        try FontFace.registerFonts()
+        let field = SelectField(value: nil, placeholder: "Pilih") {}
+        let ownDisabled = SelectField(value: nil, placeholder: "Pilih", isEnabled: false) {}
+        let own = RenderedImage.png(of: ownDisabled, width: width)
+        let parent = RenderedImage.png(of: field.disabled(true), width: width)
+        let enabled = RenderedImage.png(of: field, width: width)
+        try #require(own != nil)
+        #expect(parent == own)
+        #expect(parent != enabled)
     }
 }
 

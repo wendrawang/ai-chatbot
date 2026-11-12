@@ -9,8 +9,10 @@ import SwiftUI
 
 /// Isi bottom sheet untuk memilih: judul, lalu daftar pilihan. `items` nil = daftar masih diambil pemakai (mis. dari
 /// service host), jadi spinner yang tampil. `.single`: satu ketukan langsung memanggil `onSelect`. `.multiple`: centang
-/// sebanyak yang diperlukan lalu tombol `confirmLabel`. `onSelect` menerima id pilihan urut sesuai daftar; menutup
-/// sheet tetap tugas pemakai. Padding isi milik komponen ini, wadah sheet hanya memberi permukaan.
+/// sebanyak yang diperlukan lalu tombol `confirmLabel`. Tombol aktif bila ada centang yang masih ada di daftar;
+/// `isEmptyAllowed` = pemakai boleh menerima hasil kosong (mengosongkan pilihan lama). `onSelect` menerima id pilihan
+/// urut sesuai daftar; menutup sheet tetap tugas pemakai. Padding isi milik komponen ini, wadah sheet hanya memberi
+/// permukaan.
 /// TODO: Konfirmasi ukuran judul, baris, dan penanda dengan Figma; sementara dari foto.
 @MainActor
 public struct OptionList: View {
@@ -19,6 +21,7 @@ public struct OptionList: View {
     private let title: String
     private let items: [OptionItem]?
     private let confirmLabel: String
+    private let isEmptyAllowed: Bool
     private let onSelect: ([String]) -> Void
 
     public init(
@@ -27,12 +30,14 @@ public struct OptionList: View {
         selectedIDs: [String] = [],
         mode: OptionSelectionMode = .single,
         confirmLabel: String = String(),
+        isEmptyAllowed: Bool = false,
         onSelect: @escaping ([String]) -> Void
     ) {
         _selection = State(initialValue: OptionSelection(mode: mode, selectedIDs: selectedIDs))
         self.title = title
         self.items = items
         self.confirmLabel = confirmLabel
+        self.isEmptyAllowed = isEmptyAllowed
         self.onSelect = onSelect
     }
 
@@ -73,7 +78,8 @@ public struct OptionList: View {
     @ViewBuilder
     private var confirmButton: some View {
         if selection.mode == .multiple, let items {
-            FilledButton(title: confirmLabel, isEnabled: !selection.selectedIDs.isEmpty) {
+            let isConfirmable = selection.isConfirmable(in: items, isEmptyAllowed: isEmptyAllowed)
+            FilledButton(title: confirmLabel, isEnabled: isConfirmable) {
                 onSelect(selection.ordered(in: items))
             }
             .padding(.top, FigmaSize.spacingLarge.scaledToArtwork)

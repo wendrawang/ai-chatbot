@@ -12,7 +12,8 @@ import UIKit
 @testable import DesignKit
 
 /// Tombol selebar wadah; tingginya teks ditambah padding atas-bawah varian masing-masing. Varian `.link`
-/// menggantikan `FilledLinkButton` dengan ukuran yang sama.
+/// menggantikan `FilledLinkButton` dengan ukuran yang sama. `.disabled` dari parent tampil sama dengan
+/// `isEnabled: false`.
 @MainActor
 struct FilledButtonTests {
     private let width: CGFloat = 343
@@ -34,6 +35,17 @@ struct FilledButtonTests {
         let text = size(of: label("Batalkan proses ini", size: FigmaSize.typographySizeDisplayTiny12))
         #expect(abs(button.width - width) <= 0.5)
         #expect(abs(button.height - text.height - FigmaSize.spacingMedium.scaledToArtwork * 2) <= 0.5)
+    }
+
+    @Test
+    func aDisabledParentGreysTheButtonLikeItsOwnFlag() throws {
+        try FontFace.registerFonts()
+        let own = RenderedImage.png(of: FilledButton(title: "Pilih", isEnabled: false) {}, width: width)
+        let parent = RenderedImage.png(of: FilledButton(title: "Pilih") {}.disabled(true), width: width)
+        let enabled = RenderedImage.png(of: FilledButton(title: "Pilih") {}, width: width)
+        try #require(own != nil)
+        #expect(parent == own)
+        #expect(parent != enabled)
     }
 }
 

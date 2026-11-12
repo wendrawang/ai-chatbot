@@ -926,3 +926,11 @@ menggambar permukaan sendiri; spinner di loading history, ikon kartu sambutan, d
 demo sheet sandbox memakai `OptionList`, bukan daftar buatan sendiri. `FilledButtonTests` memeriksa ukuran kedua
 varian, termasuk ukuran `.link` yang sama dengan `FilledLinkButton` sebelumnya.
 
+
+Review lanjutan: tombol Pilih di `OptionList` hanya menghitung centang yang masih ada di daftar terbaru (id lama yang
+hilang tidak lagi membuat tombol aktif dengan hasil kosong), dan pemakai bisa mengizinkan hasil kosong lewat
+`isEmptyAllowed` untuk mengosongkan pilihan lama; bawaan tetap minimal satu centang. `FilledButton`, kotak field, dan
+chevron `SelectField` ikut abu-abu saat parent memberi `.disabled`. `OptionSelectionTests` menjaga aturan tombol;
+`FilledButtonTests` dan `FormFieldTests` membandingkan gambar `.disabled` dari parent dengan `isEnabled: false`, dan
+keduanya gagal bila penggabungan environment dicabut. Ukuran switch `ToggleRow` masih bawaan sistem sampai ukuran
+Figma dikonfirmasi.

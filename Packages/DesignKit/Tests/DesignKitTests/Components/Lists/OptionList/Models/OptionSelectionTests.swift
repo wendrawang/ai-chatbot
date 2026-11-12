@@ -10,7 +10,7 @@ import Testing
 @testable import DesignKit
 
 /// Satu pilihan langsung selesai dan mengganti pilihan lama; banyak pilihan menyalakan dan mematikan centang sampai
-/// dikonfirmasi, dan hasilnya urut sesuai daftar.
+/// dikonfirmasi, dan hasilnya urut sesuai daftar. Konfirmasi hanya menghitung centang yang masih ada di daftar.
 struct OptionSelectionTests {
     private let items = ["a", "b", "c"].map { OptionItem(id: $0, title: $0.uppercased()) }
 
@@ -34,5 +34,21 @@ struct OptionSelectionTests {
     func anIDMissingFromTheListIsLeftOut() {
         let selection = OptionSelection(mode: .multiple, selectedIDs: ["b", "z"])
         #expect(selection.ordered(in: items) == ["b"])
+    }
+
+    @Test
+    func anIDMissingFromTheListDoesNotEnableTheConfirmation() {
+        let selection = OptionSelection(mode: .multiple, selectedIDs: ["z"])
+        #expect(!selection.isConfirmable(in: items, isEmptyAllowed: false))
+        #expect(selection.isConfirmable(in: items, isEmptyAllowed: true))
+    }
+
+    @Test
+    func clearingEveryChoiceConfirmsOnlyWhenTheCallerAllowsIt() {
+        var selection = OptionSelection(mode: .multiple, selectedIDs: ["a"])
+        _ = selection.toggle("a")
+        #expect(!selection.isConfirmable(in: items, isEmptyAllowed: false))
+        #expect(selection.isConfirmable(in: items, isEmptyAllowed: true))
+        #expect(selection.ordered(in: items).isEmpty)
     }
 }
