@@ -126,6 +126,8 @@ tersedia pada history/main.
 ## Komponen dan ownership
 
 - DesignKit `Components/<Fungsi>`: `Actions`, `Feedback`, `Images`, `Inputs`, `Lists`, `Markdown`, `Messages`, `Screen`.
+  Utamakan reuse: pakai komponen yang ada atau perluas lewat varian/parameter. Buat komponen baru hanya bila
+  tampilan/perilakunya memang beda jauh, dan tulis alasannya di PR.
   Sebelum membuat komponen, cek yang sudah ada: tombol isi penuh = `FilledButton` (varian `.link` untuk teks kecil
   bergaris bawah), permukaan berisi/bergaris = `cardStyle` (`fillColor` untuk latar lain), spinner = `LoadingIndicator`,
   garis pemisah = `SeparatorLine`.

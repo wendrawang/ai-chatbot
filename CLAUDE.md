@@ -7,6 +7,8 @@ bridge host ke chat-gateway (init → history → SSE, retry, merge), dan daftar
 
 - Tanpa `if ... else`, pakai early return; atribut variabel satu baris dengan variabelnya; parameter satu baris
   atau satu per baris semuanya, tanpa campuran. Detail di AGENTS.md.
+- Utamakan reuse komponen DesignKit (pakai atau perluas lewat varian/parameter); buat baru hanya bila tampilan/
+  perilakunya beda jauh, alasannya ditulis di PR. Daftar komponen bersama di AGENTS.md.
 - Semua teks memakai Fira Sans. Open Sans belum dipakai: jangan jadi default komponen atau dipakai di layar.
 - Ukuran dan area tap 1:1 Figma lewat `.scaledToArtwork`. Jangan menambahkan
   minimum touch target 44 atau hit frame tambahan; ini keputusan UI/UX.
