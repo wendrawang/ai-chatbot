@@ -14,6 +14,7 @@ import UIKit
 /// dipulihkan melewati ujung konten: animasi ikut ke bawah yang mulai dari sana melewati targetnya, jadi daftar
 /// turun dulu lalu naik lagi.
 @MainActor
+@Suite(.serialized)
 struct ChatTableShrinkTests {
     private let rows = 40
 

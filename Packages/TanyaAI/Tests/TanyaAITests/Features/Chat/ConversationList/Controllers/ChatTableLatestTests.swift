@@ -13,6 +13,7 @@ import UIKit
 
 /// Tombol ke pesan terbaru: kapan table melaporkan ujung daftar di luar layar, dan ke mana tombol membawa.
 @MainActor
+@Suite(.serialized)
 struct ChatTableLatestTests {
     private let rows = 60
 

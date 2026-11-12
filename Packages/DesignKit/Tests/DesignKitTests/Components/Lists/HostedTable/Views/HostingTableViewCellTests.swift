@@ -13,6 +13,7 @@ import UIKit
 
 /// Jalur iOS 15 tidak punya runtime di mesin ini, jadi hosting controller-nya diuji langsung lewat `configureLegacy`.
 @MainActor
+@Suite(.serialized)
 struct HostingTableViewCellTests {
     private typealias Cell = HostingTableViewCell<Text>
 

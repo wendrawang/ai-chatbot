@@ -11,6 +11,7 @@ import Testing
 @testable import DesignKit
 
 @MainActor
+@Suite(.serialized)
 struct DesignColorsTests {
     @Test
     func defaultPaletteWithoutHostTheme() {

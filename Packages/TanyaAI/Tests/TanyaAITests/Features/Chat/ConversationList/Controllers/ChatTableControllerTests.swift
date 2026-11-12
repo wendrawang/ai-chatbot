@@ -13,6 +13,7 @@ import UIKit
 @testable import TanyaAI
 
 @MainActor
+@Suite(.serialized)
 struct ChatTableControllerTests {
     private let rows = 60
     private let keyboardHeight: CGFloat = 240

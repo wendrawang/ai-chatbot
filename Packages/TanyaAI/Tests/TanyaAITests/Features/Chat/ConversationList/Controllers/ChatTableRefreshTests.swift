@@ -12,6 +12,7 @@ import Testing
 
 /// Baris yang sudah tampil diperbarui hanya bila perlu: halaman berubah di tiap token stream.
 @MainActor
+@Suite(.serialized)
 struct ChatTableRefreshTests {
     private let rows = 60
 
