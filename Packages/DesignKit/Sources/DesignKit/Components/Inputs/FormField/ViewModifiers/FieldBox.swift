@@ -7,8 +7,9 @@
 
 import SwiftUI
 
-/// Kotak isi field: padding dalam, sudut membulat, dan garis tepi. Nonaktif = latar abu-abu; tidak valid = garis
-/// merah. Hanya permukaan; label dan error milik `FieldFrame`.
+/// Kotak isi field: padding dalam di atas permukaan `cardStyle` tanpa bayangan. Nonaktif = latar abu-abu; tidak valid =
+/// garis merah. Modifier sendiri karena warnanya dibaca dari palette di environment. Label dan error milik
+/// `FieldFrame`.
 /// TODO: Cocokkan padding dan tinggi kotak dengan Figma; sementara dari foto.
 struct FieldBox: ViewModifier {
     @Environment(\.designColors) private var colors
@@ -21,15 +22,10 @@ struct FieldBox: ViewModifier {
             .frame(minHeight: FigmaSize.weightIconSmall.scaledToArtwork)
             .padding(FigmaSize.spacingLarge.scaledToArtwork)
             .frame(maxWidth: .infinity, alignment: .leading)
-            .background(shape.fill(isEnabled ? colors.colorsSurfacePrimary : colors.colorsSurfaceDisable))
-            .overlay(shape.strokeBorder(outline, lineWidth: FigmaSize.weightOutline.scaledToArtwork))
-    }
-
-    private var shape: RoundedRectangle {
-        RoundedRectangle(cornerRadius: CustomSizes.Card.cornerRadius.scaledToArtwork)
-    }
-
-    private var outline: Color {
-        isInvalid ? colors.colorsOutlineRed : CustomColors.Stroke.color
+            .cardStyle(
+                isElevated: false,
+                outlineColor: isInvalid ? colors.colorsOutlineRed : CustomColors.Stroke.color,
+                fillColor: isEnabled ? nil : colors.colorsSurfaceDisable
+            )
     }
 }

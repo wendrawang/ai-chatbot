@@ -31,9 +31,7 @@ struct MarkdownBlockView: View {
         case .code(let code):
             MarkdownCodeBlock(code: code, style: style)
         case .divider:
-            Rectangle()
-                .fill(colors.colorsOutlineNetral)
-                .frame(height: FigmaSize.weightOutline.scaledToArtwork)
+            SeparatorLine()
         case .table(let table):
             MarkdownTableView(table: table, style: style)
         case .image(let url, let alt):

@@ -64,9 +64,7 @@ public struct OptionList: View {
                 }
             }
         } else {
-            ProgressView()
-                .progressViewStyle(.circular)
-                .tint(colors.colorsIconColored)
+            LoadingIndicator()
                 .frame(maxWidth: .infinity, minHeight: CustomSizes.OptionList.loadingHeight.scaledToArtwork)
         }
     }

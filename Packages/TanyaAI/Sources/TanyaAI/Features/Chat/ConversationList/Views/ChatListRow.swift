@@ -38,8 +38,10 @@ struct ChatListRow<Content: View>: View {
         case .liveAgentNotice(let notice):
             LiveAgentNoticeCard(kind: notice.kind)
         case .leaveAgentQueue(let isEnabled):
-            FilledLinkButton(
-                title: String(ChatCopy.leaveAgentQueue, locale: locale), isEnabled: isEnabled,
+            FilledButton(
+                title: String(ChatCopy.leaveAgentQueue, locale: locale),
+                variant: .link,
+                isEnabled: isEnabled,
                 onTap: actions.onLeaveAgentQueue
             )
             .accessibilityIdentifier(ChatElementIdentifier.leaveAgentQueue)

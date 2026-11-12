@@ -26,7 +26,7 @@ final class BottomSheetUITests: XCTestCase {
         let composer = application.otherElements["composer"].frame
         let sheet = openSheet()
         let screen = application.frame
-        let options = application.buttons.matching(identifier: "sandbox.sheet.option")
+        let options = optionButtons
         XCTAssertEqual(options.count, 4)
         XCTAssertGreaterThanOrEqual(sheet.frame.maxY, screen.maxY, "permukaan sheet sampai ke tepi bawah layar")
         XCTAssertEqual(options.element(boundBy: 3).frame.maxY, composer.maxY, accuracy: 1)
@@ -64,7 +64,7 @@ final class BottomSheetUITests: XCTestCase {
     func testChoosingAnOptionClosesTheSheet() {
         launchDemo()
         let sheet = openSheet()
-        application.buttons.matching(identifier: "sandbox.sheet.option").firstMatch.tap()
+        optionButtons.firstMatch.tap()
         waitUntilGone(sheet)
     }
 
@@ -78,7 +78,7 @@ final class BottomSheetUITests: XCTestCase {
         let sheet = openSheet()
         let screen = application.frame
         XCTAssertEqual(screen.maxY - sheet.frame.minY, screen.height * 0.6, accuracy: 1)
-        let last = application.buttons.matching(identifier: "sandbox.sheet.option").element(boundBy: 19)
+        let last = optionButtons.element(boundBy: 19)
         XCTAssertFalse(last.isHittable, "baris terakhir di luar sheet sebelum di-scroll")
         scrollToTheEnd(of: sheet, until: last)
         XCTAssertTrue(sheet.exists, "scroll tidak menutup sheet")
@@ -94,7 +94,7 @@ final class BottomSheetUITests: XCTestCase {
         let composer = application.otherElements["composer"].frame
         let sheet = openSheet()
         let screen = application.frame
-        let options = application.buttons.matching(identifier: "sandbox.sheet.option")
+        let options = optionButtons
         XCTAssertEqual(options.count, 4)
         XCTAssertLessThan(screen.maxY - sheet.frame.minY, screen.height * 0.6, "lebih kecil dari batas")
         XCTAssertEqual(options.element(boundBy: 3).frame.maxY, composer.maxY, accuracy: 1)
@@ -109,7 +109,7 @@ final class BottomSheetUITests: XCTestCase {
         let sheet = openSheet()
         XCTAssertGreaterThan(sheet.frame.minY, application.frame.minY, "tidak layar penuh")
         XCTAssertLessThanOrEqual(sheet.frame.minY, back.maxY, "naik sampai area header, di bawah status bar")
-        let last = application.buttons.matching(identifier: "sandbox.sheet.option").element(boundBy: 19)
+        let last = optionButtons.element(boundBy: 19)
         XCTAssertFalse(last.isHittable)
         scrollToTheEnd(of: sheet, until: last)
         XCTAssertTrue(sheet.exists, "scroll tidak menutup sheet")
@@ -125,7 +125,7 @@ final class BottomSheetUITests: XCTestCase {
         swipeFromLeadingEdge()
         XCTAssertFalse(application.buttons["sandbox.open"].waitForExistence(timeout: 2), "masih di Tanya AI")
         XCTAssertTrue(sheet.exists)
-        application.buttons.matching(identifier: "sandbox.sheet.option").firstMatch.tap()
+        optionButtons.firstMatch.tap()
         waitUntilGone(sheet)
         swipeFromLeadingEdge()
         XCTAssertTrue(application.buttons["sandbox.open"].waitForExistence(timeout: 5), "kembali ke halaman host")
@@ -168,6 +168,11 @@ private extension BottomSheetUITests {
     func dragHandleDown() {
         let handle = application.buttons["sheet.handle"].coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.5))
         handle.press(forDuration: 0.1, thenDragTo: handle.withOffset(CGVector(dx: 0, dy: 300)))
+    }
+
+    /// Baris contoh di `OptionList`, dikenali dari teksnya.
+    var optionButtons: XCUIElementQuery {
+        application.buttons.matching(NSPredicate(format: "label == %@", "Sample option"))
     }
 
     /// Sama dengan `StartingPointUITests`: geseran cepat dari tepi kiri sampai hampir ke kanan.

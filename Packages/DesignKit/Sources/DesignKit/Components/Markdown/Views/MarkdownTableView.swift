@@ -21,7 +21,7 @@ struct MarkdownTableView: View {
         VStack(spacing: .zero) {
             if !table.header.isEmpty {
                 row(table.header, isHeader: true)
-                separator
+                SeparatorLine()
             }
             ForEach(Array(table.rows.enumerated()), id: \.offset) { _, cells in
                 if table.isSummaryRow(cells) {
@@ -29,7 +29,7 @@ struct MarkdownTableView: View {
                 } else {
                     row(cells, isHeader: false)
                 }
-                separator
+                SeparatorLine()
             }
         }
     }
@@ -38,12 +38,6 @@ struct MarkdownTableView: View {
 // MARK: - Visual sections
 
 private extension MarkdownTableView {
-    var separator: some View {
-        Rectangle()
-            .fill(colors.colorsOutlineNetral)
-            .frame(height: FigmaSize.weightOutline.scaledToArtwork)
-    }
-
     func row(_ cells: [AttributedString], isHeader: Bool) -> some View {
         HStack(alignment: .top, spacing: FigmaSize.spacingMedium.scaledToArtwork) {
             ForEach(Array(cells.enumerated()), id: \.offset) { column, cell in

@@ -23,7 +23,6 @@ struct SandboxOptions {
     static let demoEndIdentifier = "sandbox.demo.end"
     static let demoParagraphCount = 12
     static let sheetOpenIdentifier = "sandbox.sheet.open"
-    static let sheetOptionIdentifier = "sandbox.sheet.option"
     /// `--sheet-demo`: jumlah baris contoh di dalam bottom sheet.
     static let sheetOptionCount = 4
     /// `--sheet-max`: batas tinggi sheet contoh, bagian dari tinggi layar.

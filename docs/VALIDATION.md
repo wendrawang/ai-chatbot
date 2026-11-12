@@ -919,3 +919,10 @@ dengan 1 detik, UI test baru membaca layar setelah daftar selesai dimuat.
 Belum: kartu form di daftar chat belum diikuti saat tumbuh (field atau error baru bisa tertutup composer), input teks
 di dalam sheet, dan format nominal IDR. Semuanya bagian mesin form berikutnya.
 
+Komponen kembar digabung (permintaan review user): `FilledLinkButton` menjadi `FilledButton(variant: .link)` dengan
+ukuran dan warna nonaktif yang sama; `FieldBox` kini padding di atas `cardStyle` (yang mendapat `fillColor`), bukan
+menggambar permukaan sendiri; spinner di loading history, ikon kartu sambutan, dan daftar pilihan memakai
+`LoadingIndicator`; garis di daftar pilihan, divider dan tabel Markdown, serta di atas composer memakai `SeparatorLine`;
+demo sheet sandbox memakai `OptionList`, bukan daftar buatan sendiri. `FilledButtonTests` memeriksa ukuran kedua
+varian, termasuk ukuran `.link` yang sama dengan `FilledLinkButton` sebelumnya.
+

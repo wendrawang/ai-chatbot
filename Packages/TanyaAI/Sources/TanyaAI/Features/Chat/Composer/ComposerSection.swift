@@ -13,8 +13,6 @@ import SwiftUI
 struct ComposerSection: View {
     @Environment(\.locale)
     private var locale
-    @Environment(\.designColors)
-    private var colors
     @State
     private var draft = String()
     private let isEnabled: Bool
@@ -56,9 +54,7 @@ struct ComposerSection: View {
 
     /// Garis selebar layar di atas composer (Figma), memisahkan area chat dari input.
     private var divider: some View {
-        colors.colorsOutlineNetral
-            .frame(height: FigmaSize.weightOutline.scaledToArtwork)
-            .accessibilityHidden(true)
+        SeparatorLine()
     }
 }
 

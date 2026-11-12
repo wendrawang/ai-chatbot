@@ -35,7 +35,9 @@ struct TanyaAIScreen: ScreenContent {
                 closeLabel: String(SandboxCopy.sheetClose, locale: locale),
                 maxHeight: sheetMaxHeight
             ) {
-                SheetDemoList(count: sheetOptionCount, onSelect: closeSheet)
+                OptionList(title: String(SandboxCopy.sheetTitle, locale: locale), items: sheetOptions) { _ in
+                    closeSheet()
+                }
             }
             .bottomSheet(
                 isPresented: isFormSheetPresented,
@@ -72,8 +74,11 @@ struct TanyaAIScreen: ScreenContent {
     }
 
     /// `--sheet-long`: baris lebih panjang dari layar, supaya scroll di dalam sheet bisa dicoba.
-    private var sheetOptionCount: Int {
-        SandboxOptions.current.isSheetLong ? SandboxOptions.sheetLongOptionCount : SandboxOptions.sheetOptionCount
+    private var sheetOptions: [OptionItem] {
+        let isLong = SandboxOptions.current.isSheetLong
+        let count = isLong ? SandboxOptions.sheetLongOptionCount : SandboxOptions.sheetOptionCount
+        let title = String(SandboxCopy.sheetOption, locale: locale)
+        return (Int.zero..<count).map { OptionItem(id: String($0), title: title) }
     }
 
     /// `--form-demo`: sheet terbuka selama ada daftar pilihan yang dipilih; menutup sheet = tidak ada daftar terbuka.

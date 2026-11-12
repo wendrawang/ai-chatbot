@@ -34,13 +34,7 @@ struct OptionRow: View {
             .contentShape(Rectangle())
         }
         .buttonStyle(.plain)
-        .overlay(alignment: .bottom) { separator }
+        .overlay(alignment: .bottom) { SeparatorLine() }
         .accessibilityAddTraits(isSelected ? .isSelected : [])
-    }
-
-    private var separator: some View {
-        colors.colorsOutlineNetral
-            .frame(height: FigmaSize.weightOutline.scaledToArtwork)
-            .accessibilityHidden(true)
     }
 }

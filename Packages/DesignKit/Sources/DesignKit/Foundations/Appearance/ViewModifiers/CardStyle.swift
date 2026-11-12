@@ -7,7 +7,8 @@
 
 import SwiftUI
 
-/// Permukaan kartu standar: isi `colorsSurfacePrimary`, sudut membulat, dan garis tepi tipis bila `isOutlined`.
+/// Permukaan kartu standar: isi `colorsSurfacePrimary` (atau `fillColor`), sudut membulat, dan garis tepi tipis bila
+/// `isOutlined`.
 /// Bayangan bila `isElevated`; tanpa garis tepi, kartu hanya terangkat oleh bayangan (seperti CardView Android).
 /// Hanya latar; padding isi tetap milik komponen pemakai.
 struct CardStyle: ViewModifier {
@@ -17,6 +18,8 @@ struct CardStyle: ViewModifier {
     let isElevated: Bool
     let cornerRadius: CGFloat
     let outlineColor: Color
+    /// Nil = `colorsSurfacePrimary`; mis. latar abu-abu untuk field nonaktif.
+    let fillColor: Color?
 
     func body(content: Content) -> some View {
         content.background(surface)
@@ -33,9 +36,9 @@ struct CardStyle: ViewModifier {
     @ViewBuilder
     private var fill: some View {
         if isElevated {
-            shape.fill(colors.colorsSurfacePrimary).designShadow()
+            shape.fill(fillColor ?? colors.colorsSurfacePrimary).designShadow()
         } else {
-            shape.fill(colors.colorsSurfacePrimary)
+            shape.fill(fillColor ?? colors.colorsSurfacePrimary)
         }
     }
 

@@ -125,7 +125,10 @@ tersedia pada history/main.
 
 ## Komponen dan ownership
 
-- DesignKit `Components/<Fungsi>`: `Actions`, `Images`, `Inputs`, `Lists`, `Markdown`, `Messages`, `Screen`.
+- DesignKit `Components/<Fungsi>`: `Actions`, `Feedback`, `Images`, `Inputs`, `Lists`, `Markdown`, `Messages`, `Screen`.
+  Sebelum membuat komponen, cek yang sudah ada: tombol isi penuh = `FilledButton` (varian `.link` untuk teks kecil
+  bergaris bawah), permukaan berisi/bergaris = `cardStyle` (`fillColor` untuk latar lain), spinner = `LoadingIndicator`,
+  garis pemisah = `SeparatorLine`.
   Komponen beberapa file memakai subfolder sendiri; satu file langsung di kelompok fungsinya.
   Bagian beberapa file dikelompokkan ke `Models`, `Views`, `Controllers`, `Protocols`, `Extensions` sesuai peran.
   Helper/model/extension khusus komponen tetap dalam pemilik itu, seperti `Markdown/Models` dan `Markdown/Views`.
