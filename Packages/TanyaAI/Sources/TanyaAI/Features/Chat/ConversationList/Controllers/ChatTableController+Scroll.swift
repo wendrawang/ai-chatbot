@@ -37,10 +37,12 @@ extension ChatTableController: UITableViewDelegate {
         reportScrollProgress()
     }
 
-    /// Menggeser membatalkan parkir: posisi kini milik nasabah.
+    /// Menggeser membatalkan parkir dan animasi ke pesan terbaru: posisi kini milik nasabah, jadi tombol ke pesan
+    /// terbaru mengikuti posisi itu lagi.
     func scrollViewWillBeginDragging(_ scrollView: UIScrollView) {
         scrollMode = scrollMode.afterDrag
         isScrollAnimating = false
+        refreshNearBottom()
     }
 
     func scrollViewDidEndScrollingAnimation(_ scrollView: UIScrollView) {
@@ -52,6 +54,7 @@ extension ChatTableController: UITableViewDelegate {
         }
         continueFollowingLatest()
         recordSettledPosition()
+        refreshNearBottom()
     }
 
     /// Posisi terprogram pasti setelah layout, dan selama animasi berjalan belum ada posisi akhirnya.
@@ -96,7 +99,7 @@ extension ChatTableController: UITableViewDelegate {
     /// Sama seperti progress header: dikirim pada putaran berikutnya. Yang dikirim nilai saat itu, jadi posisi
     /// sementara di tengah update (mis. sebelum history parkir di bawah) tidak pernah sampai ke halaman.
     func reportLatestVisibility() {
-        guard isNearBottom != isNearBottomReported, !isVisibilityPending else { return }
+        guard isLatestInReach != isLatestInReachReported, !isVisibilityPending else { return }
         isVisibilityPending = true
         DispatchQueue.main.async { [weak self] in self?.publishLatestVisibility() }
     }
@@ -108,9 +111,9 @@ extension ChatTableController: UITableViewDelegate {
 
     private func publishLatestVisibility() {
         isVisibilityPending = false
-        guard isNearBottom != isNearBottomReported else { return }
-        isNearBottomReported = isNearBottom
-        onLatestVisibilityChange(isNearBottom)
+        guard isLatestInReach != isLatestInReachReported else { return }
+        isLatestInReachReported = isLatestInReach
+        onLatestVisibilityChange(isLatestInReach)
     }
 
     private func publishScrollProgress() {

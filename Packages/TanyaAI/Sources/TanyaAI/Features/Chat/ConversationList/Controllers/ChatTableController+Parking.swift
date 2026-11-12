@@ -14,6 +14,9 @@ import UIKit
 /// terseret.
 extension ChatTableController {
     var isUserScrolling: Bool { tableView.isDragging || tableView.isDecelerating }
+    /// Ujung daftar terlihat, atau sedang dituju animasi ke pesan terbaru. Ini yang dilaporkan ke halaman: selama
+    /// daftar sendiri sedang menuju ujung, tombol ke pesan terbaru tidak perlu muncul.
+    var isLatestInReach: Bool { isNearBottom || scrollMode == .followingLatest }
 
     var baseBottomInset: CGFloat { FigmaSize.spacingLarge.scaledToArtwork }
 
@@ -29,8 +32,10 @@ extension ChatTableController {
     /// `adjustedContentInset` menambahkan safe area ke `contentInset`, jadi bagian atasnya dikurangi lagi.
     func applyInsets() {
         let insets = UIEdgeInsets(
-            top: headerHeight + FigmaSize.spacingLarge.scaledToArtwork - tableView.safeAreaInsets.top, left: .zero,
-            bottom: baseBottomInset + trailingInset, right: .zero
+            top: headerHeight + FigmaSize.spacingLarge.scaledToArtwork - tableView.safeAreaInsets.top,
+            left: .zero,
+            bottom: baseBottomInset + trailingInset,
+            right: .zero
         )
         guard tableView.contentInset != insets else { return }
         tableView.contentInset = insets
@@ -54,12 +59,16 @@ extension ChatTableController {
         scroll(to: target, isAnimated: true)
     }
 
+    /// Pesan yang datang selagi animasi sebelumnya belum selesai (beruntun, mis. stream mengulang satu sesi agen saat
+    /// halaman dibuka) langsung ditaruh di ujung. Kalau tiap pesan memulai animasi baru, daftar bergerak tersendat
+    /// lama setelah pesan terakhir tiba.
     func followLatest() {
         guard isOpened else { return }
+        let isCatchingUp = scrollMode == .followingLatest
         scrollMode = .free
         setTrailingInset(.zero)
         tableView.layoutIfNeeded()
-        scroll(to: bottomOffset, isAnimated: true)
+        scroll(to: bottomOffset, isAnimated: !isCatchingUp)
         scrollMode = isScrollAnimating ? .followingLatest : .free
         guard scrollMode == .free else { return }
         settleAtBottom()
