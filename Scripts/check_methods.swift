@@ -14,10 +14,61 @@ final class Auditor: SyntaxVisitor {
     let path: String
     let locations: SourceLocationConverter
 
+    /// Satu file satu tipe hanya dijaga di package. Token dan identifier UI test memang dikelompokkan bersarang,
+    /// dan spesifikasi format hex tetap private di file pemakainya (lihat AGENTS.md).
+    let isTypeLayoutChecked: Bool
+    var topLevelTypes: [String] = []
+
     init(path: String, tree: SourceFileSyntax) {
         self.path = path
         self.locations = SourceLocationConverter(fileName: path, tree: tree)
+        let exemptions = ["/Tokens/", "/ComponentIdentifier.swift", "/Color+Hex.swift"]
+        self.isTypeLayoutChecked = path.contains("/Packages/") && !exemptions.contains { path.contains($0) }
         super.init(viewMode: .sourceAccurate)
+    }
+
+    func checkType(_ syntax: some SyntaxProtocol, name: String) {
+        guard isTypeLayoutChecked else { return }
+        let line = locations.location(for: syntax.positionAfterSkippingLeadingTrivia).line
+        var ancestor = syntax.parent
+        while let current = ancestor {
+            if current.is(MemberBlockSyntax.self) {
+                isValid = false
+                print("\(path):\(line): \(name) is nested; move it to its own file")
+                return
+            }
+            ancestor = current.parent
+        }
+        topLevelTypes.append(name)
+        if topLevelTypes.count > 1 {
+            isValid = false
+            print("\(path):\(line): \(name) shares a file with \(topLevelTypes[0]); one type per file")
+        }
+    }
+
+    override func visit(_ node: StructDeclSyntax) -> SyntaxVisitorContinueKind {
+        checkType(node, name: node.name.text)
+        return .visitChildren
+    }
+
+    override func visit(_ node: ClassDeclSyntax) -> SyntaxVisitorContinueKind {
+        checkType(node, name: node.name.text)
+        return .visitChildren
+    }
+
+    override func visit(_ node: EnumDeclSyntax) -> SyntaxVisitorContinueKind {
+        checkType(node, name: node.name.text)
+        return .visitChildren
+    }
+
+    override func visit(_ node: ActorDeclSyntax) -> SyntaxVisitorContinueKind {
+        checkType(node, name: node.name.text)
+        return .visitChildren
+    }
+
+    override func visit(_ node: ProtocolDeclSyntax) -> SyntaxVisitorContinueKind {
+        checkType(node, name: node.name.text)
+        return .visitChildren
     }
 
     func check(_ syntax: some SyntaxProtocol, name: String) {

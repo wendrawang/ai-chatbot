@@ -20,63 +20,29 @@ struct ChatTableActionsTests {
     @Test
     func aShownRowCallsTheLatestHandlers() async {
         let model = ActionModel()
-        let probe = ActionProbe()
+        var shownActions: ChatRowActions?
+        var calls: [String] = []
+        var rowBuilds = 0
+        let page = ActionPage(
+            model: model,
+            onCall: { calls.append($0) },
+            onShow: {
+                shownActions = $0
+                rowBuilds += 1
+            }
+        )
         let window = UIWindow(frame: CGRect(x: 0, y: 0, width: 375, height: 812))
-        window.rootViewController = UIHostingController(rootView: ActionPage(model: model, probe: probe))
+        window.rootViewController = UIHostingController(rootView: page)
         window.makeKeyAndVisible()
         defer { window.isHidden = true }
-        await waitUntil { probe.shownActions != nil }
+        await waitUntil { shownActions != nil }
         model.label = "After"
         await waitUntil {
-            probe.shownActions?.onOpenLink(link)
-            return probe.calls.last == "After"
+            shownActions?.onOpenLink(link)
+            return calls.last == "After"
         }
-        probe.shownActions?.onSelectFollowUp("Pertanyaan")
-        #expect(probe.calls.last == "After")
-        #expect(probe.rowBuilds == 1)
-    }
-}
-
-@MainActor
-private final class ActionModel: ObservableObject {
-    @Published var label = "Before"
-}
-
-private final class ActionProbe {
-    var shownActions: ChatRowActions?
-    var calls: [String] = []
-    var rowBuilds = 0
-}
-
-private struct ActionPage: View {
-    @ObservedObject var model: ActionModel
-    let probe: ActionProbe
-
-    var body: some View {
-        ChatTable(
-            state: ChatTableState(items: ChatTableFixture.history(count: 1), historyPhase: .empty),
-            headerHeight: .zero, actions: actions, onScrollProgress: { _ in }, onLatestVisibilityChange: { _ in },
-            row: { _, actions in ActionRow(actions: actions, probe: probe) }
-        )
-    }
-
-    private var actions: ChatRowActions {
-        ChatRowActions(
-            onOpenLink: { [label = model.label, probe] _ in probe.calls.append(label) },
-            onSelectFollowUp: { [label = model.label, probe] _ in probe.calls.append(label) }
-        )
-    }
-}
-
-private struct ActionRow: View {
-    let actions: ChatRowActions
-    let probe: ActionProbe
-
-    var body: some View {
-        Color.clear.frame(height: 40)
-            .onAppear {
-                probe.shownActions = actions
-                probe.rowBuilds += 1
-            }
+        shownActions?.onSelectFollowUp("Pertanyaan")
+        #expect(calls.last == "After")
+        #expect(rowBuilds == 1)
     }
 }

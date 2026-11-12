@@ -48,7 +48,10 @@ final class ChatTableFixture {
     }
 
     func update(
-        items: [ChatListItem], phase: ChatHistoryPhase, sentQuestionID: String? = nil, incomingMessageID: String? = nil
+        items: [ChatListItem],
+        phase: ChatHistoryPhase,
+        sentQuestionID: String? = nil,
+        incomingMessageID: String? = nil
     ) {
         state.items = items
         state.historyPhase = phase
@@ -90,7 +93,11 @@ final class ChatTableFixture {
         (0..<count).map { index in
             let author: ChatAuthor = index.isMultiple(of: 2) ? .user : .assistant
             let message = ChatMessage(
-                id: "m\(index)", seq: index, author: author, text: "Pesan \(index)", status: .active
+                id: "m\(index)",
+                seq: index,
+                author: author,
+                text: "Pesan \(index)",
+                status: .active
             )
             return .message(.message(message), isSpaced: index > 0)
         }
@@ -109,20 +116,5 @@ final class ChatTableFixture {
 
     func isRowVisible(_ row: Int) -> Bool {
         table.indexPathsForVisibleRows?.contains(IndexPath(row: row, section: .zero)) ?? false
-    }
-}
-
-/// Tinggi berbeda-beda supaya perkiraan tinggi table tidak pernah kebetulan benar.
-struct ChatTableFixtureRow: View {
-    let item: ChatListItem
-
-    var body: some View {
-        Color.gray.frame(height: height)
-    }
-
-    private var height: CGFloat {
-        if case .followUps = item { return .zero }
-        guard case .message(let row, _) = item, let index = Int(row.id.dropFirst()) else { return 40 }
-        return index.isMultiple(of: 2) ? 44 : CGFloat(200 + index % 7 * 40)
     }
 }

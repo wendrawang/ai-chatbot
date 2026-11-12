@@ -14,10 +14,10 @@ struct WireTyping: Decodable {
     /// Batas tampil indikator bila tidak ada kabar baru (`ttl_s`).
     let lifetimeSeconds: TimeInterval?
 
-    private enum CodingKeys: String, CodingKey {
-        case direction
-        case isTyping = "typing"
-        // Decoder `.wire` mengubah `ttl_s` menjadi `ttlS` sebelum dicocokkan.
-        case lifetimeSeconds = "ttlS"
+    init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: WireTypingKey.self)
+        direction = try container.decode(ChatAuthor.self, forKey: .direction)
+        isTyping = try container.decode(Bool.self, forKey: .isTyping)
+        lifetimeSeconds = try container.decodeIfPresent(TimeInterval.self, forKey: .lifetimeSeconds)
     }
 }

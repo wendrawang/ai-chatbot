@@ -26,16 +26,4 @@ enum ChatWire {
     static let typingRefresh: TimeInterval = 5
     /// Tanpa ketikan selama ini, nasabah dianggap berhenti mengetik (`typing:false`).
     static let typingIdle: TimeInterval = 3
-
-    enum Event {
-        /// Nama default event SSE bila baris `event:` tidak ada.
-        static let message = "message"
-        static let turnEnd = "turn_end"
-        /// Perpindahan state percakapan, mis. masuk antrean agen.
-        static let state = "state"
-        /// Notifikasi untuk nasabah, mis. agen bergabung atau antrean habis.
-        static let system = "system"
-        /// Ephemeral (tanpa baris outbox): `id:`-nya bukan posisi replay.
-        static let typing = "typing"
-    }
 }

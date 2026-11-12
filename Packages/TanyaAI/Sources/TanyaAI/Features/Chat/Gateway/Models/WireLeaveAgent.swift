@@ -10,7 +10,8 @@
 struct WireLeaveAgent: Decodable {
     let isLeft: Bool
 
-    private enum CodingKeys: String, CodingKey {
-        case isLeft = "left"
+    init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: WireLeaveAgentKey.self)
+        isLeft = try container.decode(Bool.self, forKey: .isLeft)
     }
 }

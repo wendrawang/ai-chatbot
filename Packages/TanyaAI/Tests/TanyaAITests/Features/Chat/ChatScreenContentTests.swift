@@ -18,34 +18,34 @@ struct ChatScreenContentTests {
     @Test
     func injectedContentFollowsTheStateOfTheHost() async {
         let model = ContentModel()
-        let probe = ContentProbe()
-        let window = makeWindow(model: model, probe: probe)
+        var label: String?
+        let window = makeWindow(model: model, onRender: { label = $0 })
         defer { window.isHidden = true }
-        await waitUntil { probe.label == "Before" }
+        await waitUntil { label == "Before" }
         model.label = "After"
-        await waitUntil { probe.label == "After" }
+        await waitUntil { label == "After" }
     }
 
     /// Tinggi baris ikut berubah, jadi konten yang tumbuh tidak terpotong oleh tinggi lama.
     @Test
     func injectedContentResizesItsRow() async {
         let model = ContentModel()
-        let probe = ContentProbe()
-        let window = makeWindow(model: model, probe: probe)
+        var frameHeight: CGFloat?
+        let window = makeWindow(model: model, onResize: { frameHeight = $0 })
         defer { window.isHidden = true }
-        await waitUntil { probe.frameHeight == ContentModel.shortHeight }
+        await waitUntil { frameHeight == ContentModel.shortHeight }
         model.height = ContentModel.tallHeight
-        await waitUntil { probe.frameHeight == ContentModel.tallHeight }
+        await waitUntil { frameHeight == ContentModel.tallHeight }
     }
 
     /// Host menyembunyikan konten lewat `if`: tipe kontennya tetap bukan `EmptyView`, jadi barisnya tetap ada.
     @Test
     func hiddenContentLeavesNoEmptySpace() async throws {
         let model = ContentModel()
-        let probe = ContentProbe()
-        let window = makeWindow(model: model, probe: probe)
+        var frameHeight: CGFloat?
+        let window = makeWindow(model: model, onResize: { frameHeight = $0 })
         defer { window.isHidden = true }
-        await waitUntil { probe.frameHeight == ContentModel.shortHeight }
+        await waitUntil { frameHeight == ContentModel.shortHeight }
         let table = try #require(window.nestedTable as UITableView?)
         model.isVisible = false
         await waitUntil { table.lastRowHeight != ContentModel.shortHeight }
@@ -58,71 +58,28 @@ struct ChatScreenContentTests {
     @Test
     func anIdlePageStopsRebuildingTheContent() async throws {
         let model = ContentModel()
-        let probe = ContentProbe()
-        let window = makeWindow(model: model, probe: probe)
+        var renders = 0
+        let window = makeWindow(model: model, onRender: { _ in renders += 1 })
         defer { window.isHidden = true }
-        await waitUntil { probe.label == "Before" }
+        await waitUntil { renders > 0 }
         try await Task.sleep(nanoseconds: 300_000_000)
-        let settledRenders = probe.renders
+        let settledRenders = renders
         try await Task.sleep(nanoseconds: 300_000_000)
-        #expect(probe.renders == settledRenders)
+        #expect(renders == settledRenders)
     }
 
-    private func makeWindow(model: ContentModel, probe: ContentProbe) -> UIWindow {
+    private func makeWindow(
+        model: ContentModel,
+        onRender: @escaping (String) -> Void = { _ in },
+        onResize: @escaping (CGFloat) -> Void = { _ in }
+    ) -> UIWindow {
         let host = TanyaAIHost(bridge: TanyaAIBridge(transport: FakeChatTransport()))
+        let page = ContentPage(host: host, model: model, onRender: onRender, onResize: onResize)
         let window = UIWindow(frame: CGRect(x: 0, y: 0, width: 375, height: 812))
-        window.rootViewController = UIHostingController(rootView: ContentPage(host: host, model: model, probe: probe))
+        window.rootViewController = UIHostingController(rootView: page)
         window.makeKeyAndVisible()
         window.rootViewController?.view.layoutIfNeeded()
         return window
-    }
-}
-
-@MainActor
-private final class ContentModel: ObservableObject {
-    static let shortHeight: CGFloat = 40
-    static let tallHeight: CGFloat = 160
-    @Published var label = "Before"
-    @Published var height = ContentModel.shortHeight
-    @Published var isVisible = true
-}
-
-private final class ContentProbe {
-    var label: String?
-    var frameHeight: CGFloat?
-    var renders = 0
-}
-
-private struct ContentPage: View {
-    let host: TanyaAIHost
-    @ObservedObject var model: ContentModel
-    let probe: ContentProbe
-
-    var body: some View {
-        host.makeView {
-            if model.isVisible {
-                ContentSample(label: model.label, height: model.height, probe: probe)
-            }
-        }
-    }
-}
-
-private struct ContentSample: View {
-    let label: String
-    let height: CGFloat
-    let probe: ContentProbe
-
-    var body: some View {
-        probe.label = label
-        probe.renders += 1
-        return Color.clear.frame(height: height)
-            .background {
-                GeometryReader { geometry in
-                    Color.clear
-                        .onAppear { probe.frameHeight = geometry.size.height }
-                        .onChange(of: geometry.size.height) { probe.frameHeight = $0 }
-                }
-            }
     }
 }
 

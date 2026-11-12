@@ -9,7 +9,8 @@
 struct WireStateChange: Decodable {
     let nextState: ConversationState
 
-    private enum CodingKeys: String, CodingKey {
-        case nextState = "to"
+    init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: WireStateChangeKey.self)
+        nextState = try container.decode(ConversationState.self, forKey: .nextState)
     }
 }

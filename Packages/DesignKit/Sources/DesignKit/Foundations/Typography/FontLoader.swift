@@ -13,12 +13,6 @@ public enum FontLoader {
     private static let lock = NSLock()
     private static var registered: [URL: [String]] = [:]
 
-    public enum Failure: Error {
-        case missingResource(String)
-        case invalidFont(URL)
-        case registration(URL)
-    }
-
     /// Mengembalikan nama PostScript yang sebenarnya; bisa berbeda dari nama file.
     public static func register(url: URL) throws -> [String] {
         lock.lock()
@@ -28,7 +22,7 @@ public enum FontLoader {
             let descriptors = CTFontManagerCreateFontDescriptorsFromURL(url as CFURL)
                 as? [CTFontDescriptor], !descriptors.isEmpty
         else {
-            throw Failure.invalidFont(url)
+            throw FontLoaderFailure.invalidFont(url)
         }
         var error: Unmanaged<CFError>?
         let isRegistered = CTFontManagerRegisterFontsForURL(url as CFURL, .process, &error)
@@ -40,7 +34,7 @@ public enum FontLoader {
                         && CFErrorGetCode($0) == CTFontManagerError.alreadyRegistered.rawValue
                 }) == true
         else {
-            throw Failure.registration(url)
+            throw FontLoaderFailure.registration(url)
         }
         let names = descriptors.compactMap {
             CTFontDescriptorCopyAttribute($0, kCTFontNameAttribute) as? String
@@ -62,7 +56,7 @@ public enum FontLoader {
                     subdirectory: subdirectory
                 )
             else {
-                throw Failure.missingResource(fileName)
+                throw FontLoaderFailure.missingResource(fileName)
             }
             return try register(url: resource)
         }

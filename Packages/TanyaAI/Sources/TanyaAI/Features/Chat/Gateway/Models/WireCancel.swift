@@ -10,7 +10,8 @@
 struct WireCancel: Decodable {
     let isCanceled: Bool
 
-    private enum CodingKeys: String, CodingKey {
-        case isCanceled = "canceled"
+    init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: WireCancelKey.self)
+        isCanceled = try container.decode(Bool.self, forKey: .isCanceled)
     }
 }

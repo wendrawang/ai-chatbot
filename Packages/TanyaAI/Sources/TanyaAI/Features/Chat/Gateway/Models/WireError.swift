@@ -11,8 +11,9 @@ struct WireError: Decodable {
     let isRetryable: Bool
     let data: WireRetryHint?
 
-    private enum CodingKeys: String, CodingKey {
-        case isRetryable = "retryable"
-        case data
+    init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: WireErrorKey.self)
+        isRetryable = try container.decode(Bool.self, forKey: .isRetryable)
+        data = try container.decodeIfPresent(WireRetryHint.self, forKey: .data)
     }
 }

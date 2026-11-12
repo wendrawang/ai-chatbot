@@ -41,7 +41,7 @@ struct ServerSentEventParser {
     private mutating func flush() -> ServerSentEvent? {
         defer { self = Self() }
         guard let data else { return nil }
-        return ServerSentEvent(id: eventID, name: name ?? ChatWire.Event.message, data: data)
+        return ServerSentEvent(id: eventID, name: name ?? ChatWireEvent.message, data: data)
     }
 }
 

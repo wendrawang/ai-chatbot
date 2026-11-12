@@ -57,21 +57,15 @@ public struct GrowingTextInput: UIViewRepresentable {
         editor.remeasure()
     }
 
-    public func makeCoordinator() -> Coordinator { Coordinator(parent: self) }
+    public func makeCoordinator() -> GrowingTextInputCoordinator { GrowingTextInputCoordinator(parent: self) }
 
-    public static func dismantleUIView(_ editor: BoundedTextView, coordinator: Coordinator) {
+    public static func dismantleUIView(_ editor: BoundedTextView, coordinator: GrowingTextInputCoordinator) {
         editor.delegate = nil
     }
 
-    public final class Coordinator: NSObject, UITextViewDelegate {
-        var parent: GrowingTextInput
-        init(parent: GrowingTextInput) { self.parent = parent }
-
-        public func textViewDidChange(_ editor: UITextView) {
-            // UITextView.text bertipe String!; baca sebagai optional agar tidak ada unwrap paksa.
-            parent.text = editor.text ?? String()
-            (editor as? BoundedTextView)?.remeasure()
-        }
+    /// Teks dari editor ke draft pemakai; dipanggil coordinator setiap isi editor berubah.
+    func updateDraft(_ draft: String) {
+        text = draft
     }
 }
 

@@ -22,12 +22,8 @@ struct WireMessage: Decodable {
     /// Nil bila `intent` kosong; nilai yang belum dikenal menjadi `unknown`.
     let intent: ChatIntent?
 
-    private enum CodingKeys: CodingKey {
-        case messageId, seq, direction, payload, status, createdAt, clientMsgId, followUpQuestions, intent
-    }
-
     init(from decoder: Decoder) throws {
-        let container = try decoder.container(keyedBy: CodingKeys.self)
+        let container = try decoder.container(keyedBy: WireMessageKey.self)
         messageId = try container.decode(String.self, forKey: .messageId)
         seq = try container.decode(String.self, forKey: .seq)
         direction = try container.decode(ChatAuthor.self, forKey: .direction)

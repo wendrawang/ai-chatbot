@@ -43,25 +43,25 @@ struct TanyaAIHostTests {
             colors: PremierColorConstants(),
             bridge: TanyaAIBridge(transport: FakeChatTransport())
         )
-        let openedProbe = EnvironmentProbe()
+        var opened: (colors: any FigmaColorProtocol, locale: Locale)?
         let openedWindow = makeWindow(
-            root: UIHostingController(rootView: host.makeView { EnvironmentReader(probe: openedProbe) })
+            root: UIHostingController(rootView: host.makeView { EnvironmentReader { opened = ($0, $1) } })
         )
         defer { openedWindow.isHidden = true }
-        #expect(openedProbe.colors is PremierColorConstants)
-        #expect(openedProbe.locale?.identifier == "id")
+        #expect(opened?.colors is PremierColorConstants)
+        #expect(opened?.locale.identifier == "id")
         host.locale = Locale(identifier: "zh-Hans")
         host.colors = PrivateColorConstants()
-        let nextProbe = EnvironmentProbe()
+        var next: (colors: any FigmaColorProtocol, locale: Locale)?
         let nextWindow = makeWindow(
-            root: UIHostingController(rootView: host.makeView { EnvironmentReader(probe: nextProbe) })
+            root: UIHostingController(rootView: host.makeView { EnvironmentReader { next = ($0, $1) } })
         )
         defer { nextWindow.isHidden = true }
-        #expect(nextProbe.colors is PrivateColorConstants)
-        #expect(nextProbe.locale?.identifier == "zh-Hans")
+        #expect(next?.colors is PrivateColorConstants)
+        #expect(next?.locale.identifier == "zh-Hans")
         openedWindow.rootViewController?.view.layoutIfNeeded()
-        #expect(openedProbe.colors is PremierColorConstants)
-        #expect(openedProbe.locale?.identifier == "id")
+        #expect(opened?.colors is PremierColorConstants)
+        #expect(opened?.locale.identifier == "id")
     }
 
     private func makeWindow(root: UIViewController) -> UIWindow {
@@ -70,22 +70,5 @@ struct TanyaAIHostTests {
         window.makeKeyAndVisible()
         root.view.layoutIfNeeded()
         return window
-    }
-}
-
-private final class EnvironmentProbe {
-    var colors: (any FigmaColorProtocol)?
-    var locale: Locale?
-}
-
-private struct EnvironmentReader: View {
-    @Environment(\.designColors) private var colors
-    @Environment(\.locale) private var locale
-    let probe: EnvironmentProbe
-
-    var body: some View {
-        probe.colors = colors
-        probe.locale = locale
-        return Text("Content")
     }
 }

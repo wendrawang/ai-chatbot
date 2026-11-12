@@ -25,17 +25,17 @@ enum ChatEvent: Equatable {
     init(_ event: ServerSentEvent) {
         let data = Data(event.data.utf8)
         switch event.name {
-        case ChatWire.Event.message:
+        case ChatWireEvent.message:
             let wire = try? JSONDecoder.wire.decode(WireMessage.self, from: data)
             self = wire.flatMap(ChatMessage.init(wire:)).map(ChatEvent.message) ?? .ignored
-        case ChatWire.Event.turnEnd:
+        case ChatWireEvent.turnEnd:
             self = .turnEnd(seq: event.id.flatMap(Int.init))
-        case ChatWire.Event.state:
+        case ChatWireEvent.state:
             let wire = try? JSONDecoder.wire.decode(WireStateChange.self, from: data)
             self = wire.map { .state($0.nextState) } ?? .ignored
-        case ChatWire.Event.system:
+        case ChatWireEvent.system:
             self = Self.notice(from: data, seq: event.id.flatMap(Int.init)) ?? .ignored
-        case ChatWire.Event.typing:
+        case ChatWireEvent.typing:
             self = Self.agentTyping(from: data) ?? .ignored
         default:
             self = .ignored
