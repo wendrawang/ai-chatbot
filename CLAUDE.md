@@ -37,6 +37,7 @@ bridge host ke chat-gateway (init → history → SSE, retry, merge), dan daftar
 - Bottom sheet: `.bottomSheet(isPresented:closeLabel:content:)` DesignKit di root halaman; wadah saja (latar gelap,
   grabber, tutup lewat ketuk di luar atau geser ke bawah), tinggi mengikuti isi, isi membawa judul dan padding sendiri.
   Belum ada pemicu di chat; contoh ada di sandbox `--sheet-demo`. Service untuk isi seperti PIN tetap di host.
+  Swipe-back ditahan host selama sheet terbuka (milik navigasi host, bukan package).
 - Ukuran welcome/kartu/bubble masih estimasi screenshot (TODO di `CustomSizes`);
   aset `chatBackground`/`welcomeOrb` placeholder (`ChatImage`), ganti file, nama tetap.
 - Struktur fungsi → jenis file: [docs/PACKAGE_STRUCTURE.md](docs/PACKAGE_STRUCTURE.md).

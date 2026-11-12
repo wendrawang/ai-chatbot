@@ -146,7 +146,9 @@ tersedia pada history/main.
   bawah). Tinggi mengikuti isi; judul, padding, dan scroll milik isi (daftar pilihan, keypad PIN, dan lainnya). Ini
   overlay di dalam halaman, bukan presentasi modal, jadi jalan di iOS 15 dan tidak menyentuh navigasi host. Jangan
   memakai `.sheet` atau membuat wadah sheet lain per fitur. Isi yang memanggil service (mis. PIN) meneruskan
-  hasilnya ke host lewat callback; service tetap di host.
+  hasilnya ke host lewat callback; service tetap di host. Latar gelap hanya menahan sentuhan di dalam halaman:
+  swipe-back milik navigasi host, jadi host menahannya selama sheet terbuka (sandbox:
+  `UINavigationController.setPopGestureEnabled`) dan membukanya lagi saat halaman hilang.
 - Screen standar memakai composition `ScreenScaffold` dari DesignKit: header, trailing action, footer, dan
   latar. Scroll milik konten, yang melaporkan `scrollProgress`; `ChatScreen` memakai ini dengan `ChatTable`.
   Aturan table ada di `docs/REVAMP_NOTES.md`. Jangan membuat inheritance/BaseScreen protocol, ViewModel layout

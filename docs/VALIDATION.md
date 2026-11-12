@@ -856,3 +856,10 @@ geseran pendek yang ditahan mengembalikan sheet dan geseran panjang menutupnya; 
 Tidak diuji: keyboard yang ditutup saat sheet tampil (simulator tidak menampilkan keyboard layar), VoiceOver di
 perangkat, dan tampilan di iOS 15.
 
+Setelah review: swipe dari tepi kiri selama sheet terbuka masih keluar dari halaman, karena latar gelap hanya
+menahan sentuhan SwiftUI dan gesture navigasi milik host. Sandbox (sebagai host) kini menahan swipe-back selama sheet
+terbuka dan membukanya lagi saat ditutup atau saat halaman hilang. `testSwipeBackIsHeldWhileTheSheetIsOpen` gagal
+tanpa perbaikan ini. Pemeriksaan jarak bawah dulu mengandaikan home indicator (gagal di iPhone SE: 651 > 637); kini
+dibandingkan dengan tepi bawah kartu composer, yang juga berhenti 16 di atas safe area. Kelima UI test lulus di
+iPhone 17 Pro dan iPhone SE (3rd generation), iOS 26.5.
+

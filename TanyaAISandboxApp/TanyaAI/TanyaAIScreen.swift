@@ -31,6 +31,10 @@ struct TanyaAIScreen: ScreenContent {
             .bottomSheet(isPresented: $isSheetPresented, closeLabel: String(SandboxCopy.sheetClose, locale: locale)) {
                 SheetDemoList(onSelect: closeSheet)
             }
+            // Latar gelap hanya menahan sentuhan di dalam halaman; swipe-back milik navigasi host, jadi host yang
+            // menahannya selama sheet terbuka. Dibuka lagi saat halaman hilang supaya tidak tertinggal mati.
+            .onChange(of: isSheetPresented) { UINavigationController.setPopGestureEnabled(!$0) }
+            .onDisappear { UINavigationController.setPopGestureEnabled() }
     }
 
     @ViewBuilder
