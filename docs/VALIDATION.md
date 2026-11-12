@@ -874,3 +874,12 @@ status bar, tidak negatif). UI test sandbox: `--sheet-long` tanpa batas berhenti
 `--sheet-max --sheet-long` berhenti di 60% layar dan di-scroll tanpa mengubah tinggi; `--sheet-max` dengan 4 baris
 tetap setinggi isi. Unit test ukuran untuk isi yang melewati batas dicoba lewat `UIHostingController.sizeThatFits` di
 window, tetapi hasilnya ikut menghitung safe area window test, jadi perilaku ini diuji lewat UI test di aplikasi.
+
+Scroll di dalam sheet tanpa indikator dan tanpa bounce. Indikator lewat `ScrollView(showsIndicators: false)`. Bounce
+tidak punya API SwiftUI di iOS 15 (`scrollBounceBehavior` baru iOS 16.4, dan tetap memantul saat isi bisa di-scroll),
+jadi `ScrollBounceDisabler` (penanda UIKit di background isi) mematikan `bounces` pada scroll view terdekat di atasnya
+saja. `ScrollBounceDisablerTests`: dari dua scroll view di layar yang sama, hanya yang berisi penanda yang berhenti
+memantul. Di aplikasi (log sementara, `--sheet-long`): scroll view yang diubah adalah area isi sheet, `bounces` false
+dan indikator mati. Bila suatu saat SwiftUI tidak lagi memakai `UIScrollView`, penanda tidak menemukan apa-apa dan
+scroll kembali memantul; tidak ada efek lain.
+

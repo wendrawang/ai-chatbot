@@ -144,8 +144,9 @@ tersedia pada history/main.
   (`Components/Screen/BottomSheet`), dipasang di root halaman supaya latar gelap menutupi header dan composer. Wadah
   hanya memberi latar gelap, permukaan bersudut atas membulat, grabber, dan cara menutup (ketuk di luar, geser ke
   bawah). Tinggi mengikuti isi sampai batasnya: bawaan tepat di bawah status bar, atau `maxHeight: .screenFraction(0.6)`
-  (bagian dari tinggi layar). Isi yang lebih panjang dari batas di-scroll wadah, dan geser untuk menutup lalu hanya dari
-  grabber. Judul dan padding milik isi. Ini
+  (bagian dari tinggi layar). Isi yang lebih panjang dari batas di-scroll wadah tanpa indikator dan tanpa bounce (jembatan
+  UIKit kecil `ScrollBounceDisabler`, hanya untuk scroll view sheet), dan geser untuk menutup lalu hanya dari grabber.
+  Judul dan padding milik isi. Ini
   overlay di dalam halaman, bukan presentasi modal, jadi jalan di iOS 15 dan tidak menyentuh navigasi host. Jangan
   memakai `.sheet` atau membuat wadah sheet lain per fitur. Isi yang memanggil service (mis. PIN) meneruskan
   hasilnya ke host lewat callback; service tetap di host. Latar gelap hanya menahan sentuhan di dalam halaman:

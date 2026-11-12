@@ -79,12 +79,15 @@ struct BottomSheet<Content: View>: View {
             .accessibilityIdentifier(ComponentIdentifier.BottomSheet.handle)
     }
 
-    /// Isi yang lebih panjang dari sheet di-scroll; isi yang lebih pendek tetap di atas.
+    /// Isi yang lebih panjang dari sheet di-scroll, tanpa indikator dan tanpa memantul di ujung; isi yang lebih pendek
+    /// tetap di atas.
     @ViewBuilder
     private var contentArea: some View {
         if isScrolling {
-            ScrollView(.vertical) {
-                measuredContent.frame(maxWidth: .infinity)
+            ScrollView(.vertical, showsIndicators: false) {
+                measuredContent
+                    .frame(maxWidth: .infinity)
+                    .background(ScrollBounceDisabler())
             }
         } else {
             measuredContent
