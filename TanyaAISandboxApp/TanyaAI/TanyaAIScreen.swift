@@ -19,6 +19,7 @@ struct TanyaAIScreen: ScreenContent {
     @State
     private var openedLink: String?
     @State private var isSheetPresented = false
+    @StateObject private var formDemo = FormDemoModel()
     let onBack: () -> Void
 
     var body: some View {
@@ -36,9 +37,16 @@ struct TanyaAIScreen: ScreenContent {
             ) {
                 SheetDemoList(count: sheetOptionCount, onSelect: closeSheet)
             }
+            .bottomSheet(
+                isPresented: isFormSheetPresented,
+                closeLabel: String(SandboxCopy.sheetClose, locale: locale)
+            ) {
+                FormDemoSheetContent(model: formDemo)
+            }
             // Latar gelap hanya menahan sentuhan di dalam halaman; swipe-back milik navigasi host, jadi host yang
             // menahannya selama sheet terbuka. Dibuka lagi saat halaman hilang supaya tidak tertinggal mati.
             .onChange(of: isSheetPresented) { UINavigationController.setPopGestureEnabled(!$0) }
+            .onChange(of: formDemo.sheet != nil) { UINavigationController.setPopGestureEnabled(!$0) }
             .onDisappear { UINavigationController.setPopGestureEnabled() }
     }
 
@@ -48,6 +56,8 @@ struct TanyaAIScreen: ScreenContent {
         // Sandbox: mode --header-demo mengisi area scroll dengan konten contoh.
         if SandboxOptions.current.isHeaderDemo {
             host.makeView(onBack: onBack, onOpenLink: openLink) { HeaderDemoContent() }
+        } else if SandboxOptions.current.isFormDemo {
+            host.makeView(onBack: onBack, onOpenLink: openLink) { FormDemoContent(model: formDemo) }
         } else if SandboxOptions.current.isSheetDemo {
             host.makeView(onBack: onBack, onOpenLink: openLink) { SheetDemoContent(onOpen: openSheet) }
         } else {
@@ -64,6 +74,11 @@ struct TanyaAIScreen: ScreenContent {
     /// `--sheet-long`: baris lebih panjang dari layar, supaya scroll di dalam sheet bisa dicoba.
     private var sheetOptionCount: Int {
         SandboxOptions.current.isSheetLong ? SandboxOptions.sheetLongOptionCount : SandboxOptions.sheetOptionCount
+    }
+
+    /// `--form-demo`: sheet terbuka selama ada daftar pilihan yang dipilih; menutup sheet = tidak ada daftar terbuka.
+    private var isFormSheetPresented: Binding<Bool> {
+        Binding(get: { formDemo.sheet != nil }, set: { if !$0 { formDemo.sheet = nil } })
     }
 
     private var isLinkPresented: Binding<Bool> {

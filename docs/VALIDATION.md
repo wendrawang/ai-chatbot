@@ -892,3 +892,30 @@ diandalkan (di aplikasi benar, di unit test tidak), jadi tidak dipakai. Belum ad
 XCUITest tidak bisa mengambil gambar per frame dan opacity SwiftUI tidak terbaca dari unit test; delapan UI test sheet
 tetap lulus.
 
+## Komponen field form dan daftar pilihan — 12 November 2026
+
+Fondasi form intent (surat referensi, reksa dana): `SelectField`, `TextInputField`, `ToggleRow`, `FilledButton`, dan
+isi sheet `OptionList` di DesignKit. Komponen hanya menampilkan; mesin form (validasi, dependensi, state per intent)
+menyusul di TanyaAI. Dicoba lewat sandbox `--form-demo`: format menentukan field berikutnya (hardcopy = alamat, softcopy
+= email tersimpan yang nonaktif), rekening boleh lebih dari satu dan daftarnya dimuat dulu, dan Konfirmasi menandai field
+kosong dengan teks merah sambil membuka sheet pilihan kosong paling atas.
+
+| Nilai | Sumber |
+| --- | --- |
+| Label 14, isi 16, error 12 merah (`colorsTextNegative`), garis merah `colorsOutlineRed` | Perkiraan dari foto Figma |
+| Kotak field padding 16, tinggi isi minimal 24 (setinggi chevron), radius 8 | Perkiraan dari foto |
+| Nonaktif = latar `colorsSurfaceDisable` | Perkiraan dari foto |
+| Radio, centang, dan toggle aktif = `colorsSelectionFilledSelected`; kosong = `colorsSelectionEmptyDefault` | Token palette |
+| Penanda pilihan 20, tombol isi penuh padding atas-bawah 12 | Perkiraan dari foto |
+| Ikon `chevronDown`, `checkmark` | PDF dummy, TODO ganti aset Figma |
+
+`OptionSelectionTests` (satu pilihan langsung selesai, banyak pilihan menunggu konfirmasi, hasil urut sesuai daftar),
+`FormFieldTests` (isi dan placeholder sama tinggi, field pilihan dan teks sama tinggi, error menambah tinggi),
+`FilledButtonTests`. `FormFieldsUITests` (iPhone 17 Pro, iOS 26.5): format menukar field bergantung dan email nonaktif
+tidak bisa diubah; rekening tampil loading lalu bisa dipilih lebih dari satu; Konfirmasi membuka sheet pilihan kosong
+paling atas, menandai rekening dan alamat kosong, dan error alamat hilang saat diketik. Jeda loading contoh 3 detik:
+dengan 1 detik, UI test baru membaca layar setelah daftar selesai dimuat.
+
+Belum: kartu form di daftar chat belum diikuti saat tumbuh (field atau error baru bisa tertutup composer), input teks
+di dalam sheet, dan format nominal IDR. Semuanya bagian mesin form berikutnya.
+

@@ -140,6 +140,9 @@ tersedia pada history/main.
 - Tidak ada alias untuk nilai sistem: `.clear`, bukan `CustomColors.transparent`.
 - TanyaAI dipisah per tanggung jawab (lihat "Struktur TanyaAI"). Folder intent baru dibuat saat file
   pertamanya ada, bukan lebih awal.
+- Field form generik di DesignKit (`Components/Inputs/FormField`): `SelectField`, `TextInputField`, `ToggleRow`, semua
+  dengan label, `error` merah di bawah, dan `isEnabled`. Daftar pilihan di sheet memakai `OptionList` (satu atau banyak
+  pilihan, `items` nil = loading). Komponen hanya menampilkan; validasi, dependensi, dan isi daftar milik pemakai.
 - Bottom sheet memakai `.bottomSheet(isPresented:closeLabel:content:)` dari DesignKit
   (`Components/Screen/BottomSheet`), dipasang di root halaman supaya latar gelap menutupi header dan composer. Wadah
   hanya memberi latar gelap, permukaan bersudut atas membulat, grabber, dan cara menutup (ketuk di luar, geser ke

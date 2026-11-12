@@ -49,6 +49,10 @@ Contoh penempatan yang sudah diterapkan:
 - `Components/Markdown/Models/MarkdownDocument.swift`: Markdown yang sudah di-parse.
 - `Components/Markdown/Parsing/MarkdownParser.swift`: parsing dokumen.
 - `Components/Markdown/Views/MarkdownContent.swift`: rendering dokumen.
+- `Components/Inputs/FormField/Views/`: `SelectField` (membuka daftar pilihan), `TextInputField`, `ToggleRow`, dan
+  `FieldFrame` (label, isi, error merah) yang dipakai bersama; kotak field di `ViewModifiers/FieldBox.swift`.
+- `Components/Lists/OptionList/`: isi sheet daftar pilihan (`OptionList`), satu atau banyak pilihan, dengan state loading.
+- `Components/Actions/FilledButton.swift`: tombol utama isi penuh, mis. Konfirmasi dan Pilih.
 - `Components/Screen/BottomSheet/Models/BottomSheetMaxHeight.swift`: batas tinggi, di bawah status bar atau bagian layar.
 - `Components/Screen/BottomSheet/Views/BottomSheet.swift`: permukaan sheet, grabber, dan scroll bila isi melewati batas.
 - `Components/Screen/BottomSheet/ViewModifiers/BottomSheetPresenter.swift`: latar gelap, posisi, dan animasi masuk.

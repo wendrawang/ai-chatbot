@@ -14,6 +14,10 @@ public enum DesignIcon: String, CaseIterable {
     /// TODO: Ganti PDF dummy dengan aset Figma `icon_arrow` (komponen `auto_scroll`), nama tetap.
     case arrowDown
     case backArrow
+    /// TODO: Ganti PDF dummy dengan aset Figma centang pilihan banyak, nama tetap.
+    case checkmark
+    /// TODO: Ganti PDF dummy dengan aset Figma chevron field pilihan, nama tetap.
+    case chevronDown
     case chevronRight
     /// TODO: Ganti PDF dummy dengan aset Figma ikon headset kartu status, nama tetap.
     case headset

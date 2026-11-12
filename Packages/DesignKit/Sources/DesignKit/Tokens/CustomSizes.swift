@@ -78,6 +78,21 @@ public enum CustomSizes {
         public static let dismissDistance: CGFloat = 80
     }
 
+    /// Indikator pilihan (radio dan centang) dan area loading pada daftar pilihan di bottom sheet.
+    /// TODO: Cocokkan dengan nilai Figma; sementara estimasi dari foto.
+    public enum OptionList {
+        public static let indicator: CGFloat = 20
+        public static let radioDotInset: CGFloat = 5
+        public static let checkboxCornerRadius: CGFloat = 4
+        public static let loadingHeight: CGFloat = 120
+    }
+
+    /// Jarak atas-bawah label tombol isi penuh, mis. Konfirmasi di form dan Pilih di daftar pilihan banyak.
+    /// TODO: Cocokkan dengan nilai Figma; sementara estimasi dari foto.
+    public enum FilledButton {
+        public static let verticalPadding: CGFloat = 12
+    }
+
     /// Kotak ikon dan chevron bulat pada kartu aksi.
     /// TODO: Cocokkan dengan nilai Figma; sementara estimasi dari screenshot.
     public enum ActionCard {

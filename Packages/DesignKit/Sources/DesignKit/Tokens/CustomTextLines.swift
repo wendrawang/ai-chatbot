@@ -12,4 +12,6 @@ public enum CustomTextLines {
     public static let composerInput = 1...4
     public static let headerTitle = 1
     public static let dateChip = 1
+    /// Placeholder field teks satu baris.
+    public static let fieldInput = 1
 }
