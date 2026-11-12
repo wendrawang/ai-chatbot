@@ -1,10 +1,9 @@
 # Starting point — aturan implementasi
 
-Scope branch ini adalah migrasi bertahap: fondasi DesignKit, font package,
-screen kosong dengan composer, dan shared header dengan boundary/blur scroll.
-Konten dummy untuk mengecek scroll hanya berada pada sandbox. iOS 15. Gunakan SwiftUI; UIKit hanya untuk editor
-multiline terukur, table daftar pesan (`ChatTable`) dan bridge presentasi terisolasi. Flow chat lengkap tetap
-tersedia pada history/main.
+Scope branch ini: fondasi DesignKit, shared header, composer, halaman sambutan, bridge ke chat-gateway
+(init → history → SSE), daftar pesan `ChatTable`, dan intent live agent. Data dummy hanya berada pada sandbox.
+iOS 15. Gunakan SwiftUI; UIKit hanya untuk editor multiline terukur, table daftar pesan (`ChatTable`) dan bridge
+presentasi terisolasi.
 
 ## Header file
 
@@ -149,15 +148,9 @@ tersedia pada history/main.
   navigation bar host: mulai dari tepi atas layar (caller menaruhnya tanpa safe area atas,
   `isNotched` dari `ScreenHeader.isNotched(safeAreaTop:)`), padding atas 50/28 tanpa scale,
   kiri-kanan 20, bawah 15, ikon 24, judul Fira Sans Bold 16 dengan padding 32.
-- `.onScrollBoundaryChange(in:threshold:perform:)` reusable di DesignKit. Pasang
-  pada root konten scroll setelah padding; ID sama dengan ScrollView owner.
-  Callback memberi nilai awal lalu perubahan Boolean saja, tanpa state offset
-  setiap pixel, global PreferenceKey atau AnyView. Jaga isolasi nested scroll.
-- Utamakan API SwiftUI sederhana yang familiar bagi tim. Untuk identitas area
-  scroll, gunakan `@State private var scrollSpaceID = UUID()`, tanpa `@Namespace`.
-  State mempertahankan nilai ID selama view yang sama hidup. Jangan membuat ID
-  baru di body atau memakai satu ID global untuk beberapa area scroll. Tambahkan
-  konsep/property wrapper lain hanya ketika ada kebutuhan yang jelas.
+- Utamakan API SwiftUI sederhana yang familiar bagi tim, tanpa `@Namespace`. Tambahkan konsep/property wrapper
+  lain hanya ketika ada kebutuhan yang jelas. Posisi scroll dilaporkan pemilik scroll sebagai `scrollProgress`
+  (`CGFloat.scrollProgress(offset:distance:)`), bukan lewat PreferenceKey global.
 - Header chat belum punya aksi kanan; menu "Percakapan baru" dihapus (28 Oktober 2026) sampai ada
   kebutuhan dan alur BE (batas 1 percakapan per CIF, close). Jangan menambah intent atau database
   sebelum diminta.
@@ -246,8 +239,14 @@ tersedia pada history/main.
 - Tanpa `if ... else`: pakai `if A { return A }` lalu `return B`, `continue` di dalam loop, atau `switch`.
   Pengecualian: di dalam `@ViewBuilder` yang tidak bisa `return` lebih awal, dan `guard ... else`.
 - Atribut variabel satu baris dengan variabelnya: `@Environment(\.designColors) private var colors`.
+- Satu file satu tipe di package, tanpa tipe bersarang di dalam tipe atau extension: `CodingKeys` menjadi enum key
+  sendiri (`Gateway/Decoding/WireCancelKey`) dengan `init(from:)`, coordinator representable dan error menjadi tipe
+  tingkat atas. Class hanya bila framework mewajibkan (`ObservableObject`, subclass/delegate UIKit); probe test
+  memakai closure yang menangkap `var` lokal. Pengecualian: `Tokens/`, `ComponentIdentifier`, dan `HexFormat` di
+  `Color+Hex`. Dijaga `Scripts/check_methods.swift`. Tanpa fungsi di dalam fungsi atau computed property.
 - Parameter dan argumen: satu baris bila muat; bila tidak, satu per baris semuanya. Tidak boleh campuran
-  (mis. dua di baris pertama lalu tiga di baris berikutnya). Kode lama tidak dirombak hanya untuk ini.
+  (mis. dua di baris pertama lalu tiga di baris berikutnya). Formatter menjaganya (`lineBreakBeforeEachArgument`);
+  file lama ikut rapi saat disentuh, tidak dirombak hanya untuk ini.
 - Maksimal 250 baris/file, 50 baris fisik/method, 120 karakter/baris; Bool berawalan
   `is`, kecuali nama wajib protocol seperti `PreferenceKey.defaultValue` dengan
   pengecualian lint lokal beralasan. Jangan padatkan implementasi agar lolos batas.

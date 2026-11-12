@@ -28,7 +28,7 @@ Extension yang membagi implementasi satu tipe tetap bersama tipe tersebut:
 Helper private kecil tetap di file pemilik dengan MARK Helpers/Actions; jangan
 membuat satu file atau folder untuk setiap computed property.
 
-Komponen mandiri satu file, seperti `ActionCard`, `RemoteImage`, atau `DateChip`,
+Komponen mandiri satu file, seperti `ActionCard`, `RemoteImage`, atau `TextChip`,
 tetap langsung di kelompok fungsinya. `ComposerSection` dan `FollowUpsSection` juga
 cukup satu file dalam bagian Chat masing-masing. Folder jenis file dipakai pada
 pemilik yang memiliki beberapa bagian; tidak perlu membuat folder kosong agar seragam.
@@ -66,8 +66,8 @@ scroll progress. Service bisnis, validasi rekening, serta flow transfer milik ho
 | `Chat/FollowUps` | Saran pertanyaan berikutnya. |
 | `Chat/Messages` | `Models` nilai pesan, `Views` bubble, `Extensions` merge pesan. |
 | `Chat/ConversationList` | `Models` item/state/action/input/hari; `Views` baris dan table adapter; `Controllers` table/scroll; `Formatting` tanggal; `Extensions` penyusunan baris. |
-| `Chat/Session` | `TanyaAIBridge`, connection/turn, kebijakan backoff, dan `Models` state sesi. |
-| `Chat/Gateway` | `Models` kontrak respons/event/history, `Decoding`, `Streaming`, serta metadata protokol. HTTP tetap host. |
+| `Chat/Session` | `TanyaAIBridge`, connection/turn, kebijakan backoff, dan `Models` state sesi (`ChatTurn`, `ChatUserTyping`). |
+| `Chat/Gateway` | `Models` kontrak respons/event/history, `Decoding` (decoder, tanggal, dan enum key `Wire…Key`), `Streaming`, serta metadata protokol (`ChatWire`, `ChatWireEvent`). HTTP tetap host. |
 | `Chat/Keys` | Key copy, image, identifier, tautan, dan `Extensions` accessor-nya. |
 | `Chat/Intents` | `Models/ChatIntent` daftar intent dari gateway. |
 | `Chat/Intents/<Nama>` | Satu folder per intent, nama sama dengan case `ChatIntent`. `LiveAgent`: `Models` kartu status, `Extensions` copy kartu, kartu selesai dari history, dan penyisipan kartu ke daftar, `Views` kartu, pesan agen, dan indikator mengetik. |
