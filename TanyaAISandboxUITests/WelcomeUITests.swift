@@ -80,6 +80,8 @@ final class WelcomeUITests: XCTestCase {
         let chips = application.staticTexts.matching(identifier: "chat.date")
         XCTAssertTrue(chips.firstMatch.waitForExistence(timeout: 5))
         XCTAssertEqual(chips.allElementsBoundByIndex.map(\.label), ["14 Okt 2026", "15 Okt 2026"])
+        // Chip selebar isinya; daftar yang menaruhnya di tengah.
+        XCTAssertEqual(chips.firstMatch.frame.midX, application.frame.midX, accuracy: 1)
         XCTAssertEqual(application.descendants(matching: .any).matching(identifier: "chat.answer").count, 2)
         capture("chat-history-without-welcome")
     }

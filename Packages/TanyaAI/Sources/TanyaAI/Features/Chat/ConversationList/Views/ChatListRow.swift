@@ -39,7 +39,8 @@ struct ChatListRow<Content: View>: View {
             LiveAgentNoticeCard(kind: notice.kind)
         case .leaveAgentQueue(let isEnabled):
             FilledLinkButton(
-                title: String(ChatCopy.leaveAgentQueue, locale: locale), isEnabled: isEnabled,
+                title: String(ChatCopy.leaveAgentQueue, locale: locale),
+                isEnabled: isEnabled,
                 onTap: actions.onLeaveAgentQueue
             )
             .accessibilityIdentifier(ChatElementIdentifier.leaveAgentQueue)
@@ -58,7 +59,9 @@ private extension ChatListRow {
     func welcomeSection(isEnabled: Bool) -> some View {
         if let welcome {
             WelcomeSection(
-                content: welcome, isEnabled: isEnabled, onSelect: actions.onSelectShortcut,
+                content: welcome,
+                isEnabled: isEnabled,
+                onSelect: actions.onSelectShortcut,
                 onOpenLink: actions.onOpenLink
             )
         }
@@ -67,7 +70,9 @@ private extension ChatListRow {
     @ViewBuilder
     func dateChip(_ day: ChatDayIdentifier) -> some View {
         if let date = day.date {
-            DateChip(text: ChatDateFormat.dayLabel(for: date, locale: locale))
+            TextChip(text: ChatDateFormat.dayLabel(for: date, locale: locale))
+                .frame(maxWidth: .infinity)
+                .accessibilityAddTraits(.isHeader)
                 .accessibilityIdentifier(ChatElementIdentifier.dateChip)
         }
     }
