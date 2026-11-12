@@ -44,16 +44,12 @@ public final class TanyaAIBridge: ObservableObject {
     @Published var isAgentTyping = false
     /// Penghapus indikator mengetik setelah batas waktunya; diganti setiap event `typing` baru.
     var agentTypingExpiry: Task<Void, Never>?
-    /// Agen sedang diberi tahu nasabah mengetik (`typing:true` terakhir yang dikirim); tidak di-publish.
-    var isUserTypingSent = false
-    /// `typing:true` terkirim kurang dari `ChatWire.typingRefresh` yang lalu, jadi ketikan berikutnya tidak dikirim.
-    var isUserTypingFresh = false
+    /// Status sinyal mengetik nasabah ke agen (lihat `ChatUserTyping`); tidak di-publish.
+    var userTyping = ChatUserTyping()
+    /// Menganggap nasabah berhenti mengetik setelah `ChatWire.typingIdle` tanpa ketikan.
     var userTypingIdle: Task<Void, Never>?
+    /// Mengizinkan `typing:true` dikirim lagi setelah `ChatWire.typingRefresh`.
     var userTypingRefresh: Task<Void, Never>?
-    /// Sinyal terbaru yang belum dikirim (nil = tidak ada); sinyal yang menunggu digabung menjadi yang terbaru.
-    var isUserTypingQueued: Bool?
-    /// Nilai terakhir yang dikirim ke server; `false` tanpa `true` sebelumnya tidak perlu dikirim.
-    var isUserTypingDelivered = false
     /// Satu-satunya pengirim `typing` yang berjalan; selesai saat tidak ada sinyal yang menunggu.
     var userTypingDelivery: Task<Void, Never>?
     /// Percakapan dari `/v1/chat/init` terakhir; nil sebelum init pertama berhasil.

@@ -104,13 +104,11 @@ extension TanyaAIBridge {
             guard (try? await sleep(ChatWire.typingIdle)) != nil, !Task.isCancelled else { return }
             self?.stopUserTyping()
         }
-        guard !isUserTypingFresh else { return }
-        isUserTypingSent = true
-        isUserTypingFresh = true
-        deliverUserTyping(true)
+        guard userTyping.begin() else { return }
+        deliverUserTyping()
         userTypingRefresh = Task { [weak self, sleep] in
             guard (try? await sleep(ChatWire.typingRefresh)) != nil, !Task.isCancelled else { return }
-            self?.isUserTypingFresh = false
+            self?.userTyping.expireFreshness()
         }
     }
 
@@ -118,10 +116,8 @@ extension TanyaAIBridge {
     func stopUserTyping() {
         userTypingIdle?.cancel()
         userTypingRefresh?.cancel()
-        isUserTypingFresh = false
-        guard isUserTypingSent else { return }
-        isUserTypingSent = false
-        deliverUserTyping(false)
+        guard userTyping.end() else { return }
+        deliverUserTyping()
     }
 
     /// Agen selesai, percakapan berganti, atau sesi berakhir: lupakan status dan sinyal yang menunggu tanpa kiriman,
@@ -129,10 +125,7 @@ extension TanyaAIBridge {
     func resetUserTyping() {
         userTypingIdle?.cancel()
         userTypingRefresh?.cancel()
-        isUserTypingFresh = false
-        isUserTypingSent = false
-        isUserTypingQueued = nil
-        isUserTypingDelivered = false
+        userTyping.reset()
     }
 }
 
@@ -140,8 +133,7 @@ private extension TanyaAIBridge {
     /// Satu pengirim berurutan agar `false` tidak mendahului `true`. Sinyal yang datang selama kiriman berjalan
     /// digabung menjadi yang terbaru. Sinyal ini tidak disimpan server, jadi gagal diabaikan; hanya 401 yang
     /// mengakhiri sesi seperti jalur lain.
-    func deliverUserTyping(_ isTyping: Bool) {
-        isUserTypingQueued = isTyping
+    func deliverUserTyping() {
         guard userTypingDelivery == nil else { return }
         userTypingDelivery = Task { [weak self] in
             while let signal = self?.nextUserTypingSignal(), let transport = self?.transport {
@@ -158,11 +150,10 @@ private extension TanyaAIBridge {
     /// Diperiksa tepat sebelum dikirim: masih dengan agen dan sesi hidup. Percakapannya yang terbaru, karena
     /// pergantian percakapan sudah membuang sinyal yang menunggu.
     func nextUserTypingSignal() -> (conversationID: String, isTyping: Bool)? {
-        guard let isTyping = isUserTypingQueued else { return nil }
-        isUserTypingQueued = nil
-        guard isReady, conversationState == .agentActive, let conversationID, isTyping || isUserTypingDelivered
-        else { return nil }
-        isUserTypingDelivered = isTyping
+        let isDeliverable = isReady && conversationState == .agentActive
+        guard let isTyping = userTyping.takePending(isDeliverable: isDeliverable), let conversationID else {
+            return nil
+        }
         return (conversationID, isTyping)
     }
 
