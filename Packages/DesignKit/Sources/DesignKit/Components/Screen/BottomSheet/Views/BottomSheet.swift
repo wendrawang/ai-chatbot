@@ -85,23 +85,22 @@ struct BottomSheet<Content: View>: View {
     }
 
     /// Isi yang lebih panjang dari sheet di-scroll, tanpa indikator dan tanpa memantul di ujung; isi yang lebih pendek
-    /// tetap di atas.
-    @ViewBuilder
+    /// tetap di atas. Selalu di dalam `ScrollView` yang sama, hanya scroll-nya yang dinyalakan atau dimatikan:
+    /// berpindah wadah membuat SwiftUI membangun ulang isi, sehingga state di dalamnya (mis. centang sementara) hilang
+    /// saat isi bertambah panjang. Selama tidak di-scroll, tinggi `ScrollView` mengikuti isi.
     private var contentArea: some View {
-        if isScrolling {
-            ScrollView(.vertical, showsIndicators: false) {
-                measuredContent
-                    .frame(maxWidth: .infinity)
-                    .background(ScrollBounceDisabler())
-            }
-        } else {
+        ScrollView(.vertical, showsIndicators: false) {
             measuredContent
+                .frame(maxWidth: .infinity)
+                .background(ScrollBounceDisabler(isScrollEnabled: isScrolling))
         }
+        .fixedSize(horizontal: false, vertical: !isScrolling)
     }
 
-    /// Selalu setinggi alaminya, supaya tingginya terbaca utuh walau melewati sheet.
+    /// Selalu setinggi alaminya, supaya tingginya terbaca utuh walau melewati sheet. Isi beberapa view disusun rapat;
+    /// tanpa `VStack` ini `ScrollView` memberi jarak bawaan di antaranya.
     private var measuredContent: some View {
-        content
+        VStack(spacing: .zero) { content }
             .fixedSize(horizontal: false, vertical: true)
             .background(
                 GeometryReader { proxy in

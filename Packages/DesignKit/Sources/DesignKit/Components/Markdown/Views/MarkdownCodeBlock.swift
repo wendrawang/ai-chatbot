@@ -10,8 +10,7 @@ import SwiftUI
 /// Code block monospace berlatar; baris panjang di-scroll horizontal, tidak dipatahkan.
 @MainActor
 struct MarkdownCodeBlock: View {
-    @Environment(\.designColors)
-    private var colors
+    @Environment(\.designColors) private var colors
     let code: String
     let style: MarkdownTextStyle
 
@@ -24,9 +23,11 @@ struct MarkdownCodeBlock: View {
                 .padding(FigmaSize.spacingMedium.scaledToArtwork)
         }
         .frame(maxWidth: .infinity, alignment: .leading)
-        .background(
-            RoundedRectangle(cornerRadius: CustomSizes.Markdown.cornerRadius.scaledToArtwork)
-                .fill(colors.colorsSurfaceSelected)
+        .cardStyle(
+            isOutlined: false,
+            isElevated: false,
+            cornerRadius: CustomSizes.Markdown.cornerRadius.scaledToArtwork,
+            fillColor: colors.colorsSurfaceSelected
         )
     }
 }

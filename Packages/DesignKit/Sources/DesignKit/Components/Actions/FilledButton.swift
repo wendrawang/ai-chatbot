@@ -40,9 +40,10 @@ public struct FilledButton: View {
                 .padding(.horizontal, horizontalPadding)
                 .padding(.vertical, verticalPadding)
                 .frame(maxWidth: .infinity)
-                .background(
-                    RoundedRectangle(cornerRadius: CustomSizes.Card.cornerRadius.scaledToArtwork)
-                        .fill(isInteractive ? CustomColors.Button.muted : disabledColor)
+                .cardStyle(
+                    isOutlined: false,
+                    isElevated: false,
+                    fillColor: isInteractive ? CustomColors.Button.muted : disabledColor
                 )
                 .contentShape(Rectangle())
         }

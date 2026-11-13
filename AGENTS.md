@@ -157,6 +157,8 @@ tersedia pada history/main.
   bawah). Tinggi mengikuti isi sampai batasnya: bawaan tepat di bawah status bar, atau `maxHeight: .screenFraction(0.6)`
   (bagian dari tinggi layar). Isi yang lebih panjang dari batas di-scroll wadah tanpa indikator dan tanpa bounce (jembatan
   UIKit kecil `ScrollBounceDisabler`, hanya untuk scroll view sheet), dan geser untuk menutup lalu hanya dari grabber.
+  Isi selalu di `ScrollView` yang sama dan scroll hanya dinyalakan/dimatikan; jangan menukar wadah dengan `if`,
+  karena isi akan dibangun ulang dan state-nya (mis. centang sementara) hilang saat isi bertambah panjang.
   Judul dan padding milik isi. Ini
   overlay di dalam halaman, bukan presentasi modal, jadi jalan di iOS 15 dan tidak menyentuh navigasi host. Jangan
   memakai `.sheet` atau membuat wadah sheet lain per fitur. Isi yang memanggil service (mis. PIN) meneruskan

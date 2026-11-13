@@ -12,6 +12,7 @@ import SwiftUI
 @MainActor
 public struct SuggestionChip: View {
     @Environment(\.designColors) private var colors
+    @Environment(\.isEnabled) private var isEnvironmentEnabled
     private let text: String
     private let isEnabled: Bool
     private let onTap: () -> Void
@@ -45,7 +46,7 @@ public struct SuggestionChip: View {
     private var icon: some View {
         Image(DesignIcon.reply).resizable().scaledToFit()
             .frame(width: iconSize, height: iconSize)
-            .foregroundColor(isEnabled ? colors.colorsIconColored : colors.colorsIconDisabled)
+            .foregroundColor(isEnabled && isEnvironmentEnabled ? colors.colorsIconColored : colors.colorsIconDisabled)
             .accessibilityHidden(true)
     }
 

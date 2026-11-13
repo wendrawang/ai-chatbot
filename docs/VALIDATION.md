@@ -934,3 +934,13 @@ chevron `SelectField` ikut abu-abu saat parent memberi `.disabled`. `OptionSelec
 `FilledButtonTests` dan `FormFieldTests` membandingkan gambar `.disabled` dari parent dengan `isEnabled: false`, dan
 keduanya gagal bila penggabungan environment dicabut. Ukuran switch `ToggleRow` masih bawaan sistem sampai ukuran
 Figma dikonfirmasi.
+
+Review berikutnya: isi `BottomSheet` dibangun ulang saat mulai di-scroll, karena wadahnya berpindah dari tampilan biasa
+ke `ScrollView`; centang sementara `OptionList` hilang ketika daftar bertambah panjang. Kini isi selalu di `ScrollView`
+yang sama: tingginya mengikuti isi (`fixedSize`) selama muat, dan scroll dinyalakan atau dimatikan lewat
+`ScrollBounceDisabler(isScrollEnabled:)` karena `scrollDisabled` baru ada di iOS 16. `BottomSheetStateTests` gagal
+sebelum perbaikan (isi muncul dua kali) dan lulus sesudahnya. Saat diperbaiki, isi beberapa view sempat mendapat jarak
+bawaan 8 pt dari `ScrollView`; `BottomSheetTests` menangkapnya dan isi kini disusun rapat. Permukaan `FilledButton`,
+kotak ikon `ActionCard`, dan latar code block Markdown kini memakai `cardStyle(fillColor:)`; gambar sembilan keadaan
+sebelum dan sesudah identik sampai byte-nya. `ActionCard` dan `SuggestionChip` ikut abu-abu saat parent memberi
+`.disabled`; test gambarnya gagal bila penggabungan environment dicabut.

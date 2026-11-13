@@ -11,7 +11,8 @@ import UIKit
 
 @testable import DesignKit
 
-/// Ukuran Figma: tinggi 40 dari ikon 24 + padding 8, lebar mengikuti isi, teks panjang turun baris.
+/// Ukuran Figma: tinggi 40 dari ikon 24 + padding 8, lebar mengikuti isi, teks panjang turun baris. `.disabled` dari
+/// parent tampil sama dengan `isEnabled: false`.
 @MainActor
 struct SuggestionChipTests {
     private let leading = FigmaSize.spacingMedium.scaledToArtwork
@@ -35,6 +36,16 @@ struct SuggestionChipTests {
         let chip = size(of: SuggestionChip(text: text, onTap: {}), width: 240)
         #expect(chip.width <= 240.5)
         #expect(chip.height > iconSize + leading * 2)
+    }
+
+    @Test
+    func aDisabledParentGreysTheChipLikeItsOwnFlag() throws {
+        try FontFace.registerFonts()
+        let chip = SuggestionChip(text: "Saran") {}
+        let own = RenderedImage.png(of: SuggestionChip(text: "Saran", isEnabled: false) {}, width: 375)
+        try #require(own != nil)
+        #expect(RenderedImage.png(of: chip.disabled(true), width: 375) == own)
+        #expect(RenderedImage.png(of: chip, width: 375) != own)
     }
 }
 

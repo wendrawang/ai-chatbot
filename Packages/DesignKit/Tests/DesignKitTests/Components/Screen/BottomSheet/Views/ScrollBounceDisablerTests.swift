@@ -12,6 +12,7 @@ import UIKit
 @testable import DesignKit
 
 /// Hanya scroll view yang berisi penanda yang berhenti memantul; scroll view lain di layar yang sama tidak berubah.
+/// Penanda juga bisa mematikan scroll.
 /// Berurutan karena memakai window.
 @MainActor
 @Suite(.serialized)
@@ -36,13 +37,19 @@ struct ScrollBounceDisablerTests {
         #expect(!scrollViews[0].bounces)
         #expect(scrollViews[1].bounces)
     }
-}
 
-// MARK: - Helpers
-
-private extension UIView {
-    var scrollViews: [UIScrollView] {
-        let own = (self as? UIScrollView).map { [$0] } ?? []
-        return own + subviews.flatMap(\.scrollViews)
+    @Test
+    func aDisabledScrollReturnsToTheTop() throws {
+        let page = ScrollView {
+            Color.clear.frame(height: 2000).background(ScrollBounceDisabler(isScrollEnabled: false))
+        }
+        let window = UIWindow(frame: CGRect(x: 0, y: 0, width: 375, height: 812))
+        window.rootViewController = UIHostingController(rootView: page)
+        window.makeKeyAndVisible()
+        defer { window.isHidden = true }
+        window.rootViewController?.view.layoutIfNeeded()
+        let scrollView = try #require(window.scrollViews.first)
+        #expect(!scrollView.isScrollEnabled)
+        #expect(scrollView.contentOffset.y <= -scrollView.adjustedContentInset.top + 0.5)
     }
 }
