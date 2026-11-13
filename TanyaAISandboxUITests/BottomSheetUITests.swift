@@ -118,6 +118,21 @@ final class BottomSheetUITests: XCTestCase {
         waitUntilGone(sheet)
     }
 
+    /// Pilihan sebelumnya di baris terakhir daftar panjang: dibuka lagi, baris itu sudah tercentang dan terlihat tanpa
+    /// perlu di-scroll.
+    func testReopeningShowsThePreviousChoice() {
+        launchDemo(extra: ["--sheet-long"])
+        var sheet = openSheet()
+        let last = optionButtons.element(boundBy: 19)
+        scrollToTheEnd(of: sheet, until: last)
+        last.tap()
+        waitUntilGone(sheet)
+        sheet = openSheet()
+        XCTAssertTrue(last.isSelected, "pilihan sebelumnya tercentang")
+        XCTAssertTrue(last.isHittable, "pilihan sebelumnya terlihat")
+        XCTAssertFalse(optionButtons.firstMatch.isHittable, "daftar tidak dibuka dari atas")
+    }
+
     /// Selama sheet terbuka, swipe dari tepi kiri tidak keluar dari halaman; setelah ditutup, swipe-back jalan lagi.
     func testSwipeBackIsHeldWhileTheSheetIsOpen() {
         launchDemo()

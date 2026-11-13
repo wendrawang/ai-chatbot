@@ -38,7 +38,7 @@ bridge host ke chat-gateway (init → history → SSE, retry, merge), dan daftar
   `DesignColorIcon` `send-on`/`send-off`/`send-pause` (dummy, nama aset Byon); stopping = redup `.plain` bawaan.
   Gambar URL lewat `RemoteImage` (cache memori bersama).
 - Field form DesignKit: `SelectField`, `TextInputField`, `ToggleRow`, `FilledButton`, dan isi sheet `OptionList`
-  (satu atau banyak pilihan, loading). Contoh di sandbox `--form-demo`; mesin form intent menyusul di TanyaAI.
+  (satu atau banyak pilihan, loading; pilihan sebelumnya tercentang dan langsung terlihat di daftar panjang). Contoh di sandbox `--form-demo`; mesin form intent menyusul di TanyaAI.
 - Bottom sheet: `.bottomSheet(isPresented:closeLabel:maxHeight:content:)` DesignKit di root halaman; wadah saja (latar
   gelap, grabber, tutup lewat ketuk di luar atau geser ke bawah). Tinggi mengikuti isi sampai batas (bawaan di bawah
   status bar, atau `.screenFraction(x)`); isi yang lebih panjang di-scroll. Isi membawa judul dan padding sendiri.

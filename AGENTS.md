@@ -159,6 +159,8 @@ tersedia pada history/main.
   UIKit kecil `ScrollBounceDisabler`, hanya untuk scroll view sheet), dan geser untuk menutup lalu hanya dari grabber.
   Isi selalu di `ScrollView` yang sama dan scroll hanya dinyalakan/dimatikan; jangan menukar wadah dengan `if`,
   karena isi akan dibangun ulang dan state-nya (mis. centang sementara) hilang saat isi bertambah panjang.
+  Bagian isi yang harus terlihat saat dibuka diberi `.id(BottomSheetFocus.id)`; sheet menggulirnya ke tengah begitu
+  isi mulai di-scroll. `OptionList` memakainya untuk pilihan pertama dari `selectedIDs` pemakai.
   Judul dan padding milik isi. Ini
   overlay di dalam halaman, bukan presentasi modal, jadi jalan di iOS 15 dan tidak menyentuh navigasi host. Jangan
   memakai `.sheet` atau membuat wadah sheet lain per fitur. Isi yang memanggil service (mis. PIN) meneruskan

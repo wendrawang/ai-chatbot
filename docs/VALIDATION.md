@@ -944,3 +944,16 @@ bawaan 8 pt dari `ScrollView`; `BottomSheetTests` menangkapnya dan isi kini disu
 kotak ikon `ActionCard`, dan latar code block Markdown kini memakai `cardStyle(fillColor:)`; gambar sembilan keadaan
 sebelum dan sesudah identik sampai byte-nya. `ActionCard` dan `SuggestionChip` ikut abu-abu saat parent memberi
 `.disabled`; test gambarnya gagal bila penggabungan environment dicabut.
+
+Pilihan sebelumnya di daftar panjang: `OptionList` menandai pilihan pertama dari `selectedIDs` pemakai dengan
+`BottomSheetFocus`, dan `BottomSheet` menggulirnya ke tengah begitu isi mulai di-scroll (saat pertama terukur, sebelum
+sheet tampil, atau setelah daftar dari host selesai dimuat). Penandanya diambil dari nilai pemakai, bukan centang
+sementara, jadi daftar tidak melompat selama nasabah mencentang. `BottomSheetFocusTests` memeriksa baris penanda
+tepat di tengah; `OptionListFocusTests` memeriksa daftar dibuka makin jauh untuk pilihan yang makin bawah, dan tetap di
+atas tanpa pilihan. Keduanya gagal bila `scrollTo` dicabut.
+`BottomSheetUITests.testReopeningShowsThePreviousChoice`: memilih baris terakhir lalu membuka lagi, baris itu tercentang
+dan terlihat.
+
+iPhone SE: `testLongContentWithoutAMaxStopsBelowTheStatusBarAndScrolls` gagal sejak #62. Sheet tanpa batas berhenti di
+y = 20 dan garis grabber di sekitar y = 30; tarikan dari sana diambil iOS untuk menurunkan Notification Center (terlihat
+di tangkapan layar saat tarikan). Tarikan dari y ≈ 46 menutup sheet. Belum diubah, menunggu keputusan jarak atas.

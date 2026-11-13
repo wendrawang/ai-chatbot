@@ -19,6 +19,8 @@ struct TanyaAIScreen: ScreenContent {
     @State
     private var openedLink: String?
     @State private var isSheetPresented = false
+    /// Pilihan terakhir di sheet contoh; dibuka lagi = sudah tercentang dan terlihat walau daftarnya panjang.
+    @State private var sheetChoiceID: String?
     @StateObject private var formDemo = FormDemoModel()
     let onBack: () -> Void
 
@@ -35,9 +37,12 @@ struct TanyaAIScreen: ScreenContent {
                 closeLabel: String(SandboxCopy.sheetClose, locale: locale),
                 maxHeight: sheetMaxHeight
             ) {
-                OptionList(title: String(SandboxCopy.sheetTitle, locale: locale), items: sheetOptions) { _ in
-                    closeSheet()
-                }
+                OptionList(
+                    title: String(SandboxCopy.sheetTitle, locale: locale),
+                    items: sheetOptions,
+                    selectedIDs: sheetChoiceID.map { [$0] } ?? [],
+                    onSelect: choose
+                )
             }
             .bottomSheet(
                 isPresented: isFormSheetPresented,
@@ -98,7 +103,8 @@ struct TanyaAIScreen: ScreenContent {
         isSheetPresented = true
     }
 
-    private func closeSheet() {
+    private func choose(_ ids: [String]) {
+        sheetChoiceID = ids.first
         isSheetPresented = false
     }
 }

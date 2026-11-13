@@ -87,14 +87,22 @@ struct BottomSheet<Content: View>: View {
     /// Isi yang lebih panjang dari sheet di-scroll, tanpa indikator dan tanpa memantul di ujung; isi yang lebih pendek
     /// tetap di atas. Selalu di dalam `ScrollView` yang sama, hanya scroll-nya yang dinyalakan atau dimatikan:
     /// berpindah wadah membuat SwiftUI membangun ulang isi, sehingga state di dalamnya (mis. centang sementara) hilang
-    /// saat isi bertambah panjang. Selama tidak di-scroll, tinggi `ScrollView` mengikuti isi.
+    /// saat isi bertambah panjang. Selama tidak di-scroll, tinggi `ScrollView` mengikuti isi. Begitu mulai di-scroll
+    /// (saat pertama terukur, atau setelah isi bertambah, mis. daftar selesai dimuat), `BottomSheetFocus` di isi
+    /// digulir ke tengah.
     private var contentArea: some View {
-        ScrollView(.vertical, showsIndicators: false) {
-            measuredContent
-                .frame(maxWidth: .infinity)
-                .background(ScrollBounceDisabler(isScrollEnabled: isScrolling))
+        ScrollViewReader { proxy in
+            ScrollView(.vertical, showsIndicators: false) {
+                measuredContent
+                    .frame(maxWidth: .infinity)
+                    .background(ScrollBounceDisabler(isScrollEnabled: isScrolling))
+            }
+            .fixedSize(horizontal: false, vertical: !isScrolling)
+            .onChange(of: isScrolling) { isScrolling in
+                guard isScrolling else { return }
+                proxy.scrollTo(BottomSheetFocus.id, anchor: .center)
+            }
         }
-        .fixedSize(horizontal: false, vertical: !isScrolling)
     }
 
     /// Selalu setinggi alaminya, supaya tingginya terbaca utuh walau melewati sheet. Isi beberapa view disusun rapat;

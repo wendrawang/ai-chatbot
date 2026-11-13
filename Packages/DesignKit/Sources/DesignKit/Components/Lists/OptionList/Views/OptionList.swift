@@ -12,7 +12,7 @@ import SwiftUI
 /// sebanyak yang diperlukan lalu tombol `confirmLabel`. Tombol aktif bila ada centang yang masih ada di daftar;
 /// `isEmptyAllowed` = pemakai boleh menerima hasil kosong (mengosongkan pilihan lama). `onSelect` menerima id pilihan
 /// urut sesuai daftar; menutup sheet tetap tugas pemakai. Padding isi milik komponen ini, wadah sheet hanya memberi
-/// permukaan.
+/// permukaan. Di daftar panjang, pilihan pertama dari `selectedIDs` langsung terlihat saat sheet dibuka.
 /// TODO: Konfirmasi ukuran judul, baris, dan penanda dengan Figma; sementara dari foto.
 @MainActor
 public struct OptionList: View {
@@ -22,6 +22,9 @@ public struct OptionList: View {
     private let items: [OptionItem]?
     private let confirmLabel: String
     private let isEmptyAllowed: Bool
+    /// Pilihan yang digulir ke tengah sheet. Diambil dari `selectedIDs` pemakai, bukan centang sementara, supaya
+    /// daftar tidak melompat selama nasabah mencentang.
+    private let focusedID: String?
     private let onSelect: ([String]) -> Void
 
     public init(
@@ -38,6 +41,7 @@ public struct OptionList: View {
         self.items = items
         self.confirmLabel = confirmLabel
         self.isEmptyAllowed = isEmptyAllowed
+        self.focusedID = items?.map(\.id).first(where: selectedIDs.contains)
         self.onSelect = onSelect
     }
 
@@ -67,6 +71,7 @@ public struct OptionList: View {
                 OptionRow(item: item, mode: selection.mode, isSelected: selection.isSelected(item.id)) {
                     select(item.id, in: items)
                 }
+                .id(rowID(of: item))
             }
         } else {
             LoadingIndicator()
@@ -84,6 +89,16 @@ public struct OptionList: View {
             }
             .padding(.top, FigmaSize.spacingLarge.scaledToArtwork)
         }
+    }
+}
+
+// MARK: - Helpers
+
+private extension OptionList {
+    /// Baris pilihan awal memakai penanda fokus sheet; baris lain tetap memakai id-nya sendiri.
+    func rowID(of item: OptionItem) -> AnyHashable {
+        guard item.id == focusedID else { return AnyHashable(item.id) }
+        return AnyHashable(BottomSheetFocus.id)
     }
 }
 
