@@ -36,6 +36,7 @@ struct SandboxOptions {
     static let formEmailIdentifier = "sandbox.form.email"
     static let formBalanceIdentifier = "sandbox.form.balance"
     static let formConfirmIdentifier = "sandbox.form.confirm"
+    static let formCancelIdentifier = "sandbox.form.cancel"
     static let formSoftcopyID = "softcopy"
     static let formHardcopyID = "hardcopy"
     /// Data dummy: email tersimpan nasabah, tampil di field yang dinonaktifkan.

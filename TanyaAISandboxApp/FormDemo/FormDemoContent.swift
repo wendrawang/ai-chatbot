@@ -27,8 +27,7 @@ struct FormDemoContent: View {
             deliveryField
             ToggleRow(label: String(SandboxCopy.formBalance, locale: locale), isOn: $model.isBalanceShown)
                 .accessibilityIdentifier(SandboxOptions.formBalanceIdentifier)
-            FilledButton(title: String(SandboxCopy.formConfirm, locale: locale), onTap: model.confirm)
-                .accessibilityIdentifier(SandboxOptions.formConfirmIdentifier)
+            actions
         }
         .padding(FigmaSize.spacingLarge.scaledToArtwork)
         .cardStyle(isOutlined: false)
@@ -54,6 +53,15 @@ struct FormDemoContent: View {
             onTap: { model.open(.accounts) }
         )
         .accessibilityIdentifier(SandboxOptions.formAccountsIdentifier)
+    }
+
+    private var actions: some View {
+        HStack(spacing: FigmaSize.spacingLarge.scaledToArtwork) {
+            FilledButton(title: String(SandboxCopy.formCancel, locale: locale), variant: .outlined, onTap: model.cancel)
+                .accessibilityIdentifier(SandboxOptions.formCancelIdentifier)
+            FilledButton(title: String(SandboxCopy.formConfirm, locale: locale), onTap: model.confirm)
+                .accessibilityIdentifier(SandboxOptions.formConfirmIdentifier)
+        }
     }
 
     @ViewBuilder

@@ -39,5 +39,6 @@
 "sandbox.form.balance" = "显示余额信息";
 "sandbox.form.choose" = "选择";
 "sandbox.form.confirm" = "确认";
+"sandbox.form.cancel" = "取消";
 "sandbox.form.requiredText" = "请填写此项";
 "sandbox.form.requiredChoice" = "请选择一项";

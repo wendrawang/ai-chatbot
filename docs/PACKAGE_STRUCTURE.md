@@ -53,8 +53,9 @@ Contoh penempatan yang sudah diterapkan:
   `FieldFrame` (label, isi, error merah) yang dipakai bersama; kotak field di `ViewModifiers/FieldBox.swift` (padding
   di atas `cardStyle`).
 - `Components/Lists/OptionList/`: isi sheet daftar pilihan (`OptionList`), satu atau banyak pilihan, dengan state loading.
-- `Components/Actions/FilledButton.swift`: tombol isi penuh; `.regular` (Konfirmasi, Pilih) dan `.link` (teks kecil
-  bergaris bawah, mis. "Batalkan proses ini").
+- `Components/Actions/FilledButton.swift`: tombol selebar wadah; `.regular` (Konfirmasi, Pilih), `.outlined` (aksi
+  kedua bergaris seukuran `.regular`, mis. Batalkan di form), dan `.link` (teks kecil bergaris bawah, mis. "Batalkan
+  proses ini").
 - `Components/Feedback/LoadingIndicator.swift`: spinner untuk semua loading.
 - `Components/Lists/SeparatorLine.swift`: garis pemisah 1 pt (daftar, tabel Markdown, di atas composer).
 - `Components/Screen/BottomSheet/Models/BottomSheetMaxHeight.swift`: batas tinggi, di bawah status bar atau bagian layar.

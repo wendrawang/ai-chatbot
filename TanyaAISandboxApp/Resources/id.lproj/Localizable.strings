@@ -39,5 +39,6 @@
 "sandbox.form.balance" = "Tampilkan informasi saldo";
 "sandbox.form.choose" = "Pilih";
 "sandbox.form.confirm" = "Konfirmasi";
+"sandbox.form.cancel" = "Batalkan";
 "sandbox.form.requiredText" = "Wajib diisi";
 "sandbox.form.requiredChoice" = "Wajib dipilih";

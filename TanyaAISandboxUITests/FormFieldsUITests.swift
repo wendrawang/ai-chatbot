@@ -8,8 +8,8 @@
 import XCTest
 
 /// `--form-demo`: field pilihan membuka daftar di bottom sheet, pilihan menentukan field berikutnya, rekening boleh
-/// lebih dari satu dan daftarnya dimuat dulu, field nonaktif tidak bisa diubah, dan Konfirmasi menandai field kosong
-/// sambil membuka sheet pilihan kosong paling atas.
+/// lebih dari satu dan daftarnya dimuat dulu, field nonaktif tidak bisa diubah, Konfirmasi menandai field kosong
+/// sambil membuka sheet pilihan kosong paling atas, dan Batalkan mengosongkan form.
 final class FormFieldsUITests: XCTestCase {
     private let application = XCUIApplication()
 
@@ -69,6 +69,20 @@ final class FormFieldsUITests: XCTestCase {
         address.tap()
         address.typeText("Jl. Sudirman 1")
         waitUntilGone(application.staticTexts["Please fill this in"])
+    }
+
+    func testCancelEmptiesTheForm() {
+        launchDemo()
+        let format = application.buttons["sandbox.form.format"]
+        application.buttons["sandbox.form.confirm"].tap()
+        XCTAssertTrue(application.buttons["Hardcopy"].waitForExistence(timeout: 5))
+        application.buttons["Hardcopy"].tap()
+        waitUntilGone(sheetElement)
+        XCTAssertEqual(format.value as? String, "Hardcopy")
+        application.buttons["sandbox.form.cancel"].tap()
+        XCTAssertNotEqual(format.value as? String, "Hardcopy", "pilihan dikosongkan")
+        XCTAssertFalse(application.staticTexts["Please choose one"].exists, "tanda wajib ikut hilang")
+        XCTAssertTrue(application.textFields["sandbox.form.email"].exists, "field alamat kembali jadi email")
     }
 }
 

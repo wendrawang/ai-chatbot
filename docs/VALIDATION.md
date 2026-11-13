@@ -957,3 +957,9 @@ dan terlihat.
 iPhone SE: `testLongContentWithoutAMaxStopsBelowTheStatusBarAndScrolls` gagal sejak #62. Sheet tanpa batas berhenti di
 y = 20 dan garis grabber di sekitar y = 30; tarikan dari sana diambil iOS untuk menurunkan Notification Center (terlihat
 di tangkapan layar saat tarikan). Tarikan dari y ≈ 46 menutup sheet. Belum diubah, menunggu keputusan jarak atas.
+
+Tombol Batalkan form (foto Figma reksa dana): `FilledButton` mendapat varian `.outlined`, seukuran `.regular` tanpa
+latar gelap, garis tepi dan teks berwarna tombol, abu-abu saat nonaktif. Dipakai di demo form sandbox di samping
+Konfirmasi; Batalkan mengosongkan form. Warna dan tebal garis dari foto, menunggu nilai Figma. `FilledButtonTests`
+memeriksa ukurannya sama dengan `.regular`, tampilannya berbeda, dan `.disabled` parent sama dengan `isEnabled: false`.
+`FormFieldsUITests.testCancelEmptiesTheForm`: pilihan, tanda wajib, dan field alamat kembali seperti baru dibuka.

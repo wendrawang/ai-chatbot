@@ -131,8 +131,9 @@ tersedia pada history/main.
   Tampilan yang dipakai di lebih dari satu tempat wajib jadi komponen DesignKit. View yang hanya dipakai sekali di
   fitur (mis. `AgentTypingIndicator`, sapaan `WelcomeSection`) boleh tetap di TanyaAI dengan font dan warnanya
   sendiri; dipindah ke DesignKit saat dipakai di tempat kedua.
-  Sebelum membuat komponen, cek yang sudah ada: tombol isi penuh = `FilledButton` (varian `.link` untuk teks kecil
-  bergaris bawah), permukaan berisi/bergaris = `cardStyle` (`fillColor` untuk latar lain), spinner = `LoadingIndicator`,
+  Sebelum membuat komponen, cek yang sudah ada: tombol selebar wadah = `FilledButton` (`.outlined` untuk aksi kedua
+  bergaris seperti Batalkan, `.link` untuk teks kecil bergaris bawah), permukaan berisi/bergaris = `cardStyle`
+  (`fillColor` untuk latar lain), spinner = `LoadingIndicator`,
   garis pemisah = `SeparatorLine`.
   Komponen beberapa file memakai subfolder sendiri; satu file langsung di kelompok fungsinya.
   Bagian beberapa file dikelompokkan ke `Models`, `Views`, `Controllers`, `Protocols`, `Extensions` sesuai peran.

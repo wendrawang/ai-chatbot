@@ -7,9 +7,10 @@
 
 import SwiftUI
 
-/// Tombol selebar wadah dengan latar gelap. `.regular` untuk aksi utama (Konfirmasi, Pilih); `.link` untuk teks kecil
-/// bergaris bawah, mis. "Batalkan proses ini" di bawah kartu status. Copy dan aksi dari pemakai.
-/// TODO: Konfirmasi warna, ukuran teks, dan tinggi dengan Figma; sementara dari foto.
+/// Tombol selebar wadah. `.regular` = latar gelap untuk aksi utama (Konfirmasi, Pilih); `.outlined` = ukuran sama,
+/// hanya garis tepi, untuk aksi kedua di sampingnya (Batalkan); `.link` = teks kecil bergaris bawah, mis. "Batalkan
+/// proses ini" di bawah kartu status. Copy dan aksi dari pemakai.
+/// TODO: Konfirmasi warna, ukuran teks, tinggi, dan garis `.outlined` dengan Figma; sementara dari foto.
 @MainActor
 public struct FilledButton: View {
     @Environment(\.designColors) private var colors
@@ -36,14 +37,15 @@ public struct FilledButton: View {
             Text(title)
                 .font(FontFace.firaSansSemiBold.swiftUIFont(size: fontSize))
                 .underline(variant == .link)
-                .foregroundColor(colors.colorsTextPrimaryLight)
+                .foregroundColor(variant == .outlined ? accentColor : colors.colorsTextPrimaryLight)
                 .padding(.horizontal, horizontalPadding)
                 .padding(.vertical, verticalPadding)
                 .frame(maxWidth: .infinity)
                 .cardStyle(
-                    isOutlined: false,
+                    isOutlined: variant == .outlined,
                     isElevated: false,
-                    fillColor: isInteractive ? CustomColors.Button.muted : disabledColor
+                    outlineColor: accentColor,
+                    fillColor: variant == .outlined ? nil : accentColor
                 )
                 .contentShape(Rectangle())
         }
@@ -60,9 +62,14 @@ private extension FilledButton {
         isEnabled && isEnvironmentEnabled
     }
 
+    /// Latar `.regular`/`.link`, atau garis dan teks `.outlined`; abu-abu saat nonaktif.
+    var accentColor: Color {
+        isInteractive ? CustomColors.Button.muted : disabledColor
+    }
+
     var fontSize: CGFloat {
         switch variant {
-        case .regular:
+        case .regular, .outlined:
             return FigmaSize.typographySizeDisplaySmall14.scaledToArtwork
         case .link:
             return FigmaSize.typographySizeDisplayTiny12.scaledToArtwork
@@ -71,7 +78,7 @@ private extension FilledButton {
 
     var verticalPadding: CGFloat {
         switch variant {
-        case .regular:
+        case .regular, .outlined:
             return CustomSizes.FilledButton.verticalPadding.scaledToArtwork
         case .link:
             return FigmaSize.spacingMedium.scaledToArtwork
@@ -80,7 +87,7 @@ private extension FilledButton {
 
     var horizontalPadding: CGFloat {
         switch variant {
-        case .regular:
+        case .regular, .outlined:
             return .zero
         case .link:
             return FigmaSize.spacingMedium.scaledToArtwork
@@ -92,6 +99,8 @@ private extension FilledButton {
         switch variant {
         case .regular:
             return colors.colorsButtonDisable
+        case .outlined:
+            return colors.colorsTextDisabled
         case .link:
             return colors.colorsIconDisabled
         }

@@ -50,6 +50,15 @@ final class FormDemoModel: ObservableObject {
         sheet = nil
     }
 
+    /// Batalkan: form kembali kosong seperti baru dibuka.
+    func cancel() {
+        formatID = nil
+        accountIDs = []
+        address = String()
+        isBalanceShown = false
+        invalidFields = []
+    }
+
     func confirm() {
         let invalid = FormDemoField.allCases.filter(isInvalid)
         invalidFields = Set(invalid)
