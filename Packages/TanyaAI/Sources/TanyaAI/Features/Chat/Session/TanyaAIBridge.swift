@@ -49,16 +49,13 @@ public final class TanyaAIBridge: ObservableObject {
     @Published var isAgentTyping = false
     /// Penghapus indikator mengetik setelah batas waktunya; diganti setiap event `typing` baru.
     var agentTypingExpiry: Task<Void, Never>?
-    /// Agen sedang diberi tahu nasabah mengetik (`typing:true` terakhir yang dikirim); tidak di-publish.
-    var isUserTypingSent = false
-    /// `typing:true` terkirim kurang dari `ChatWire.typingRefresh` yang lalu, jadi ketikan berikutnya tidak dikirim.
-    var isUserTypingFresh = false
+    /// Sinyal mengetik nasabah yang menunggu dan yang terakhir terkirim (lihat `UserTypingSignal`); tidak di-publish.
+    var userTyping = UserTypingSignal()
+    /// Berjalan = nasabah masih dianggap mengetik; selesai tanpa ketikan baru = `typing:false`.
     var userTypingIdle: Task<Void, Never>?
+    /// Berjalan = `typing:true` terkirim kurang dari `ChatWire.typingRefresh` yang lalu, jadi ketikan berikutnya
+    /// tidak dikirim; nil = boleh dikirim lagi.
     var userTypingRefresh: Task<Void, Never>?
-    /// Sinyal terbaru yang belum dikirim (nil = tidak ada); sinyal yang menunggu digabung menjadi yang terbaru.
-    var isUserTypingQueued: Bool?
-    /// Nilai terakhir yang dikirim ke server; `false` tanpa `true` sebelumnya tidak perlu dikirim.
-    var isUserTypingDelivered = false
     /// Satu-satunya pengirim `typing` yang berjalan; selesai saat tidak ada sinyal yang menunggu.
     var userTypingDelivery: Task<Void, Never>?
     /// Percakapan dari `/v1/chat/init` terakhir; nil sebelum init pertama berhasil.
@@ -74,7 +71,8 @@ public final class TanyaAIBridge: ObservableObject {
 
     /// `onSessionExpired` dipanggil sekali saat gateway menjawab 401 (sesi OMNI habis); stream tidak dibuka lagi.
     /// `onConnectionFailed` dipanggil sekali saat error yang tidak bisa di-retry (`retryable:false`) menghentikan
-    /// sambungan; host menampilkan error sesuai polanya. Error berupa `TanyaAITransportError` dari transport.
+    /// sambungan; host menampilkan error sesuai polanya. Error berupa `TanyaAITransportError` dari transport, atau
+    /// `DecodingError` bila respons init/history tidak terbaca.
     public convenience init(
         transport: TanyaAIChatTransport, onSessionExpired: (() -> Void)? = nil,
         onConnectionFailed: ((Error) -> Void)? = nil

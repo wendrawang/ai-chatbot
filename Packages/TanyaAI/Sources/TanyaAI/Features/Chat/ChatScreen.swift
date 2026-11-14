@@ -129,17 +129,18 @@ private extension ChatScreen {
     }
 
     var tableState: ChatTableState {
-        ChatTableState(
-            items: listItems, sentQuestionID: bridge.latestSentQuestionID,
-            incomingMessageID: bridge.latestIncomingContentID, latestJumpID: latestJumpID,
+        let notices = bridge.visibleLiveAgentNotices
+        return ChatTableState(
+            items: listItems(notices: notices), sentQuestionID: bridge.latestSentQuestionID,
+            incomingMessageID: bridge.incomingContentID(latestNotice: notices.last), latestJumpID: latestJumpID,
             historyPhase: bridge.historyPhase,
             rowInputs: ChatRowInputs(welcome: welcome, locale: locale, colors: colors)
         )
     }
 
-    var listItems: [ChatListItem] {
+    func listItems(notices: [LiveAgentNotice]) -> [ChatListItem] {
         var items = [ChatListItem](rows: bridge.rows)
-            .inserting(bridge.visibleLiveAgentNotices, isLeaveEnabled: isEnabled && !bridge.isLeavingAgentQueue)
+            .inserting(notices, isLeaveEnabled: isEnabled && !bridge.isLeavingAgentQueue)
         if welcome != nil, bridge.isWelcomeVisible {
             items.insert(.welcome(isEnabled: isEnabled && isSendable), at: .zero)
         }
