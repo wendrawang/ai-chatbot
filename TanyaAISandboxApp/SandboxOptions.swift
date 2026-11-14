@@ -5,6 +5,7 @@
 //  Created by Wendra on 15/10/26.
 //
 
+import DesignKit
 import Foundation
 
 /// Developer-only launch metadata. Gateway tiruan (`SandboxChatTransport`) menjawab tanpa backend.
@@ -22,13 +23,33 @@ struct SandboxOptions {
     static let demoEndIdentifier = "sandbox.demo.end"
     static let demoParagraphCount = 12
     static let sheetOpenIdentifier = "sandbox.sheet.open"
-    static let sheetOptionIdentifier = "sandbox.sheet.option"
     /// `--sheet-demo`: jumlah baris contoh di dalam bottom sheet.
     static let sheetOptionCount = 4
     /// `--sheet-max`: batas tinggi sheet contoh, bagian dari tinggi layar.
     static let sheetMaxFraction: CGFloat = 0.6
     /// `--sheet-long`: jumlah baris contoh, lebih panjang dari layar.
     static let sheetLongOptionCount = 20
+    /// `--form-demo`: identifier field form contoh.
+    static let formFormatIdentifier = "sandbox.form.format"
+    static let formAccountsIdentifier = "sandbox.form.accounts"
+    static let formAddressIdentifier = "sandbox.form.address"
+    static let formEmailIdentifier = "sandbox.form.email"
+    static let formBalanceIdentifier = "sandbox.form.balance"
+    static let formConfirmIdentifier = "sandbox.form.confirm"
+    static let formCancelIdentifier = "sandbox.form.cancel"
+    static let formSoftcopyID = "softcopy"
+    static let formHardcopyID = "hardcopy"
+    /// Data dummy: email tersimpan nasabah, tampil di field yang dinonaktifkan.
+    static let formEmail = "samara@mail.com"
+    /// Jeda seolah daftar rekening diambil dari service host, supaya state loading di sheet terlihat (juga oleh UI
+    /// test, yang baru membaca layar setelah animasi sheet selesai).
+    static let formLoadDelay: TimeInterval = 3
+    /// Data dummy rekening nasabah.
+    static let formAccounts = [
+        OptionItem(id: "5262819128982", title: "Tanda 360 - 5262 8191 2892 82"),
+        OptionItem(id: "6930112045571", title: "Tabungan Taka - 6930 1120 4557 1"),
+        OptionItem(id: "7781200345519", title: "Giro Bisnis - 7781 2003 4551 9")
+    ]
     /// Jeda pertanyaan nasabah muncul di stream setelah ack; selama ini bubble lokal yang tampil.
     static let echoDelay: TimeInterval = 0.6
     /// Jeda pesan bot yang datang sendiri setelah stream tersambung (`--late-message`).
@@ -54,6 +75,7 @@ struct SandboxOptions {
     private static let sheetDemoFlag = "--sheet-demo"
     private static let sheetMaxFlag = "--sheet-max"
     private static let sheetLongFlag = "--sheet-long"
+    private static let formDemoFlag = "--form-demo"
     private static let offlineFlag = "--offline"
     private static let brokenIconsFlag = "--broken-icons"
     private static let slowIconsFlag = "--slow-icons"
@@ -89,6 +111,8 @@ struct SandboxOptions {
     let isSheetMaxSet: Bool
     /// `--sheet-long` (bersama `--sheet-demo`): baris contoh lebih panjang dari layar, jadi isinya di-scroll.
     let isSheetLong: Bool
+    /// `--form-demo`: area scroll berisi form contoh (pilihan, field bergantung, field nonaktif, toggle, validasi).
+    let isFormDemo: Bool
     let isOffline: Bool
     /// Pengganti semua `iconUrl` shortcut: `--broken-icons` (gagal, cek fallback) atau
     /// `--slow-icons` (tidak menjawab, cek loading). Nil = URL dari fixture.
@@ -107,6 +131,7 @@ struct SandboxOptions {
         isSheetDemo = arguments.contains(Self.sheetDemoFlag)
         isSheetMaxSet = arguments.contains(Self.sheetMaxFlag)
         isSheetLong = arguments.contains(Self.sheetLongFlag)
+        isFormDemo = arguments.contains(Self.formDemoFlag)
         isOffline = arguments.contains(Self.offlineFlag)
         if arguments.contains(Self.brokenIconsFlag) {
             iconOverrideURL = Self.brokenIconURL

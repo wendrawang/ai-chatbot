@@ -10,15 +10,22 @@ import SwiftUI
 public extension View {
     /// Kartu standar (isi, radius, bayangan, garis tepi). Pakai ini daripada menyusun ulang di setiap view.
     /// `isOutlined: false` untuk kartu yang hanya memakai bayangan, misalnya `ActionCard`; `isElevated: false`
-    /// untuk permukaan rata, misalnya `DateChip`. `cornerRadius` sudah di-scale oleh pemakai.
+    /// untuk permukaan rata, misalnya `DateChip`. `cornerRadius` sudah di-scale oleh pemakai. `fillColor` nil = isi
+    /// kartu standar.
     func cardStyle(
-        isOutlined: Bool = true, isElevated: Bool = true,
+        isOutlined: Bool = true,
+        isElevated: Bool = true,
         cornerRadius: CGFloat = CustomSizes.Card.cornerRadius.scaledToArtwork,
-        outlineColor: Color = CustomColors.Stroke.color
+        outlineColor: Color = CustomColors.Stroke.color,
+        fillColor: Color? = nil
     ) -> some View {
         modifier(
             CardStyle(
-                isOutlined: isOutlined, isElevated: isElevated, cornerRadius: cornerRadius, outlineColor: outlineColor
+                isOutlined: isOutlined,
+                isElevated: isElevated,
+                cornerRadius: cornerRadius,
+                outlineColor: outlineColor,
+                fillColor: fillColor
             )
         )
     }

@@ -11,8 +11,8 @@ import SwiftUI
 /// Ikon disuplai caller (gambar lokal atau `RemoteImage`); copy juga dari caller.
 @MainActor
 public struct ActionCard<Icon: View>: View {
-    @Environment(\.designColors)
-    private var colors
+    @Environment(\.designColors) private var colors
+    @Environment(\.isEnabled) private var isEnvironmentEnabled
     private let title: String
     private let description: String
     private let isEnabled: Bool
@@ -52,10 +52,7 @@ public struct ActionCard<Icon: View>: View {
         icon
             .frame(width: iconSize, height: iconSize)
             .frame(width: boxSize, height: boxSize)
-            .background(
-                RoundedRectangle(cornerRadius: CustomSizes.Card.cornerRadius.scaledToArtwork)
-                    .fill(colors.colorsSurfaceWarning)
-            )
+            .cardStyle(isOutlined: false, isElevated: false, fillColor: colors.colorsSurfaceWarning)
             .accessibilityHidden(true)
     }
 
@@ -73,12 +70,12 @@ public struct ActionCard<Icon: View>: View {
         .frame(maxWidth: .infinity, alignment: .leading)
     }
 
-    /// Abu-abu saat nonaktif agar terlihat tidak bisa diketuk.
+    /// Abu-abu saat nonaktif (juga karena `.disabled` dari parent) agar terlihat tidak bisa diketuk.
     private var chevron: some View {
         Image(DesignIcon.chevronRight).resizable().scaledToFit()
             .foregroundColor(colors.colorsIconLight)
             .frame(width: chevronSize, height: chevronSize)
-            .background(Circle().fill(isEnabled ? colors.colorsButtonActive : colors.colorsIconDisabled))
+            .background(Circle().fill(isInteractive ? colors.colorsButtonActive : colors.colorsIconDisabled))
             .accessibilityHidden(true)
     }
 }
@@ -86,6 +83,9 @@ public struct ActionCard<Icon: View>: View {
 // MARK: - Helpers
 
 private extension ActionCard {
+    /// Parameter sendiri digabung dengan `.disabled` dari parent, supaya warnanya ikut nonaktif.
+    var isInteractive: Bool { isEnabled && isEnvironmentEnabled }
+
     var iconSize: CGFloat { FigmaSize.weightIconSmall.scaledToArtwork }
     var boxSize: CGFloat { CustomSizes.ActionCard.iconBox.scaledToArtwork }
     var chevronSize: CGFloat { CustomSizes.ActionCard.chevron.scaledToArtwork }

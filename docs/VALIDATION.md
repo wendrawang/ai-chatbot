@@ -892,3 +892,74 @@ diandalkan (di aplikasi benar, di unit test tidak), jadi tidak dipakai. Belum ad
 XCUITest tidak bisa mengambil gambar per frame dan opacity SwiftUI tidak terbaca dari unit test; delapan UI test sheet
 tetap lulus.
 
+## Komponen field form dan daftar pilihan — 12 November 2026
+
+Fondasi form intent (surat referensi, reksa dana): `SelectField`, `TextInputField`, `ToggleRow`, `FilledButton`, dan
+isi sheet `OptionList` di DesignKit. Komponen hanya menampilkan; mesin form (validasi, dependensi, state per intent)
+menyusul di TanyaAI. Dicoba lewat sandbox `--form-demo`: format menentukan field berikutnya (hardcopy = alamat, softcopy
+= email tersimpan yang nonaktif), rekening boleh lebih dari satu dan daftarnya dimuat dulu, dan Konfirmasi menandai field
+kosong dengan teks merah sambil membuka sheet pilihan kosong paling atas.
+
+| Nilai | Sumber |
+| --- | --- |
+| Label 14, isi 16, error 12 merah (`colorsTextNegative`), garis merah `colorsOutlineRed` | Perkiraan dari foto Figma |
+| Kotak field padding 16, tinggi isi minimal 24 (setinggi chevron), radius 8 | Perkiraan dari foto |
+| Nonaktif = latar `colorsSurfaceDisable` | Perkiraan dari foto |
+| Radio, centang, dan toggle aktif = `colorsSelectionFilledSelected`; kosong = `colorsSelectionEmptyDefault` | Token palette |
+| Penanda pilihan 20, tombol isi penuh padding atas-bawah 12 | Perkiraan dari foto |
+| Ikon `chevronDown`, `checkmark` | PDF dummy, TODO ganti aset Figma |
+
+`OptionSelectionTests` (satu pilihan langsung selesai, banyak pilihan menunggu konfirmasi, hasil urut sesuai daftar),
+`FormFieldTests` (isi dan placeholder sama tinggi, field pilihan dan teks sama tinggi, error menambah tinggi),
+`FilledButtonTests`. `FormFieldsUITests` (iPhone 17 Pro, iOS 26.5): format menukar field bergantung dan email nonaktif
+tidak bisa diubah; rekening tampil loading lalu bisa dipilih lebih dari satu; Konfirmasi membuka sheet pilihan kosong
+paling atas, menandai rekening dan alamat kosong, dan error alamat hilang saat diketik. Jeda loading contoh 3 detik:
+dengan 1 detik, UI test baru membaca layar setelah daftar selesai dimuat.
+
+Belum: kartu form di daftar chat belum diikuti saat tumbuh (field atau error baru bisa tertutup composer), input teks
+di dalam sheet, dan format nominal IDR. Semuanya bagian mesin form berikutnya.
+
+Komponen kembar digabung (permintaan review user): `FilledLinkButton` menjadi `FilledButton(variant: .link)` dengan
+ukuran dan warna nonaktif yang sama; `FieldBox` kini padding di atas `cardStyle` (yang mendapat `fillColor`), bukan
+menggambar permukaan sendiri; spinner di loading history, ikon kartu sambutan, dan daftar pilihan memakai
+`LoadingIndicator`; garis di daftar pilihan, divider dan tabel Markdown, serta di atas composer memakai `SeparatorLine`;
+demo sheet sandbox memakai `OptionList`, bukan daftar buatan sendiri. `FilledButtonTests` memeriksa ukuran kedua
+varian, termasuk ukuran `.link` yang sama dengan `FilledLinkButton` sebelumnya.
+
+
+Review lanjutan: tombol Pilih di `OptionList` hanya menghitung centang yang masih ada di daftar terbaru (id lama yang
+hilang tidak lagi membuat tombol aktif dengan hasil kosong), dan pemakai bisa mengizinkan hasil kosong lewat
+`isEmptyAllowed` untuk mengosongkan pilihan lama; bawaan tetap minimal satu centang. `FilledButton`, kotak field, dan
+chevron `SelectField` ikut abu-abu saat parent memberi `.disabled`. `OptionSelectionTests` menjaga aturan tombol;
+`FilledButtonTests` dan `FormFieldTests` membandingkan gambar `.disabled` dari parent dengan `isEnabled: false`, dan
+keduanya gagal bila penggabungan environment dicabut. Ukuran switch `ToggleRow` masih bawaan sistem sampai ukuran
+Figma dikonfirmasi.
+
+Review berikutnya: isi `BottomSheet` dibangun ulang saat mulai di-scroll, karena wadahnya berpindah dari tampilan biasa
+ke `ScrollView`; centang sementara `OptionList` hilang ketika daftar bertambah panjang. Kini isi selalu di `ScrollView`
+yang sama: tingginya mengikuti isi (`fixedSize`) selama muat, dan scroll dinyalakan atau dimatikan lewat
+`ScrollBounceDisabler(isScrollEnabled:)` karena `scrollDisabled` baru ada di iOS 16. `BottomSheetStateTests` gagal
+sebelum perbaikan (isi muncul dua kali) dan lulus sesudahnya. Saat diperbaiki, isi beberapa view sempat mendapat jarak
+bawaan 8 pt dari `ScrollView`; `BottomSheetTests` menangkapnya dan isi kini disusun rapat. Permukaan `FilledButton`,
+kotak ikon `ActionCard`, dan latar code block Markdown kini memakai `cardStyle(fillColor:)`; gambar sembilan keadaan
+sebelum dan sesudah identik sampai byte-nya. `ActionCard` dan `SuggestionChip` ikut abu-abu saat parent memberi
+`.disabled`; test gambarnya gagal bila penggabungan environment dicabut.
+
+Pilihan sebelumnya di daftar panjang: `OptionList` menandai pilihan pertama dari `selectedIDs` pemakai dengan
+`BottomSheetFocus`, dan `BottomSheet` menggulirnya ke tengah begitu isi mulai di-scroll (saat pertama terukur, sebelum
+sheet tampil, atau setelah daftar dari host selesai dimuat). Penandanya diambil dari nilai pemakai, bukan centang
+sementara, jadi daftar tidak melompat selama nasabah mencentang. `BottomSheetFocusTests` memeriksa baris penanda
+tepat di tengah; `OptionListFocusTests` memeriksa daftar dibuka makin jauh untuk pilihan yang makin bawah, dan tetap di
+atas tanpa pilihan. Keduanya gagal bila `scrollTo` dicabut.
+`BottomSheetUITests.testReopeningShowsThePreviousChoice`: memilih baris terakhir lalu membuka lagi, baris itu tercentang
+dan terlihat.
+
+iPhone SE: `testLongContentWithoutAMaxStopsBelowTheStatusBarAndScrolls` gagal sejak #62. Sheet tanpa batas berhenti di
+y = 20 dan garis grabber di sekitar y = 30; tarikan dari sana diambil iOS untuk menurunkan Notification Center (terlihat
+di tangkapan layar saat tarikan). Tarikan dari y ≈ 46 menutup sheet. Belum diubah, menunggu keputusan jarak atas.
+
+Tombol Batalkan form (foto Figma reksa dana): `FilledButton` mendapat varian `.outlined`, seukuran `.regular` tanpa
+latar gelap, garis tepi dan teks berwarna tombol, abu-abu saat nonaktif. Dipakai di demo form sandbox di samping
+Konfirmasi; Batalkan mengosongkan form. Warna dan tebal garis dari foto, menunggu nilai Figma. `FilledButtonTests`
+memeriksa ukurannya sama dengan `.regular`, tampilannya berbeda, dan `.disabled` parent sama dengan `isEnabled: false`.
+`FormFieldsUITests.testCancelEmptiesTheForm`: pilihan, tanda wajib, dan field alamat kembali seperti baru dibuka.

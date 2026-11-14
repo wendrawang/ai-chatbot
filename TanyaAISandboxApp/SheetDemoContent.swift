@@ -14,7 +14,7 @@ struct SheetDemoContent: View {
     let onOpen: () -> Void
 
     var body: some View {
-        FilledLinkButton(title: String(SandboxCopy.sheetOpen, locale: locale), onTap: onOpen)
+        FilledButton(title: String(SandboxCopy.sheetOpen, locale: locale), variant: .link, onTap: onOpen)
             .accessibilityIdentifier(SandboxOptions.sheetOpenIdentifier)
     }
 }

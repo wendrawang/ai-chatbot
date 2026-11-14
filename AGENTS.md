@@ -125,7 +125,16 @@ tersedia pada history/main.
 
 ## Komponen dan ownership
 
-- DesignKit `Components/<Fungsi>`: `Actions`, `Images`, `Inputs`, `Lists`, `Markdown`, `Messages`, `Screen`.
+- DesignKit `Components/<Fungsi>`: `Actions`, `Feedback`, `Images`, `Inputs`, `Lists`, `Markdown`, `Messages`, `Screen`.
+  Utamakan reuse: pakai komponen yang ada atau perluas lewat varian/parameter. Buat komponen baru hanya bila
+  tampilan/perilakunya memang beda jauh, dan tulis alasannya di PR.
+  Tampilan yang dipakai di lebih dari satu tempat wajib jadi komponen DesignKit. View yang hanya dipakai sekali di
+  fitur (mis. `AgentTypingIndicator`, sapaan `WelcomeSection`) boleh tetap di TanyaAI dengan font dan warnanya
+  sendiri; dipindah ke DesignKit saat dipakai di tempat kedua.
+  Sebelum membuat komponen, cek yang sudah ada: tombol selebar wadah = `FilledButton` (`.outlined` untuk aksi kedua
+  bergaris seperti Batalkan, `.link` untuk teks kecil bergaris bawah), permukaan berisi/bergaris = `cardStyle`
+  (`fillColor` untuk latar lain), spinner = `LoadingIndicator`,
+  garis pemisah = `SeparatorLine`.
   Komponen beberapa file memakai subfolder sendiri; satu file langsung di kelompok fungsinya.
   Bagian beberapa file dikelompokkan ke `Models`, `Views`, `Controllers`, `Protocols`, `Extensions` sesuai peran.
   Helper/model/extension khusus komponen tetap dalam pemilik itu, seperti `Markdown/Models` dan `Markdown/Views`.
@@ -140,12 +149,19 @@ tersedia pada history/main.
 - Tidak ada alias untuk nilai sistem: `.clear`, bukan `CustomColors.transparent`.
 - TanyaAI dipisah per tanggung jawab (lihat "Struktur TanyaAI"). Folder intent baru dibuat saat file
   pertamanya ada, bukan lebih awal.
+- Field form generik di DesignKit (`Components/Inputs/FormField`): `SelectField`, `TextInputField`, `ToggleRow`, semua
+  dengan label, `error` merah di bawah, dan `isEnabled`. Daftar pilihan di sheet memakai `OptionList` (satu atau banyak
+  pilihan, `items` nil = loading). Komponen hanya menampilkan; validasi, dependensi, dan isi daftar milik pemakai.
 - Bottom sheet memakai `.bottomSheet(isPresented:closeLabel:content:)` dari DesignKit
   (`Components/Screen/BottomSheet`), dipasang di root halaman supaya latar gelap menutupi header dan composer. Wadah
   hanya memberi latar gelap, permukaan bersudut atas membulat, grabber, dan cara menutup (ketuk di luar, geser ke
   bawah). Tinggi mengikuti isi sampai batasnya: bawaan tepat di bawah status bar, atau `maxHeight: .screenFraction(0.6)`
   (bagian dari tinggi layar). Isi yang lebih panjang dari batas di-scroll wadah tanpa indikator dan tanpa bounce (jembatan
   UIKit kecil `ScrollBounceDisabler`, hanya untuk scroll view sheet), dan geser untuk menutup lalu hanya dari grabber.
+  Isi selalu di `ScrollView` yang sama dan scroll hanya dinyalakan/dimatikan; jangan menukar wadah dengan `if`,
+  karena isi akan dibangun ulang dan state-nya (mis. centang sementara) hilang saat isi bertambah panjang.
+  Bagian isi yang harus terlihat saat dibuka diberi `.id(BottomSheetFocus.id)`; sheet menggulirnya ke tengah begitu
+  isi mulai di-scroll. `OptionList` memakainya untuk pilihan pertama dari `selectedIDs` pemakai.
   Judul dan padding milik isi. Ini
   overlay di dalam halaman, bukan presentasi modal, jadi jalan di iOS 15 dan tidak menyentuh navigasi host. Jangan
   memakai `.sheet` atau membuat wadah sheet lain per fitur. Isi yang memanggil service (mis. PIN) meneruskan

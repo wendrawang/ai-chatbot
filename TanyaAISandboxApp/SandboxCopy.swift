@@ -31,6 +31,24 @@ enum SandboxCopy: String, CaseIterable {
     case sheetTitle = "sandbox.sheet.title"
     case sheetOption = "sandbox.sheet.option"
     case sheetClose = "sandbox.sheet.close"
+    case formTitle = "sandbox.form.title"
+    case formFormat = "sandbox.form.format"
+    case formFormatPlaceholder = "sandbox.form.formatPlaceholder"
+    case formSoftcopy = "sandbox.form.softcopy"
+    case formHardcopy = "sandbox.form.hardcopy"
+    case formAccounts = "sandbox.form.accounts"
+    case formAccountsPlaceholder = "sandbox.form.accountsPlaceholder"
+    /// Format `%d`: jumlah rekening terpilih.
+    case formAccountsSelected = "sandbox.form.accountsSelected"
+    case formAddress = "sandbox.form.address"
+    case formAddressPlaceholder = "sandbox.form.addressPlaceholder"
+    case formEmail = "sandbox.form.email"
+    case formBalance = "sandbox.form.balance"
+    case formChoose = "sandbox.form.choose"
+    case formConfirm = "sandbox.form.confirm"
+    case formCancel = "sandbox.form.cancel"
+    case formRequiredText = "sandbox.form.requiredText"
+    case formRequiredChoice = "sandbox.form.requiredChoice"
 }
 
 extension String {

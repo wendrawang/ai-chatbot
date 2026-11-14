@@ -94,9 +94,7 @@ public struct ChatScreen<Content: View>: View {
     @ViewBuilder
     private var loadingIndicator: some View {
         if bridge.isLoadingHistory {
-            ProgressView()
-                .progressViewStyle(.circular)
-                .tint(colors.colorsIconColored)
+            LoadingIndicator()
                 .accessibilityIdentifier(ChatElementIdentifier.loading)
         }
     }

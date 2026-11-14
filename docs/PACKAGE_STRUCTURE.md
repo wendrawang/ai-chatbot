@@ -49,6 +49,15 @@ Contoh penempatan yang sudah diterapkan:
 - `Components/Markdown/Models/MarkdownDocument.swift`: Markdown yang sudah di-parse.
 - `Components/Markdown/Parsing/MarkdownParser.swift`: parsing dokumen.
 - `Components/Markdown/Views/MarkdownContent.swift`: rendering dokumen.
+- `Components/Inputs/FormField/Views/`: `SelectField` (membuka daftar pilihan), `TextInputField`, `ToggleRow`, dan
+  `FieldFrame` (label, isi, error merah) yang dipakai bersama; kotak field di `ViewModifiers/FieldBox.swift` (padding
+  di atas `cardStyle`).
+- `Components/Lists/OptionList/`: isi sheet daftar pilihan (`OptionList`), satu atau banyak pilihan, dengan state loading.
+- `Components/Actions/FilledButton.swift`: tombol selebar wadah; `.regular` (Konfirmasi, Pilih), `.outlined` (aksi
+  kedua bergaris seukuran `.regular`, mis. Batalkan di form), dan `.link` (teks kecil bergaris bawah, mis. "Batalkan
+  proses ini").
+- `Components/Feedback/LoadingIndicator.swift`: spinner untuk semua loading.
+- `Components/Lists/SeparatorLine.swift`: garis pemisah 1 pt (daftar, tabel Markdown, di atas composer).
 - `Components/Screen/BottomSheet/Models/BottomSheetMaxHeight.swift`: batas tinggi, di bawah status bar atau bagian layar.
 - `Components/Screen/BottomSheet/Views/BottomSheet.swift`: permukaan sheet, grabber, dan scroll bila isi melewati batas.
 - `Components/Screen/BottomSheet/ViewModifiers/BottomSheetPresenter.swift`: latar gelap, posisi, dan animasi masuk.
@@ -123,7 +132,7 @@ TanyaAI/Features/Chat/Intents/LiveAgent/
     └── LiveAgentNoticeCard.swift
 ```
 
-Komponen visualnya generik di DesignKit: `NoticeCard`, `SenderMessageCard`, dan `FilledLinkButton`.
+Komponen visualnya generik di DesignKit: `NoticeCard`, `SenderMessageCard`, dan `FilledButton` varian `.link`.
 Tombol lampiran adalah parameter `attachment` milik `MessageComposer`.
 
 Intent berbentuk flow host, misalnya surat referensi, masih **rancangan, belum keputusan**. Struktur dan

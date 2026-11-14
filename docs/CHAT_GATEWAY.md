@@ -69,7 +69,7 @@ dipangkas; kartu sebelum pesan terakhir tidak kembali. Pesan agen tetap ada di h
 stream. `left:false` atau 409 (agen sudah bergabung) menunggu event `state`.
 
 Tampilan: kartu status mengikuti Figma frame 62/64 (`NoticeCard` DesignKit: bayangan tanpa garis tepi, ikon headset), tombol batal
-`FilledLinkButton` tepat di bawah kartu antre, dan pesan agen mengikuti frame 68 (`SenderMessageCard`: kartu berbayangan, avatar
+`FilledButton` varian `.link` tepat di bawah kartu antre, dan pesan agen mengikuti frame 68 (`SenderMessageCard`: kartu berbayangan, avatar
 dan label statis "Live Agent OCBC Nyala", teks polos). Kartu antre di posisi event-nya, atau di akhir daftar bila
 dibuka lagi saat masih antre tanpa event yang ikut replay. Kartu selesai dari history ditaruh setelah pesan agen
 terakhir sebuah sesi (sesi berakhir saat bot menjawab lagi, atau di akhir bila agen tidak sedang melayani), kecuali
