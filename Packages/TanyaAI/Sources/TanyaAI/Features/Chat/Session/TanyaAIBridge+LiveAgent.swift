@@ -36,20 +36,25 @@ extension TanyaAIBridge {
     /// daftar bila event-nya tidak ikut replay. Dari history ditambahkan kartu selesai untuk sesi agen dan kartu
     /// "tidak dilanjutkan" untuk serah terima tanpa agen, bila stream tidak memberi kartu penutupnya. Kartu antre
     /// bukan penutup: setelah antre selesai kartunya tersembunyi. `seq` menjadi id baris, jadi kartu ber-`seq` sama
-    /// hanya tampil sekali (kartu dari stream didahulukan): table crash bila menerima id ganda, dan itu terjadi bila
-    /// `id:` SSE dan `seq` pesan tidak berasal dari satu urutan.
+    /// hanya tampil sekali: table crash bila menerima id ganda, dan itu terjadi bila `id:` SSE dan `seq` pesan tidak
+    /// berasal dari satu urutan. Yang dipertahankan urut kepentingannya: kartu antre yang sedang aktif (tombol
+    /// batalnya ikut kartu ini), lalu kartu dari stream, baru kartu turunan history.
     var visibleLiveAgentNotices: [LiveAgentNotice] {
         let closing = liveAgentNotices.filter { $0.kind != .connecting }
         let isSettled = !conversationState.isLiveAgent && !isAwaitingReply
-        var notices = closing
+        var notices = activeQueueNotices + closing
         notices += messages.endedAgentSessions(isOngoing: conversationState == .agentActive, closedBy: closing)
         notices += messages.unfinishedHandovers(isSettled: isSettled, closedBy: closing)
-        if conversationState == .agentQueued {
-            let latest = liveAgentNotices.last { $0.kind == .connecting }
-            notices.append(latest ?? LiveAgentNotice(kind: .connecting, seq: .max))
-        }
         var seenSeqs = Set<Int>()
         return notices.filter { seenSeqs.insert($0.seq).inserted }.sorted { $0.seq < $1.seq }
+    }
+
+    /// Kartu antre selama `AGENT_QUEUED`: yang terbaru dari stream, atau di akhir daftar bila event-nya tidak ikut
+    /// replay. Kosong di luar antre.
+    private var activeQueueNotices: [LiveAgentNotice] {
+        guard conversationState == .agentQueued else { return [] }
+        let latest = liveAgentNotices.last { $0.kind == .connecting }
+        return [latest ?? LiveAgentNotice(kind: .connecting, seq: .max)]
     }
 
     /// Pemicu ikut ke bawah bila pembaca di ujung daftar: pesan masuk terbaru, kartu live agent terbaru yang tampil,

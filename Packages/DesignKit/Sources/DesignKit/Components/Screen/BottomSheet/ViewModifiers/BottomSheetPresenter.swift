@@ -19,17 +19,22 @@ struct BottomSheetPresenter<SheetContent: View>: ViewModifier {
     @Binding private var isPresented: Bool
     private let closeLabel: String
     private let maxHeight: BottomSheetMaxHeight
+    private let contentID: AnyHashable?
     private let sheetContent: () -> SheetContent
 
+    /// `contentID` = identitas isi untuk presentasi berbasis nilai. Nilai lain membangun sheet baru seutuhnya
+    /// (isi, tinggi terukur, dan posisi scroll), jadi fokus scroll isi baru dijalankan seperti saat dibuka langsung.
     init(
         isPresented: Binding<Bool>,
         closeLabel: String,
         maxHeight: BottomSheetMaxHeight,
+        contentID: AnyHashable? = nil,
         @ViewBuilder content: @escaping () -> SheetContent
     ) {
         self._isPresented = isPresented
         self.closeLabel = closeLabel
         self.maxHeight = maxHeight
+        self.contentID = contentID
         self.sheetContent = content
     }
 
@@ -71,6 +76,7 @@ struct BottomSheetPresenter<SheetContent: View>: ViewModifier {
                 onClose: close,
                 content: sheetContent
             )
+            .id(contentID)
             .frame(maxHeight: sheetMaxHeight(in: geometry), alignment: .bottom)
             .transition(.move(edge: .bottom))
         }

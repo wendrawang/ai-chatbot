@@ -33,18 +33,27 @@ public extension View {
 
     /// Versi berbasis nilai, untuk halaman yang punya beberapa jenis sheet: sheet tampil selama `item` tidak nil dan
     /// isinya dibangun dari nilai itu, biasanya enum jenis sheet. Menutup sheet mengosongkan `item`. Nilai lain =
-    /// isi baru, jadi state di dalam isi (mis. centang sementara `OptionList`) tidak terbawa dari sheet sebelumnya.
-    /// Satu pemasangan di root halaman cukup untuk semua sheet halaman itu.
+    /// sheet baru seutuhnya, jadi state di dalam isi (mis. centang sementara `OptionList`) dan posisi scroll tidak
+    /// terbawa dari sheet sebelumnya, dan fokus isi baru (`BottomSheetFocus`) digulir ke layar. Satu pemasangan di
+    /// root halaman cukup untuk semua sheet halaman itu.
     func bottomSheet<Item: Hashable, SheetContent: View>(
         item: Binding<Item?>,
         closeLabel: String,
         maxHeight: BottomSheetMaxHeight = .belowStatusBar,
         @ViewBuilder content: @escaping (Item) -> SheetContent
     ) -> some View {
-        bottomSheet(isPresented: item.isPresent(), closeLabel: closeLabel, maxHeight: maxHeight) {
-            if let value = item.wrappedValue {
-                content(value).id(value)
-            }
-        }
+        modifier(
+            BottomSheetPresenter(
+                isPresented: item.isPresent(),
+                closeLabel: closeLabel,
+                maxHeight: maxHeight,
+                contentID: item.wrappedValue.map(AnyHashable.init),
+                content: {
+                    if let value = item.wrappedValue {
+                        content(value)
+                    }
+                }
+            )
+        )
     }
 }
