@@ -14,14 +14,11 @@ import Foundation
 @MainActor
 public final class TanyaAIBridge: ObservableObject {
     /// Pesan dari gateway, urut `seq` naik.
-    @Published
-    private(set) var messages: [ChatMessage] = []
+    @Published private(set) var messages: [ChatMessage] = []
     /// Pertanyaan yang sudah tampil tetapi belum datang dari stream, termasuk yang gagal dikirim (urut waktu kirim).
-    @Published
-    var localQuestions: [LocalQuestion] = []
+    @Published var localQuestions: [LocalQuestion] = []
     /// Pertanyaan yang sedang ditunggu jawabannya (lihat `ChatTurn`).
-    @Published
-    var turn = ChatTurn()
+    @Published var turn = ChatTurn()
     /// Pertanyaan terbaru yang dikirim dari halaman ini. Hanya berubah saat kirim, jadi salinan dari stream atau
     /// bubble gagal yang tersisa tidak dianggap kiriman baru.
     @Published var latestSentQuestionID: String?
@@ -32,10 +29,8 @@ public final class TanyaAIBridge: ObservableObject {
     /// turn, jadi hanya ini yang membedakan salinan kiriman sendiri dari pesan masuk.
     var sentMessageIDs: Set<String> = []
     /// True setelah history pertama selesai; sebelum itu halaman menampilkan loading, bukan sambutan.
-    @Published
-    private(set) var isHistoryLoaded = false
-    @Published
-    var connection = ChatConnection.connecting
+    @Published private(set) var isHistoryLoaded = false
+    @Published var connection = ChatConnection.connecting
     /// State dari init terakhir, diperbarui event `state`. `unknown` sebelum init pertama. Lewat init maupun stream,
     /// status mengetik kedua pihak ikut dibersihkan (lihat `didChangeConversationState`).
     @Published var conversationState = ConversationState.unknown {

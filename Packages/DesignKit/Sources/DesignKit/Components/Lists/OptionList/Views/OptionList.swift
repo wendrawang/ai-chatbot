@@ -12,12 +12,16 @@ import SwiftUI
 /// sebanyak yang diperlukan lalu tombol `confirmLabel`. Tombol aktif bila ada centang yang masih ada di daftar;
 /// `isEmptyAllowed` = pemakai boleh menerima hasil kosong (mengosongkan pilihan lama). `onSelect` menerima id pilihan
 /// urut sesuai daftar; menutup sheet tetap tugas pemakai. Padding isi milik komponen ini, wadah sheet hanya memberi
-/// permukaan. Di daftar panjang, pilihan pertama dari `selectedIDs` langsung terlihat saat sheet dibuka.
+/// permukaan. Di daftar panjang, pilihan pertama dari `selectedIDs` langsung terlihat saat sheet dibuka. Centang
+/// sementara milik komponen ini; bila pemakai mengganti `selectedIDs` atau `mode` selagi daftar tampil, centang
+/// mengikuti nilai baru itu.
 /// TODO: Konfirmasi ukuran judul, baris, dan penanda dengan Figma; sementara dari foto.
 @MainActor
 public struct OptionList: View {
     @Environment(\.designColors) private var colors
     @State private var selection: OptionSelection
+    /// Pilihan dari pemakai; perubahannya mengganti centang sementara.
+    private let givenSelection: OptionSelection
     private let title: String
     private let items: [OptionItem]?
     private let confirmLabel: String
@@ -36,12 +40,14 @@ public struct OptionList: View {
         isEmptyAllowed: Bool = false,
         onSelect: @escaping ([String]) -> Void
     ) {
-        _selection = State(initialValue: OptionSelection(mode: mode, selectedIDs: selectedIDs))
+        let givenSelection = OptionSelection(mode: mode, selectedIDs: selectedIDs)
+        _selection = State(initialValue: givenSelection)
+        self.givenSelection = givenSelection
         self.title = title
         self.items = items
         self.confirmLabel = confirmLabel
         self.isEmptyAllowed = isEmptyAllowed
-        self.focusedID = items?.map(\.id).first(where: selectedIDs.contains)
+        self.focusedID = items?.map(\.id).first(where: givenSelection.isSelected)
         self.onSelect = onSelect
     }
 
@@ -53,11 +59,12 @@ public struct OptionList: View {
         }
         .padding(.horizontal, FigmaSize.spacingLarge.scaledToArtwork)
         .padding(.bottom, FigmaSize.spacingLarge.scaledToArtwork)
+        .onChange(of: givenSelection) { selection = $0 }
     }
 
     private var heading: some View {
         Text(title)
-            .font(FontFace.firaSansSemiBold.swiftUIFont(size: FigmaSize.typographySizeHeadingSmall20.scaledToArtwork))
+            .designFont(.title)
             .foregroundColor(colors.colorsTextPrimaryDark)
             .fixedSize(horizontal: false, vertical: true)
             .padding(.bottom, FigmaSize.spacingMedium.scaledToArtwork)
@@ -84,9 +91,10 @@ public struct OptionList: View {
     private var confirmButton: some View {
         if selection.mode == .multiple, let items {
             let isConfirmable = selection.isConfirmable(in: items, isEmptyAllowed: isEmptyAllowed)
-            FilledButton(title: confirmLabel, isEnabled: isConfirmable) {
+            FilledButton(title: confirmLabel) {
                 onSelect(selection.ordered(in: items))
             }
+            .disabled(!isConfirmable)
             .padding(.top, FigmaSize.spacingLarge.scaledToArtwork)
         }
     }

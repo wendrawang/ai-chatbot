@@ -8,21 +8,18 @@
 import DesignKit
 import SwiftUI
 
-/// The feature owns its header; the draft lives in ComposerSection. Content is injected.
+/// Halaman chat: fitur ini memiliki header-nya sendiri, draft hidup di `ComposerSection`, dan `content` disisipkan
+/// pemakai.
 /// `welcome` (dari BE) hanya tampil bila history kosong; sebelum history pertama selesai, loading di tengah.
 /// Shortcut yang diketuk dikirim lewat `bridge` seperti chat.
 /// Selama halaman tampil, `bridge` tersambung ke gateway. Setelah kirim, bubble pertanyaan langsung tampil dan
 /// tombol menjadi stop sampai jawaban selesai; shortcut nonaktif selama menunggu.
 @MainActor
 public struct ChatScreen<Content: View>: View {
-    @Environment(\.locale)
-    private var locale
-    @Environment(\.dismiss)
-    private var dismiss
-    @Environment(\.designColors)
-    private var colors
-    @ObservedObject
-    private var bridge: TanyaAIBridge
+    @Environment(\.locale) private var locale
+    @Environment(\.dismiss) private var dismiss
+    @Environment(\.designColors) private var colors
+    @ObservedObject private var bridge: TanyaAIBridge
     @State private var scrollProgress = CGFloat.zero
     @State private var isLatestVisible = true
     @State private var latestJumpID: UUID?
@@ -161,7 +158,8 @@ private extension ChatScreen {
 
 private extension ChatScreen {
     func close() {
-        if let onBack { onBack() } else { dismiss() }
+        guard let onBack else { return dismiss() }
+        onBack()
     }
 
     /// True bila bubble pertanyaan tampil; false = ditolak dan draft tetap.
