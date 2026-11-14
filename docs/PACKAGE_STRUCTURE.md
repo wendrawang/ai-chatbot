@@ -59,11 +59,18 @@ Contoh penempatan yang sudah diterapkan:
 - `Components/Feedback/LoadingIndicator.swift`: spinner untuk semua loading.
 - `Components/Lists/SeparatorLine.swift`: garis pemisah 1 pt (daftar, tabel Markdown, di atas composer).
 - `Components/Screen/BottomSheet/Models/BottomSheetMaxHeight.swift`: batas tinggi, di bawah status bar atau bagian layar.
-- `Components/Screen/BottomSheet/Views/BottomSheet.swift`: permukaan sheet, grabber, dan scroll bila isi melewati batas.
-- `Components/Screen/BottomSheet/ViewModifiers/BottomSheetPresenter.swift`: latar gelap, posisi, dan animasi masuk.
-- `Components/Screen/BottomSheet/Extensions/View+BottomSheet.swift`: `.bottomSheet(isPresented:)` dan
-  `.bottomSheet(item:)`, satu-satunya pintu publiknya; `Binding+Presence.swift` mengubah nilai optional menjadi
-  ada/tidaknya sheet.
+- `Components/Screen/BottomSheet/Models/BottomSheetLayout.swift`: batas tinggi dan letak sheet dari safe area, layar
+  tanpa notch, dan keyboard.
+- `Components/Screen/BottomSheet/Views/BottomSheet.swift`: permukaan sheet, grabber, scroll bila isi melewati batas,
+  footer yang menempel, dan kunci tutup.
+- `Components/Screen/BottomSheet/ViewModifiers/BottomSheetPresenter.swift`: latar gelap, posisi, animasi masuk, dan
+  mengikuti keyboard (`Extensions/Notification+KeyboardTop.swift`).
+- `Components/Screen/BottomSheet/Extensions/View+BottomSheet.swift`: `.bottomSheet(isPresented:)`,
+  `.bottomSheet(item:)`, dan `.bottomSheetFooter`, satu-satunya pintu publiknya; `Binding+Presence.swift` mengubah
+  nilai optional menjadi ada/tidaknya sheet.
+- Footer yang menempel: `ViewModifiers/BottomSheetFooterModifier.swift` menitipkan footer lewat
+  `Models/BottomSheetFooterKey.swift`; `Models/BottomSheetFooterPlacement.swift` dan
+  `Extensions/EnvironmentValues+BottomSheet.swift` memberi tahu isi bahwa ia berada di dalam sheet.
 - `Foundations/Typography/Models/DesignFontRole.swift`: peran teks (face + ukuran);
   `Extensions/View+DesignFont.swift` = `.designFont(role)`.
 

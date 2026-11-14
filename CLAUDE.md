@@ -44,6 +44,8 @@ bridge host ke chat-gateway (init → history → SSE, retry, merge), dan daftar
   `.bottomSheet(item:...)` untuk beberapa jenis sheet (`docs/BOTTOM_SHEET.md`); wadah saja (latar
   gelap, grabber, tutup lewat ketuk di luar atau geser ke bawah). Tinggi mengikuti isi sampai batas (bawaan di bawah
   status bar, atau `.screenFraction(x)`); isi yang lebih panjang di-scroll. Isi membawa judul dan padding sendiri.
+  `isDismissable: false` = terkunci (PIN diperiksa host); `.bottomSheetFooter { }` pada isi = tombol menempel di
+  bawah; field teks di isi boleh, sheet naik ke atas keyboard; layar tanpa notch diberi jarak atas 16 pt.
   Belum ada pemicu di chat; contoh ada di sandbox `--sheet-demo`. Service untuk isi seperti PIN tetap di host.
   Swipe-back ditahan host selama sheet terbuka (milik navigasi host, bukan package).
 - Ukuran welcome/kartu/bubble masih estimasi screenshot (TODO di `CustomSizes`);

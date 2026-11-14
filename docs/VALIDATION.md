@@ -1005,3 +1005,37 @@ bahasa Inggris diterjemahkan. `topSpacing` kini tanpa `default`, jadi baris baru
 
 Kesiapan struktur: langkah menambah intent dan tiga bagian yang belum punya pola (state form per instance, sheet
 dari baris chat, callback data/service host) ditulis di `docs/PACKAGE_STRUCTURE.md` bagian "Pola intent".
+
+## Bottom sheet: tombol menempel, keyboard, kunci tutup, layar tanpa notch (14 November 2026)
+
+Empat hal yang sebelumnya menunggu keputusan, dijawab user: tombol pilihan banyak sementara menempel di bawah, ada
+kemungkinan field pencarian di daftar panjang, sheet perlu bisa dikunci untuk PIN, dan jarak atas di iPhone SE boleh.
+
+Tombol menempel: isi memasang `.bottomSheetFooter { ... }`; footer dititipkan ke wadah lewat preference dan digambar
+di tepi bawah area isi, sedangkan salinan tak terlihat di ujung isi memesan tempatnya, jadi tinggi sheet dan ujung
+scroll tetap benar tanpa state ukuran tambahan. Di luar sheet footer tampil biasa. `OptionList` pilihan banyak
+memakainya untuk tombol konfirmasi. `BottomSheetFooterTests`: tinggi sheet ikut menghitung footer, footer di tepi
+bawah selagi daftar belum digeser, dan ujung isi memesan tempat setinggi footer. UI test
+`testTheConfirmButtonSticksToTheBottomWhileTheListScrolls`: tombol terlihat sebelum digeser, tidak berpindah selama
+20 baris di-scroll, dan baris terakhir berhenti di atasnya.
+
+Keyboard: presenter mengikuti `keyboardWillChangeFrame` hanya selama sheet tampil, lalu sheet duduk di atas keyboard
+dan batas tingginya mengecil (`BottomSheetLayout`). Keyboard halaman (mis. composer) yang sudah ada sebelum sheet
+dibuka tetap tidak mengangkat sheet. Selama keyboard tampil, `BottomSheetFocus` tidak digulir ke layar, supaya field
+di atas daftar tidak tergeser oleh pilihan lama. `BottomSheetKeyboardTests`, `BottomSheetLayoutTests`,
+`BottomSheetFocusTests.theFocusIsLeftAloneWhileRevealingIsOff`; UI test `testTheSheetRisesAboveTheKeyboard` dengan
+keyboard simulator sungguhan (`--sheet-input`). Field pencarian di `OptionList` belum dibuat: belum ada tampilannya.
+
+Kunci tutup: `isDismissable: false` pada kedua `.bottomSheet`. Latar gelap, geseran, dan aksi tutup VoiceOver tidak
+menutup, dan grabber tinggal gambar. UI test `testALockedSheetOnlyClosesFromItsContent` (`--sheet-locked`).
+`accessibilityHidden` pada grabber yang sudah menjadi elemen tombol tidak menyembunyikannya dari XCUITest, jadi
+grabber terkunci digambar tanpa elemen aksesibilitas sama sekali.
+
+Layar tanpa notch: batas bawaan 16 pt di bawah status bar (`CustomSizes.BottomSheet.classicTopGap`);
+`BottomSheetLayoutTests.aClassicScreenLeavesAGapBelowTheStatusBar`.
+
+Hasil: `./Scripts/verify.sh` exit 0 di iPhone 17 Pro (style 0 pelanggaran di 341 file, unit test DesignKit dan
+TanyaAI, test sandbox, seluruh UI test). 12 UI test sheet (`BottomSheetUITests`, `BottomSheetStateUITests`) juga
+lolos di simulator iPhone SE generasi ke-3. Screenshot dari UI test (tombol menempel, sheet di atas keyboard) dilihat
+di kedua perangkat. Tidak diuji: VoiceOver di perangkat, iOS 15, dan keyboard pihak ketiga atau keyboard iPad
+mengambang.

@@ -162,7 +162,11 @@ tersedia pada history/main.
   (`Components/Screen/BottomSheet`), dipasang di root halaman supaya latar gelap menutupi header dan composer.
   Halaman dengan beberapa jenis sheet memakai `.bottomSheet(item:closeLabel:content:)` dengan enum jenis sheet:
   satu pemasangan, dan nilai lain membangun sheet baru (state isi dan posisi scroll tidak terbawa). Cara pakai, isi
-  yang sudah didukung, dan batasnya ada di [docs/BOTTOM_SHEET.md](docs/BOTTOM_SHEET.md). Wadah
+  yang sudah didukung, dan batasnya ada di [docs/BOTTOM_SHEET.md](docs/BOTTOM_SHEET.md).
+  `isDismissable: false` mengunci sheet (hanya pemakai yang menutup, mis. selama PIN diperiksa host). Tombol yang
+  harus selalu terlihat dipasang dari isi lewat `.bottomSheetFooter { ... }` dan menempel di bawah sheet;
+  `OptionList` pilihan banyak sudah memakainya. Field teks di isi boleh: sheet naik ke atas keyboard. Di layar
+  tanpa notch batas bawaan 16 pt di bawah status bar. Wadah
   hanya memberi latar gelap, permukaan bersudut atas membulat, grabber, dan cara menutup (ketuk di luar, geser ke
   bawah). Tinggi mengikuti isi sampai batasnya: bawaan tepat di bawah status bar, atau `maxHeight: .screenFraction(0.6)`
   (bagian dari tinggi layar). Isi yang lebih panjang dari batas di-scroll wadah tanpa indikator dan tanpa bounce (jembatan

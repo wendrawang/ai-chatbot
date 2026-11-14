@@ -9,7 +9,8 @@ import SwiftUI
 
 /// Isi bottom sheet untuk memilih: judul, lalu daftar pilihan. `items` nil = daftar masih diambil pemakai (mis. dari
 /// service host), jadi spinner yang tampil. `.single`: satu ketukan langsung memanggil `onSelect`. `.multiple`: centang
-/// sebanyak yang diperlukan lalu tombol `confirmLabel`. Tombol aktif bila ada centang yang masih ada di daftar;
+/// sebanyak yang diperlukan lalu tombol `confirmLabel`, yang menempel di tepi bawah sheet dan tidak ikut ter-scroll
+/// (`bottomSheetFooter`). Tombol aktif bila ada centang yang masih ada di daftar;
 /// `isEmptyAllowed` = pemakai boleh menerima hasil kosong (mengosongkan pilihan lama). `onSelect` menerima id pilihan
 /// urut sesuai daftar; menutup sheet tetap tugas pemakai. Padding isi milik komponen ini, wadah sheet hanya memberi
 /// permukaan. Di daftar panjang, pilihan pertama dari `selectedIDs` langsung terlihat saat sheet dibuka. Centang
@@ -55,10 +56,10 @@ public struct OptionList: View {
         VStack(alignment: .leading, spacing: .zero) {
             heading
             rows
-            confirmButton
         }
         .padding(.horizontal, FigmaSize.spacingLarge.scaledToArtwork)
-        .padding(.bottom, FigmaSize.spacingLarge.scaledToArtwork)
+        .padding(.bottom, listBottomPadding)
+        .bottomSheetFooter { confirmButton }
         .onChange(of: givenSelection) { selection = $0 }
     }
 
@@ -86,16 +87,17 @@ public struct OptionList: View {
         }
     }
 
-    /// Hanya untuk pilihan banyak dan setelah daftar tersedia.
+    /// Hanya untuk pilihan banyak dan setelah daftar tersedia. Padding di semua sisi milik tombol ini, supaya selama
+    /// menempel di bawah sheet baris yang di-scroll tidak menyentuhnya.
     @ViewBuilder
     private var confirmButton: some View {
-        if selection.mode == .multiple, let items {
+        if isConfirming, let items {
             let isConfirmable = selection.isConfirmable(in: items, isEmptyAllowed: isEmptyAllowed)
             FilledButton(title: confirmLabel) {
                 onSelect(selection.ordered(in: items))
             }
             .disabled(!isConfirmable)
-            .padding(.top, FigmaSize.spacingLarge.scaledToArtwork)
+            .padding(FigmaSize.spacingLarge.scaledToArtwork)
         }
     }
 }
@@ -103,6 +105,14 @@ public struct OptionList: View {
 // MARK: - Helpers
 
 private extension OptionList {
+    var isConfirming: Bool { selection.mode == .multiple && items != nil }
+
+    /// Daftar tanpa tombol konfirmasi ditutup padding bawahnya sendiri; dengan tombol, jarak itu milik tombol.
+    var listBottomPadding: CGFloat {
+        guard isConfirming else { return FigmaSize.spacingLarge.scaledToArtwork }
+        return .zero
+    }
+
     /// Baris pilihan awal memakai penanda fokus sheet; baris lain tetap memakai id-nya sendiri.
     func rowID(of item: OptionItem) -> AnyHashable {
         guard item.id == focusedID else { return AnyHashable(item.id) }

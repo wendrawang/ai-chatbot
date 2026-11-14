@@ -17,7 +17,7 @@ struct TanyaAIScreen: ScreenContent {
     @State private var openedLink: String?
     @State private var isSheetPresented = false
     /// Pilihan terakhir di sheet contoh; dibuka lagi = sudah tercentang dan terlihat walau daftarnya panjang.
-    @State private var sheetChoiceID: String?
+    @State private var sheetChoiceIDs: [String] = []
     @StateObject private var formDemo = FormDemoModel()
     let onBack: () -> Void
 
@@ -32,14 +32,10 @@ struct TanyaAIScreen: ScreenContent {
             .bottomSheet(
                 isPresented: $isSheetPresented,
                 closeLabel: String(SandboxCopy.sheetClose, locale: locale),
-                maxHeight: sheetMaxHeight
+                maxHeight: sheetMaxHeight,
+                isDismissable: !SandboxOptions.current.isSheetLocked
             ) {
-                OptionList(
-                    title: String(SandboxCopy.sheetTitle, locale: locale),
-                    items: sheetOptions,
-                    selectedIDs: sheetChoiceID.map { [$0] } ?? [],
-                    onSelect: choose
-                )
+                SheetDemoSheetContent(selectedIDs: sheetChoiceIDs, onSelect: choose)
             }
             // Beberapa jenis sheet, satu pemasangan: sheet tampil selama `formDemo.sheet` terisi.
             .bottomSheet(item: $formDemo.sheet, closeLabel: String(SandboxCopy.sheetClose, locale: locale)) { sheet in
@@ -73,14 +69,6 @@ struct TanyaAIScreen: ScreenContent {
         return .screenFraction(SandboxOptions.sheetMaxFraction)
     }
 
-    /// `--sheet-long`: baris lebih panjang dari layar, supaya scroll di dalam sheet bisa dicoba.
-    private var sheetOptions: [OptionItem] {
-        let isLong = SandboxOptions.current.isSheetLong
-        let count = isLong ? SandboxOptions.sheetLongOptionCount : SandboxOptions.sheetOptionCount
-        let title = String(SandboxCopy.sheetOption, locale: locale)
-        return (Int.zero..<count).map { OptionItem(id: String($0), title: title) }
-    }
-
     private var isLinkPresented: Binding<Bool> {
         Binding(get: { openedLink != nil }, set: { if !$0 { openedLink = nil } })
     }
@@ -94,7 +82,7 @@ struct TanyaAIScreen: ScreenContent {
     }
 
     private func choose(_ ids: [String]) {
-        sheetChoiceID = ids.first
+        sheetChoiceIDs = ids
         isSheetPresented = false
     }
 }
