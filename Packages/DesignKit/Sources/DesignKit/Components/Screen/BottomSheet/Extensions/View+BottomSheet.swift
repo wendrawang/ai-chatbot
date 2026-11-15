@@ -66,8 +66,9 @@ public extension View {
     /// Dipasang pada isi sheet: `footer` (mis. tombol konfirmasi beserta padding-nya) menempel di tepi bawah sheet dan
     /// tidak ikut ter-scroll, sementara isi di atasnya digulir sampai di atas footer. Di luar sheet, footer tampil
     /// biasa di bawah isi. Untuk tombol dan teks saja: footer digambar dua kali (satu memesan tempat), jadi jangan
-    /// menaruh field atau view ber-state di dalamnya. Modifier yang dipasang pemakai di luar isi (mis. `.disabled`)
-    /// tidak sampai ke footer yang ditempel; pasang langsung pada footer.
+    /// menaruh field atau view ber-state di dalamnya. `.disabled` pada isi ikut menonaktifkan footer. Modifier
+    /// environment lain yang dipasang pada isi (mis. `.designColors`) tidak sampai ke footer yang ditempel; pasang
+    /// langsung pada footer.
     func bottomSheetFooter<Footer: View>(@ViewBuilder footer: () -> Footer) -> some View {
         modifier(BottomSheetFooterModifier(footer: footer()))
     }

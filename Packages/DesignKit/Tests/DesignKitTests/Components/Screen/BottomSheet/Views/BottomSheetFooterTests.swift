@@ -51,6 +51,28 @@ struct BottomSheetFooterTests {
         #expect(scrollView.contentOffset.y <= 0.5, "daftar masih di atas")
         #expect(abs(scrollView.contentSize.height - 40 * rowHeight - footerHeight) <= 0.5)
     }
+
+    /// Isi yang dinonaktifkan pemakai menonaktifkan juga footer yang ditempel wadah, walau footer digambar di luar isi.
+    @Test
+    func aDisabledContentDisablesItsPinnedFooter() async {
+        var states: [Bool] = []
+        let root = BottomSheet(
+            closeLabel: "Tutup",
+            bottomInset: .zero,
+            onClose: {},
+            content: {
+                Color.clear.frame(height: rowHeight)
+                    .bottomSheetFooter { EnabledProbe { states.append($0) }.frame(height: footerHeight) }
+                    .disabled(true)
+            }
+        )
+        let window = UIWindow(frame: CGRect(x: 0, y: 0, width: width, height: 812))
+        window.rootViewController = UIHostingController(rootView: root)
+        window.makeKeyAndVisible()
+        defer { window.isHidden = true }
+        await waitUntil { states.count >= 2 }
+        #expect(!states.contains(true), "footer yang ditempel ikut nonaktif")
+    }
 }
 
 // MARK: - Helpers

@@ -1039,3 +1039,10 @@ TanyaAI, test sandbox, seluruh UI test). 12 UI test sheet (`BottomSheetUITests`,
 lolos di simulator iPhone SE generasi ke-3. Screenshot dari UI test (tombol menempel, sheet di atas keyboard) dilihat
 di kedua perangkat. Tidak diuji: VoiceOver di perangkat, iOS 15, dan keyboard pihak ketiga atau keyboard iPad
 mengambang.
+
+Temuan review LLM lain (15 November 2026): `OptionList(...).disabled(true)` menonaktifkan baris, tetapi tombol
+konfirmasi yang menempel tetap aktif, karena footer dititipkan lewat preference dan digambar wadah di luar view yang
+menerima `.disabled`. `BottomSheetFooterModifier` kini membawa `isEnabled` dari isi ke footer yang ditempel.
+`OptionList` tidak diubah: `.disabled(!isConfirmable)` pada tombol digabung SwiftUI dengan status nonaktif warisan
+(nonaktif dari mana pun tetap nonaktif). `BottomSheetFooterTests.aDisabledContentDisablesItsPinnedFooter` gagal
+sebelum perbaikan.

@@ -68,7 +68,8 @@ Aturan pemasangan:
 - State sementara boleh `@State` di dalam isi: wadah tidak membangun ulang isi saat isi bertambah panjang.
 - Tombol yang menempel di bawah lewat `.bottomSheetFooter { ... }` pada isi, lengkap dengan padding-nya. Footer hanya
   untuk tombol dan teks: ia digambar dua kali (satu memesan tempat di ujung isi), jadi jangan menaruh field atau view
-  ber-state di dalamnya. `.disabled(...)` dipasang langsung pada footer, bukan pada isi di luarnya.
+  ber-state di dalamnya. `.disabled(...)` pada isi ikut menonaktifkan footer; modifier environment lain (mis.
+  `.designColors`) dipasang langsung pada footer.
 - Field teks boleh ada di isi. Saat keyboard terbuka, sheet duduk tepat di atas keyboard dan batas tingginya ikut
   mengecil; isi yang tidak muat lagi di-scroll. Taruh field di bagian atas isi supaya tetap terlihat: wadah tidak
   menggulir ke field yang sedang diisi.
