@@ -157,7 +157,7 @@ tanpa `default`, jadi case baru yang belum ditangani gagal di-build, bukan diam-
 | 2 | Folder intent, nama sama dengan case | `Intents/<Nama>/{Models,Extensions,Views}` | `Intents/LiveAgent` |
 | 3 | Bentuk data dari gateway (bila ada event atau field baru) | `Gateway/Models` + case di `ChatEvent` | `WireSystemNotice`, `ChatEvent.notice` |
 | 4 | State dan aksi sesi | Satu file `Session/TanyaAIBridge+<Nama>.swift`; state-nya satu value type | `TanyaAIBridge+LiveAgent`, `UserTypingSignal` |
-| 5 | Endpoint baru (bila ada) | Method di `TanyaAIChatTransport` | `leaveAgent`, `sendTyping` |
+| 5 | Endpoint chat-gateway baru (bila ada) | Method di `TanyaAIChatTransport`; service milik host tidak di sini (lihat intent form di bawah) | `leaveAgent`, `sendTyping` |
 | 6 | Baris di daftar chat | Case di `ChatListItem` dan `ChatListItemID`, jarak di `topSpacing`, tampilan di `ChatListRow` | `liveAgentNotice`, `leaveAgentQueue`, `agentTyping` |
 | 7 | Posisi baris di antara pesan | Extension di `Intents/<Nama>/Extensions`, dipanggil dari `ChatScreen.listItems` | `Array+LiveAgentNotice` |
 | 8 | Aksi dari baris | Closure di `ChatRowActions`, penerusnya di `ChatTableController.forwardingActions`, isinya di `ChatScreen.rowActions` | `onLeaveAgentQueue` |
@@ -197,7 +197,74 @@ karena `LiveAgent` tidak membutuhkannya. Ketiganya dirancang bersama intent form
 | --- | --- | --- |
 | State form per instance | `LiveAgent` hanya punya satu state per percakapan | Di TanyaAI, di luar sel table, dengan id instance = id pesan pemicunya |
 | Sheet yang dibuka dari baris chat | Belum ada baris yang membuka sheet | `.bottomSheet(item:)` di root `ChatScreen`; package memberi tahu host saat sheet terbuka supaya swipe-back ditahan |
-| Data dan service dari host | Transport sekarang hanya untuk chat-gateway | Callback atau protocol terpisah dari `TanyaAIChatTransport`, dirancang dari kebutuhan request pertama |
+| Data dan service dari host | Transport sekarang hanya untuk chat-gateway | Satu protocol per intent, terpisah dari `TanyaAIChatTransport`; rancangannya di bawah |
+
+### Rancangan struktur intent form
+
+Disepakati user 16 November 2026. Belum ada di kode: dibangun di PR intent form pertama (surat referensi), dan nama
+tipe boleh berubah saat itu. `LiveAgent` tidak mengikuti rancangan ini karena flow-nya digerakkan event gateway.
+
+**Service host tidak lewat `TanyaAIChatTransport`.** Transport hanya untuk endpoint chat-gateway: mengembalikan
+`Data` mentah yang di-decode TanyaAI, dan error koneksinya diulang otomatis. Service Byon (daftar rekening, submit,
+PIN) punya model dan error sendiri yang sudah ada di host, dan submit atau PIN tidak boleh diulang otomatis. Endpoint
+chat-gateway baru untuk sebuah intent (seperti `leaveAgent`) tetap masuk transport.
+
+Dibuat sekali, bersama intent form pertama:
+
+```text
+TanyaAI/Bridging/
+└── TanyaAIIntentServices.swift        // struct publik: satu properti opsional per service intent
+
+TanyaAI/Features/Chat/Intents/Form/    // mesin bersama, bukan intent
+├── Models/                            // jenis field, nilai form, state per instance, status
+├── Extensions/                        // validasi saat Konfirmasi, dependensi dan reset field anak
+└── Views/                             // kartu form, isi sheet pilihan, keypad PIN, kartu selesai/batal
+
+TanyaAI/Features/Chat/Session/
+└── TanyaAIBridge+Form.swift           // state form per id pesan, buka sheet, alur submit dan PIN
+```
+
+Bridge menerimanya lewat `TanyaAIBridge(transport:services:)` dengan `services` opsional, jadi host yang belum
+memakai intent form tidak berubah. Intent yang service-nya tidak diberikan host tidak menampilkan form.
+
+Per intent, contoh surat referensi:
+
+```text
+TanyaAI/Features/Chat/Intents/ReferenceLetter/
+├── Protocols/
+│   └── ReferenceLetterService.swift            // publik, diimplementasikan host
+├── Models/
+│   ├── ReferenceLetterFieldID.swift            // enum id field
+│   └── ReferenceLetterRequest.swift            // publik, nilai bertipe yang dikirim ke host
+└── Extensions/
+    ├── ReferenceLetterFieldID+Definition.swift // daftar field, jenis, default, dependensi
+    └── ReferenceLetterRequest+Values.swift     // nilai form menjadi request
+```
+
+```swift
+public protocol ReferenceLetterService: AnyObject {
+    func accounts() async throws -> [ReferenceLetterAccount]
+    func submit(_ request: ReferenceLetterRequest, pin: String) async throws
+}
+```
+
+Di luar folder intent hanya beberapa baris: case `ChatIntent`, properti di `TanyaAIIntentServices`, copy di
+`ChatCopy` dan tiga `Localizable.strings`, lalu test, service tiruan sandbox, dan UI test. Folder `Views/` per intent
+hanya dibuat bila intent butuh tampilan yang tidak ada di mesin, misalnya kartu produk reksa dana.
+
+Alasan bentuknya:
+
+- Protocol di folder intent, bukan di `Bridging`: menambah intent cukup menyalin satu folder. `public` tidak
+  bergantung pada letak folder, dan `Protocols/` sudah termasuk jenis folder yang diizinkan.
+- Protocol bertipe, bukan dictionary `[String: Any]`: pemetaan field ke request dicek compiler, dan host tinggal
+  memanggil service yang sudah ada.
+- Wadah `TanyaAIIntentServices`: init bridge tidak bertambah panjang setiap ada intent.
+- PIN hanya diteruskan ke host dalam satu pemanggilan, tidak disimpan atau di-log package.
+
+Diputuskan saat membangun, dari request surat referensi yang sebenarnya:
+
+- PIN ikut `submit` (seperti contoh di atas), atau service PIN bersama bila di host cek PIN adalah langkah terpisah.
+- Bentuk error dari host ke package, supaya pesan seperti "PIN salah" tampil di sheet.
 
 ## Panduan developer berikutnya
 
