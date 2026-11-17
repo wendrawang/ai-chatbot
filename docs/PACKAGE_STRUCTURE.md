@@ -184,6 +184,8 @@ rancangan lama (view model per intent di host, coordinator PIN existing):
 - Satu mesin form di TanyaAI untuk semua intent form; per intent hanya definisi field dan pemetaannya ke request
   host. Jenis field: pilihan lewat bottom sheet (satu atau banyak), teks (termasuk nominal dan email), dan toggle.
 - Field bisa bergantung pada field lain; field yang disembunyikan di-reset. Field nonaktif bebas validasi.
+- Nilai induk berganti (mis. jenis reksa dana) = field anak di-reset walau tetap terlihat, dan daftar pilihannya
+  diambil ulang dari host. Pilihan sebuah field bisa diganti setelah form dibuat tanpa menghapus draft field lain.
 - Validasi hanya saat Konfirmasi: teks kosong = error merah di bawahnya; pilihan kosong paling atas = sheet-nya
   langsung terbuka.
 - Daftar pilihan dan service (submit, PIN) milik host; sheet punya state loading selama host mengambil data.
@@ -193,7 +195,9 @@ rancangan lama (view model per intent di host, coordinator PIN existing):
 
 Komponennya sudah ada di DesignKit (`SelectField`, `TextInputField`, `ToggleRow`, `FilledButton`, `OptionList`,
 `PinEntry`, `.bottomSheet(item:)`); contoh susunannya di sandbox `--form-demo`, termasuk sheet PIN setelah Konfirmasi. Tiga hal di bawah **belum punya pola di kode**,
-karena `LiveAgent` tidak membutuhkannya. Ketiganya dirancang bersama intent form pertama, bukan disiapkan kosong:
+karena `LiveAgent` tidak membutuhkannya. Ketiganya dirancang bersama intent form pertama, bukan disiapkan kosong.
+Karena batas 20 file per MR, mesin form boleh masuk lebih dulu di PR sendiri bila tetap `internal`, belum dipasang
+ke chat, dan setiap perilakunya punya unit test; intent pertama yang memakainya menyusul di PR berikutnya.
 
 | Belum ada | Kenapa belum | Arah yang sudah disepakati |
 | --- | --- | --- |
