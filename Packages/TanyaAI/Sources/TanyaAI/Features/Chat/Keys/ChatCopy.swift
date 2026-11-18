@@ -38,8 +38,11 @@ enum ChatCopy: String, CaseIterable {
     /// TODO: Copy sementara dari tim iOS; ganti dengan copy final UI/UX.
     case agentNotContinuedTitle = "liveAgent.notContinued.title"
     case agentNotContinuedMessage = "liveAgent.notContinued.message"
-    /// Pilihan sumber lampiran setelah tombol `+` diketuk.
+    /// Bottom sheet sumber lampiran setelah tombol `+` diketuk; judulnya `liveAgentAttachment`.
     case attachmentGallery = "attachment.gallery"
+    case attachmentGalleryFormats = "attachment.gallery.formats"
     case attachmentFile = "attachment.file"
-    case attachmentCancel = "attachment.cancel"
+    case attachmentFileFormats = "attachment.file.formats"
+    /// Label aksesibilitas grabber sheet.
+    case attachmentClose = "attachment.close"
 }

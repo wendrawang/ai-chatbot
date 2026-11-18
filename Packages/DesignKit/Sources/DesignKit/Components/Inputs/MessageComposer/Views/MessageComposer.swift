@@ -118,8 +118,7 @@ public struct MessageComposer: View {
                 )
                 .background(Circle().fill(colors.colorsOutlineWhite))
                 .overlay(
-                    Circle().strokeBorder(
-                        CustomColors.Stroke.color, lineWidth: CustomSizes.Composer.attachmentStroke.scaledToArtwork)
+                    Circle().strokeBorder(CustomColors.Stroke.color, lineWidth: FigmaSize.weightOutline.scaledToArtwork)
                 )
                 .contentShape(Circle())
         }

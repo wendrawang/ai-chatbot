@@ -80,8 +80,8 @@ private extension LiveAgentUITests {
         application.buttons["composer.send"].tap()
     }
 
-    /// Di dalam kartu composer sebelah kiri field, seukuran dan sejajar dengan tombol kirim. Diketuk = pilihan Galeri
-    /// dan File (tanpa kamera), lalu ditutup lagi.
+    /// Di dalam kartu composer sebelah kiri field, seukuran dan sejajar dengan tombol kirim. Diketuk = bottom sheet
+    /// Galeri dan File (tanpa kamera), lalu ditutup lagi lewat latar gelap.
     func assertAttachmentLinesUpWithSend() {
         let attachment = application.buttons["composer.attachment"]
         XCTAssertTrue(attachment.waitForExistence(timeout: 5))
@@ -91,13 +91,13 @@ private extension LiveAgentUITests {
         XCTAssertGreaterThan(attachment.frame.minX, application.otherElements["composer"].frame.minX)
         XCTAssertLessThan(attachment.frame.maxX, application.textViews["composer.input"].frame.minX)
         attachment.tap()
-        let gallery = application.buttons["Gallery"]
-        XCTAssertTrue(gallery.waitForExistence(timeout: 3))
-        XCTAssertTrue(application.buttons["File"].exists)
+        let sheet = element("sheet")
+        XCTAssertTrue(sheet.waitForExistence(timeout: 3))
+        XCTAssertTrue(sheet.staticTexts["Gallery"].exists)
+        XCTAssertTrue(sheet.staticTexts["PDF, HEIC, JPG, or PNG"].exists)
         capture("live-agent-attachment-sources")
-        // iOS 26 menampilkan pilihan sebagai popover tanpa tombol batal; ketuk di luar menutup di semua versi.
         application.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.1)).tap()
-        waitUntilGone(gallery)
+        waitUntilGone(sheet)
     }
 
     func element(_ identifier: String) -> XCUIElement {

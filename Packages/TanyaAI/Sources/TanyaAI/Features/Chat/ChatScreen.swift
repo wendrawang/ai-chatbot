@@ -23,6 +23,8 @@ public struct ChatScreen<Content: View>: View {
     @State private var scrollProgress = CGFloat.zero
     @State private var isLatestVisible = true
     @State private var latestJumpID: UUID?
+    /// Bottom sheet pilihan Galeri / File sedang tampil.
+    @State private var isChoosingAttachment = false
     private let isEnabled: Bool
     private let welcome: WelcomeContent?
     private let onBack: (() -> Void)?
@@ -52,6 +54,7 @@ public struct ChatScreen<Content: View>: View {
             background: { backgroundImage }
         )
         .overlay { loadingIndicator }
+        .modifier(AttachmentPickerModifier(isPresented: $isChoosingAttachment, onPick: attach))
         // Dibatalkan otomatis saat halaman hilang; tampil lagi = init ulang dan mengejar history.
         .task { await bridge.run() }
     }
@@ -192,12 +195,17 @@ private extension ChatScreen {
         Task { [bridge] in await bridge.leaveAgentQueue() }
     }
 
-    /// Lampiran (PDF/gambar) hanya saat dilayani agen; nil = tombol tidak tampil.
-    /// TODO: Upload lewat transport dan kartu preview setelah endpoint upload dan parameter stream ada di contract
-    /// gateway; sementara file pilihan nasabah tidak dikirim.
-    var attachAction: ((URL) -> Void)? {
+    /// Lampiran (PDF/gambar) hanya saat dilayani agen; nil = tombol tidak tampil. Ketuk = bottom sheet Galeri / File.
+    var attachAction: (() -> Void)? {
         guard bridge.conversationState == .agentActive else { return nil }
-        return { _ in }
+        return { isChoosingAttachment = true }
+    }
+
+    /// File pilihan nasabah; diabaikan bila agen sudah tidak melayani saat picker ditutup.
+    /// TODO: Upload lewat transport dan kartu preview setelah endpoint upload dan parameter stream ada di contract
+    /// gateway; sementara file tidak dikirim.
+    func attach(_ file: URL) {
+        guard bridge.conversationState == .agentActive else { return }
     }
 
     /// Shortcut dikirim sebagai chat; bubble pertanyaan langsung tampil.
