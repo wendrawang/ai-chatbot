@@ -37,3 +37,4 @@
 "attachment.file" = "文件";
 "attachment.file.formats" = "PDF、HEIC、JPG 或 PNG";
 "attachment.close" = "关闭";
+"attachment.unsupportedFormat" = "不支持此照片格式。请选择 HEIC、JPG 或 PNG 照片。";

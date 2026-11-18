@@ -45,4 +45,6 @@ enum ChatCopy: String, CaseIterable {
     case attachmentFileFormats = "attachment.file.formats"
     /// Label aksesibilitas grabber sheet.
     case attachmentClose = "attachment.close"
+    /// TODO: Copy sementara dari tim iOS; ganti dengan copy final UI/UX.
+    case attachmentUnsupportedFormat = "attachment.unsupportedFormat"
 }

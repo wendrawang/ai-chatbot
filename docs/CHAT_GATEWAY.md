@@ -112,9 +112,11 @@ dan File dengan keterangan format, tanpa kamera (keputusan user 18 November 2026
 sampai ada Figma). Sheet dipasang di root `ChatScreen` lewat `AttachmentPickerModifier`; saat intent form memakai
 sheet di halaman yang sama, gabungkan ke satu `.bottomSheet(item:)`. Galeri memakai `PHPicker` (tanpa izin galeri, representasi asli supaya HEIC tetap HEIC) dan File
 memakai document picker `asCopy`. Format hanya PDF, HEIC, JPG/JPEG, dan PNG (`UTType.chatAttachments`); foto galeri
-berformat lain (mis. GIF) diabaikan karena pesan error belum ada di desain. Contract v1.5.0 belum punya endpoint
-upload dan parameter preview di stream/history belum pasti, jadi file pilihan nasabah berhenti di `attachAction`
-`ChatScreen` (TODO). Kartu preview (ikon, nama file, "Lihat Detail") ditunda. Bila endpoint sudah ada: upload lewat
+berformat lain (mis. GIF) ditolak: galeri sistem tidak bisa memfilter per format, jadi sheet dibuka lagi dengan pesan
+merah (keputusan user; copy sementara). Contract v1.5.0 belum punya endpoint
+upload dan parameter preview di stream/history belum pasti, jadi file pilihan nasabah berhenti di
+`ChatScreen.attach(_:)` (TODO) dan salinannya langsung dibuang. Selama sheet terbuka, `TanyaAIHost(onSheetChange:)`
+memberi tahu host untuk menahan swipe-back. Kartu preview (ikon, nama file, "Lihat Detail") ditunda. Bila endpoint sudah ada: upload lewat
 method baru `TanyaAIChatTransport` seperti `leaveAgent`.
 
 Event `typing` dari agen menampilkan "Agen sedang mengetik..." miring di bawah pesan terakhir. Indikator hilang saat

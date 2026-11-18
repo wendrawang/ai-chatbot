@@ -16,9 +16,12 @@ import SwiftUI
 @MainActor
 struct AttachmentPickerModifier: ViewModifier {
     @Environment(\.locale) private var locale
+    @Environment(\.designColors) private var colors
     @Binding private var isPresented: Bool
     /// Picker sistem yang sedang terbuka; nil = tertutup.
     @State private var source: ChatAttachmentSource?
+    /// Foto terakhir dari galeri ditolak karena formatnya; sheet dibuka lagi dengan pesan error.
+    @State private var isFormatRejected = false
     private let onPick: (URL) -> Void
 
     init(isPresented: Binding<Bool>, onPick: @escaping (URL) -> Void) {
@@ -29,20 +32,41 @@ struct AttachmentPickerModifier: ViewModifier {
     func body(content: Content) -> some View {
         content
             .bottomSheet(isPresented: $isPresented, closeLabel: String(ChatCopy.attachmentClose, locale: locale)) {
-                OptionList(
-                    title: String(ChatCopy.liveAgentAttachment, locale: locale),
-                    items: items,
-                    onSelect: choose
-                )
+                VStack(alignment: .leading, spacing: .zero) {
+                    OptionList(
+                        title: String(ChatCopy.liveAgentAttachment, locale: locale),
+                        items: items,
+                        onSelect: choose
+                    )
+                    formatError
+                }
             }
             .sheet(item: $source) { picker($0) }
+            .onChange(of: isPresented) { isShown in
+                // Pesan format hanya untuk pilihan ulang tepat setelah ditolak, bukan saat sheet dibuka berikutnya.
+                guard !isShown, source == nil else { return }
+                isFormatRejected = false
+            }
+    }
+
+    /// TODO: Copy dan posisi pesan sementara sampai ada desain UI/UX.
+    @ViewBuilder
+    private var formatError: some View {
+        if isFormatRejected {
+            Text(String(ChatCopy.attachmentUnsupportedFormat, locale: locale))
+                .designFont(.caption)
+                .foregroundColor(colors.colorsTextNegative)
+                .fixedSize(horizontal: false, vertical: true)
+                .padding([.horizontal, .bottom], FigmaSize.spacingLarge.scaledToArtwork)
+                .accessibilityIdentifier(ChatElementIdentifier.attachmentFormatError)
+        }
     }
 
     @ViewBuilder
     private func picker(_ source: ChatAttachmentSource) -> some View {
         switch source {
         case .gallery:
-            PhotoAttachmentPicker(onPick: onPick, onDismiss: closePicker)
+            PhotoAttachmentPicker(onPick: onPick, onReject: rejectFormat, onDismiss: closePicker)
         case .file:
             DocumentAttachmentPicker(onPick: onPick, onDismiss: closePicker)
         }
@@ -65,7 +89,14 @@ private extension AttachmentPickerModifier {
     /// Sheet ditutup lalu picker sistem dibuka untuk sumber yang diketuk.
     func choose(_ ids: [String]) {
         isPresented = false
+        isFormatRejected = false
         source = ChatAttachmentSource.allCases.first { $0.optionID == ids.first }
+    }
+
+    /// Pilihan Galeri / File dibuka lagi dengan pesan format, supaya nasabah bisa langsung memilih ulang.
+    func rejectFormat() {
+        isFormatRejected = true
+        isPresented = true
     }
 
     func closePicker() {

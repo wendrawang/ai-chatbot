@@ -13,10 +13,12 @@ import SwiftUI
 @MainActor
 struct PhotoAttachmentPicker: UIViewControllerRepresentable {
     let onPick: (URL) -> Void
+    /// Foto berformat selain HEIC, JPG/JPEG, atau PNG.
+    let onReject: () -> Void
     let onDismiss: () -> Void
 
     func makeCoordinator() -> PhotoAttachmentPickerCoordinator {
-        PhotoAttachmentPickerCoordinator(onPick: onPick, onDismiss: onDismiss)
+        PhotoAttachmentPickerCoordinator(onPick: onPick, onReject: onReject, onDismiss: onDismiss)
     }
 
     func makeUIViewController(context: Context) -> PHPickerViewController {

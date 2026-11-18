@@ -37,3 +37,4 @@
 "attachment.file" = "File";
 "attachment.file.formats" = "PDF, HEIC, JPG, or PNG";
 "attachment.close" = "Close";
+"attachment.unsupportedFormat" = "This photo format isn't supported. Choose a HEIC, JPG, or PNG photo.";
