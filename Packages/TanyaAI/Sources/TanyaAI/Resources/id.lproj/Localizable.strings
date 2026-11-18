@@ -20,9 +20,6 @@
 "liveAgent.typing" = "Agen sedang mengetik...";
 "liveAgent.leaveQueue" = "Batalkan proses ini";
 "liveAgent.attachment" = "Lampirkan PDF atau gambar";
-"attachment.gallery" = "Galeri";
-"attachment.file" = "File";
-"attachment.cancel" = "Batal";
 "liveAgent.connecting.title" = "Menghubungkan ke Agent";
 "liveAgent.connecting.message" = "Saat ini Anda berada dalam antrian.\n\nMohon kesediaannya untuk menunggu. Customer Assistant Tanya OCBC NISP akan segera melayani Anda.";
 "liveAgent.ended.title" = "Percakapan dengan Agent Selesai";
@@ -35,3 +32,6 @@
 "liveAgent.unavailable.message" = "Customer Assistant belum dapat melayani Anda saat ini. Silakan coba lagi nanti; Tanya AI siap membantu Anda kembali.";
 "liveAgent.notContinued.title" = "Permintaan Agent Tidak Dilanjutkan";
 "liveAgent.notContinued.message" = "Anda telah meminta untuk terhubung dengan Customer Assistant, tetapi percakapan tidak dilanjutkan. Tanya AI siap membantu Anda kembali.";
+"attachment.gallery" = "Galeri";
+"attachment.file" = "File";
+"attachment.cancel" = "Batal";
