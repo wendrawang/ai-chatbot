@@ -29,18 +29,20 @@ public struct ChatScreen<Content: View>: View {
     private let welcome: WelcomeContent?
     private let onBack: (() -> Void)?
     private let onOpenLink: (String) -> Void
+    private let onSheetChange: ((Bool) -> Void)?
     private let content: Content
 
     public init(
         isEnabled: Bool = true, welcome: WelcomeContent? = nil, bridge: TanyaAIBridge,
         onBack: (() -> Void)? = nil, onOpenLink: @escaping (String) -> Void = { _ in },
-        @ViewBuilder content: () -> Content
+        onSheetChange: ((Bool) -> Void)? = nil, @ViewBuilder content: () -> Content
     ) {
         _bridge = ObservedObject(wrappedValue: bridge)
         self.isEnabled = isEnabled
         self.welcome = welcome
         self.onBack = onBack
         self.onOpenLink = onOpenLink
+        self.onSheetChange = onSheetChange
         self.content = content()
     }
 
@@ -55,6 +57,8 @@ public struct ChatScreen<Content: View>: View {
         )
         .overlay { loadingIndicator }
         .modifier(AttachmentPickerModifier(isPresented: $isChoosingAttachment, onPick: attach))
+        // Swipe-back milik navigasi host, jadi host yang menahannya selama sheet terbuka.
+        .onChange(of: isChoosingAttachment) { onSheetChange?($0) }
         // Dibatalkan otomatis saat halaman hilang; tampil lagi = init ulang dan mengejar history.
         .task { await bridge.run() }
     }
@@ -201,11 +205,11 @@ private extension ChatScreen {
         return { isChoosingAttachment = true }
     }
 
-    /// File pilihan nasabah; diabaikan bila agen sudah tidak melayani saat picker ditutup.
+    /// File pilihan nasabah. Salinannya langsung dibuang supaya tidak menumpuk di folder sementara.
     /// TODO: Upload lewat transport dan kartu preview setelah endpoint upload dan parameter stream ada di contract
-    /// gateway; sementara file tidak dikirim.
+    /// gateway; saat itu file dibuang oleh pemilik upload setelah selesai (atau bila agen sudah tidak melayani).
     func attach(_ file: URL) {
-        guard bridge.conversationState == .agentActive else { return }
+        FileManager.default.discardChatAttachment(at: file)
     }
 
     /// Shortcut dikirim sebagai chat; bubble pertanyaan langsung tampil.

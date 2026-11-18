@@ -96,6 +96,11 @@ private extension LiveAgentUITests {
         XCTAssertTrue(sheet.staticTexts["Gallery"].exists)
         XCTAssertTrue(sheet.staticTexts["PDF, HEIC, JPG, or PNG"].exists)
         capture("live-agent-attachment-sources")
+        // Swipe-back dari tepi kiri ditahan host selama sheet terbuka: halaman chat tetap tampil.
+        let leftEdge = application.coordinate(withNormalizedOffset: CGVector(dx: 0.01, dy: 0.5))
+        leftEdge.press(
+            forDuration: 0.1, thenDragTo: application.coordinate(withNormalizedOffset: CGVector(dx: 0.9, dy: 0.5)))
+        XCTAssertTrue(application.buttons["composer.attachment"].exists, "masih di halaman chat")
         application.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.1)).tap()
         waitUntilGone(sheet)
     }

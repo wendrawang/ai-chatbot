@@ -35,4 +35,23 @@ struct FileManagerChatAttachmentTests {
         let missing = FileManager.default.temporaryDirectory.appendingPathComponent("tidak-ada.pdf")
         #expect(throws: (any Error).self) { try FileManager.default.copyChatAttachment(from: missing) }
     }
+
+    /// Salinan galeri dibuang bersama foldernya; folder yang masih berisi file lain tetap ada.
+    @Test
+    func discardRemovesTheFileAndOnlyAnEmptyFolder() throws {
+        let manager = FileManager.default
+        let source = manager.temporaryDirectory.appendingPathComponent("dokumen.pdf")
+        try Data("pdf".utf8).write(to: source)
+        defer { try? manager.removeItem(at: source) }
+        let copy = try manager.copyChatAttachment(from: source)
+        manager.discardChatAttachment(at: copy)
+        #expect(!manager.fileExists(atPath: copy.deletingLastPathComponent().path))
+        let shared = try manager.copyChatAttachment(from: source)
+        let sibling = shared.deletingLastPathComponent().appendingPathComponent("lain.pdf")
+        try Data("pdf".utf8).write(to: sibling)
+        defer { try? manager.removeItem(at: shared.deletingLastPathComponent()) }
+        manager.discardChatAttachment(at: shared)
+        #expect(!manager.fileExists(atPath: shared.path))
+        #expect(manager.fileExists(atPath: sibling.path))
+    }
 }

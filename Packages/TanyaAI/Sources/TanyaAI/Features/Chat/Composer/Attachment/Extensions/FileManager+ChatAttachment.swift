@@ -17,4 +17,13 @@ extension FileManager {
         try copyItem(at: source, to: destination)
         return destination
     }
+
+    /// Membuang file lampiran yang tidak dipakai lagi, beserta foldernya bila menjadi kosong (folder salinan galeri
+    /// atau folder salinan aplikasi Files). Gagal diabaikan: folder sementara tetap dibersihkan sistem.
+    func discardChatAttachment(at file: URL) {
+        try? removeItem(at: file)
+        let folder = file.deletingLastPathComponent()
+        guard (try? contentsOfDirectory(atPath: folder.path))?.isEmpty == true else { return }
+        try? removeItem(at: folder)
+    }
 }
