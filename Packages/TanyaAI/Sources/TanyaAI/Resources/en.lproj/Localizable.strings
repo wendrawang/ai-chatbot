@@ -20,6 +20,9 @@
 "liveAgent.typing" = "Agent is typing...";
 "liveAgent.leaveQueue" = "Cancel this request";
 "liveAgent.attachment" = "Attach PDF or image";
+"attachment.gallery" = "Gallery";
+"attachment.file" = "File";
+"attachment.cancel" = "Cancel";
 "liveAgent.connecting.title" = "Connecting to an Agent";
 "liveAgent.connecting.message" = "You are currently in the queue.\n\nPlease wait. A Tanya OCBC NISP Customer Assistant will serve you shortly.";
 "liveAgent.ended.title" = "Agent Conversation Ended";

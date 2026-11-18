@@ -193,10 +193,11 @@ private extension ChatScreen {
     }
 
     /// Lampiran (PDF/gambar) hanya saat dilayani agen; nil = tombol tidak tampil.
-    /// TODO: Picker dan upload lewat transport setelah endpoint upload ada di contract gateway.
-    var attachAction: (() -> Void)? {
+    /// TODO: Upload lewat transport dan kartu preview setelah endpoint upload dan parameter stream ada di contract
+    /// gateway; sementara file pilihan nasabah tidak dikirim.
+    var attachAction: ((URL) -> Void)? {
         guard bridge.conversationState == .agentActive else { return nil }
-        return {}
+        return { _ in }
     }
 
     /// Shortcut dikirim sebagai chat; bubble pertanyaan langsung tampil.

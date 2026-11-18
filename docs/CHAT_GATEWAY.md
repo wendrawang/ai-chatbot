@@ -106,9 +106,14 @@ maupun stream), percakapan berganti, atau sesi berakhir, status dilupakan tanpa 
 mengetik ikut dihapus. Gagal diabaikan kecuali 401 yang mengakhiri sesi. Balasan ke agen memakai `sendMessage`
 yang sama dengan bot; bedanya tidak ada turn lock dan `turn_end`.
 
-Selama `AGENT_ACTIVE` composer menampilkan tombol lampiran (PDF/gambar) di luar kartu sebelah kiri, sejajar
-dengan tombol kirim. Contract v1.5.0 belum punya endpoint upload, jadi ketukannya belum melakukan apa pun. Bila
-endpoint sudah ada: picker di paket, upload lewat method baru `TanyaAIChatTransport` seperti `leaveAgent`.
+Selama `AGENT_ACTIVE` composer menampilkan tombol `+` di dalam kartu sebelah kiri field (Figma `typing-area`:
+lingkaran 24, garis 1 N200; ikon masih PDF dummy). Ketuk = pilihan Galeri / File, tanpa kamera (keputusan user
+18 November 2026). Galeri memakai `PHPicker` (tanpa izin galeri, representasi asli supaya HEIC tetap HEIC) dan File
+memakai document picker `asCopy`. Format hanya PDF, HEIC, JPG/JPEG, dan PNG (`UTType.chatAttachments`); foto galeri
+berformat lain (mis. GIF) diabaikan karena pesan error belum ada di desain. Contract v1.5.0 belum punya endpoint
+upload dan parameter preview di stream/history belum pasti, jadi file pilihan nasabah berhenti di `attachAction`
+`ChatScreen` (TODO). Kartu preview (ikon, nama file, "Lihat Detail") ditunda. Bila endpoint sudah ada: upload lewat
+method baru `TanyaAIChatTransport` seperti `leaveAgent`.
 
 Event `typing` dari agen menampilkan "Agen sedang mengetik..." miring di bawah pesan terakhir. Indikator hilang saat
 `typing:false`, pesan agen datang, state kembali ke bot, atau `ttl_s` habis tanpa kabar baru. Kartu baru dan

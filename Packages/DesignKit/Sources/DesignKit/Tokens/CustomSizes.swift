@@ -49,6 +49,8 @@ public enum CustomSizes {
 
     public enum Composer {
         public static let sendButton: CGFloat = 24
+        /// Figma `add`: lingkaran 24 dengan garis 1 di kiri field.
+        public static let attachmentStroke: CGFloat = 1
     }
 
     /// Perkiraan awal tinggi baris table sebelum terukur; bukan nilai Figma dan tidak terlihat di layar.
