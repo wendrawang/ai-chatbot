@@ -11,6 +11,8 @@ import Testing
 @testable import TanyaAI
 
 /// File dari galeri disalin sebelum sistem menghapusnya; nama asli tetap dan salinan tidak saling menimpa.
+/// Serial karena satu test membandingkan isi folder sementara sebelum dan sesudah menyalin.
+@Suite(.serialized)
 struct FileManagerChatAttachmentTests {
     @Test
     func copiesKeepTheNameAndContentWithoutOverwritingEachOther() throws {
@@ -30,10 +32,15 @@ struct FileManagerChatAttachmentTests {
         #expect(manager.fileExists(atPath: second.path))
     }
 
+    /// Gagal menyalin tidak meninggalkan folder kosong, karena pemanggil tidak menerima URL untuk dibersihkan.
     @Test
-    func missingSourceThrows() {
-        let missing = FileManager.default.temporaryDirectory.appendingPathComponent("tidak-ada.pdf")
-        #expect(throws: (any Error).self) { try FileManager.default.copyChatAttachment(from: missing) }
+    func missingSourceThrowsWithoutLeavingAFolder() throws {
+        let manager = FileManager.default
+        let missing = manager.temporaryDirectory.appendingPathComponent("tidak-ada.pdf")
+        let before = try manager.contentsOfDirectory(atPath: manager.temporaryDirectory.path)
+        #expect(throws: (any Error).self) { try manager.copyChatAttachment(from: missing) }
+        let after = try manager.contentsOfDirectory(atPath: manager.temporaryDirectory.path)
+        #expect(Set(after) == Set(before))
     }
 
     /// Salinan galeri dibuang bersama foldernya; folder yang masih berisi file lain tetap ada.

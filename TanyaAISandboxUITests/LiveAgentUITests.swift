@@ -39,6 +39,25 @@ final class LiveAgentUITests: XCTestCase {
         XCTAssertFalse(application.buttons["composer.attachment"].exists, "agen sudah selesai")
     }
 
+    /// Sheet lampiran yang masih terbuka ikut tertutup saat agen mengakhiri sesi, jadi Galeri tidak bisa diketuk lagi.
+    func testAttachmentSheetClosesWhenTheAgentEndsTheSession() {
+        launchAndAskForAnAgent()
+        XCTAssertTrue(element("chat.agent.message").waitForExistence(timeout: 15))
+        send("Cek status kartu saya")
+        let attachment = application.buttons["composer.attachment"]
+        XCTAssertTrue(attachment.waitForExistence(timeout: 5))
+        attachment.tap()
+        let sheet = element("sheet")
+        XCTAssertTrue(sheet.waitForExistence(timeout: 3))
+        XCTAssertTrue(sheet.staticTexts["Gallery"].exists)
+        // Agen menutup sesi beberapa detik setelah menjawab (`--live-agent`); sheet tidak ditutup oleh test.
+        let gone = expectation(for: NSPredicate(format: "exists == false"), evaluatedWith: sheet)
+        wait(for: [gone], timeout: 12)
+        XCTAssertTrue(element("chat.agent.notice").waitForExistence(timeout: 5))
+        XCTAssertFalse(application.staticTexts["Gallery"].exists)
+        XCTAssertFalse(attachment.exists, "agen sudah selesai")
+    }
+
     func testLeavingTheQueueShowsTheCanceledCard() {
         launchAndAskForAnAgent()
         let leave = application.buttons["chat.agent.leaveQueue"]

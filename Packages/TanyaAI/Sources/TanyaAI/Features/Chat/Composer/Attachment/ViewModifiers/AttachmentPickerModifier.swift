@@ -22,10 +22,13 @@ struct AttachmentPickerModifier: ViewModifier {
     @State private var source: ChatAttachmentSource?
     /// Foto terakhir dari galeri ditolak karena formatnya; sheet dibuka lagi dengan pesan error.
     @State private var isFormatRejected = false
+    /// Lampiran masih boleh dipilih (agen masih melayani).
+    private let isAvailable: Bool
     private let onPick: (URL) -> Void
 
-    init(isPresented: Binding<Bool>, onPick: @escaping (URL) -> Void) {
+    init(isPresented: Binding<Bool>, isAvailable: Bool, onPick: @escaping (URL) -> Void) {
         _isPresented = isPresented
+        self.isAvailable = isAvailable
         self.onPick = onPick
     }
 
@@ -46,6 +49,12 @@ struct AttachmentPickerModifier: ViewModifier {
                 // Pesan format hanya untuk pilihan ulang tepat setelah ditolak, bukan saat sheet dibuka berikutnya.
                 guard !isShown, source == nil else { return }
                 isFormatRejected = false
+            }
+            .onChange(of: isAvailable) { isStillAvailable in
+                // Sesi agen berakhir: sheet dan picker sistem ikut ditutup supaya lampiran tidak terpilih di mode bot.
+                guard !isStillAvailable else { return }
+                isPresented = false
+                source = nil
             }
     }
 
@@ -94,7 +103,9 @@ private extension AttachmentPickerModifier {
     }
 
     /// Pilihan Galeri / File dibuka lagi dengan pesan format, supaya nasabah bisa langsung memilih ulang.
+    /// Tidak dibuka lagi bila sesi agen sudah berakhir selama picker tampil.
     func rejectFormat() {
+        guard isAvailable else { return }
         isFormatRejected = true
         isPresented = true
     }

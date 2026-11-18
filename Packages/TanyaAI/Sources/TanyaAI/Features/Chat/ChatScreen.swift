@@ -56,7 +56,13 @@ public struct ChatScreen<Content: View>: View {
             background: { backgroundImage }
         )
         .overlay { loadingIndicator }
-        .modifier(AttachmentPickerModifier(isPresented: $isChoosingAttachment, onPick: attach))
+        .modifier(
+            AttachmentPickerModifier(
+                isPresented: $isChoosingAttachment,
+                isAvailable: isAttachable,
+                onPick: attach
+            )
+        )
         // Swipe-back milik navigasi host, jadi host yang menahannya selama sheet terbuka.
         .onChange(of: isChoosingAttachment) { onSheetChange?($0) }
         // Dibatalkan otomatis saat halaman hilang; tampil lagi = init ulang dan mengejar history.
@@ -124,6 +130,9 @@ public struct ChatScreen<Content: View>: View {
 
 private extension ChatScreen {
     var isSendable: Bool { bridge.isReady && !bridge.isAwaitingReply }
+
+    /// Lampiran hanya selama dilayani agen.
+    var isAttachable: Bool { bridge.conversationState == .agentActive }
 
     var rowActions: ChatRowActions {
         ChatRowActions(
@@ -201,7 +210,7 @@ private extension ChatScreen {
 
     /// Lampiran (PDF/gambar) hanya saat dilayani agen; nil = tombol tidak tampil. Ketuk = bottom sheet Galeri / File.
     var attachAction: (() -> Void)? {
-        guard bridge.conversationState == .agentActive else { return nil }
+        guard isAttachable else { return nil }
         return { isChoosingAttachment = true }
     }
 
