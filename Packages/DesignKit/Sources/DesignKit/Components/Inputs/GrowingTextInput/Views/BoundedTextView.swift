@@ -7,12 +7,15 @@
 
 import UIKit
 
-/// Editor satu sampai empat baris; isi yang lebih panjang di-scroll di dalam field.
-/// Perubahan lebar diukur otomatis. Pemilik memanggil `remeasure()` setelah mengubah
-/// teks atau style (`GrowingTextInput` sudah melakukannya), tanpa override `text: String!`.
+/// Editor satu sampai empat baris; isi yang lebih panjang di-scroll di dalam field. Saat kosong setinggi placeholder
+/// (paling banyak dua baris), jadi seluruh area placeholder bisa diketuk. Perubahan lebar diukur otomatis. Pemilik
+/// memanggil `remeasure()` setelah mengubah teks, style atau placeholder (`GrowingTextInput` sudah melakukannya),
+/// tanpa override `text: String!`.
 @MainActor
 public final class BoundedTextView: UITextView {
     var lineSpacing: CGFloat = .zero
+    /// Hanya untuk mengukur tinggi saat kosong; teks placeholder digambar pemilik.
+    var placeholder = String()
     private var measuredHeight: CGFloat = .zero
     private var measuredWidth: CGFloat = .zero
 
@@ -32,10 +35,8 @@ public final class BoundedTextView: UITextView {
     func remeasure() {
         guard bounds.width > .zero else { return }
         let fitted = sizeThatFits(CGSize(width: bounds.width, height: .greatestFiniteMagnitude)).height
-        let lines = CGFloat(CustomTextLines.composerInput.upperBound)
-        let gaps = lines - CGFloat(CustomTextLines.composerInput.lowerBound)
-        let maximumHeight = ceil(lineHeight * lines + lineSpacing * gaps)
-        let nextHeight = min(max(ceil(fitted), ceil(lineHeight)), maximumHeight)
+        let maximumHeight = height(lines: CustomTextLines.composerInput.upperBound)
+        let nextHeight = min(max(ceil(fitted), ceil(lineHeight), placeholderHeight), maximumHeight)
         let isScrolling = fitted > maximumHeight + LayoutTolerance.measurement
         if isScrollEnabled != isScrolling { isScrollEnabled = isScrolling }
         if abs(nextHeight - measuredHeight) > LayoutTolerance.measurement {
@@ -50,5 +51,22 @@ public final class BoundedTextView: UITextView {
 private extension BoundedTextView {
     var lineHeight: CGFloat {
         font?.lineHeight ?? UIFont.preferredFont(forTextStyle: .body).lineHeight
+    }
+
+    /// Tinggi placeholder dengan atribut ketikan yang sama; nol bila sudah ada teks.
+    var placeholderHeight: CGFloat {
+        guard !hasText, !placeholder.isEmpty else { return .zero }
+        let bounding = NSAttributedString(string: placeholder, attributes: typingAttributes).boundingRect(
+            with: CGSize(width: bounds.width, height: .greatestFiniteMagnitude),
+            options: [.usesLineFragmentOrigin, .usesFontLeading],
+            context: nil
+        )
+        return min(ceil(bounding.height), height(lines: CustomTextLines.composerPlaceholder))
+    }
+
+    /// Jarak antarbaris hanya di antara baris, jadi satu lebih sedikit dari jumlah baris.
+    func height(lines: Int) -> CGFloat {
+        let gaps = lines - CustomTextLines.composerInput.lowerBound
+        return ceil(lineHeight * CGFloat(lines) + lineSpacing * CGFloat(gaps))
     }
 }

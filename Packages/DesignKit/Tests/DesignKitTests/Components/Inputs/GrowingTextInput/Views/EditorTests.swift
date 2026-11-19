@@ -38,6 +38,30 @@ struct EditorTests {
         #expect(!editor.isScrollEnabled)
     }
 
+    /// Editor kosong setinggi placeholder (maksimal dua baris) supaya seluruh area placeholder bisa diketuk.
+    @Test
+    func emptyEditorTakesThePlaceholderHeightUpToTwoLines() throws {
+        try FontFace.registerFonts()
+        let editor = BoundedTextView(frame: CGRect(x: 0, y: 0, width: 220, height: 300))
+        editor.font = FontFace.firaSansRegular.font(size: 16)
+        editor.textContainerInset = .zero
+        editor.textContainer.lineFragmentPadding = 0
+        editor.isScrollEnabled = false
+        editor.placeholder = "Tanya"
+        editor.layoutSubviews()
+        let oneLine = editor.intrinsicContentSize.height
+        editor.placeholder = String(repeating: "Tanya seputar keuangan ", count: 2)
+        editor.remeasure()
+        let twoLines = editor.intrinsicContentSize.height
+        editor.placeholder = String(repeating: "Tanya seputar keuangan ", count: 12)
+        editor.remeasure()
+        #expect(twoLines > oneLine + 1)
+        #expect(abs(editor.intrinsicContentSize.height - twoLines) <= 1)
+        editor.text = "Halo"
+        editor.remeasure()
+        #expect(abs(editor.intrinsicContentSize.height - oneLine) <= 1)
+    }
+
     @Test
     func widthChangeRemeasuresWhileInternalScrollKeepsHeight() throws {
         try FontFace.registerFonts()

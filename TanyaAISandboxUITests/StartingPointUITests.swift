@@ -85,6 +85,20 @@ final class StartingPointUITests: XCTestCase {
         }
     }
 
+    /// Placeholder Inggris dua baris: ketukan di baris kedua tetap membuka keyboard.
+    func testTapOnTheSecondPlaceholderLineFocusesTheInput() {
+        launch(locale: "en")
+        let input = application.textViews["composer.input"]
+        XCTAssertTrue(input.waitForExistence(timeout: 10))
+        let composer = application.otherElements["composer"].frame
+        let padding = (16 * application.frame.width / 375).rounded()
+        let lineHeight = (composer.height - padding * 2) / 2
+        // Titik tengah baris kedua, dari kiri field.
+        let point = CGVector(dx: input.frame.minX + padding, dy: composer.maxY - padding - lineHeight / 2)
+        application.coordinate(withNormalizedOffset: .zero).withOffset(point).tap()
+        XCTAssertTrue(application.keyboards.firstMatch.waitForExistence(timeout: 5))
+    }
+
     func testWhitespaceCannotBeSubmitted() {
         launch(locale: "id")
         let input = application.textViews["composer.input"]

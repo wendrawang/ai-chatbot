@@ -16,16 +16,23 @@ public struct GrowingTextInput: UIViewRepresentable {
     private let textColor: UIColor
     private let lineSpacing: CGFloat
     private let accessibilityLabel: String
+    private let placeholder: String
 
+    /// `placeholder` hanya dipakai untuk tinggi saat kosong; teksnya digambar pemakai di atas editor.
     public init(
-        text: Binding<String>, font: UIFont, textColor: UIColor,
-        lineSpacing: CGFloat = .zero, accessibilityLabel: String
+        text: Binding<String>,
+        font: UIFont,
+        textColor: UIColor,
+        lineSpacing: CGFloat = .zero,
+        accessibilityLabel: String,
+        placeholder: String = String()
     ) {
         self._text = text
         self.font = font
         self.textColor = textColor
         self.lineSpacing = lineSpacing
         self.accessibilityLabel = accessibilityLabel
+        self.placeholder = placeholder
     }
 
     public func makeUIView(context: Context) -> BoundedTextView {
@@ -37,6 +44,7 @@ public struct GrowingTextInput: UIViewRepresentable {
         editor.adjustsFontForContentSizeCategory = false
         editor.isScrollEnabled = false
         editor.text = text
+        editor.placeholder = placeholder
         editor.setContentHuggingPriority(.defaultLow, for: .horizontal)
         applyStyle(to: editor)
         editor.accessibilityLabel = accessibilityLabel
@@ -48,8 +56,10 @@ public struct GrowingTextInput: UIViewRepresentable {
         editor.accessibilityLabel = accessibilityLabel
         let isStyleChanged = editor.font != font || editor.textColor != textColor || editor.lineSpacing != lineSpacing
         let isTextChanged = editor.text != text
+        let isPlaceholderChanged = editor.placeholder != placeholder
         if isTextChanged { editor.text = text }
-        guard isStyleChanged || isTextChanged else { return }
+        editor.placeholder = placeholder
+        guard isStyleChanged || isTextChanged || isPlaceholderChanged else { return }
         applyStyle(to: editor)
         editor.remeasure()
     }

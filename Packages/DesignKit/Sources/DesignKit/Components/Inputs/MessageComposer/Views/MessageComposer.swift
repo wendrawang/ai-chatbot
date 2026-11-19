@@ -62,12 +62,17 @@ public struct MessageComposer: View {
         .accessibilityIdentifier(ComponentIdentifier.Composer.root)
     }
 
-    /// Rata atas supaya kursor berada di baris pertama placeholder dua baris.
+    /// Editor kosong setinggi placeholder sehingga ketukan di baris kedua tetap mengenai editor; rata atas supaya
+    /// kursor berada di baris pertama.
     private var field: some View {
         ZStack(alignment: .topLeading) {
             GrowingTextInput(
-                text: $text, font: inputFont, textColor: UIColor(colors.colorsTextPrimaryDark),
-                lineSpacing: lineSpacing, accessibilityLabel: placeholder
+                text: $text,
+                font: inputFont,
+                textColor: UIColor(colors.colorsTextPrimaryDark),
+                lineSpacing: lineSpacing,
+                accessibilityLabel: placeholder,
+                placeholder: placeholder
             )
             .fixedSize(horizontal: false, vertical: true)
             .frame(maxWidth: .infinity)
