@@ -7,8 +7,8 @@
 
 import SwiftUI
 
-/// Composer pesan: field yang tumbuh sampai empat baris dan satu tombol kirim/stop. Jarak dalam dan tampilan milik
-/// komponen ini; margin luar milik screen.
+/// Composer pesan: field yang tumbuh sampai empat baris dan satu tombol kirim/stop. Placeholder boleh dua baris saat
+/// field kosong. Jarak dalam dan tampilan milik komponen ini; margin luar milik screen.
 @MainActor
 public struct MessageComposer: View {
     @Environment(\.designColors) private var colors
@@ -62,8 +62,9 @@ public struct MessageComposer: View {
         .accessibilityIdentifier(ComponentIdentifier.Composer.root)
     }
 
+    /// Rata atas supaya kursor berada di baris pertama placeholder dua baris.
     private var field: some View {
-        ZStack(alignment: .leading) {
+        ZStack(alignment: .topLeading) {
             GrowingTextInput(
                 text: $text, font: inputFont, textColor: UIColor(colors.colorsTextPrimaryDark),
                 lineSpacing: lineSpacing, accessibilityLabel: placeholder
@@ -74,7 +75,8 @@ public struct MessageComposer: View {
             if text.isEmpty {
                 Text(placeholder)
                     .font(Font(inputFont))
-                    .lineLimit(CustomTextLines.composerInput.lowerBound)
+                    .lineSpacing(lineSpacing)
+                    .lineLimit(CustomTextLines.composerPlaceholder)
                     .foregroundColor(colors.colorsTextSecondary)
                     .accessibilityHidden(true)
                     .allowsHitTesting(false)

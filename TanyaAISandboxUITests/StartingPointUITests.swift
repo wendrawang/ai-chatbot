@@ -25,7 +25,7 @@ final class StartingPointUITests: XCTestCase {
             XCTAssertEqual(send.label, label)
             XCTAssertFalse(input.label.isEmpty)
             XCTAssertLessThanOrEqual(input.frame.maxX, send.frame.minX + 1)
-            XCTAssertEqual(input.frame.midY, send.frame.midY, accuracy: 1)
+            assertVisualInsets()
             capture("starter-" + locale)
             application.terminate()
         }
@@ -55,7 +55,7 @@ final class StartingPointUITests: XCTestCase {
         XCTAssertTrue(send.isHittable)
         XCTAssertLessThanOrEqual(input.frame.maxX, send.frame.minX + 1)
         XCTAssertLessThanOrEqual(send.frame.maxY, application.keyboards.firstMatch.frame.minY + 1)
-        assertVisualInsets(isMultiline: true)
+        assertVisualInsets()
         capture("starter-four-lines-keyboard")
         send.tap()
         XCTAssertEqual(input.value as? String, "")
@@ -63,14 +63,14 @@ final class StartingPointUITests: XCTestCase {
         let answered = expectation(for: NSPredicate(format: "label == %@", "Send message"), evaluatedWith: send)
         wait(for: [answered], timeout: 5)
         XCTAssertFalse(send.isEnabled)
-        XCTAssertEqual(input.frame.midY, send.frame.midY, accuracy: 1)
+        assertVisualInsets()
     }
 
     func testVisualInsetsAndButtonEdges() {
         launch(locale: "en")
         let input = application.textViews["composer.input"]
         XCTAssertTrue(input.waitForExistence(timeout: 10))
-        assertVisualInsets(isMultiline: false)
+        assertVisualInsets()
         input.tap()
         let send = application.buttons["composer.send"]
         for (horizontal, vertical) in [(0.05, 0.5), (0.95, 0.5), (0.5, 0.05), (0.5, 0.95)] {
@@ -106,7 +106,7 @@ final class StartingPointUITests: XCTestCase {
         capture("starter-caret-one-line")
         input.typeText(String(repeating: XCUIKeyboardKey.delete.rawValue, count: 2))
         XCTAssertEqual(input.value as? String, "")
-        XCTAssertEqual(input.frame.midY, application.buttons["composer.send"].frame.midY, accuracy: 1)
+        assertVisualInsets()
         capture("starter-empty-after-clearing")
     }
 
@@ -136,7 +136,7 @@ final class StartingPointUITests: XCTestCase {
                     XCTAssertEqual(actual.width, reference.width, accuracy: 1)
                     XCTAssertEqual(actual.height, reference.height, accuracy: 1)
                 }
-                assertVisualInsets(isMultiline: true)
+                assertVisualInsets()
                 capture("starter-accessibility-zh-Hans")
             } else {
                 referenceSizes = sizes
@@ -188,7 +188,9 @@ final class StartingPointUITests: XCTestCase {
         open.tap()
     }
 
-    private func assertVisualInsets(isMultiline: Bool) {
+    /// Tombol selalu di bawah. Field lebih tinggi dari satu baris (ketikan atau placeholder dua baris) = input rata
+    /// atas; satu baris = input sejajar tengah tombol.
+    private func assertVisualInsets() {
         let composer = application.otherElements["composer"].frame
         let input = application.textViews["composer.input"].frame
         let send = application.buttons["composer.send"].frame
@@ -200,11 +202,12 @@ final class StartingPointUITests: XCTestCase {
         XCTAssertEqual(input.minX - composer.minX, padding, accuracy: 1)
         XCTAssertEqual(composer.maxX - send.maxX, padding, accuracy: 1)
         XCTAssertEqual(composer.maxY - send.maxY, padding, accuracy: 1)
-        if isMultiline {
-            XCTAssertEqual(input.minY - composer.minY, padding, accuracy: 1)
-        } else {
+        guard composer.height - padding * 2 > buttonSize + 1 else {
             XCTAssertEqual(send.minY - composer.minY, padding, accuracy: 1)
+            XCTAssertEqual(input.midY, send.midY, accuracy: 1)
+            return
         }
+        XCTAssertEqual(input.minY - composer.minY, padding, accuracy: 1)
     }
 
     private func capture(_ name: String) {
