@@ -10,8 +10,6 @@
 public enum CustomTextLines {
     /// Editor composer tumbuh dari satu sampai empat baris, lalu scroll di dalam field.
     public static let composerInput = 1...4
-    /// Placeholder composer kosong boleh turun ke baris kedua, lalu dipotong.
-    public static let composerPlaceholder = 2
     public static let headerTitle = 1
     public static let textChip = 1
     /// Placeholder field teks satu baris.
