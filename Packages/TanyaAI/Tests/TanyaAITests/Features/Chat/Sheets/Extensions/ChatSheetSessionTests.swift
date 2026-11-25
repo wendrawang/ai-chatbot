@@ -16,7 +16,7 @@ struct ChatSheetSessionTests {
 
     @Test
     func anAttachmentSheetFollowsTheServingSession() {
-        let sheet = ChatSheet.attachment(sessionA, isFormatRejected: false)
+        let sheet = ChatSheet.attachment(sessionA)
         #expect(sheet.isCurrent(attachmentSession: sessionA, leaveSession: sessionA))
         #expect(!sheet.isCurrent(attachmentSession: sessionB, leaveSession: sessionB), "reconnect ke percakapan lain")
         #expect(!sheet.isCurrent(attachmentSession: nil, leaveSession: sessionA), "agen tidak melayani lagi")
@@ -28,15 +28,6 @@ struct ChatSheetSessionTests {
         #expect(sheet.isCurrent(attachmentSession: nil, leaveSession: sessionA), "masih antre setelah sapaan")
         #expect(!sheet.isCurrent(attachmentSession: sessionB, leaveSession: sessionB))
         #expect(!sheet.isCurrent(attachmentSession: nil, leaveSession: nil), "bar hilang")
-    }
-
-    @Test
-    func rejectedAttachmentPreservesAnOpenSheet() {
-        let pin = ChatSheet.referenceLetterPIN(messageID: "letter")
-        #expect(ChatSheet.rejectedAttachment(from: sessionA, pickerSession: sessionA, activeSheet: pin) == nil)
-        #expect(ChatSheet.rejectedAttachment(from: sessionA, pickerSession: sessionB, activeSheet: nil) == nil)
-        let retry = ChatSheet.rejectedAttachment(from: sessionA, pickerSession: sessionA, activeSheet: nil)
-        #expect(retry == .attachment(sessionA, isFormatRejected: true))
     }
 
     @Test

@@ -31,6 +31,8 @@ struct ChatSheetModifier: ViewModifier {
     /// Antrean atau sesi agen yang barnya tampil; nil = bar tidak tampil.
     private let leaveSession: AgentSessionKey?
     private let onPick: (URL) -> Void
+    /// Lampiran ditolak (format atau ukuran) dari picker sesi yang masih berlaku.
+    private let onReject: (ChatAttachmentRejection) -> Void
     private let onLeave: (AgentSessionKey) -> Void
 
     init(
@@ -39,6 +41,7 @@ struct ChatSheetModifier: ViewModifier {
         attachmentSession: AgentSessionKey?,
         leaveSession: AgentSessionKey?,
         onPick: @escaping (URL) -> Void,
+        onReject: @escaping (ChatAttachmentRejection) -> Void,
         onLeave: @escaping (AgentSessionKey) -> Void
     ) {
         _sheet = sheet
@@ -46,6 +49,7 @@ struct ChatSheetModifier: ViewModifier {
         self.attachmentSession = attachmentSession
         self.leaveSession = leaveSession
         self.onPick = onPick
+        self.onReject = onReject
         self.onLeave = onLeave
     }
 
@@ -69,8 +73,8 @@ struct ChatSheetModifier: ViewModifier {
     @ViewBuilder
     private func sheetContent(_ sheet: ChatSheet) -> some View {
         switch sheet {
-        case .attachment(let session, let isFormatRejected):
-            AttachmentSourceSheet(isFormatRejected: isFormatRejected) { choose($0, for: session) }
+        case .attachment(let session):
+            AttachmentSourceSheet { choose($0, for: session) }
         case .leaveAgent(let session):
             ConfirmationPrompt(
                 title: String(ChatCopy.leaveAgentConfirmTitle, locale: locale),
@@ -111,11 +115,15 @@ struct ChatSheetModifier: ViewModifier {
         case .gallery:
             PhotoAttachmentPicker(
                 onPick: { deliver($0, from: session) },
-                onReject: { rejectFormat(from: session) },
+                onReject: { reject($0, from: session) },
                 onDismiss: closePicker
             )
         case .file:
-            DocumentAttachmentPicker(onPick: { deliver($0, from: session) }, onDismiss: closePicker)
+            DocumentAttachmentPicker(
+                onPick: { deliver($0, from: session) },
+                onReject: { reject($0, from: session) },
+                onDismiss: closePicker
+            )
         }
     }
 }
@@ -149,17 +157,11 @@ private extension ChatSheetModifier {
         sheet = nil
     }
 
-    /// Pilihan Galeri / File dibuka lagi dengan pesan format, supaya nasabah bisa langsung memilih ulang.
-    /// Tidak dibuka lagi bila sesi agen sudah berganti atau berakhir selama picker tampil.
-    func rejectFormat(from session: AgentSessionKey?) {
-        guard
-            let rejected = ChatSheet.rejectedAttachment(
-                from: session,
-                pickerSession: pickerSession,
-                activeSheet: sheet
-            )
-        else { return }
-        sheet = rejected
+    /// Penolakan diteruskan ke snackbar halaman chat; sheet sumber tidak dibuka lagi (keputusan user). Diabaikan bila
+    /// sesi agen sudah berganti atau berakhir selama picker tampil, sama seperti file yang lolos.
+    func reject(_ rejection: ChatAttachmentRejection, from session: AgentSessionKey?) {
+        guard let session, session == pickerSession else { return }
+        onReject(rejection)
     }
 
     func closeReferenceLetter() {

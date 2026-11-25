@@ -69,8 +69,9 @@ Contoh penempatan yang sudah diterapkan:
 - `Components/Feedback/StatusCaption.swift`: teks status kecil di bawah pesan terakhir (agen mengetik).
 - `Components/Feedback/ConfirmationPrompt.swift`: isi bottom sheet konfirmasi (judul, keterangan, aksi utama dan
   tombol batal bertumpuk sebagai footer), mis. konfirmasi End Session.
-- `Components/Feedback/ActionBanner.swift`: bar status gelap selebar layar dengan teks dan tombol kecil merah,
-  mis. bar sesi agen di bawah header.
+- `Components/Feedback/ActionBanner.swift`: bar status selebar layar dengan teks dan, bila ada, tombol kecil merah,
+  mis. bar sesi agen di bawah header. Tanpa tombol menjadi snackbar; `ActionBannerTone` memilih latar gelap
+  (`.neutral`) atau oranye (`.warning`, mis. lampiran ditolak).
 - `Components/Feedback/TypingDots.swift`: tiga titik berdenyut selama bot menyiapkan jawaban; diam saat Reduce Motion.
 - `Components/Lists/SeparatorLine.swift`: garis pemisah 1 pt (daftar, tabel Markdown, di atas composer).
 - `Components/Screen/BottomSheet/Models/BottomSheetMaxHeight.swift`: batas tinggi, di bawah status bar atau bagian layar.
@@ -160,7 +161,8 @@ TanyaAI/Features/Chat/Intents/LiveAgent/
 ```
 
 Komponen visualnya generik di DesignKit: `NoticeCard` (slot aksi untuk tombol batal kartu antre), `SenderMessageCard`,
-`StatusCaption` (agen mengetik, langsung di `ChatListRow`), `ActionBanner` (bar sesi agen), `ConfirmationPrompt`
+`StatusCaption` (agen mengetik, langsung di `ChatListRow`), `ActionBanner` (bar sesi agen dan snackbar lampiran
+ditolak), `ConfirmationPrompt`
 (konfirmasi End Session, sebagai `ChatSheet.leaveAgent` di `Sheets/ViewModifiers/ChatSheetModifier.swift`), dan
 `FilledButton` varian `.outlined`.
 Tombol lampiran adalah parameter `attachment` milik `MessageComposer`; kunci field selama kartu Switching adalah

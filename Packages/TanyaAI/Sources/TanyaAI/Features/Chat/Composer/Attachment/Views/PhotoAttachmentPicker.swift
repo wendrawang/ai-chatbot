@@ -13,8 +13,8 @@ import SwiftUI
 @MainActor
 struct PhotoAttachmentPicker: UIViewControllerRepresentable {
     let onPick: (URL) -> Void
-    /// Foto berformat selain HEIC, JPG/JPEG, atau PNG.
-    let onReject: () -> Void
+    /// Foto berformat selain HEIC, JPG/JPEG, atau PNG, atau di atas batas ukuran.
+    let onReject: (ChatAttachmentRejection) -> Void
     let onDismiss: () -> Void
 
     func makeCoordinator() -> PhotoAttachmentPickerCoordinator {

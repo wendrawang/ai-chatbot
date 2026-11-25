@@ -10,7 +10,7 @@ extension ChatSheet {
     /// barnya tampil. Nil = lampiran tidak tersedia atau bar tidak tampil.
     func isCurrent(attachmentSession: AgentSessionKey?, leaveSession: AgentSessionKey?) -> Bool {
         switch self {
-        case .attachment(let session, _):
+        case .attachment(let session):
             return session == attachmentSession
         case .leaveAgent(let session):
             return session == leaveSession
@@ -18,15 +18,6 @@ extension ChatSheet {
             // Sheet surat referensi mengikuti percakapan chat, bukan sesi live agent.
             return true
         }
-    }
-
-    static func rejectedAttachment(
-        from session: AgentSessionKey?,
-        pickerSession: AgentSessionKey?,
-        activeSheet: ChatSheet?
-    ) -> ChatSheet? {
-        guard let session, session == pickerSession, activeSheet == nil else { return nil }
-        return .attachment(session, isFormatRejected: true)
     }
 
     func afterConversationChange() -> ChatSheet? {

@@ -191,9 +191,12 @@ sampai ada Figma). Semua bottom sheet halaman chat (lampiran dan konfirmasi End 
 baru di sana. Sheet lampiran dan picker sistem terikat ke sesi agen saat dibuka (`AgentSessionKey`): bila agen berhenti
 melayani atau sesinya berganti (mis. reconnect ke percakapan lain yang juga `AGENT_ACTIVE`), keduanya ditutup dan file
 dari picker lama dibuang (`ChatSheet.isCurrent`). Galeri memakai `PHPicker` (tanpa izin galeri, representasi asli supaya HEIC tetap HEIC) dan File
-memakai document picker `asCopy`. Format hanya PDF, HEIC, JPG/JPEG, dan PNG (`UTType.chatAttachments`); foto galeri
-berformat lain (mis. GIF) ditolak: galeri sistem tidak bisa memfilter per format, jadi sheet dibuka lagi dengan pesan
-merah (keputusan user; copy sementara). Contract v1.5.3 belum punya endpoint
+memakai document picker tanpa `asCopy`, supaya ukuran dicek sebelum file disalin. Format hanya PDF, HEIC, JPG/JPEG,
+dan PNG (`UTType.chatAttachments`); galeri sistem tidak bisa memfilter per format, jadi foto berformat lain (mis. GIF)
+ditolak setelah dipilih. File di atas 10 MB (10.000.000 byte, `FileManager.chatAttachmentByteLimit`) ditolak sebelum
+disalin. Keduanya tampil sebagai snackbar oranye di atas daftar pesan (`AttachmentRejectionBanner`, `ActionBanner`
+tanpa tombol), hilang sendiri setelah 3 detik, dan sheet Galeri/File tidak dibuka lagi (keputusan user 26 November
+2026; copy, durasi, dan warna sementara sampai ada Figma). Contract v1.5.3 belum punya endpoint
 upload dan parameter preview di stream/history belum pasti, jadi file pilihan nasabah berhenti di
 `ChatScreen.attach(_:)` (TODO) dan salinannya langsung dibuang. Selama sheet terbuka, `TanyaAIHost(onSheetChange:)`
 memberi tahu host untuk menahan swipe-back. Kartu preview (ikon, nama file, "Lihat Detail") ditunda. Bila endpoint sudah ada: upload lewat

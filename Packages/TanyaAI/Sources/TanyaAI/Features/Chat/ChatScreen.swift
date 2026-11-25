@@ -25,6 +25,7 @@ public struct ChatScreen<Content: View>: View {
     @State private var latestJumpID: UUID?
     /// Bottom sheet yang sedang tampil; nil = tertutup.
     @State private var sheet: ChatSheet?
+    @State private var attachmentRejection: ChatAttachmentRejection?
     private let isEnabled: Bool
     private let welcome: WelcomeContent?
     private let onBack: (() -> Void)?
@@ -64,6 +65,7 @@ public struct ChatScreen<Content: View>: View {
                 attachmentSession: isAgentSession ? bridge.agentSessionKey : nil,
                 leaveSession: isBannerVisible ? bridge.agentSessionKey : nil,
                 onPick: attach,
+                onReject: { attachmentRejection = $0 },
                 onLeave: leave
             )
         )
@@ -73,16 +75,18 @@ public struct ChatScreen<Content: View>: View {
         .task { await bridge.run() }
     }
 
-    /// Bar sesi agen menempel di bawah header, jadi daftar mulai di bawah bar tanpa inset header.
+    /// Bar sesi agen menempel di bawah header, jadi daftar dan snackbar lampiran mulai di bawah bar tanpa inset header.
     private func conversation(headerHeight: CGFloat) -> some View {
-        VStack(spacing: .zero) {
+        let topInset = isBannerVisible ? .zero : headerHeight
+        return VStack(spacing: .zero) {
             agentSessionBanner(headerHeight: headerHeight)
             ChatTable(
-                state: tableState, headerHeight: isBannerVisible ? .zero : headerHeight, actions: rowActions,
+                state: tableState, headerHeight: topInset, actions: rowActions,
                 onScrollProgress: { scrollProgress = $0 }, onLatestVisibilityChange: { isLatestVisible = $0 },
                 row: listRow
             )
             .overlay(alignment: .bottom) { latestButton }
+            .overlay(alignment: .top) { AttachmentRejectionBanner(rejection: $attachmentRejection, topInset: topInset) }
         }
     }
 
@@ -229,7 +233,7 @@ private extension ChatScreen {
     /// Lampiran (PDF/gambar) hanya saat dilayani agen; nil = tombol tidak tampil. Ketuk = bottom sheet Galeri / File.
     var attachAction: (() -> Void)? {
         guard isAgentSession else { return nil }
-        return { sheet = .attachment(bridge.agentSessionKey, isFormatRejected: false) }
+        return { sheet = .attachment(bridge.agentSessionKey) }
     }
 
     /// File pilihan nasabah. Salinannya langsung dibuang supaya tidak menumpuk di folder sementara.
