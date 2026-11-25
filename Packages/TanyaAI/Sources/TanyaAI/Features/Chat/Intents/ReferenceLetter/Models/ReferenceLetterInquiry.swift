@@ -27,7 +27,7 @@ public struct ReferenceLetterInquiry: Equatable {
         documentFormats: [FormOption],
         sourceAccounts: [FormOption],
         currencies: [FormOption],
-        languages: [FormOption] = [],
+        languages: [FormOption],
         address: String,
         decryptedEmail: String,
         encryptedEmail: String,

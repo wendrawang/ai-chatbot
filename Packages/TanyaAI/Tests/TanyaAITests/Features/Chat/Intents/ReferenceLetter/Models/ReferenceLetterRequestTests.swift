@@ -55,6 +55,7 @@ struct ReferenceLetterRequestTests {
         var draft = IntentFormState(rules: ReferenceLetterFieldID.rules(inquiry: Self.inquiry))
         draft.select(["HARDCOPY"], for: .format)
         draft.select(["first"], for: .accounts)
+        draft.select(["IN"], for: .language)
         draft[text: .embassy] = "Example institution"
         draft[toggle: .balance] = false
         draft.select(["education"], for: .purpose)
@@ -62,6 +63,7 @@ struct ReferenceLetterRequestTests {
         #expect(draft.value(for: .purpose) == .singleSelection("education"))
         #expect(draft.value(for: .format) == .singleSelection("SOFTCOPY"))
         #expect(draft.value(for: .accounts) == .multipleSelection([]))
+        #expect(draft.value(for: .language) == .singleSelection(nil))
         #expect(draft[text: .embassy].isEmpty)
         #expect(draft[toggle: .balance])
         #expect(draft.value(for: .address) == nil)
