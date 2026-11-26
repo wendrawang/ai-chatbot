@@ -8,8 +8,8 @@
 import SwiftUI
 
 /// Composer pesan: field yang tumbuh sampai empat baris dan satu tombol kirim/stop. Jarak dalam dan tampilan milik
-/// komponen ini; margin luar milik screen. Selama field diketik, footer `ScreenScaffold` yang memuat composer ikut
-/// naik di atas keyboard; keyboard dari input lain menutupinya.
+/// komponen ini; margin luar milik screen. Footer `ScreenScaffold` yang memuat composer hanya naik di atas keyboard
+/// selama field ini diketik; keyboard dari input lain menutupinya (composer mengirim `.bottom`).
 @MainActor
 public struct MessageComposer: View {
     @Environment(\.designColors) private var colors

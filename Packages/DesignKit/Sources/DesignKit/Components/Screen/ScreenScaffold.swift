@@ -9,13 +9,13 @@ import SwiftUI
 
 /// Kerangka halaman: header menimpa area konten, footer di bawahnya, dan latar di belakang semuanya. Scroll milik
 /// konten, jadi pemilik scroll (mis. table) melaporkan `scrollProgress`. `content` menerima tinggi header supaya
-/// bisa memberi inset awal. Footer hanya naik di atas keyboard bila input di dalamnya yang diketik
-/// (`ScreenFooterPlacementKey`); keyboard dari konten (mis. field form di daftar chat) menutupi footer, dan konten
-/// berakhir tepat di atas keyboard.
+/// bisa memberi inset awal. Footer mengikuti keyboard, kecuali footer meminta `.bottom` lewat
+/// `ScreenFooterPlacementKey` (mis. `MessageComposer` yang tidak sedang diketik): keyboard dari konten (mis. field form
+/// di daftar chat) menutupi footer, dan konten berakhir tepat di atas keyboard.
 @MainActor
 public struct ScreenScaffold<Content: View, Trailing: View, Footer: View, Background: View>: View {
     @Environment(\.designColors) private var colors
-    @State private var footerPlacement = ScreenFooterPlacement.bottom
+    @State private var footerPlacement = ScreenFooterPlacement.aboveKeyboard
     /// Tepi atas footer di koordinat layar; tak hingga sampai terukur.
     @State private var footerTop = CGFloat.infinity
     private let title: String
@@ -58,8 +58,8 @@ public struct ScreenScaffold<Content: View, Trailing: View, Footer: View, Backgr
         .background(backdrop)
     }
 
-    /// Lapisan setinggi layar agar footer menempel di bawah; tetap di bawah (tertutup keyboard) selama input footer
-    /// tidak diketik. Spacer tidak menangkap sentuhan, jadi konten di belakangnya tetap bisa disentuh.
+    /// Lapisan setinggi layar agar footer menempel di bawah; tetap di bawah (tertutup keyboard) hanya bila footer
+    /// meminta `.bottom`. Spacer tidak menangkap sentuhan, jadi konten di belakangnya tetap bisa disentuh.
     private var footerLayer: some View {
         VStack(spacing: .zero) {
             Spacer(minLength: .zero)

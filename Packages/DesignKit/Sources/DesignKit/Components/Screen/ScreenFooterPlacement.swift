@@ -7,8 +7,9 @@
 
 /// Letak footer `ScreenScaffold` selama keyboard tampil.
 enum ScreenFooterPlacement {
-    /// Tetap di bawah layar dan tertutup keyboard dari konten (mis. field form di daftar chat).
-    case bottom
-    /// Naik di atas keyboard karena input di dalam footer (mis. `MessageComposer`) sedang diketik.
+    /// Bawaan: naik di atas keyboard, mis. footer host dengan `TextField` biasa atau composer yang sedang diketik.
     case aboveKeyboard
+    /// Tetap di bawah layar dan tertutup keyboard dari konten. Dikirim eksplisit oleh `MessageComposer` selama
+    /// field-nya tidak diketik (mis. keyboard dibuka field form di daftar chat).
+    case bottom
 }
