@@ -8,7 +8,8 @@
 import XCTest
 
 /// `--sheet-demo` dengan keadaan khusus wadah: tombol pilihan banyak menempel di bawah sheet, sheet terkunci hanya
-/// ditutup isinya, dan sheet naik ke atas keyboard yang dibuka field di dalamnya.
+/// ditutup isinya, sheet naik ke atas keyboard yang dibuka field di dalamnya, dan keyboard composer tidak kembali
+/// sesudah sheet ditutup.
 final class BottomSheetStateUITests: XCTestCase {
     private let application = XCUIApplication()
 
@@ -79,6 +80,26 @@ final class BottomSheetStateUITests: XCTestCase {
         last.tap()
         waitUntilGone(sheet)
         waitUntilGone(keyboard)
+    }
+
+    /// Tap di padding atas kartu composer (di luar baris teks) membuka keyboard composer. Sheet menutup keyboard itu;
+    /// setelah sheet ditutup, render ulang composer tidak membuka keyboard lagi.
+    func testTappingTheComposerCardFocusesTheFieldOnlyOnce() {
+        launchDemo(extra: [])
+        let composer = application.otherElements["composer"]
+        let input = application.textViews["composer.input"]
+        XCTAssertTrue(input.waitForExistence(timeout: 10))
+        let topPadding = CGVector(dx: composer.frame.width / 2, dy: (input.frame.minY - composer.frame.minY) / 2)
+        composer.coordinate(withNormalizedOffset: .zero).withOffset(topPadding).tap()
+        let keyboard = application.keyboards.firstMatch
+        XCTAssertTrue(keyboard.waitForExistence(timeout: 5), "tap di padding kartu membuka keyboard")
+        input.typeText("Card")
+        XCTAssertEqual(input.value as? String, "Card")
+        let sheet = openSheet()
+        waitUntilGone(keyboard)
+        optionButtons.firstMatch.tap()
+        waitUntilGone(sheet)
+        XCTAssertFalse(keyboard.waitForExistence(timeout: 2), "keyboard terbuka lagi tanpa tap")
     }
 }
 

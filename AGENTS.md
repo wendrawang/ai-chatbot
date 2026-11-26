@@ -252,6 +252,9 @@ tersedia pada history/main.
   (16 pada artwork 375), tanpa kompensasi area tap. Frame tombol mengikuti ukuran
   visual desain. Pengaturan ukuran teks pengguna tidak mengubah tinggi row atau
   batas empat baris composer.
+- Tap di padding atau celah kartu composer (bukan tombol) memfokuskan field lewat token `focusRequest`
+  `GrowingTextInput`: lapisan di belakang field, jadi tap pada teks tetap milik UIKit. Tidak melebihi kartu yang
+  terlihat, jadi bukan hit frame tambahan. Token baru = satu permintaan; field nonaktif mengabaikannya.
 - Hint memakai font input yang sama dan alignment `.leading` pada ZStack agar
   berada di tengah field saat kosong. Pertahankan geometri caret native pada
   semua state: kosong, mengetik dan sesudah hapus. Jangan memusatkan caret kosong
