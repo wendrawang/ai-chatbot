@@ -15,6 +15,8 @@ public enum CustomMotion {
     /// Snackbar `ActionBanner` muncul dan hilang dengan fade opacity; fade tetap dipakai saat Reduce Motion karena
     /// tidak ada gerakan. TODO: Konfirmasi durasi dengan desain; belum ada di Figma.
     public static let bannerFade: TimeInterval = 0.3
+    /// Lama `Snackbar` tampil sebelum hilang sendiri. TODO: Konfirmasi durasi dengan desain; belum ada di Figma.
+    public static let snackbarVisible: TimeInterval = 3
     /// Satu titik `TypingDots` dari redup ke terang (bolak-balik terus).
     /// TODO: Konfirmasi durasi dengan desain; belum ada di Figma.
     public static let typingDotPulse: TimeInterval = 0.6

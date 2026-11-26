@@ -72,6 +72,10 @@ Contoh penempatan yang sudah diterapkan:
 - `Components/Feedback/ActionBanner.swift`: bar status selebar layar dengan teks dan, bila ada, tombol kecil merah,
   mis. bar sesi agen di bawah header. Tanpa tombol menjadi snackbar yang tetap setinggi bar bertombol (bisa menutupi
   bar lain); `ActionBannerTone` memilih latar gelap (`.neutral`) atau oranye (`.warning`, mis. lampiran ditolak).
+- `Components/Feedback/Snackbar.swift` dan `SnackbarMessage.swift`: pemberitahuan error/warning tanpa tombol di atas
+  `ActionBanner`; fade, dibacakan VoiceOver, hilang sendiri setelah `CustomMotion.snackbarVisible`. Pesan baru (id
+  baru) mengulang hitungan. Pemakai memegang state `SnackbarMessage?` dan posisinya; penolakan lampiran memetakan
+  alasannya lewat `SnackbarMessage(rejection:locale:)` di TanyaAI.
 - `Components/Feedback/TypingDots.swift`: tiga titik berdenyut selama bot menyiapkan jawaban; diam saat Reduce Motion.
 - `Components/Lists/SeparatorLine.swift`: garis pemisah 1 pt (daftar, tabel Markdown, di atas composer).
 - `Components/Screen/BottomSheet/Models/BottomSheetMaxHeight.swift`: batas tinggi, di bawah status bar atau bagian layar.
@@ -161,7 +165,7 @@ TanyaAI/Features/Chat/Intents/LiveAgent/
 ```
 
 Komponen visualnya generik di DesignKit: `NoticeCard` (slot aksi untuk tombol batal kartu antre), `SenderMessageCard`,
-`StatusCaption` (agen mengetik, langsung di `ChatListRow`), `ActionBanner` (bar sesi agen dan snackbar lampiran
+`StatusCaption` (agen mengetik, langsung di `ChatListRow`), `ActionBanner` (bar sesi agen), `Snackbar` (lampiran
 ditolak), `ConfirmationPrompt`
 (konfirmasi End Session, sebagai `ChatSheet.leaveAgent` di `Sheets/ViewModifiers/ChatSheetModifier.swift`), dan
 `FilledButton` varian `.outlined`.

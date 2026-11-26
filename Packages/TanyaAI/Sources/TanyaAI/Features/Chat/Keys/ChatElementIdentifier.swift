@@ -29,8 +29,6 @@ enum ChatElementIdentifier {
 
     /// Kartu shortcut ke-`index` (mulai 0) sesuai urutan dari BE.
     static func shortcut(_ index: Int) -> String { "welcome.shortcut.\(index)" }
-    /// Snackbar lampiran yang ditolak (format atau ukuran).
-    static let attachmentRejection = "chat.attachment.rejection"
 
     static let referenceLetterLoading = "chat.referenceLetter.loading"
     static let referenceLetterForm = "chat.referenceLetter.form"

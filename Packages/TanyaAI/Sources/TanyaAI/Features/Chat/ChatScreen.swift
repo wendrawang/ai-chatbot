@@ -25,7 +25,7 @@ public struct ChatScreen<Content: View>: View {
     @State private var latestJumpID: UUID?
     /// Bottom sheet yang sedang tampil; nil = tertutup.
     @State private var sheet: ChatSheet?
-    @State private var attachmentRejection: ChatAttachmentRejectionNotice?
+    @State private var snackbar: SnackbarMessage?
     private let isEnabled: Bool
     private let welcome: WelcomeContent?
     private let onBack: (() -> Void)?
@@ -65,7 +65,7 @@ public struct ChatScreen<Content: View>: View {
                 attachmentSession: isAgentSession ? bridge.agentSessionKey : nil,
                 leaveSession: isBannerVisible ? bridge.agentSessionKey : nil,
                 onPick: attach,
-                onReject: { attachmentRejection = ChatAttachmentRejectionNotice(reason: $0) },
+                onReject: { snackbar = SnackbarMessage(rejection: $0, locale: locale) },
                 onLeave: leave
             )
         )
@@ -75,7 +75,7 @@ public struct ChatScreen<Content: View>: View {
         .task { await bridge.run() }
     }
 
-    /// Bar sesi agen menempel di bawah header dan daftar mulai di bawahnya; snackbar lampiran menutupi bar itu.
+    /// Bar sesi agen menempel di bawah header dan daftar mulai di bawahnya; snackbar menutupi bar itu.
     private func conversation(headerHeight: CGFloat) -> some View {
         let topInset = isBannerVisible ? .zero : headerHeight
         return VStack(spacing: .zero) {
@@ -87,7 +87,7 @@ public struct ChatScreen<Content: View>: View {
             )
             .overlay(alignment: .bottom) { latestButton }
         }
-        .overlay(alignment: .top) { AttachmentRejectionBanner(rejection: $attachmentRejection, topInset: headerHeight) }
+        .overlay(alignment: .top) { Snackbar(message: $snackbar).padding(.top, headerHeight) }
     }
 
     @ViewBuilder

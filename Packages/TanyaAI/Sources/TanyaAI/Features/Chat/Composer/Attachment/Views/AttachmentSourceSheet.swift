@@ -9,7 +9,7 @@ import DesignKit
 import SwiftUI
 
 /// Isi bottom sheet sumber lampiran: Galeri dan File dengan keterangan format. Lampiran yang ditolak tampil sebagai
-/// snackbar di halaman chat (`AttachmentRejectionBanner`), bukan di sheet ini.
+/// `Snackbar` di halaman chat (`SnackbarMessage(rejection:locale:)`), bukan di sheet ini.
 /// TODO: Tampilan sementara memakai `OptionList` (judul, baris dengan keterangan format) sampai ada Figma.
 @MainActor
 struct AttachmentSourceSheet: View {
