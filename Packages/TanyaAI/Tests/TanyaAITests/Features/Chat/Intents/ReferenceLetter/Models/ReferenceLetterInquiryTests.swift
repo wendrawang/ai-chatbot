@@ -37,13 +37,14 @@ struct ReferenceLetterInquiryTests {
     }
 
     @Test
-    func inquiryCanRepresentEmptyChoicesAndAnOmittedLanguageList() {
+    func inquiryCanRepresentEmptyChoices() {
         let inquiry = ReferenceLetterInquiry(
             introduction: String(),
             purposes: [],
             documentFormats: [],
             sourceAccounts: [],
             currencies: [],
+            languages: [],
             address: String(),
             decryptedEmail: String(),
             encryptedEmail: String(),
