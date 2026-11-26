@@ -57,8 +57,9 @@ enum ChatCopy: String, CaseIterable {
     case attachmentFileFormats = "attachment.file.formats"
     /// Label aksesibilitas grabber bottom sheet halaman chat (lampiran dan konfirmasi End Session).
     case sheetClose = "sheet.close"
-    /// TODO: Copy sementara dari tim iOS; ganti dengan copy final UI/UX.
+    /// Snackbar lampiran yang ditolak. TODO: Copy sementara dari tim iOS; ganti dengan copy final UI/UX.
     case attachmentUnsupportedFormat = "attachment.unsupportedFormat"
+    case attachmentTooLarge = "attachment.tooLarge"
 
     /// TODO: Copy sementara dari tim iOS; ganti dengan copy final UI/UX. Berlaku untuk semua key referenceLetter.
     case referenceLetterTitle = "referenceLetter.title"

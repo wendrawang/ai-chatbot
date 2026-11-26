@@ -8,19 +8,21 @@
 import SwiftUI
 import UniformTypeIdentifiers
 
-/// Aplikasi Files untuk satu PDF atau gambar lampiran. `asCopy` = sistem menyalin file ke folder aplikasi, jadi tidak
-/// perlu akses security-scoped.
+/// Aplikasi Files untuk satu PDF atau gambar lampiran. Tanpa `asCopy`, supaya ukuran file dicek sebelum disalin dan
+/// file besar (mis. 1 GB) tidak sempat disalin sistem ke folder aplikasi.
 @MainActor
 struct DocumentAttachmentPicker: UIViewControllerRepresentable {
     let onPick: (URL) -> Void
+    /// File di atas batas ukuran.
+    let onReject: (ChatAttachmentRejection) -> Void
     let onDismiss: () -> Void
 
     func makeCoordinator() -> DocumentAttachmentPickerCoordinator {
-        DocumentAttachmentPickerCoordinator(onPick: onPick, onDismiss: onDismiss)
+        DocumentAttachmentPickerCoordinator(onPick: onPick, onReject: onReject, onDismiss: onDismiss)
     }
 
     func makeUIViewController(context: Context) -> UIDocumentPickerViewController {
-        let picker = UIDocumentPickerViewController(forOpeningContentTypes: UTType.chatAttachments, asCopy: true)
+        let picker = UIDocumentPickerViewController(forOpeningContentTypes: UTType.chatAttachments, asCopy: false)
         picker.delegate = context.coordinator
         return picker
     }

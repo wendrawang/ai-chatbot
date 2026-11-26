@@ -30,6 +30,10 @@ enum ComponentIdentifier {
         }
     }
 
+    enum Snackbar {
+        static let root = "snackbar"
+    }
+
     enum ConfirmationPrompt {
         static let confirm = "confirmation.confirm"
         static let cancel = "confirmation.cancel"
