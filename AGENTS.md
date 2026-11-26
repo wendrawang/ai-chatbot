@@ -198,7 +198,9 @@ tersedia pada history/main.
 - Screen standar memakai composition `ScreenScaffold` dari DesignKit: header, trailing action, footer, dan
   latar. Scroll milik konten, yang melaporkan `scrollProgress`; `ChatScreen` memakai ini dengan `ChatTable`.
   Aturan table ada di `docs/REVAMP_NOTES.md`. Jangan membuat inheritance/BaseScreen protocol, ViewModel layout
-  atau navigation container tambahan. Footer memiliki margin sesuai komponen caller.
+  atau navigation container tambahan. Footer memiliki margin sesuai komponen caller. Footer hanya naik di atas
+  keyboard selama input di dalamnya diketik (`MessageComposer` mengirim `ScreenFooterPlacementKey`); keyboard dari
+  konten, mis. field form surat referensi, menutupi composer dan daftar berakhir tepat di atas keyboard.
 - `ScreenHeader` tetap komponen standalone untuk layout dengan scroll owner lain
   seperti List. Label/aksi back dan trailing berasal dari caller. Ukuran sama dengan
   navigation bar host: mulai dari tepi atas layar (caller menaruhnya tanpa safe area atas,

@@ -98,6 +98,26 @@ final class FormFieldsUITests: XCTestCase {
         application.revealReferenceLetter(application.buttons["Confirm"])
     }
 
+    /// Keyboard dari field form menutupi composer; field tetap terlihat. Return menutup keyboard form, lalu keyboard
+    /// composer tetap mengangkat composer.
+    func testFormKeyboardLeavesTheComposerBehindTheKeyboard() {
+        application.launchReferenceLetter()
+        let embassy = application.textFields["Embassy or recipient institution"]
+        application.revealReferenceLetter(embassy)
+        embassy.tap()
+        let keyboard = application.keyboards.firstMatch
+        XCTAssertTrue(keyboard.waitForExistence(timeout: 5))
+        let send = application.buttons["composer.send"]
+        XCTAssertTrue(waitUntil { send.frame.minY >= keyboard.frame.minY }, "composer ikut naik")
+        XCTAssertLessThanOrEqual(embassy.frame.maxY, keyboard.frame.minY)
+
+        embassy.typeText("\n")
+        XCTAssertTrue(waitUntil { !keyboard.exists }, "keyboard form tidak tertutup")
+        application.textViews["composer.input"].tap()
+        XCTAssertTrue(keyboard.waitForExistence(timeout: 5))
+        XCTAssertTrue(waitUntil { send.frame.maxY <= keyboard.frame.minY }, "composer tertutup keyboard")
+    }
+
     func testCancelShowsStatusCard() {
         application.launchReferenceLetter()
         let cancel = application.buttons["Cancel"]
@@ -114,6 +134,18 @@ final class FormFieldsUITests: XCTestCase {
 }
 
 // MARK: - Helpers
+
+private extension FormFieldsUITests {
+    /// Menunggu layout keyboard selesai beranimasi.
+    func waitUntil(_ condition: () -> Bool) -> Bool {
+        let deadline = Date().addingTimeInterval(5)
+        while Date() < deadline {
+            guard !condition() else { return true }
+            RunLoop.current.run(until: Date().addingTimeInterval(0.1))
+        }
+        return condition()
+    }
+}
 
 extension XCUIApplication {
     func launchReferenceLetter(extraArguments: [String] = [], isWaitingForForm: Bool = true) {

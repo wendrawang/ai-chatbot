@@ -10,6 +10,7 @@ import UIKit
 
 /// Jembatan ke editor UIKit: pengukuran dan seleksi di sini; draft dan font milik pemakai. `.disabled(...)` dari
 /// pemakai membuat editor tidak bisa diketik dan menutup keyboard-nya; warna nonaktif tetap milik pemakai.
+/// `onFocusChange` dipanggil saat editor mulai (true) dan selesai (false) diketik.
 @MainActor
 public struct GrowingTextInput: UIViewRepresentable {
     @Environment(\.isEnabled) private var isEnabled
@@ -18,16 +19,18 @@ public struct GrowingTextInput: UIViewRepresentable {
     private let textColor: UIColor
     private let lineSpacing: CGFloat
     private let accessibilityLabel: String
+    private let onFocusChange: ((Bool) -> Void)?
 
     public init(
         text: Binding<String>, font: UIFont, textColor: UIColor,
-        lineSpacing: CGFloat = .zero, accessibilityLabel: String
+        lineSpacing: CGFloat = .zero, accessibilityLabel: String, onFocusChange: ((Bool) -> Void)? = nil
     ) {
         self._text = text
         self.font = font
         self.textColor = textColor
         self.lineSpacing = lineSpacing
         self.accessibilityLabel = accessibilityLabel
+        self.onFocusChange = onFocusChange
     }
 
     public func makeUIView(context: Context) -> BoundedTextView {
@@ -72,6 +75,14 @@ public struct GrowingTextInput: UIViewRepresentable {
             // UITextView.text bertipe String!; baca sebagai optional agar tidak ada unwrap paksa.
             parent.text = editor.text ?? String()
             (editor as? BoundedTextView)?.remeasure()
+        }
+
+        public func textViewDidBeginEditing(_ editor: UITextView) {
+            parent.onFocusChange?(true)
+        }
+
+        public func textViewDidEndEditing(_ editor: UITextView) {
+            parent.onFocusChange?(false)
         }
     }
 }
