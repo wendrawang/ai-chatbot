@@ -15,18 +15,18 @@ import SwiftUI
 @MainActor
 struct AttachmentRejectionBanner: View {
     @Environment(\.locale) private var locale
-    @Binding var rejection: ChatAttachmentRejection?
+    @Binding var rejection: ChatAttachmentRejectionNotice?
     /// Tinggi header; bar sesi agen juga mulai di sini sehingga tertutup snackbar.
     let topInset: CGFloat
 
     var body: some View {
         ZStack {
             if let rejection {
-                ActionBanner(text: text(for: rejection), tone: .warning)
+                ActionBanner(text: text(for: rejection.reason), tone: .warning)
                     .accessibilityElement(children: .combine)
                     .accessibilityIdentifier(ChatElementIdentifier.attachmentRejection)
                     .transition(.opacity)
-                    .task(id: rejection) { await show(rejection) }
+                    .task(id: rejection.id) { await show(rejection) }
             }
         }
         .padding(.top, topInset)
@@ -44,8 +44,8 @@ private extension AttachmentRejectionBanner {
     }
 
     /// Dibacakan VoiceOver karena snackbar tidak mendapat fokus, lalu ditutup bila belum diganti penolakan lain.
-    func show(_ shown: ChatAttachmentRejection) async {
-        UIAccessibility.post(notification: .announcement, argument: text(for: shown))
+    func show(_ shown: ChatAttachmentRejectionNotice) async {
+        UIAccessibility.post(notification: .announcement, argument: text(for: shown.reason))
         try? await Task.sleep(nanoseconds: Self.visibleNanoseconds)
         guard !Task.isCancelled, rejection == shown else { return }
         rejection = nil

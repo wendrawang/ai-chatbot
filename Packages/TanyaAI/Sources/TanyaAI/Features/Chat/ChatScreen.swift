@@ -25,7 +25,7 @@ public struct ChatScreen<Content: View>: View {
     @State private var latestJumpID: UUID?
     /// Bottom sheet yang sedang tampil; nil = tertutup.
     @State private var sheet: ChatSheet?
-    @State private var attachmentRejection: ChatAttachmentRejection?
+    @State private var attachmentRejection: ChatAttachmentRejectionNotice?
     private let isEnabled: Bool
     private let welcome: WelcomeContent?
     private let onBack: (() -> Void)?
@@ -65,7 +65,7 @@ public struct ChatScreen<Content: View>: View {
                 attachmentSession: isAgentSession ? bridge.agentSessionKey : nil,
                 leaveSession: isBannerVisible ? bridge.agentSessionKey : nil,
                 onPick: attach,
-                onReject: { attachmentRejection = $0 },
+                onReject: { attachmentRejection = ChatAttachmentRejectionNotice(reason: $0) },
                 onLeave: leave
             )
         )
