@@ -12,6 +12,9 @@ public enum CustomMotion {
     /// Bottom sheet naik dari bawah dan latar gelapnya muncul.
     /// TODO: Konfirmasi durasi dengan desain; sementara mengikuti rasa sheet bawaan iOS.
     public static let sheetSlide: TimeInterval = 0.25
+    /// Snackbar `ActionBanner` muncul dan hilang dengan fade opacity; fade tetap dipakai saat Reduce Motion karena
+    /// tidak ada gerakan. TODO: Konfirmasi durasi dengan desain; belum ada di Figma.
+    public static let bannerFade: TimeInterval = 0.3
     /// Satu titik `TypingDots` dari redup ke terang (bolak-balik terus).
     /// TODO: Konfirmasi durasi dengan desain; belum ada di Figma.
     public static let typingDotPulse: TimeInterval = 0.6

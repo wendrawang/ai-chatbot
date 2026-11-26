@@ -8,24 +8,29 @@
 import DesignKit
 import SwiftUI
 
-/// Snackbar oranye di atas daftar pesan saat lampiran ditolak, seperti bar sesi agen tetapi tanpa tombol (keputusan
-/// user). Hilang sendiri; penolakan berikutnya mengganti teksnya dan memulai hitungan lagi.
-/// TODO: Durasi tampil dan posisi sementara sampai ada Figma.
+/// Snackbar oranye di atas daftar pesan saat lampiran ditolak, seperti bar sesi agen tetapi tanpa tombol, dan
+/// menutupi bar sesi agen selama tampil (keputusan user). Muncul dan hilang dengan fade opacity; hilang sendiri setelah
+/// tiga detik, penolakan berikutnya mengganti teksnya dan memulai hitungan lagi.
+/// TODO: Durasi tampil dan fade sementara sampai ada Figma.
 @MainActor
 struct AttachmentRejectionBanner: View {
     @Environment(\.locale) private var locale
     @Binding var rejection: ChatAttachmentRejection?
-    /// Jarak dari atas wadah, mis. tinggi header bila bar sesi agen tidak tampil.
+    /// Tinggi header; bar sesi agen juga mulai di sini sehingga tertutup snackbar.
     let topInset: CGFloat
 
     var body: some View {
-        if let rejection {
-            ActionBanner(text: text(for: rejection), tone: .warning)
-                .accessibilityElement(children: .combine)
-                .accessibilityIdentifier(ChatElementIdentifier.attachmentRejection)
-                .padding(.top, topInset)
-                .task(id: rejection) { await show(rejection) }
+        ZStack {
+            if let rejection {
+                ActionBanner(text: text(for: rejection), tone: .warning)
+                    .accessibilityElement(children: .combine)
+                    .accessibilityIdentifier(ChatElementIdentifier.attachmentRejection)
+                    .transition(.opacity)
+                    .task(id: rejection) { await show(rejection) }
+            }
         }
+        .padding(.top, topInset)
+        .animation(.easeInOut(duration: CustomMotion.bannerFade), value: rejection)
     }
 }
 

@@ -75,7 +75,7 @@ public struct ChatScreen<Content: View>: View {
         .task { await bridge.run() }
     }
 
-    /// Bar sesi agen menempel di bawah header, jadi daftar dan snackbar lampiran mulai di bawah bar tanpa inset header.
+    /// Bar sesi agen menempel di bawah header dan daftar mulai di bawahnya; snackbar lampiran menutupi bar itu.
     private func conversation(headerHeight: CGFloat) -> some View {
         let topInset = isBannerVisible ? .zero : headerHeight
         return VStack(spacing: .zero) {
@@ -86,8 +86,8 @@ public struct ChatScreen<Content: View>: View {
                 row: listRow
             )
             .overlay(alignment: .bottom) { latestButton }
-            .overlay(alignment: .top) { AttachmentRejectionBanner(rejection: $attachmentRejection, topInset: topInset) }
         }
+        .overlay(alignment: .top) { AttachmentRejectionBanner(rejection: $attachmentRejection, topInset: headerHeight) }
     }
 
     @ViewBuilder

@@ -9,7 +9,7 @@ import SwiftUI
 
 /// Bar status selebar layar, mis. di bawah header: teks di kiri dan, bila ada, tombol kecil merah di kanan. Teks
 /// panjang turun ke baris berikutnya, tombol tetap seukuran judulnya. Copy dan aksi dari pemakai; nonaktif lewat
-/// `.disabled(...)`. Tanpa tombol, bar hanya memberi tahu (snackbar).
+/// `.disabled(...)`. Tanpa tombol, bar hanya memberi tahu (snackbar) dan tetap setinggi bar bertombol.
 /// TODO: Konfirmasi warna, ukuran teks, dan jarak dengan Figma; sementara dari foto. Nada `.warning` memakai token
 /// oranye `colorsIconOngoing` karena belum ada token permukaan oranye.
 @MainActor
@@ -38,11 +38,14 @@ public struct ActionBanner: View {
 
     public var body: some View {
         HStack(spacing: FigmaSize.spacingMedium.scaledToArtwork) {
-            Text(text)
-                .designFont(.caption)
-                .foregroundColor(textColor)
-                .fixedSize(horizontal: false, vertical: true)
-                .frame(maxWidth: .infinity, alignment: .leading)
+            ZStack(alignment: .leading) {
+                heightReference
+                Text(text)
+                    .designFont(.caption)
+                    .foregroundColor(textColor)
+                    .fixedSize(horizontal: false, vertical: true)
+            }
+            .frame(maxWidth: .infinity, alignment: .leading)
             actionButton
         }
         .padding(.horizontal, FigmaSize.spacingLarge.scaledToArtwork)
@@ -53,24 +56,36 @@ public struct ActionBanner: View {
     @ViewBuilder
     private var actionButton: some View {
         if let actionTitle {
-            Button(action: onAction) {
-                Text(actionTitle)
-                    .designFont(.captionStrong)
-                    .foregroundColor(colors.colorsTextPrimaryLight)
-                    .padding(.horizontal, FigmaSize.spacingMedium.scaledToArtwork)
-                    .padding(.vertical, FigmaSize.spacingSmall.scaledToArtwork)
-                    .cardStyle(isOutlined: false, isElevated: false, fillColor: buttonColor)
-                    .contentShape(Rectangle())
-            }
-            .buttonStyle(.plain)
-            .fixedSize()
+            Button(action: onAction) { actionLabel(actionTitle) }
+                .buttonStyle(.plain)
+                .fixedSize()
         }
+    }
+
+    /// Label tombol satu baris yang tak terlihat dan selebar nol: bar tanpa tombol setinggi bar bertombol, sehingga
+    /// snackbar bisa menutupi bar lain dengan rapi. Isinya teks bar sendiri agar tidak perlu teks literal.
+    private var heightReference: some View {
+        actionLabel(text)
+            .fixedSize()
+            .hidden()
+            .frame(width: .zero)
+            .accessibilityHidden(true)
     }
 }
 
 // MARK: - Helpers
 
 private extension ActionBanner {
+    func actionLabel(_ title: String) -> some View {
+        Text(title)
+            .designFont(.captionStrong)
+            .foregroundColor(colors.colorsTextPrimaryLight)
+            .padding(.horizontal, FigmaSize.spacingMedium.scaledToArtwork)
+            .padding(.vertical, FigmaSize.spacingSmall.scaledToArtwork)
+            .cardStyle(isOutlined: false, isElevated: false, fillColor: buttonColor)
+            .contentShape(Rectangle())
+    }
+
     var buttonColor: Color {
         isEnabled ? colors.colorsButtonActive : colors.colorsIconDisabled
     }

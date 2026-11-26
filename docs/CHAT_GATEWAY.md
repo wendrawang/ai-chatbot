@@ -194,8 +194,9 @@ dari picker lama dibuang (`ChatSheet.isCurrent`). Galeri memakai `PHPicker` (tan
 memakai document picker tanpa `asCopy`, supaya ukuran dicek sebelum file disalin. Format hanya PDF, HEIC, JPG/JPEG,
 dan PNG (`UTType.chatAttachments`); galeri sistem tidak bisa memfilter per format, jadi foto berformat lain (mis. GIF)
 ditolak setelah dipilih. File di atas 10 MB (10.000.000 byte, `FileManager.chatAttachmentByteLimit`) ditolak sebelum
-disalin. Keduanya tampil sebagai snackbar oranye di atas daftar pesan (`AttachmentRejectionBanner`, `ActionBanner`
-tanpa tombol), hilang sendiri setelah 3 detik, dan sheet Galeri/File tidak dibuka lagi (keputusan user 26 November
+disalin. Keduanya tampil sebagai snackbar oranye tepat di bawah header (`AttachmentRejectionBanner`, `ActionBanner`
+tanpa tombol, setinggi bar bertombol) yang menutupi bar sesi agen bila ada, muncul dan hilang dengan fade opacity
+(`CustomMotion.bannerFade`) setelah 3 detik, dan sheet Galeri/File tidak dibuka lagi (keputusan user 26 November
 2026; copy, durasi, dan warna sementara sampai ada Figma). Contract v1.5.3 belum punya endpoint
 upload dan parameter preview di stream/history belum pasti, jadi file pilihan nasabah berhenti di
 `ChatScreen.attach(_:)` (TODO) dan salinannya langsung dibuang. Selama sheet terbuka, `TanyaAIHost(onSheetChange:)`

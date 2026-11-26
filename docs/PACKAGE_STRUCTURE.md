@@ -70,8 +70,8 @@ Contoh penempatan yang sudah diterapkan:
 - `Components/Feedback/ConfirmationPrompt.swift`: isi bottom sheet konfirmasi (judul, keterangan, aksi utama dan
   tombol batal bertumpuk sebagai footer), mis. konfirmasi End Session.
 - `Components/Feedback/ActionBanner.swift`: bar status selebar layar dengan teks dan, bila ada, tombol kecil merah,
-  mis. bar sesi agen di bawah header. Tanpa tombol menjadi snackbar; `ActionBannerTone` memilih latar gelap
-  (`.neutral`) atau oranye (`.warning`, mis. lampiran ditolak).
+  mis. bar sesi agen di bawah header. Tanpa tombol menjadi snackbar yang tetap setinggi bar bertombol (bisa menutupi
+  bar lain); `ActionBannerTone` memilih latar gelap (`.neutral`) atau oranye (`.warning`, mis. lampiran ditolak).
 - `Components/Feedback/TypingDots.swift`: tiga titik berdenyut selama bot menyiapkan jawaban; diam saat Reduce Motion.
 - `Components/Lists/SeparatorLine.swift`: garis pemisah 1 pt (daftar, tabel Markdown, di atas composer).
 - `Components/Screen/BottomSheet/Models/BottomSheetMaxHeight.swift`: batas tinggi, di bawah status bar atau bagian layar.

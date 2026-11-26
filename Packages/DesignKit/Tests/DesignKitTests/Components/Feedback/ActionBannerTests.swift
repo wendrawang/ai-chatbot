@@ -36,6 +36,15 @@ struct ActionBannerTests {
         #expect(long.width == width)
         #expect(long.height > short.height)
     }
+
+    /// Snackbar menutupi bar sesi agen, jadi teks satu baris tanpa tombol harus setinggi bar bertombol.
+    @Test
+    func bannerWithoutActionIsAsTallAsBannerWithAction() throws {
+        try FontFace.registerFonts()
+        let plain = size(of: ActionBanner(text: "File ditolak", tone: .warning))
+        let withAction = size(of: banner(text: "Mode agen"))
+        #expect(plain.height == withAction.height)
+    }
 }
 
 // MARK: - Helpers
