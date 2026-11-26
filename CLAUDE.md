@@ -17,7 +17,8 @@ usulan ditulis di body PR sebagai pertanyaan untuk owner. Bila berbeda, ikuti do
 - Semua teks memakai Fira Sans lewat `.designFont(role)` (`DesignFontRole`); jangan menyusun face dan ukuran sendiri.
   Open Sans sudah dihapus dari package. Nonaktif selalu lewat `.disabled(...)`, bukan parameter `isEnabled`.
 - Ukuran dan area tap 1:1 Figma lewat `.scaledToArtwork`. Jangan menambahkan
-  minimum touch target 44 atau hit frame tambahan; ini keputusan UI/UX.
+  minimum touch target 44 atau hit frame tambahan; ini keputusan UI/UX. Pengecualian yang tidak memperbesar
+  apa pun: tap di dalam kartu composer di luar tombol memfokuskan field (`focusRequest`).
 - Header = ukuran navigation bar host: dari tepi layar, padding atas 50/28 tanpa scale
   (`CustomScreenInsets`), kiri-kanan 20, bawah 15, ikon 24, judul Fira Sans Bold 16.
   Saat digulir putih + `designShadow` (Figma Shadow/Default) + gradient fade di belakangnya.

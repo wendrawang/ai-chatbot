@@ -43,6 +43,8 @@ Contoh penempatan yang sudah diterapkan:
 
 - `Components/Inputs/MessageComposer/Views/MessageComposer.swift`: susunan composer; selama field tidak diketik
   mengirim `.bottom` lewat `ScreenFooterPlacementKey` agar keyboard dari konten menutupi footer `ScreenScaffold`.
+  Lapisan `focusArea` di belakang field mengubah tap di padding kartu menjadi `focusRequest` untuk
+  `GrowingTextInput`.
 - `Components/Screen/ScreenFooterPlacement.swift` dan `ScreenFooterPlacementKey.swift`: letak footer saat keyboard
   tampil; tanpa preference footer tetap mengikuti keyboard. `ScreenFooterTopKey.swift` mengukur tepi atas footer
   untuk jarak bawah konten.

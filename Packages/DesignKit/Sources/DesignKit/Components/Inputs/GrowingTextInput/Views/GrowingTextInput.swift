@@ -10,7 +10,9 @@ import UIKit
 
 /// Jembatan ke editor UIKit: pengukuran dan seleksi di sini; draft dan font milik pemakai. `.disabled(...)` dari
 /// pemakai membuat editor tidak bisa diketik dan menutup keyboard-nya; warna nonaktif tetap milik pemakai.
-/// `onFocusChange` dipanggil saat editor mulai (true) dan selesai (false) diketik.
+/// `onFocusChange` dipanggil saat editor mulai (true) dan selesai (false) diketik. `focusRequest` = token fokus:
+/// setiap UUID baru meminta fokus sekali (mis. tap di luar teks pada kartu pemakai); nilai awal dan render ulang
+/// dengan nilai yang sama tidak membuka keyboard.
 @MainActor
 public struct GrowingTextInput: UIViewRepresentable {
     @Environment(\.isEnabled) private var isEnabled
@@ -19,17 +21,24 @@ public struct GrowingTextInput: UIViewRepresentable {
     private let textColor: UIColor
     private let lineSpacing: CGFloat
     private let accessibilityLabel: String
+    private let focusRequest: UUID?
     private let onFocusChange: ((Bool) -> Void)?
 
     public init(
-        text: Binding<String>, font: UIFont, textColor: UIColor,
-        lineSpacing: CGFloat = .zero, accessibilityLabel: String, onFocusChange: ((Bool) -> Void)? = nil
+        text: Binding<String>,
+        font: UIFont,
+        textColor: UIColor,
+        lineSpacing: CGFloat = .zero,
+        accessibilityLabel: String,
+        focusRequest: UUID? = nil,
+        onFocusChange: ((Bool) -> Void)? = nil
     ) {
         self._text = text
         self.font = font
         self.textColor = textColor
         self.lineSpacing = lineSpacing
         self.accessibilityLabel = accessibilityLabel
+        self.focusRequest = focusRequest
         self.onFocusChange = onFocusChange
     }
 
@@ -53,6 +62,7 @@ public struct GrowingTextInput: UIViewRepresentable {
         context.coordinator.parent = self
         editor.accessibilityLabel = accessibilityLabel
         applyEnabled(to: editor)
+        applyFocusRequest(to: editor, coordinator: context.coordinator)
         let isStyleChanged = editor.font != font || editor.textColor != textColor || editor.lineSpacing != lineSpacing
         let isTextChanged = editor.text != text
         if isTextChanged { editor.text = text }
@@ -69,7 +79,19 @@ public struct GrowingTextInput: UIViewRepresentable {
 
     public final class Coordinator: NSObject, UITextViewDelegate {
         var parent: GrowingTextInput
-        init(parent: GrowingTextInput) { self.parent = parent }
+        private var handledFocusRequest: UUID?
+
+        init(parent: GrowingTextInput) {
+            self.parent = parent
+            self.handledFocusRequest = parent.focusRequest
+        }
+
+        /// True sekali untuk setiap token baru, jadi render ulang dengan token yang sama tidak membuka keyboard lagi.
+        func isNewFocusRequest(_ request: UUID?) -> Bool {
+            guard request != handledFocusRequest else { return false }
+            handledFocusRequest = request
+            return true
+        }
 
         public func textViewDidChange(_ editor: UITextView) {
             // UITextView.text bertipe String!; baca sebagai optional agar tidak ada unwrap paksa.
@@ -96,6 +118,16 @@ private extension GrowingTextInput {
         editor.isEditable = isEnabled
         guard !isEnabled, editor.isFirstResponder else { return }
         editor.resignFirstResponder()
+    }
+
+    /// Fokus diminta di antrean main berikutnya: delegate fokus mengubah state pemakai, dan perubahan itu tidak boleh
+    /// terjadi di tengah update SwiftUI. Editor yang nonaktif atau sudah lepas dari window diabaikan.
+    func applyFocusRequest(to editor: BoundedTextView, coordinator: Coordinator) {
+        guard coordinator.isNewFocusRequest(focusRequest), editor.isEditable else { return }
+        DispatchQueue.main.async { [weak editor] in
+            guard let editor, editor.isEditable, editor.window != nil, !editor.isFirstResponder else { return }
+            editor.becomeFirstResponder()
+        }
     }
 
     func applyStyle(to editor: BoundedTextView) {

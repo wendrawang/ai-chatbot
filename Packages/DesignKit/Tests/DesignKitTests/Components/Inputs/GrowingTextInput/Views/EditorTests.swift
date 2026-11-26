@@ -118,4 +118,24 @@ struct EditorTests {
         coordinator.textViewDidEndEditing(editor)
         #expect(focusChanges == [true, false])
     }
+
+    /// Token awal tidak membuka keyboard; token baru meminta fokus sekali, dan render ulang dengan token yang sama
+    /// (mis. jawaban bot masuk) tidak meminta lagi.
+    @Test
+    func eachFocusRequestIsHonouredOnce() {
+        let initialRequest = UUID()
+        let input = GrowingTextInput(
+            text: .constant(String()),
+            font: .systemFont(ofSize: 14),
+            textColor: .black,
+            accessibilityLabel: "Pesan",
+            focusRequest: initialRequest
+        )
+        let coordinator = input.makeCoordinator()
+        let tapRequest = UUID()
+        #expect(!coordinator.isNewFocusRequest(initialRequest))
+        #expect(coordinator.isNewFocusRequest(tapRequest))
+        #expect(!coordinator.isNewFocusRequest(tapRequest))
+        #expect(coordinator.isNewFocusRequest(nil))
+    }
 }

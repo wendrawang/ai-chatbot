@@ -9,12 +9,14 @@ import SwiftUI
 
 /// Composer pesan: field yang tumbuh sampai empat baris dan satu tombol kirim/stop. Jarak dalam dan tampilan milik
 /// komponen ini; margin luar milik screen. Footer `ScreenScaffold` yang memuat composer hanya naik di atas keyboard
-/// selama field ini diketik; keyboard dari input lain menutupinya (composer mengirim `.bottom`).
+/// selama field ini diketik; keyboard dari input lain menutupinya (composer mengirim `.bottom`). Tap di mana saja pada
+/// kartu selain tombol memfokuskan field, bukan hanya tap tepat di baris teks.
 @MainActor
 public struct MessageComposer: View {
     @Environment(\.designColors) private var colors
     @Binding private var text: String
     @State private var isInputFocused = false
+    @State private var focusRequest: UUID?
     private let placeholder: String
     private let actionLabel: String
     private let isEnabled: Bool
@@ -63,6 +65,7 @@ public struct MessageComposer: View {
                 .frame(minHeight: singleLineRowHeight)
         }
         .padding(FigmaSize.spacingLarge.scaledToArtwork)
+        .background(focusArea)
         .cardStyle()
         .accessibilityElement(children: .contain)
         .accessibilityIdentifier(ComponentIdentifier.Composer.root)
@@ -72,8 +75,12 @@ public struct MessageComposer: View {
     private var field: some View {
         ZStack(alignment: .leading) {
             GrowingTextInput(
-                text: $text, font: inputFont, textColor: UIColor(textColor),
-                lineSpacing: lineSpacing, accessibilityLabel: placeholder,
+                text: $text,
+                font: inputFont,
+                textColor: UIColor(textColor),
+                lineSpacing: lineSpacing,
+                accessibilityLabel: placeholder,
+                focusRequest: focusRequest,
                 onFocusChange: { isInputFocused = $0 }
             )
             .fixedSize(horizontal: false, vertical: true)
@@ -89,6 +96,15 @@ public struct MessageComposer: View {
             }
         }
         .disabled(!isInputEnabled)
+    }
+
+    /// Lapisan di belakang field dan tombol: hanya menerima tap yang tidak mengenai editor atau tombol, jadi kursor,
+    /// seleksi dan menu salin-tempel tetap milik UIKit.
+    private var focusArea: some View {
+        Color.clear
+            .contentShape(Rectangle())
+            .onTapGesture(perform: requestFocus)
+            .accessibilityHidden(true)
     }
 
     /// Satu tombol untuk semua fase: kirim atau stop. Ikon berwarna utuh per fase; hanya stopping yang diredupkan
@@ -165,6 +181,12 @@ private extension MessageComposer {
         case .stopping:
             return false
         }
+    }
+
+    /// Field nonaktif tidak meminta fokus.
+    func requestFocus() {
+        guard isInputEnabled else { return }
+        focusRequest = UUID()
     }
 
     func tapAction() {

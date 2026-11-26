@@ -105,8 +105,8 @@ final class LiveAgentUITests: XCTestCase {
     }
 
     /// `--hold-greeting`: sapaan tidak pernah datang, jadi fase Switching bisa diperiksa tanpa berlomba dengan jedanya.
-    /// Keyboard dari pertanyaan sebelumnya ditutup, field tidak bisa diketik, dan bar sesi agen belum tampil; batal
-    /// antre membuka composer lagi.
+    /// Keyboard dari pertanyaan sebelumnya ditutup, field tidak bisa diketik, tap di kartunya tidak membuka keyboard,
+    /// dan bar sesi agen belum tampil; batal antre membuka composer lagi.
     func testComposerIsLockedWhileSwitching() {
         launchAndAskForAnAgent(extraArguments: ["--hold-greeting"])
         let leave = application.buttons["chat.agent.leaveQueue"]
@@ -114,6 +114,8 @@ final class LiveAgentUITests: XCTestCase {
         let input = application.textViews["composer.input"]
         waitUntilGone(application.keyboards.firstMatch)
         XCTAssertFalse(input.isEnabled)
+        application.otherElements["composer"].coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.1)).tap()
+        XCTAssertFalse(application.keyboards.firstMatch.waitForExistence(timeout: 1), "kartu terkunci membuka keyboard")
         XCTAssertFalse(element("chat.agent.session").exists, "bar sesi agen belum tampil selama Switching")
         capture("live-agent-switching-locked")
         leave.tap()
