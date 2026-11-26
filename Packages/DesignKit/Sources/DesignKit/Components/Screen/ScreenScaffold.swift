@@ -9,10 +9,15 @@ import SwiftUI
 
 /// Kerangka halaman: header menimpa area konten, footer di bawahnya, dan latar di belakang semuanya. Scroll milik
 /// konten, jadi pemilik scroll (mis. table) melaporkan `scrollProgress`. `content` menerima tinggi header supaya
-/// bisa memberi inset awal.
+/// bisa memberi inset awal. Footer mengikuti keyboard, kecuali footer meminta `.bottom` lewat
+/// `ScreenFooterPlacementKey` (mis. `MessageComposer` yang tidak sedang diketik): keyboard dari konten (mis. field form
+/// di daftar chat) menutupi footer, dan konten berakhir tepat di atas keyboard.
 @MainActor
 public struct ScreenScaffold<Content: View, Trailing: View, Footer: View, Background: View>: View {
     @Environment(\.designColors) private var colors
+    @State private var footerPlacement = ScreenFooterPlacement.aboveKeyboard
+    /// Tepi atas footer di koordinat layar; tak hingga sampai terukur.
+    @State private var footerTop = CGFloat.infinity
     private let title: String
     private let backLabel: String
     private let scrollProgress: CGFloat
@@ -39,13 +44,35 @@ public struct ScreenScaffold<Content: View, Trailing: View, Footer: View, Backgr
 
     public var body: some View {
         // Safe area atas dibaca sekali di root; header dan konten sendiri mulai dari tepi atas layar.
+        // Wadah ini mengecil oleh keyboard; konten berakhir di atas keyboard atau footer, mana yang lebih tinggi.
         GeometryReader { geometry in
-            VStack(spacing: .zero) {
+            ZStack(alignment: .top) {
                 surface(isNotched: ScreenHeader.isNotched(safeAreaTop: geometry.safeAreaInsets.top))
-                footer
+                    .padding(
+                        .bottom,
+                        Self.footerOverlap(bottom: geometry.frame(in: .global).maxY, footerTop: footerTop)
+                    )
+                footerLayer
             }
         }
         .background(backdrop)
+    }
+
+    /// Lapisan setinggi layar agar footer menempel di bawah; tetap di bawah (tertutup keyboard) hanya bila footer
+    /// meminta `.bottom`. Spacer tidak menangkap sentuhan, jadi konten di belakangnya tetap bisa disentuh.
+    private var footerLayer: some View {
+        VStack(spacing: .zero) {
+            Spacer(minLength: .zero)
+            footer
+                .background(
+                    GeometryReader { proxy in
+                        Color.clear.preference(key: ScreenFooterTopKey.self, value: proxy.frame(in: .global).minY)
+                    }
+                )
+        }
+        .ignoresSafeArea(.keyboard, edges: footerPlacement == .aboveKeyboard ? [] : .bottom)
+        .onPreferenceChange(ScreenFooterTopKey.self) { footerTop = $0 }
+        .onPreferenceChange(ScreenFooterPlacementKey.self) { footerPlacement = $0 }
     }
 
     private var backdrop: some View {
@@ -66,5 +93,15 @@ public struct ScreenScaffold<Content: View, Trailing: View, Footer: View, Backgr
             )
         }
         .ignoresSafeArea(.container, edges: .top)
+    }
+}
+
+// MARK: - Helpers
+
+extension ScreenScaffold {
+    /// Jarak bawah konten: bagian wadah (yang sudah dikecilkan keyboard) di bawah tepi atas footer. Nol bila footer
+    /// tertutup keyboard, jadi konten berakhir tepat di atas keyboard.
+    static func footerOverlap(bottom: CGFloat, footerTop: CGFloat) -> CGFloat {
+        max(.zero, bottom - footerTop)
     }
 }

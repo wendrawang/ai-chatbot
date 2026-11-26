@@ -41,7 +41,11 @@ kemudian `Models`, `Views`, atau jenis lain yang memang dipakai.
 
 Contoh penempatan yang sudah diterapkan:
 
-- `Components/Inputs/MessageComposer/Views/MessageComposer.swift`: susunan composer.
+- `Components/Inputs/MessageComposer/Views/MessageComposer.swift`: susunan composer; selama field tidak diketik
+  mengirim `.bottom` lewat `ScreenFooterPlacementKey` agar keyboard dari konten menutupi footer `ScreenScaffold`.
+- `Components/Screen/ScreenFooterPlacement.swift` dan `ScreenFooterPlacementKey.swift`: letak footer saat keyboard
+  tampil; tanpa preference footer tetap mengikuti keyboard. `ScreenFooterTopKey.swift` mengukur tepi atas footer
+  untuk jarak bawah konten.
 - `Components/Inputs/MessageComposer/Models/MessageComposerAction.swift`: jenis aksi.
 - `Components/Inputs/MessageComposer/Extensions/MessageComposerAction+Icon.swift`: pemetaan ikon aksi.
 - `Components/Lists/HostedTable/Views/HostingTableViewCell.swift`: cell berisi view SwiftUI.

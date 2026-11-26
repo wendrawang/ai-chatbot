@@ -8,11 +8,13 @@
 import SwiftUI
 
 /// Composer pesan: field yang tumbuh sampai empat baris dan satu tombol kirim/stop. Jarak dalam dan tampilan milik
-/// komponen ini; margin luar milik screen.
+/// komponen ini; margin luar milik screen. Footer `ScreenScaffold` yang memuat composer hanya naik di atas keyboard
+/// selama field ini diketik; keyboard dari input lain menutupinya (composer mengirim `.bottom`).
 @MainActor
 public struct MessageComposer: View {
     @Environment(\.designColors) private var colors
     @Binding private var text: String
+    @State private var isInputFocused = false
     private let placeholder: String
     private let actionLabel: String
     private let isEnabled: Bool
@@ -64,13 +66,15 @@ public struct MessageComposer: View {
         .cardStyle()
         .accessibilityElement(children: .contain)
         .accessibilityIdentifier(ComponentIdentifier.Composer.root)
+        .preference(key: ScreenFooterPlacementKey.self, value: isInputFocused ? .aboveKeyboard : .bottom)
     }
 
     private var field: some View {
         ZStack(alignment: .leading) {
             GrowingTextInput(
                 text: $text, font: inputFont, textColor: UIColor(textColor),
-                lineSpacing: lineSpacing, accessibilityLabel: placeholder
+                lineSpacing: lineSpacing, accessibilityLabel: placeholder,
+                onFocusChange: { isInputFocused = $0 }
             )
             .fixedSize(horizontal: false, vertical: true)
             .frame(maxWidth: .infinity)

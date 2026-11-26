@@ -100,4 +100,22 @@ struct EditorTests {
         }
         await waitUntil(timeout: 2) { releasedEditor == nil }
     }
+
+    /// Fokus editor diteruskan ke pemakai, mis. agar footer composer hanya naik saat composer yang diketik.
+    @Test
+    func focusChangesAreReportedToTheOwner() {
+        var focusChanges: [Bool] = []
+        let input = GrowingTextInput(
+            text: .constant(String()),
+            font: .systemFont(ofSize: 14),
+            textColor: .black,
+            accessibilityLabel: "Pesan",
+            onFocusChange: { focusChanges.append($0) }
+        )
+        let coordinator = input.makeCoordinator()
+        let editor = UITextView()
+        coordinator.textViewDidBeginEditing(editor)
+        coordinator.textViewDidEndEditing(editor)
+        #expect(focusChanges == [true, false])
+    }
 }
