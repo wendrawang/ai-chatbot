@@ -196,6 +196,13 @@ Mulai 18 November 2026 transport juga mewajibkan `attachSuccessID(messageID:succ
 (`POST /v1/chat/messages/{message_id}/success-id`, body `{"success_id": "..."}`) untuk menandai pesan intent
 selesai setelah transaksinya berhasil. Polanya sama dengan `leaveAgent`, dengan body JSON seperti `sendMessage`.
 
+Mulai 27 November 2026 transport juga mewajibkan
+`sendAttachment(conversationID:clientMessageID:attachment:)` untuk lampiran selama dilayani agen.
+`TanyaAIAttachment` sudah berisi nama file, MIME, dan isi base64 (di-encode TanyaAI di luar main thread); host cukup
+memasukkannya ke body dan mengembalikan body ack mentah seperti `sendMessage`. Endpoint-nya belum ada di contract,
+jadi sementara service host boleh dummy: jeda lalu ack `{"success":true,"data":{"message_id":"...","seq":"..."}}`
+(contoh: `TanyaAIChatService.sendAttachment` di Sandbox). Jangan log isi base64.
+
 Mulai 18 November 2026 `TanyaAIHost` menerima `onSheetChange: (Bool) -> Void` (opsional). Tanya AI memanggilnya
 `true` saat bottom sheet miliknya terbuka (pilihan lampiran) dan `false` saat tertutup; host menahan swipe-back
 navigasinya selama `true`, sama seperti untuk sheet milik host. Di Byon: teruskan ke extension pop gesture global.

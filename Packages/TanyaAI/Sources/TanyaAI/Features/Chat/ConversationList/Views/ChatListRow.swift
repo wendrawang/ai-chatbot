@@ -36,7 +36,7 @@ struct ChatListRow<Content: View>: View {
             dateChip(day)
         case .message(let row, _):
             VStack(alignment: .leading, spacing: FigmaSize.spacingLarge.scaledToArtwork) {
-                MessageRow(row: row, onOpenLink: actions.onOpenLink)
+                MessageRow(row: row, actions: actions)
                 if isReferenceLetterEnabled, case .message(let message) = row {
                     referenceLetterCard(for: message)
                 }

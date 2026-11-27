@@ -97,6 +97,23 @@ struct FileManagerChatAttachmentTests {
         #expect(!manager.fileExists(atPath: shared.path))
         #expect(manager.fileExists(atPath: sibling.path))
     }
+
+    /// Salinan pindah ke folder pemakai beserta folder uniknya, jadi ikut terhapus bersama folder itu.
+    @Test
+    func adoptedCopyMovesIntoTheOwnerFolder() throws {
+        let manager = FileManager.default
+        let source = manager.temporaryDirectory.appendingPathComponent("Slip.pdf")
+        try Data("isi".utf8).write(to: source)
+        defer { try? manager.removeItem(at: source) }
+        let copy = try manager.copyChatAttachment(from: source)
+        let owner = manager.temporaryDirectory.appendingPathComponent(UUID().uuidString, isDirectory: true)
+        defer { try? manager.removeItem(at: owner) }
+        let adopted = manager.adoptChatAttachment(copy, into: owner)
+        #expect(adopted.path.hasPrefix(owner.path))
+        #expect(adopted.lastPathComponent == "Slip.pdf")
+        #expect(try Data(contentsOf: adopted) == Data("isi".utf8))
+        #expect(!manager.fileExists(atPath: copy.deletingLastPathComponent().path))
+    }
 }
 
 extension FileManagerChatAttachmentTests {

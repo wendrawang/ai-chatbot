@@ -21,6 +21,9 @@ public enum DesignIcon: String, CaseIterable {
     /// TODO: Ganti PDF dummy dengan aset Figma chevron field pilihan, nama tetap.
     case chevronDown
     case chevronRight
+    /// Ikon file pada `FileCard` (PDF maupun gambar).
+    /// TODO: Ganti PDF dummy dengan aset Figma ikon dokumen, nama tetap.
+    case document
     /// TODO: Ganti PDF dummy dengan aset Figma ikon headset kartu status, nama tetap.
     case headset
     case lightbulb

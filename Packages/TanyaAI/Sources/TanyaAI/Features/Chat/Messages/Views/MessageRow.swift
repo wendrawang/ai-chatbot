@@ -8,13 +8,14 @@
 import DesignKit
 import SwiftUI
 
-/// Satu pesan pada table percakapan. Pertanyaan nasabah = bubble merah (gagal kirim: abu-abu dengan hint); jawaban
-/// bot = Markdown tanpa background; agen = kartu dengan avatar dan label pengirim. Link di jawaban diteruskan ke host.
+/// Satu pesan pada table percakapan. Pertanyaan nasabah = bubble merah (gagal kirim: abu-abu dengan hint); lampiran
+/// nasabah = kartu file; jawaban bot = Markdown tanpa background; agen = kartu dengan avatar dan label pengirim.
+/// Link di jawaban diteruskan ke host.
 @MainActor
 struct MessageRow: View {
     @Environment(\.locale) private var locale
     let row: ChatRow
-    let onOpenLink: (String) -> Void
+    let actions: ChatRowActions
 
     var body: some View {
         bubble(for: row)
@@ -29,13 +30,26 @@ private extension MessageRow {
         switch row {
         case .message(let message):
             messageView(message)
-        case .local(let question) where question.isFailed:
-            MessageBubble(
-                text: question.text, isOutgoing: true, failureNote: String(ChatCopy.sendFailed, locale: locale)
-            )
-            .accessibilityIdentifier(ChatElementIdentifier.failedQuestion)
         case .local(let question):
-            MessageBubble(text: question.text, isOutgoing: true)
+            localView(question)
+        }
+    }
+
+    @ViewBuilder
+    func localView(_ question: LocalQuestion) -> some View {
+        switch question.content {
+        case .attachment(let file):
+            AttachmentMessageRow(
+                question: question,
+                file: file,
+                onOpen: actions.onOpenAttachment,
+                onRetry: actions.onRetryAttachment
+            )
+        case .text(let text) where question.isFailed:
+            MessageBubble(text: text, isOutgoing: true, failureNote: String(ChatCopy.sendFailed, locale: locale))
+                .accessibilityIdentifier(ChatElementIdentifier.failedQuestion)
+        case .text(let text):
+            MessageBubble(text: text, isOutgoing: true)
                 .accessibilityIdentifier(ChatElementIdentifier.question)
         }
     }
@@ -45,7 +59,7 @@ private extension MessageRow {
         if message.author == .agent, let text = message.text {
             LiveAgentMessageRow(text: text)
         } else if let document = message.document {
-            MarkdownContent(document: document, onOpenLink: onOpenLink)
+            MarkdownContent(document: document, onOpenLink: actions.onOpenLink)
                 .accessibilityElement(children: .contain)
                 .accessibilityIdentifier(ChatElementIdentifier.answer)
         } else if let text = message.text {

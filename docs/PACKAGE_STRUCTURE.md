@@ -77,6 +77,9 @@ Contoh penempatan yang sudah diterapkan:
   error/warning tanpa tombol di atas `ActionBanner`; fade, dibacakan VoiceOver, hilang sendiri setelah
   `CustomMotion.snackbarVisible`. Pesan baru (id baru) mengulang hitungan. Pemakai memegang state `SnackbarMessage?`
   dan posisinya; penolakan lampiran memetakan alasannya lewat `SnackbarMessage(rejection:locale:)` di TanyaAI.
+- `Components/Messages/FileCard/Views/FileCard.swift` (+ `Models/FileCardStatus.swift`): kartu satu file (kotak
+  ikon, nama satu baris, baris status) yang seluruhnya tombol; status mengirim/siap/gagal hanya mengganti baris kedua
+  dan kotak ikon, jadi tingginya tetap. TanyaAI memakainya untuk lampiran nasabah (`AttachmentMessageRow`).
 - `Components/Feedback/TypingDots.swift`: tiga titik berdenyut selama bot menyiapkan jawaban; diam saat Reduce Motion.
 - `Components/Lists/SeparatorLine.swift`: garis pemisah 1 pt (daftar, tabel Markdown, di atas composer).
 - `Components/Screen/BottomSheet/Models/BottomSheetMaxHeight.swift`: batas tinggi, di bawah status bar atau bagian layar.
@@ -171,7 +174,10 @@ ditolak), `ConfirmationPrompt`
 (konfirmasi End Session, sebagai `ChatSheet.leaveAgent` di `Sheets/ViewModifiers/ChatSheetModifier.swift`), dan
 `FilledButton` varian `.outlined`.
 Tombol lampiran adalah parameter `attachment` milik `MessageComposer`; kunci field selama kartu Switching adalah
-parameter `isInputEnabled`-nya.
+parameter `isInputEnabled`-nya. Lampiran yang dikirim adalah `LocalQuestion` berisi `.attachment`
+(`Messages/Models/LocalQuestionContent.swift`), dikirim lewat `Session/TanyaAIBridge+Attachment.swift`, dan tampil
+sebagai `FileCard` lewat `Messages/Views/AttachmentMessageRow.swift`; model salinannya
+`Composer/Attachment/Models/ChatAttachmentFile.swift` (+ `Extensions/ChatAttachmentFile+Upload.swift` untuk base64).
 
 ### Menambah intent: langkah yang sudah punya pola
 

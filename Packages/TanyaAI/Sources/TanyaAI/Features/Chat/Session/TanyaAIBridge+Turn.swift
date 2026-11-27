@@ -46,6 +46,12 @@ extension TanyaAIBridge {
         sentMessageIDs.formUnion(copies.compactMap { $0 })
         localQuestions = zip(localQuestions, copies).filter { $0.1 == nil }.map(\.0)
     }
+
+    /// Pertanyaan lama yang sudah dilepas (percakapan berganti atau sudah datang dari stream) diabaikan.
+    func updateQuestion(_ clientMessageID: String, _ change: (inout LocalQuestion) -> Void) {
+        guard let index = localQuestions.firstIndex(where: { $0.id == clientMessageID }) else { return }
+        change(&localQuestions[index])
+    }
 }
 
 // MARK: - Turn
@@ -84,11 +90,5 @@ private extension TanyaAIBridge {
             turn.stopCanceling(clientMessageID: clientMessageID)
             didFailRequest(error, conversationID: conversationID)
         }
-    }
-
-    /// Pertanyaan lama yang sudah dilepas (percakapan berganti atau sudah datang dari stream) diabaikan.
-    func updateQuestion(_ clientMessageID: String, _ change: (inout LocalQuestion) -> Void) {
-        guard let index = localQuestions.firstIndex(where: { $0.id == clientMessageID }) else { return }
-        change(&localQuestions[index])
     }
 }

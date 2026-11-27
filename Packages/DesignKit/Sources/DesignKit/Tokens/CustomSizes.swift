@@ -120,4 +120,11 @@ public enum CustomSizes {
         public static let iconBox: CGFloat = 40
         public static let chevron: CGFloat = 20
     }
+
+    /// Lebar kartu file dan kotak ikonnya.
+    /// TODO: Cocokkan dengan nilai Figma; sementara mengikuti mockup tim iOS.
+    public enum FileCard {
+        public static let width: CGFloat = 240
+        public static let iconBox: CGFloat = 40
+    }
 }

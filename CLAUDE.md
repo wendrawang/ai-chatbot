@@ -31,7 +31,10 @@ usulan ditulis di body PR sebagai pertanyaan untuk owner. Bila berbeda, ikuti do
 - `TanyaAIBridge` dipegang host (dibuat sekali) dengan `TanyaAIChatTransport` per endpoint (body mentah).
   Bridge yang menyambung, retry, decode, dan merge (`docs/CHAT_GATEWAY.md`). Bubble pertanyaan tampil saat
   kirim (`LocalQuestion`), diganti salinan SSE lewat `client_msg_id`/seq ack; gagal kirim = bubble abu-abu +
-  hint tanpa retry. Loading hanya saat history pertama; sambutan hanya bila history kosong. Chip tanggal
+  hint tanpa retry. Lampiran (hanya dengan agen) juga `LocalQuestion`: kartu `FileCard` rata kanan, mengirim →
+  terkirim saat ack (tanpa menunggu stream) → gagal bisa coba lagi dengan id sama; "Lihat Detail" = QuickLook
+  salinan lokal di folder bridge yang dihapus saat halaman ditutup. Loading hanya saat history pertama;
+  sambutan hanya bila history kosong. Chip tanggal
   (`TextChip`, `d MMM yyyy`, zona perangkat) di atas pertanyaan pertama tiap hari; bubble lokal memakai waktu kirim.
   Saran lanjutan = `SuggestionChip` di bawah jawaban terakhir, diketuk = terkirim seperti shortcut.
   Live agent: kartu status (frame 62/64) dari event `system`, kartu antre + tombol batal hanya selama antre, pesan

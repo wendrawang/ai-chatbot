@@ -60,6 +60,11 @@ enum ChatCopy: String, CaseIterable {
     /// Snackbar lampiran yang ditolak. TODO: Copy sementara dari tim iOS; ganti dengan copy final UI/UX.
     case attachmentUnsupportedFormat = "attachment.unsupportedFormat"
     case attachmentTooLarge = "attachment.tooLarge"
+    /// Kartu lampiran yang dikirim nasabah. TODO: Copy sementara dari tim iOS; ganti dengan copy final UI/UX.
+    case attachmentSending = "attachment.sending"
+    case attachmentFailed = "attachment.failed"
+    case attachmentRetry = "attachment.retry"
+    case attachmentDetail = "attachment.detail"
 
     /// TODO: Copy sementara dari tim iOS; ganti dengan copy final UI/UX. Berlaku untuk semua key referenceLetter.
     case referenceLetterTitle = "referenceLetter.title"

@@ -23,6 +23,7 @@ di-decode TanyaAI karena khusus Tanya AI dan sama di semua host.
 | `initialize()` | `POST /v1/chat/init`, body `{}` |
 | `history(conversationID:before:limit:)` | `GET /v1/chat/conversations/{id}/messages?limit=&before=` |
 | `sendMessage(conversationID:clientMessageID:text:)` | `POST /v1/chat/messages`, body `{conversation_id, client_msg_id, type:"text", payload}` → 202 |
+| `sendAttachment(conversationID:clientMessageID:attachment:)` | Belum ada di contract (TODO BE): satu lampiran base64 (`TanyaAIAttachment`: nama, MIME, isi) → ack seperti kirim teks. Host sementara memakai service dummy |
 | `cancelTurn(conversationID:)` | `POST /v1/chat/conversations/{id}/cancel`, tanpa body → 200 `{canceled}` |
 | `leaveAgent(conversationID:)` | `POST /v1/chat/conversations/{id}/leave-agent`, tanpa body → 200 `{left}`, 409 bila agen sudah bergabung |
 | `attachSuccessID(messageID:successID:)` | `POST /v1/chat/messages/{message_id}/success-id`, body `{"success_id"}` → 200 `{deduplicated}`, 409 bila nilai lain sudah tercatat |
@@ -198,11 +199,28 @@ disalin. Keduanya tampil sebagai `Snackbar` DesignKit oranye tepat di bawah head
 (`SnackbarMessage(rejection:locale:)`, `ActionBanner` tanpa tombol, setinggi bar bertombol) yang menutupi bar sesi
 agen bila ada, muncul dan hilang dengan fade opacity (`CustomMotion.bannerFade`) setelah
 `CustomMotion.snackbarVisible` (3 detik), dan sheet Galeri/File tidak dibuka lagi (keputusan user 26 November
-2026; copy, durasi, dan warna sementara sampai ada Figma). Contract v1.5.3 belum punya endpoint
-upload dan parameter preview di stream/history belum pasti, jadi file pilihan nasabah berhenti di
-`ChatScreen.attach(_:)` (TODO) dan salinannya langsung dibuang. Selama sheet terbuka, `TanyaAIHost(onSheetChange:)`
-memberi tahu host untuk menahan swipe-back. Kartu preview (ikon, nama file, "Lihat Detail") ditunda. Bila endpoint sudah ada: upload lewat
-method baru `TanyaAIChatTransport` seperti `leaveAgent`.
+2026; copy, durasi, dan warna sementara sampai ada Figma). Selama sheet terbuka, `TanyaAIHost(onSheetChange:)`
+memberi tahu host untuk menahan swipe-back.
+
+File yang lolos langsung tampil sebagai kartu lampiran rata kanan (`FileCard` DesignKit lewat
+`AttachmentMessageRow`; keputusan user 27 November 2026, mengikuti mockup tim iOS sampai ada Figma). Kirimannya
+`LocalQuestion` dengan isi `.attachment`, jadi posisi, chip tanggal, dan parkir di atas memakai jalur yang sama dengan
+pertanyaan teks, tanpa turn lock karena hanya selama `AGENT_ACTIVE`. Status: "Mengirim…" (spinner, kartu tidak bisa
+diketuk) selama `TanyaAIBridge.sendAttachment` meng-encode base64 di luar main thread dan menunggu
+`TanyaAIChatTransport.sendAttachment`; terkirim tepat saat ack datang (format file + "Lihat Detail"), tanpa menunggu
+salinan stream; gagal = garis merah dan "Coba lagi" yang mengirim ulang file dan `client_msg_id` yang sama. Upload
+base64 tidak memberi progress, jadi tidak ada persen. "Lihat Detail" membuka salinan lokal di QuickLook
+(`quickLookPreview` di `ChatScreen`), jadi tidak perlu mengunduh dari server. Salinan dipindah ke
+`TanyaAIBridge.attachmentFolder` dan dihapus saat kartu keluar dari daftar (percakapan berganti) atau bridge dilepas
+(halaman ditutup).
+
+Bentuk pesan lampiran di stream/history belum ada di contract v1.5.3. Salinan stream yang tidak punya tampilan
+(payload objek) tidak menggantikan kartu lokal (`LocalQuestion.copy(in:)` hanya menerima salinan yang terlihat),
+jadi kartu tetap tampil selama halaman hidup; setelah halaman dibuka ulang lampiran belum tampil dari history.
+TODO setelah contract ada: renderer pesan lampiran dari history (unduh dari URL saat "Lihat Detail", cache per id)
+dan pemetaan salinan lokal ke pesan stream supaya kiriman dari halaman ini tetap dibuka tanpa unduh.
+Sandbox: upload dummy menjawab ack setelah `SandboxOptions.attachmentUploadDelay` (2 detik); `--reject-attachment`
+menolak upload (400) untuk melihat kartu gagal.
 
 Event `typing` dari agen menampilkan "Agen sedang mengetik..." miring di bawah pesan terakhir. Indikator hilang saat
 `typing:false`, pesan agen datang, state kembali ke bot, atau `ttl_s` habis tanpa kabar baru (dibaca per frame;

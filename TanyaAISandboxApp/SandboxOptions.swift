@@ -76,12 +76,15 @@ struct SandboxOptions {
     static let agentJoinDelay: TimeInterval = 3
     /// `--live-agent`: lama indikator agen mengetik sebelum pesannya datang.
     static let agentTypingDelay: TimeInterval = 1.5
+    /// Lama upload lampiran tiruan sebelum ack; selama ini kartu lampiran tampil "sedang dikirim".
+    static let attachmentUploadDelay: TimeInterval = 2
     /// File yang tidak ada: unduhan ikon pasti gagal tanpa bergantung pada jaringan.
     static let brokenIconURL = URL(fileURLWithPath: "/sandbox/missing-icon.png")
     /// Alamat TEST-NET (RFC 5737) yang tidak pernah menjawab: ikon tertahan di state loading sampai timeout.
     static let slowIconURL = URL(string: "https://192.0.2.1/icon.png")
     private static let languageFlag = "--language"
     private static let rejectFlag = "--reject-send"
+    private static let rejectAttachmentFlag = "--reject-attachment"
     private static let holdReplyFlag = "--hold-reply"
     private static let historyFlag = "--with-history"
     private static let longHistoryFlag = "--long-history"
@@ -115,6 +118,8 @@ struct SandboxOptions {
     let locale: Locale?
     /// `--reject-send`: gateway menolak kirim (400), jadi bubble pertanyaan menjadi bubble gagal.
     let isRejectingSend: Bool
+    /// `--reject-attachment`: upload lampiran ditolak (400), jadi kartu lampiran menjadi gagal.
+    let isRejectingAttachment: Bool
     /// `--hold-reply`: bot tidak pernah menjawab, jadi composer tetap di stop (untuk UI test stop).
     let isHoldingReply: Bool
     /// `--with-history`: gateway tiruan mengembalikan history fixture, jadi sambutan tidak tampil.
@@ -160,6 +165,7 @@ struct SandboxOptions {
 
     init(arguments: [String]) {
         isRejectingSend = arguments.contains(Self.rejectFlag)
+        isRejectingAttachment = arguments.contains(Self.rejectAttachmentFlag)
         isHoldingReply = arguments.contains(Self.holdReplyFlag)
         isShowingHistory = arguments.contains(Self.historyFlag)
         isShowingLongHistory = arguments.contains(Self.longHistoryFlag)

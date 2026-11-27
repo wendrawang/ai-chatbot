@@ -46,6 +46,10 @@
 "sheet.close" = "关闭";
 "attachment.unsupportedFormat" = "不支持此照片格式。请选择 HEIC、JPG 或 PNG 照片。";
 "attachment.tooLarge" = "文件超过 10 MB。请选择较小的文件。";
+"attachment.sending" = "正在发送…";
+"attachment.failed" = "发送失败";
+"attachment.retry" = "重试";
+"attachment.detail" = "查看详情";
 
 "referenceLetter.title" = "申请银行资信证明";
 "referenceLetter.confirm" = "确认";

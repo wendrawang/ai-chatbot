@@ -46,6 +46,10 @@
 "sheet.close" = "Tutup";
 "attachment.unsupportedFormat" = "Format foto tidak didukung. Pilih foto HEIC, JPG, atau PNG.";
 "attachment.tooLarge" = "Ukuran file lebih dari 10 MB. Pilih file yang lebih kecil.";
+"attachment.sending" = "Mengirim…";
+"attachment.failed" = "Gagal terkirim";
+"attachment.retry" = "Coba lagi";
+"attachment.detail" = "Lihat Detail";
 
 "referenceLetter.title" = "Pesan Surat Referensi";
 "referenceLetter.confirm" = "Konfirmasi";

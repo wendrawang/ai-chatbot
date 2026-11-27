@@ -14,4 +14,6 @@ public enum CustomTextLines {
     public static let textChip = 1
     /// Placeholder field teks satu baris.
     public static let fieldInput = 1
+    /// Nama file dan baris status `FileCard`; nama panjang dipotong di tengah.
+    public static let fileCard = 1
 }
