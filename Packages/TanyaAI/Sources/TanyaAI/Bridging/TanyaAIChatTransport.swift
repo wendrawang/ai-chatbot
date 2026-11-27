@@ -24,6 +24,16 @@ public protocol TanyaAIChatTransport: AnyObject {
     /// Ack 202 hanya tanda tersimpan; pesan tampil setelah datang lewat stream.
     func sendMessage(conversationID: String, clientMessageID: String, text: String) async throws -> Data
 
+    /// Kirim satu lampiran nasabah (PDF/gambar, base64) selama dilayani agen. Ack sama dengan `sendMessage`
+    /// (`{message_id, seq}`); kartu lampiran tampil sebagai terkirim setelah ack, tanpa menunggu stream.
+    /// TODO: Endpoint, body, dan bentuk pesan lampiran di stream/history belum ada di contract gateway; sementara
+    /// host memakai service dummy.
+    func sendAttachment(
+        conversationID: String,
+        clientMessageID: String,
+        attachment: TanyaAIAttachment
+    ) async throws -> Data
+
     /// `POST /v1/chat/conversations/{id}/cancel` tanpa body: menghentikan jawaban yang sedang berjalan.
     /// Respons 200 `{canceled}`; kunci kirim tetap dibuka oleh `turn_end` di stream.
     func cancelTurn(conversationID: String) async throws -> Data

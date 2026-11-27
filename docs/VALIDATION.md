@@ -1071,3 +1071,21 @@ Tes: `PinPadKeyTests` (batas panjang, hapus, susunan keypad), `PinEntryTests` (l
 mengikuti panjang tanpa angka, nonaktif abu-abu), `DesignFontRoleTests` untuk `keypadDigit`, `AssetTests` untuk
 `lock` dan `arrowLeft`; UI test `PinEntryUITests` (titik dan hapus, PIN salah dengan sheet terkunci, PIN diterima).
 Pemeriksaan desain: `PinPadKey` masuk daftar metadata karena susunan angka keypad bukan nilai desain.
+
+## Kartu lampiran dan upload dummy (27 November 2026)
+
+File yang lolos format dan ukuran langsung tampil sebagai `FileCard` rata kanan dan dikirim lewat
+`TanyaAIChatTransport.sendAttachment` (base64, endpoint belum ada di contract; Sandbox memakai service dummy dengan
+jeda 2 detik). Status mengirim, terkirim setelah ack, dan gagal dengan "Coba lagi" diperiksa di simulator iPhone 17e
+(iOS 26.4) dengan `--live-agent` (dan `--reject-attachment` untuk gagal): foto galeri tampil "Mengirim…", menjadi
+"JPEG · Lihat Detail" setelah ack, dan "Lihat Detail" membuka foto lokal di QuickLook lalu kembali ke chat saat
+ditutup. Kartu mengirim memakai `.allowsHitTesting` alih-alih `.disabled`, karena gaya plain memudarkan tombol
+nonaktif.
+
+Tes: `FileCardTests` (ukuran sama di setiap status, nama panjang tetap satu baris), `AssetTests` untuk `document`,
+`TanyaAIBridgeAttachmentTests` (kartu tampil sebelum ack lalu terkirim, base64 dan MIME ke transport, coba lagi
+dengan id sama, salinan stream tanpa tampilan tidak menghapus kartu, pilihan sebelum tersambung dibuang, salinan
+ikut terhapus saat percakapan berganti dan saat bridge dilepas), `ChatAttachmentFileTests` (format dan MIME),
+`FileManagerChatAttachmentTests.adoptedCopyMovesIntoTheOwnerFolder`. UI test `ChatScrollUITests`,
+`LiveAgentUITests`, dan `StartingPointUITests` tetap lulus setelah tombol panah dipindah ke `LatestMessageButton`.
+Picker sistem tidak diotomasi di UI test, jadi alur pilih file diperiksa manual.

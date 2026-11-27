@@ -147,6 +147,7 @@ tersedia pada history/main.
   (`fillColor` untuk latar lain), spinner = `LoadingIndicator`, teks status kecil di bawah pesan = `StatusCaption`,
   titik menunggu jawaban = `TypingDots`, bar di bawah header = `ActionBanner`,
   error/warning singkat yang hilang sendiri = `Snackbar` + `SnackbarMessage` (teks + tone),
+  kartu satu file (lampiran) = `FileCard` + `FileCardStatus`,
   garis pemisah = `SeparatorLine`.
   Nonaktif selalu lewat `.disabled(...)` dari pemakai; komponen membaca `@Environment(\.isEnabled)` untuk warnanya.
   Jangan menambah parameter `isEnabled` pada komponen: dua jalur untuk hal yang sama harus digabung lagi di setiap

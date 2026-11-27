@@ -15,8 +15,11 @@ import Foundation
 public final class TanyaAIBridge: ObservableObject {
     /// Pesan dari gateway, urut `seq` naik.
     @Published private(set) var messages: [ChatMessage] = []
-    /// Pertanyaan yang sudah tampil tetapi belum datang dari stream, termasuk yang gagal dikirim (urut waktu kirim).
-    @Published var localQuestions: [LocalQuestion] = []
+    /// Kiriman yang sudah tampil tetapi belum datang dari stream, termasuk yang gagal dikirim (urut waktu kirim).
+    /// Salinan file lampiran yang keluar dari daftar ikut dibuang.
+    @Published var localQuestions: [LocalQuestion] = [] {
+        didSet { discardRemovedAttachments(previous: oldValue) }
+    }
     /// Pertanyaan yang sedang ditunggu jawabannya (lihat `ChatTurn`).
     @Published var turn = ChatTurn()
     /// Pertanyaan terbaru yang dikirim dari halaman ini. Hanya berubah saat kirim, jadi salinan dari stream atau
@@ -67,6 +70,10 @@ public final class TanyaAIBridge: ObservableObject {
     var eventCursor: Int?
     /// Loop sambungan yang sedang berjalan; dibatalkan saat sesi habis agar stream yang terbuka ikut ditutup.
     var connectionTask: Task<Void, Never>?
+    /// Folder salinan lampiran yang dikirim dari halaman ini; dihapus bersama bridge.
+    let attachmentFolder = FileManager.default.temporaryDirectory.appendingPathComponent(
+        UUID().uuidString, isDirectory: true
+    )
     let transport: TanyaAIChatTransport
     let hostServices: TanyaAIHostServices?
     var referenceLetters: [String: ReferenceLetterForm] = [:]
@@ -109,6 +116,11 @@ public final class TanyaAIBridge: ObservableObject {
         self.onSessionExpired = onSessionExpired
         self.onConnectionFailed = onConnectionFailed
         self.sleep = sleep
+    }
+
+    /// Halaman ditutup: salinan lampiran nasabah tidak dibiarkan tersimpan di perangkat.
+    deinit {
+        try? FileManager.default.removeItem(at: attachmentFolder)
     }
 }
 

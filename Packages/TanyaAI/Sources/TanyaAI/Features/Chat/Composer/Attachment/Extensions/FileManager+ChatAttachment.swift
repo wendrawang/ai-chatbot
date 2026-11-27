@@ -59,6 +59,20 @@ extension FileManager {
         throw ChatAttachmentRejection.tooLarge
     }
 
+    /// Memindahkan folder salinan `file` ke dalam `folder` milik pemakai, supaya salinan ikut terhapus bersama folder
+    /// itu. Gagal = salinan tetap di tempat semula (folder sementara tetap dibersihkan sistem).
+    func adoptChatAttachment(_ file: URL, into folder: URL) -> URL {
+        let source = file.deletingLastPathComponent()
+        let destination = folder.appendingPathComponent(source.lastPathComponent, isDirectory: true)
+        do {
+            try createDirectory(at: folder, withIntermediateDirectories: true)
+            try moveItem(at: source, to: destination)
+        } catch {
+            return file
+        }
+        return destination.appendingPathComponent(file.lastPathComponent)
+    }
+
     /// Membuang file lampiran yang tidak dipakai lagi, beserta foldernya bila menjadi kosong (folder salinan galeri
     /// atau folder salinan aplikasi Files). Gagal diabaikan: folder sementara tetap dibersihkan sistem.
     func discardChatAttachment(at file: URL) {

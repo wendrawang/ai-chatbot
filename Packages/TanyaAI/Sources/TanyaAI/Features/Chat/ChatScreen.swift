@@ -6,6 +6,7 @@
 //
 
 import DesignKit
+import QuickLook
 import SwiftUI
 
 /// Halaman chat: fitur ini memiliki header-nya sendiri, draft hidup di `ComposerSection`, dan `content` disisipkan
@@ -26,6 +27,8 @@ public struct ChatScreen<Content: View>: View {
     /// Bottom sheet yang sedang tampil; nil = tertutup.
     @State private var sheet: ChatSheet?
     @State private var snackbar: SnackbarMessage?
+    /// Salinan lokal lampiran yang dibuka "Lihat Detail" di QuickLook; nil = tertutup.
+    @State private var previewedFile: URL?
     private let isEnabled: Bool
     private let welcome: WelcomeContent?
     private let onBack: (() -> Void)?
@@ -58,6 +61,7 @@ public struct ChatScreen<Content: View>: View {
             background: { ChatBackground() }
         )
         .overlay { loadingIndicator }
+        .quickLookPreview($previewedFile)
         .modifier(
             ChatSheetModifier(
                 sheet: $sheet,
@@ -85,7 +89,9 @@ public struct ChatScreen<Content: View>: View {
                 onScrollProgress: { scrollProgress = $0 }, onLatestVisibilityChange: { isLatestVisible = $0 },
                 row: listRow
             )
-            .overlay(alignment: .bottom) { latestButton }
+            .overlay(alignment: .bottom) {
+                if !isLatestVisible { LatestMessageButton(onTap: showLatest) }
+            }
         }
         .overlay(alignment: .top) { Snackbar(message: $snackbar).padding(.top, headerHeight) }
     }
@@ -97,18 +103,6 @@ public struct ChatScreen<Content: View>: View {
             AgentSessionBanner(onEnd: { sheet = .leaveAgent(bridge.agentSessionKey) })
                 .disabled(!isEnabled || bridge.isLeavingAgent)
                 .padding(.top, headerHeight)
-        }
-    }
-
-    /// Mengambang di tengah, tepat di atas composer, selama ujung daftar di luar layar.
-    /// TODO: Konfirmasi jarak ke composer dengan Figma; sementara perkiraan dari foto.
-    @ViewBuilder
-    private var latestButton: some View {
-        if !isLatestVisible {
-            FloatingIconButton(icon: .arrowDown, onTap: showLatest)
-                .accessibilityLabel(String(ChatCopy.scrollToLatest, locale: locale))
-                .padding(.bottom, FigmaSize.spacingLarge.scaledToArtwork)
-                .accessibilityIdentifier(ChatElementIdentifier.scrollToLatest)
         }
     }
 
@@ -165,8 +159,12 @@ private extension ChatScreen {
 
     var rowActions: ChatRowActions {
         ChatRowActions(
-            onOpenLink: onOpenLink, onSelectShortcut: select, onSelectFollowUp: selectFollowUp,
-            onLeaveAgentQueue: leaveAgent
+            onOpenLink: onOpenLink,
+            onSelectShortcut: select,
+            onSelectFollowUp: selectFollowUp,
+            onLeaveAgentQueue: leaveAgent,
+            onOpenAttachment: { previewedFile = $0 },
+            onRetryAttachment: { bridge.retryAttachment($0) }
         )
     }
 
@@ -236,11 +234,9 @@ private extension ChatScreen {
         return { sheet = .attachment(bridge.agentSessionKey) }
     }
 
-    /// File pilihan nasabah. Salinannya langsung dibuang supaya tidak menumpuk di folder sementara.
-    /// TODO: Upload lewat transport dan kartu preview setelah endpoint upload dan parameter stream ada di contract
-    /// gateway; saat itu file dibuang oleh pemilik upload setelah selesai (atau bila agen sudah tidak melayani).
+    /// File pilihan nasabah langsung tampil sebagai kartu lampiran lalu dikirim; salinannya dibuang bridge.
     func attach(_ file: URL) {
-        FileManager.default.discardChatAttachment(at: file)
+        bridge.sendAttachment(ChatAttachmentFile(url: file))
     }
 
     /// Shortcut dikirim sebagai chat; bubble pertanyaan langsung tampil.

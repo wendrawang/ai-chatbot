@@ -78,6 +78,29 @@ final class TanyaAIChatService {
         }
     }
 
+    /// Upload lampiran tiruan: endpoint asli belum ada di contract, jadi isi base64 tidak dipakai. Ack datang setelah
+    /// jeda seolah file sedang diunggah; tidak ada salinan di stream karena bentuk pesan lampirannya belum ada.
+    /// `--reject-attachment`: gateway menolak (400), jadi kartu menjadi gagal dan bisa dikirim ulang.
+    func sendAttachment(
+        conversationID: String,
+        clientMessageID: String,
+        attachment: TanyaAIAttachment,
+        onSuccess: @escaping (Data) -> Void,
+        onFailed: @escaping (Error) -> Void
+    ) {
+        DispatchQueue.main.asyncAfter(deadline: .now() + SandboxOptions.attachmentUploadDelay) { [weak self] in
+            guard let self else { return }
+            guard !self.options.isRejectingAttachment else {
+                onFailed(
+                    TanyaAITransportError.response(
+                        statusCode: SandboxGatewayFrames.badRequestStatus, body: SandboxGatewayFrames.badRequest
+                    ))
+                return
+            }
+            onSuccess(self.frames.ack())
+        }
+    }
+
     /// Stop: turn yang berjalan dihentikan (tombstone pertanyaan + `turn_end` canceled menyusul di stream setelah
     /// respons), atau no-op bila tidak ada turn aktif.
     func cancelTurn(

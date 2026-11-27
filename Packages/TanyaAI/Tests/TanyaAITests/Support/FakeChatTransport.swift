@@ -17,6 +17,10 @@ final class FakeChatTransport: TanyaAIChatTransport {
     /// Baris yang dikirim lalu stream ditutup dengan error koneksi; kosong = stream dibiarkan terbuka.
     var scriptedStreams: [[String]] = []
     var sendResult: Result<Data, Error> = .success(WireFixture.ack())
+    var attachmentResult: Result<Data, Error> = .success(WireFixture.ack())
+    /// Lampiran terakhir yang dikirim beserta `client_msg_id`-nya.
+    private(set) var lastAttachment: TanyaAIAttachment?
+    private(set) var attachmentClientMessageIDs: [String] = []
     var cancelResult: Result<Data, Error> = .success(WireFixture.cancel(isCanceled: true))
     var leaveResult: Result<Data, Error> = .success(WireFixture.leave(isLeft: true))
     var successIDResult: Result<Data, Error> = .success(WireFixture.successID(isDeduplicated: false))
@@ -64,6 +68,17 @@ final class FakeChatTransport: TanyaAIChatTransport {
             await withCheckedContinuation { heldAck = $0 }
         }
         return try result.get()
+    }
+
+    func sendAttachment(
+        conversationID: String,
+        clientMessageID: String,
+        attachment: TanyaAIAttachment
+    ) async throws -> Data {
+        calls.append("attachment:\(attachment.fileName)")
+        lastAttachment = attachment
+        attachmentClientMessageIDs.append(clientMessageID)
+        return try attachmentResult.get()
     }
 
     func cancelTurn(conversationID: String) async throws -> Data {

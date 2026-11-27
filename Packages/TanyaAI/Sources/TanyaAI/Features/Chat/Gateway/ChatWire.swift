@@ -26,6 +26,8 @@ enum ChatWire {
     static let typingRefresh: TimeInterval = 5
     /// Tanpa ketikan selama ini, nasabah dianggap berhenti mengetik (`typing:false`).
     static let typingIdle: TimeInterval = 3
+    /// MIME lampiran bila ekstensi file tidak dikenal sistem.
+    static let fallbackMIMEType = "application/octet-stream"
 
     enum Event {
         /// Nama default event SSE bila baris `event:` tidak ada.

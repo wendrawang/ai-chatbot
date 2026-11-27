@@ -40,6 +40,22 @@ extension TanyaAIUseCase: TanyaAIChatTransport {
         }
     }
 
+    func sendAttachment(
+        conversationID: String,
+        clientMessageID: String,
+        attachment: TanyaAIAttachment
+    ) async throws -> Data {
+        try await withCheckedThrowingContinuation { continuation in
+            chatService.sendAttachment(
+                conversationID: conversationID,
+                clientMessageID: clientMessageID,
+                attachment: attachment,
+                onSuccess: { continuation.resume(returning: $0) },
+                onFailed: { continuation.resume(throwing: $0) }
+            )
+        }
+    }
+
     func cancelTurn(conversationID: String) async throws -> Data {
         try await withCheckedThrowingContinuation { continuation in
             chatService.cancelTurn(

@@ -14,4 +14,8 @@ struct ChatRowActions {
     var onSelectShortcut: (WelcomeShortcut) -> Void = { _ in }
     var onSelectFollowUp: (String) -> Void = { _ in }
     var onLeaveAgentQueue: () -> Void = {}
+    /// "Lihat Detail" pada kartu lampiran: salinan lokal file yang dikirim.
+    var onOpenAttachment: (URL) -> Void = { _ in }
+    /// "Coba lagi" pada kartu lampiran yang gagal: `client_msg_id` kiriman itu.
+    var onRetryAttachment: (String) -> Void = { _ in }
 }

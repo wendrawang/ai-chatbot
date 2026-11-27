@@ -13,6 +13,10 @@ enum ChatElementIdentifier {
     static let scrollToLatest = "chat.scrollToLatest"
     static let question = "chat.question"
     static let failedQuestion = "chat.question.failed"
+    /// Kartu lampiran nasabah: terkirim, sedang dikirim, dan gagal.
+    static let attachment = "chat.attachment"
+    static let sendingAttachment = "chat.attachment.sending"
+    static let failedAttachment = "chat.attachment.failed"
     static let dateChip = "chat.date"
     static let answer = "chat.answer"
     static let agentMessage = "chat.agent.message"

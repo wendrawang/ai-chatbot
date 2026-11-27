@@ -46,6 +46,10 @@
 "sheet.close" = "Close";
 "attachment.unsupportedFormat" = "This photo format isn't supported. Choose a HEIC, JPG, or PNG photo.";
 "attachment.tooLarge" = "This file is larger than 10 MB. Choose a smaller file.";
+"attachment.sending" = "Sending…";
+"attachment.failed" = "Failed to send";
+"attachment.retry" = "Try again";
+"attachment.detail" = "View details";
 
 "referenceLetter.title" = "Order a reference letter";
 "referenceLetter.confirm" = "Confirm";
